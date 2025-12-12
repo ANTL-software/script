@@ -1,0 +1,29 @@
+@use '../../../utils/styles/variables' as vars;
+
+header {
+    max-height: 10dvh;
+    height: 10dvh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    background: #ffffff;
+    border: 1px solid red;
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .logout-button {
+            white-space: nowrap;
+        }
+
+        .clock {
+            width: 120px;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+            font-family: vars.$fontFamilyMono;
+        }
+    }
+}

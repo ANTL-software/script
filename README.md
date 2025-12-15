@@ -30,22 +30,50 @@ Application React/TypeScript pour le call center ANTL. Interface vendeur pour la
 script/src/
 ├── API/                          # Couche API et services
 │   ├── config.ts                 # Configuration Axios (Singleton)
-│   ├── APICalls.tsx              # Méthodes HTTP génériques (GET, POST, PUT, PATCH, DELETE)
+│   ├── APICalls.tsx              # Méthodes HTTP génériques (GET, POST, PUT, PATCH, DELETE) + Retry logic
 │   ├── models/                   # Modèles avec logique métier
 │   │   ├── User.model.ts         # Modèle User (Employe)
+│   │   ├── Prospect.model.ts     # Modèle Prospect (fullName, typeFiche, etc.)
+│   │   ├── Campaign.model.ts     # Modèle Campaign
+│   │   ├── Produit.model.ts      # Modèle Produit
 │   │   └── index.ts
-│   ├── services/                 # Services API
-│   │   ├── User.service.ts       # Service User (Singleton)
+│   ├── services/                 # Services API (Singletons)
+│   │   ├── User.service.ts       # Authentication (login, logout, refresh)
+│   │   ├── Prospect.service.ts   # CRUD prospects, recherche par téléphone
+│   │   ├── Campaign.service.ts   # CRUD campagnes
+│   │   ├── Produit.service.ts    # Catalogue produits, filtres
+│   │   ├── Appel.service.ts      # Gestion des appels (create, update, terminer)
+│   │   ├── Vente.service.ts      # Gestion des ventes (panier multi-produits)
 │   │   └── index.ts
 │   └── index.ts
 ├── context/                      # Contexts React
 │   ├── userContext/
-│   │   ├── UserContext.tsx       # Définition du context
-│   │   ├── UserProvider.tsx      # Provider avec logique
+│   │   ├── UserContext.tsx       # Context authentification
+│   │   ├── UserProvider.tsx      # Provider avec login/logout
+│   │   └── index.ts
+│   ├── prospectContext/
+│   │   ├── ProspectContext.tsx   # Context prospect en cours
+│   │   ├── ProspectProvider.tsx  # Provider avec loadProspect()
+│   │   └── index.ts
+│   ├── campaignContext/
+│   │   ├── CampaignContext.tsx   # Context campagne active
+│   │   ├── CampaignProvider.tsx  # Provider avec loadCampaign()
+│   │   └── index.ts
+│   ├── cartContext/
+│   │   ├── CartContext.tsx       # Context panier de commande
+│   │   ├── CartProvider.tsx      # Provider avec addItem, removeItem, etc.
+│   │   └── index.ts
+│   ├── appContext/
+│   │   ├── AppContext.tsx        # Context état global app
+│   │   ├── AppProvider.tsx       # Provider modales/vues/notifications
 │   │   └── index.ts
 │   └── index.ts
 ├── hooks/                        # Hooks personnalisés
 │   ├── useUser.ts                # Hook pour UserContext
+│   ├── useProspect.ts            # Hook pour ProspectContext
+│   ├── useCampaign.ts            # Hook pour CampaignContext
+│   ├── useCart.ts                # Hook pour CartContext
+│   ├── useApp.ts                 # Hook pour AppContext
 │   └── index.ts
 ├── utils/                        # Utilitaires
 │   ├── scripts/
@@ -53,10 +81,16 @@ script/src/
 │   ├── styles/                   # Styles globaux
 │   │   ├── global.scss           # Styles globaux
 │   │   ├── reset.scss            # Reset CSS
-│   │   ├── _variables.scss       # Variables SCSS
-│   │   └── _mixins.scss          # Mixins SCSS
+│   │   ├── _variables.scss       # Variables SCSS (100 lignes: couleurs, spacing, etc.)
+│   │   └── _mixins.scss          # Mixins SCSS (127 lignes: flex, responsive, etc.)
 │   └── types/                    # Types TypeScript
 │       ├── user.types.ts         # Types utilisateur (Employe, Poste, Departement)
+│       ├── prospect.types.ts     # Types prospect (Prospect, ProspectStatut, TypeFiche)
+│       ├── campaign.types.ts     # Types campagne
+│       ├── produit.types.ts      # Types produit
+│       ├── appel.types.ts        # Types appel (StatutAppel, CreateAppelData)
+│       ├── vente.types.ts        # Types vente (CreateVenteData, DetailVente)
+│       ├── cart.types.ts         # Types panier (CartItem, Cart)
 │       ├── api.types.ts          # Types API (ApiResponse, ApiError)
 │       └── index.ts
 ├── views/                        # Composants visuels
@@ -73,6 +107,15 @@ script/src/
 │   │   ├── errorMessage/
 │   │   │   ├── ErrorMessage.tsx
 │   │   │   └── errorMessage.scss
+│   │   ├── typeFicheBadge/
+│   │   │   ├── TypeFicheBadge.tsx
+│   │   │   └── typeFicheBadge.scss
+│   │   ├── prospectInfoHeader/
+│   │   │   ├── ProspectInfoHeader.tsx
+│   │   │   └── prospectInfoHeader.scss
+│   │   ├── actionButtons/
+│   │   │   ├── ActionButtons.tsx
+│   │   │   └── actionButtons.scss
 │   │   ├── header/
 │   │   │   ├── Header.tsx
 │   │   │   └── header.scss
@@ -86,10 +129,10 @@ script/src/
 │       │   ├── LoginPage.tsx
 │       │   └── loginPage.scss
 │       └── landingPage/
-│           ├── LandingPage.tsx
+│           ├── LandingPage.tsx   # Page principale avec fiche prospect
 │           └── landingPage.scss
 ├── App.tsx                       # Composant principal avec routing
-└── main.tsx                      # Point d'entrée (avec UserProvider)
+└── main.tsx                      # Point d'entrée avec hiérarchie des Providers
 ```
 
 ### Principes SOLID
@@ -136,6 +179,186 @@ UserProvider
 Component
   ↓ isAuthenticated = true
   ↓ navigate('/')
+```
+
+## 🌐 Services API
+
+L'application utilise des services Singleton pour communiquer avec l'API backend. Chaque service encapsule la logique métier et les appels API pour une entité spécifique.
+
+### Architecture des services
+
+- **APICalls** : Couche bas niveau avec retry logic (3 tentatives max sur erreurs réseau)
+- **Services** : Couche métier (UserService, ProspectService, CampaignService, etc.)
+- **Models** : Classes avec méthodes utilitaires et validation
+
+### Services disponibles
+
+#### 1. UserService (Authentication)
+
+```typescript
+import { userService } from '../API/services';
+
+// Connexion
+const loginData = await userService.login({ email, password });
+// Retourne: { token, refreshToken, employe }
+
+// Déconnexion
+await userService.logout();
+
+// Récupérer l'utilisateur actuel
+const employe = await userService.getCurrentUser();
+```
+
+#### 2. ProspectService
+
+```typescript
+import { prospectService } from '../API/services';
+
+// Récupérer un prospect par ID
+const prospect = await prospectService.getProspectById(1);
+
+// Rechercher par téléphone
+const prospect = await prospectService.getProspectByPhone('0612345678');
+
+// Liste avec pagination et filtres
+const { prospects, total, page, totalPages } = await prospectService.getProspects({
+  page: 1,
+  limit: 20,
+  statut: 'interesse',
+  search: 'Dupont'
+});
+```
+
+#### 3. CampaignService
+
+```typescript
+import { campaignService } from '../API/services';
+
+// Récupérer une campagne
+const campaign = await campaignService.getCampaignById(1);
+
+// Liste des campagnes
+const { campaigns, total } = await campaignService.getCampaigns({
+  page: 1,
+  limit: 10,
+  actif: true
+});
+```
+
+#### 4. ProduitService
+
+```typescript
+import { produitService } from '../API/services';
+
+// Récupérer un produit
+const produit = await produitService.getProduitById(1);
+
+// Liste avec filtres
+const { produits, total } = await produitService.getProduits({
+  page: 1,
+  limit: 20,
+  categorie: 1,
+  actif: true,
+  search: 'assurance'
+});
+
+// Produits d'une campagne
+const produits = await produitService.getProduitsByCampaign(1);
+```
+
+#### 5. AppelService
+
+```typescript
+import { appelService } from '../API/services';
+
+// Créer un appel
+const appel = await appelService.createAppel({
+  id_prospect: 1,
+  id_campagne: 1,
+  statut: 'abouti',
+  notes: 'Client intéressé'
+});
+
+// Mettre à jour un appel
+const updated = await appelService.updateAppel(1, {
+  duree_secondes: 300,
+  notes: 'Complément d\'information'
+});
+
+// Terminer un appel (calcul durée automatique)
+const finished = await appelService.terminerAppel(1);
+
+// Historique d'un prospect
+const { appels, total } = await appelService.getAppelsByProspect(1, {
+  page: 1,
+  limit: 10
+});
+```
+
+#### 6. VenteService
+
+```typescript
+import { venteService } from '../API/services';
+
+// Créer une vente
+const vente = await venteService.createVente({
+  id_prospect: 1,
+  id_campagne: 1,
+  mode_paiement: 'CB',
+  details: [
+    {
+      id_produit: 1,
+      quantite: 2,
+      prix_unitaire: 49.99,
+      remise: 5.00
+    }
+  ]
+});
+
+// Historique des ventes d'un prospect
+const { ventes, total } = await venteService.getVentesByProspect(1);
+
+// Liste des ventes avec filtres
+const { ventes } = await venteService.getVentes({
+  page: 1,
+  limit: 20,
+  statut: 'validee',
+  campagne: 1
+});
+
+// Changer le statut
+const updated = await venteService.updateStatut(1, 'validee');
+```
+
+### Retry Logic
+
+Toutes les requêtes bénéficient d'une retry logic automatique :
+
+- **Max retries** : 3 tentatives
+- **Délai** : 1s, 2s, 3s (progressif)
+- **Condition** : Uniquement sur erreurs réseau (timeout, perte de connexion)
+- **Logging** : Console warnings pour traçabilité
+
+```typescript
+// Exemple automatique
+try {
+  const prospect = await prospectService.getProspectById(1);
+  // Si erreur réseau : 3 tentatives automatiques
+} catch (error) {
+  // Après 3 échecs, erreur remontée
+}
+```
+
+### Gestion des erreurs
+
+```typescript
+try {
+  await prospectService.getProspectById(999);
+} catch (error: ApiError) {
+  console.error(error.message); // Message d'erreur API
+  console.error(error.status);  // Code HTTP (404, 500, etc.)
+  console.error(error.errors);  // Détails validation (optionnel)
+}
 ```
 
 ## 📦 Installation
@@ -334,6 +557,164 @@ Utiliser le composant `ProtectedRoute` :
 - ✅ Déconnexion automatique sur 401
 - ✅ Gestion des erreurs réseau
 
+## 🗂️ State Management - Contexts
+
+L'application utilise la Context API pour gérer l'état global. 5 contexts principaux sont disponibles :
+
+### 1. UserContext (Authentication)
+
+Gestion de l'authentification et de l'utilisateur connecté.
+
+```typescript
+interface UserContextType {
+  user: Employe | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  error: string | null;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  clearError: () => void;
+}
+
+// Usage
+const { user, isAuthenticated, login, logout } = useUser();
+```
+
+### 2. ProspectContext
+
+Gestion du prospect en cours de consultation/appel.
+
+```typescript
+interface ProspectContextType {
+  currentProspect: Prospect | null;
+  isLoading: boolean;
+  error: string | null;
+  loadProspect: (id: number) => Promise<void>;
+  loadProspectByPhone: (phone: string) => Promise<void>;
+  clearProspect: () => void;
+  clearError: () => void;
+}
+
+// Usage
+const { currentProspect, loadProspect } = useProspect();
+
+// Charger un prospect
+await loadProspect(1);
+
+// Rechercher par téléphone
+await loadProspectByPhone('0612345678');
+```
+
+### 3. CampaignContext
+
+Gestion de la campagne active de l'agent.
+
+```typescript
+interface CampaignContextType {
+  currentCampaign: Campaign | null;
+  isLoading: boolean;
+  error: string | null;
+  loadCampaign: (id: number) => Promise<void>;
+  clearCampaign: () => void;
+  clearError: () => void;
+}
+
+// Usage
+const { currentCampaign, loadCampaign } = useCampaign();
+await loadCampaign(1);
+```
+
+### 4. CartContext
+
+Gestion du panier de commande (multi-produits).
+
+```typescript
+interface CartContextType {
+  items: CartItem[];
+  total: number;
+  itemCount: number;
+  addItem: (produit: Produit, quantite?: number, remise?: number) => void;
+  removeItem: (productId: number) => void;
+  updateQuantity: (productId: number, quantite: number) => void;
+  updateRemise: (productId: number, remise: number) => void;
+  clearCart: () => void;
+  getItem: (productId: number) => CartItem | undefined;
+}
+
+// Usage
+const { items, total, addItem, removeItem, clearCart } = useCart();
+
+// Ajouter un produit
+addItem(produit, 2, 5.00); // quantité: 2, remise: 5€
+
+// Modifier quantité
+updateQuantity(productId, 3);
+
+// Supprimer
+removeItem(productId);
+
+// Vider le panier
+clearCart();
+```
+
+### 5. AppContext
+
+Gestion de l'état global de l'application (modales, vues, notifications).
+
+```typescript
+type ModalType = 'qui-est-ce' | 'qui-sommes-nous' | 'objections' | 'plan-appel' | null;
+type ViewType = 'default' | 'historique-appels' | 'historique-offres' | 'commande';
+
+interface AppContextType {
+  currentModal: ModalType;
+  currentView: ViewType;
+  notifications: Notification[];
+  isAppLoading: boolean;
+  openModal: (modal: ModalType) => void;
+  closeModal: () => void;
+  setView: (view: ViewType) => void;
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  removeNotification: (id: string) => void;
+  clearNotifications: () => void;
+  setAppLoading: (loading: boolean) => void;
+}
+
+// Usage
+const { currentView, setView, openModal, addNotification } = useApp();
+
+// Changer de vue
+setView('historique-appels');
+
+// Ouvrir une modale
+openModal('qui-est-ce');
+
+// Ajouter une notification
+addNotification({
+  type: 'success',
+  message: 'Commande enregistrée',
+  duration: 3000
+});
+```
+
+### Hiérarchie des Providers
+
+Les providers sont imbriqués dans `main.tsx` dans cet ordre :
+
+```typescript
+<AppProvider>           // État global app
+  <UserProvider>        // Authentification
+    <CampaignProvider>  // Campagne active
+      <ProspectProvider>  // Prospect en cours
+        <CartProvider>      // Panier
+          <App />
+        </CartProvider>
+      </ProspectProvider>
+    </CampaignProvider>
+  </UserProvider>
+</AppProvider>
+```
+
 ## 🧩 Composants Réutilisables
 
 ### Button
@@ -387,6 +768,189 @@ Utiliser le composant `ProtectedRoute` :
 <ProtectedRoute>
   <PrivatePage />
 </ProtectedRoute>
+```
+
+### TypeFicheBadge
+
+Badge coloré pour afficher le type de fiche prospect.
+
+```typescript
+<TypeFicheBadge type="jamais_appele" />
+// Affiche un badge vert "Jamais appelé"
+
+<TypeFicheBadge type="deja_appele" />
+// Affiche un badge orange "Déjà appelé"
+
+<TypeFicheBadge type="recycle" />
+// Affiche un badge bleu "Recyclé"
+
+<TypeFicheBadge type="client" />
+// Affiche un badge violet "Client"
+```
+
+### ProspectInfoHeader
+
+Composant d'affichage des informations principales d'un prospect.
+
+```typescript
+<ProspectInfoHeader prospect={currentProspect} />
+// Affiche: Nom, Prénom, Téléphone, Email, Ville, Type de fiche
+```
+
+### ActionButtons
+
+Boutons d'action pour afficher historiques et autres vues.
+
+```typescript
+<ActionButtons
+  onHistoriqueAppels={() => setView('historique-appels')}
+  onHistoriqueOffres={() => setView('historique-offres')}
+/>
+```
+
+## 🎨 Design System
+
+L'application utilise un design system complet inspiré du design Apple.
+
+### Variables SCSS (_variables.scss)
+
+Toutes les variables de design sont centralisées dans `utils/styles/_variables.scss` :
+
+```scss
+// Couleurs principales
+$colorPrimary: #007aff;
+$colorSuccess: #34c759;
+$colorWarning: #ff9500;
+$colorDanger: #ff3b30;
+
+// Palette grayscale
+$colorBlack: #1d1d1f;
+$colorGray900: #424245;
+$colorGray300: #d2d2d7;
+$colorWhite: #ffffff;
+
+// Couleurs type de fiche
+$colorJamaisAppele: #34c759;      // Vert
+$colorDejaAppele: #ff9500;        // Orange
+$colorRecycle: #007aff;           // Bleu
+$colorClient: #5e5ce6;            // Violet
+
+// Spacing scale
+$spacing-xs: 0.25rem;    // 4px
+$spacing-sm: 0.5rem;     // 8px
+$spacing-md: 1rem;       // 16px
+$spacing-lg: 1.5rem;     // 24px
+$spacing-xl: 2rem;       // 32px
+$spacing-2xl: 3rem;      // 48px
+$spacing-3xl: 4rem;      // 64px
+
+// Border radius
+$radius-sm: 4px;
+$radius-md: 8px;
+$radius-lg: 12px;
+$radius-xl: 16px;
+$radius-full: 9999px;
+
+// Shadows
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+// Breakpoints
+$breakpoint-xs: 480px;
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Z-index layers
+$z-dropdown: 1000;
+$z-modal: 1050;
+$z-tooltip: 1070;
+```
+
+### Mixins SCSS (_mixins.scss)
+
+Mixins réutilisables pour styles communs :
+
+```scss
+// Flexbox utilities
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Responsive breakpoints
+@mixin responsive($breakpoint) {
+  @if $breakpoint == lg {
+    @media (min-width: vars.$breakpoint-lg) { @content; }
+  }
+  // Autres breakpoints...
+}
+
+// Button base styles
+@mixin button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: all vars.$transition-base;
+  border-radius: vars.$radius-md;
+}
+
+// Custom scrollbar
+@mixin custom-scrollbar($width: 8px) {
+  &::-webkit-scrollbar {
+    width: $width;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: vars.$colorGray300;
+    border-radius: vars.$radius-full;
+  }
+}
+
+// Focus ring (accessibilité)
+@mixin focus-ring($color: vars.$colorPrimary) {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba($color, 0.2);
+}
+```
+
+### Utilisation dans les composants
+
+```scss
+@use '../../utils/styles/variables' as vars;
+@use '../../utils/styles/mixins' as mix;
+
+.my-component {
+  padding: vars.$spacing-lg;
+  border-radius: vars.$radius-md;
+  box-shadow: vars.$shadow-md;
+
+  @include mix.flex-between;
+
+  .button {
+    @include mix.button-base;
+    background: vars.$colorPrimary;
+
+    &:focus {
+      @include mix.focus-ring;
+    }
+  }
+
+  @include mix.responsive(lg) {
+    padding: vars.$spacing-xl;
+  }
+}
 ```
 
 ## 📝 Conventions
@@ -477,5 +1041,16 @@ Vérifier que :
 
 ---
 
-**Version** : 1.0.0
-**Dernière mise à jour** : 2025-12-12
+**Version** : 1.0.0 (Sprint 3 complété - 29/29 points)
+**Dernière mise à jour** : 2025-12-15
+
+## 📈 Progression du projet
+
+- ✅ **Sprint 1** : Base de données + API Core (36/41 points - 87.8%)
+- ✅ **Sprint 2** : API Endpoints complets (36/36 points - 100%)
+- ✅ **Sprint 3** : Script Auth & Base (29/29 points - 100%)
+- 🔄 **Sprint 4** : Historiques & Commandes (0/26 points - À faire)
+- 📅 **Sprint 5** : RDV & Support vente (20 points)
+- 📅 **Sprint 6** : Notifications & Tests (18 points)
+
+**Total** : 101/170 points complétés (59.4%)

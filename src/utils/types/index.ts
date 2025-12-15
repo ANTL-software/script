@@ -1,2 +1,7 @@
 export * from './user.types';
 export * from './api.types';
+export * from './prospect.types';
+export * from './campaign.types';
+export * from './cart.types';
+export * from './appel.types';
+export * from './vente.types';

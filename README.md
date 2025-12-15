@@ -116,6 +116,18 @@ script/src/
 │   │   ├── actionButtons/
 │   │   │   ├── ActionButtons.tsx
 │   │   │   └── actionButtons.scss
+│   │   ├── historiqueAppels/
+│   │   │   ├── HistoriqueAppels.tsx   # Liste des appels avec pagination
+│   │   │   ├── AppelCard.tsx          # Card individuelle d'appel
+│   │   │   ├── historiqueAppels.scss
+│   │   │   ├── appelCard.scss
+│   │   │   └── index.ts
+│   │   ├── historiqueVentes/
+│   │   │   ├── HistoriqueVentes.tsx   # Liste des ventes
+│   │   │   ├── VenteCard.tsx          # Card expandable de vente
+│   │   │   ├── historiqueVentes.scss
+│   │   │   ├── venteCard.scss
+│   │   │   └── index.ts
 │   │   ├── header/
 │   │   │   ├── Header.tsx
 │   │   │   └── header.scss
@@ -803,10 +815,68 @@ Boutons d'action pour afficher historiques et autres vues.
 
 ```typescript
 <ActionButtons
+  onInformationProspect={() => setView('default')}
+  onQuiEstCe={() => openModal('qui-est-ce')}
+  onQuiSommesNous={() => openModal('qui-sommes-nous')}
   onHistoriqueAppels={() => setView('historique-appels')}
   onHistoriqueOffres={() => setView('historique-offres')}
 />
 ```
+
+### HistoriqueAppels
+
+Composant d'affichage de l'historique des appels d'un prospect avec pagination.
+
+```typescript
+<HistoriqueAppels />
+// Utilise automatiquement le currentProspect du ProspectContext
+// Affiche la liste des appels avec:
+// - Date/heure formatée (format français)
+// - Durée de l'appel (MM:SS)
+// - Statut avec badge coloré (success/warning/danger)
+// - Agent ayant effectué l'appel
+// - Notes éditables (click "Modifier" → édition inline → Save/Cancel)
+// - Pagination (20 appels par page)
+// - États: loading, error, empty
+```
+
+**Fonctionnalités** :
+- ✅ Édition inline des notes d'appel
+- ✅ Pagination automatique (prev/next)
+- ✅ 8 statuts d'appel supportés avec codes couleur
+- ✅ Formatage automatique durée (minutes + secondes)
+- ✅ Tri chronologique DESC (plus récents en premier)
+
+**Composants enfants** :
+- `AppelCard.tsx` : Card individuelle pour chaque appel
+
+### HistoriqueVentes
+
+Composant d'affichage de l'historique des ventes/offres d'un prospect.
+
+```typescript
+<HistoriqueVentes />
+// Utilise automatiquement le currentProspect du ProspectContext
+// Affiche la liste des ventes avec:
+// - Date formatée (format français)
+// - Statut avec badge coloré (validee/en_attente/annulee)
+// - Montant total formaté (EUR)
+// - Mode de paiement (CB, Prélèvement, Chèque, Virement)
+// - Bouton "Voir détails" → expand/collapse animé
+// - Tableau détaillé des produits (nom, qté, prix, remise, total)
+// - États: loading, error, empty
+```
+
+**Fonctionnalités** :
+- ✅ Expand/collapse animé pour voir détails produits
+- ✅ Tableau complet des produits commandés
+- ✅ Calcul automatique du total ligne (prix × qté - remise)
+- ✅ Formatage currency EUR (ex: "149,99 €")
+- ✅ Support DetailsVentes et details (alias Sequelize)
+- ✅ Tri chronologique DESC (plus récentes en premier)
+
+**Composants enfants** :
+- `VenteCard.tsx` : Card expandable pour chaque vente
 
 ## 🎨 Design System
 

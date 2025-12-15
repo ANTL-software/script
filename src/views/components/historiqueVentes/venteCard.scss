@@ -1,0 +1,225 @@
+@use '../../../utils/styles/variables' as vars;
+@use '../../../utils/styles/mixins' as mix;
+
+.vente-card {
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-lg;
+  overflow: hidden;
+  transition: all vars.$transition-base;
+
+  &:hover {
+    border-color: vars.$colorGray300;
+    box-shadow: vars.$shadow-sm;
+  }
+
+  &__header {
+    @include mix.flex-between;
+    padding: vars.$spacing-lg;
+    gap: vars.$spacing-md;
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+    flex: 1;
+  }
+
+  &__date-statut {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-md;
+  }
+
+  &__date {
+    font-size: vars.$fontSize-base;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorBlack;
+  }
+
+  &__statut {
+    padding: vars.$spacing-xs vars.$spacing-md;
+    border-radius: vars.$radius-full;
+    font-size: vars.$fontSize-xs;
+    font-weight: vars.$fontWeight-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &--success {
+      background: lighten(vars.$colorSuccess, 45%);
+      color: darken(vars.$colorSuccess, 10%);
+    }
+
+    &--warning {
+      background: lighten(vars.$colorWarning, 45%);
+      color: darken(vars.$colorWarning, 10%);
+    }
+
+    &--danger {
+      background: lighten(vars.$colorDanger, 45%);
+      color: darken(vars.$colorDanger, 10%);
+    }
+  }
+
+  &__montant {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+
+    .montant-label {
+      font-size: vars.$fontSize-sm;
+      color: vars.$colorGray500;
+    }
+
+    .montant-value {
+      font-size: vars.$fontSize-lg;
+      font-weight: vars.$fontWeight-semibold;
+      color: vars.$colorPrimary;
+    }
+  }
+
+  &__toggle {
+    @include mix.button-base;
+    padding: vars.$spacing-sm vars.$spacing-lg;
+    font-size: vars.$fontSize-sm;
+    background: vars.$colorWhite;
+    border: 1px solid vars.$colorGray300;
+    color: vars.$colorGray700;
+    white-space: nowrap;
+
+    &:hover {
+      background: vars.$colorGray100;
+      border-color: vars.$colorGray500;
+    }
+
+    &--expanded {
+      background: vars.$colorPrimaryLight;
+      border-color: vars.$colorPrimary;
+      color: vars.$colorPrimary;
+    }
+  }
+
+  &__details {
+    padding: 0 vars.$spacing-lg vars.$spacing-lg;
+    border-top: 1px solid vars.$colorGray200;
+    animation: slideDown 0.2s ease-in-out;
+  }
+
+  &__details-header {
+    @include mix.flex-between;
+    margin: vars.$spacing-lg 0 vars.$spacing-md;
+
+    h4 {
+      font-size: vars.$fontSize-lg;
+      font-weight: vars.$fontWeight-semibold;
+      color: vars.$colorBlack;
+      margin: 0;
+    }
+  }
+
+  &__paiement {
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray500;
+    background: vars.$colorGray100;
+    padding: vars.$spacing-xs vars.$spacing-md;
+    border-radius: vars.$radius-md;
+  }
+
+  &__products {
+    overflow-x: auto;
+  }
+
+  &__no-details {
+    text-align: center;
+    padding: vars.$spacing-lg;
+    color: vars.$colorGray500;
+    font-size: vars.$fontSize-sm;
+    font-style: italic;
+  }
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: vars.$fontSize-sm;
+
+  thead {
+    background: vars.$colorGray100;
+
+    th {
+      padding: vars.$spacing-sm vars.$spacing-md;
+      text-align: left;
+      font-weight: vars.$fontWeight-semibold;
+      color: vars.$colorGray700;
+      border-bottom: 2px solid vars.$colorGray300;
+
+      &:last-child {
+        text-align: right;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid vars.$colorGray200;
+
+      &:hover {
+        background: vars.$colorGray100;
+      }
+
+      td {
+        padding: vars.$spacing-md;
+        color: vars.$colorGray700;
+
+        &:last-child {
+          text-align: right;
+        }
+
+        &.product-name {
+          font-weight: vars.$fontWeight-medium;
+          color: vars.$colorBlack;
+        }
+
+        &.product-total {
+          font-weight: vars.$fontWeight-semibold;
+        }
+      }
+    }
+  }
+
+  tfoot {
+    background: vars.$colorGray100;
+
+    tr {
+      border-top: 2px solid vars.$colorGray300;
+
+      td {
+        padding: vars.$spacing-md;
+        font-weight: vars.$fontWeight-semibold;
+
+        &.total-label {
+          text-align: right;
+          color: vars.$colorGray700;
+        }
+
+        &.total-value {
+          text-align: right;
+          font-size: vars.$fontSize-lg;
+          color: vars.$colorPrimary;
+        }
+      }
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

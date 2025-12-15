@@ -36,19 +36,33 @@ export class VenteService {
   ): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
-      items: Vente[];
-      pagination: { total: number; page: number; limit: number; totalPages: number };
-    }>(`/prospects/${prospectId}/ventes${queryString}`);
+      items?: Vente[];
+      pagination?: { total: number; page: number; limit: number; totalPages: number };
+    } | Vente[]>(`/ventes/prospect/${prospectId}/ventes${queryString}`);
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors de la récupération des ventes');
     }
 
+    // Si la réponse est un array simple (pas de pagination)
+    if (Array.isArray(response.data)) {
+      return {
+        ventes: response.data,
+        total: response.data.length,
+        page: 1,
+        totalPages: 1,
+      };
+    }
+
+    // Si la réponse a une structure avec items et pagination
+    const items = response.data.items || [];
+    const pagination = response.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 };
+
     return {
-      ventes: response.data.items,
-      total: response.data.pagination.total,
-      page: response.data.pagination.page,
-      totalPages: response.data.pagination.totalPages,
+      ventes: items,
+      total: pagination.total,
+      page: pagination.page,
+      totalPages: pagination.totalPages,
     };
   }
 
@@ -60,19 +74,33 @@ export class VenteService {
   }): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
-      items: Vente[];
-      pagination: { total: number; page: number; limit: number; totalPages: number };
-    }>(`/ventes${queryString}`);
+      items?: Vente[];
+      pagination?: { total: number; page: number; limit: number; totalPages: number };
+    } | Vente[]>(`/ventes${queryString}`);
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors de la récupération des ventes');
     }
 
+    // Si la réponse est un array simple (pas de pagination)
+    if (Array.isArray(response.data)) {
+      return {
+        ventes: response.data,
+        total: response.data.length,
+        page: 1,
+        totalPages: 1,
+      };
+    }
+
+    // Si la réponse a une structure avec items et pagination
+    const items = response.data.items || [];
+    const pagination = response.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 };
+
     return {
-      ventes: response.data.items,
-      total: response.data.pagination.total,
-      page: response.data.pagination.page,
-      totalPages: response.data.pagination.totalPages,
+      ventes: items,
+      total: pagination.total,
+      page: pagination.page,
+      totalPages: pagination.totalPages,
     };
   }
 

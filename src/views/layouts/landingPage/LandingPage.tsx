@@ -5,6 +5,8 @@ import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfo
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
+import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
+import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
 
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
@@ -13,6 +15,11 @@ export default function LandingPage() {
   useEffect(() => {
     loadProspect(1);
   }, [loadProspect]);
+
+  const handleInformationProspect = () => {
+    setActiveView('default');
+    console.log('Information prospect clicked');
+  };
 
   const handleQuiEstCe = () => {
     console.log('Qui est-ce clicked');
@@ -68,6 +75,7 @@ export default function LandingPage() {
       <ProspectInfoHeader prospect={currentProspect} />
 
       <ActionButtons
+        onInformationProspect={handleInformationProspect}
         onQuiEstCe={handleQuiEstCe}
         onQuiSommesNous={handleQuiSommesNous}
         onHistoriqueAppels={handleHistoriqueAppels}
@@ -104,19 +112,9 @@ export default function LandingPage() {
           </div>
         )}
 
-        {activeView === 'appels' && (
-          <div className="landing-page__historique">
-            <h2>Historique des appels</h2>
-            <p>Fonctionnalité à venir...</p>
-          </div>
-        )}
+        {activeView === 'appels' && <HistoriqueAppels />}
 
-        {activeView === 'offres' && (
-          <div className="landing-page__historique">
-            <h2>Historique des offres</h2>
-            <p>Fonctionnalité à venir...</p>
-          </div>
-        )}
+        {activeView === 'offres' && <HistoriqueVentes />}
       </div>
     </main>
   );

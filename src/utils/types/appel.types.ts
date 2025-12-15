@@ -1,3 +1,5 @@
+import type { Employe } from './user.types';
+
 export type StatutAppel =
   | 'abouti'
   | 'non_abouti'
@@ -14,12 +16,13 @@ export interface Appel {
   id_agent: number;
   id_campagne: number;
   date_appel: string;
-  duree_secondes?: number;
+  duree_secondes?: number | null;
   statut: StatutAppel;
-  notes?: string;
+  notes?: string | null;
   abouti: boolean;
   created_at: string;
   updated_at: string;
+  Employe?: Employe; // Relation optionnelle avec l'agent
 }
 
 export interface CreateAppelData {

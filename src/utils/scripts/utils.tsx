@@ -53,3 +53,36 @@ export function useClock(interval: number = 1000): string {
 
   return time;
 }
+
+/**
+ * Construit une query string à partir d'un objet de paramètres
+ * Filtre les valeurs undefined/null et convertit les nombres en strings
+ * @param params - Objet contenant les paramètres de la requête
+ * @returns Query string formatée (avec le '?' au début) ou chaîne vide
+ *
+ * @example
+ * buildQueryString({ page: 1, limit: 20, search: 'test' })
+ * // Returns: "?page=1&limit=20&search=test"
+ *
+ * buildQueryString({ page: 1, search: undefined })
+ * // Returns: "?page=1"
+ *
+ * buildQueryString({})
+ * // Returns: ""
+ */
+export function buildQueryString(params?: Record<string, string | number | boolean | undefined>): string {
+  if (!params) return '';
+
+  const filteredParams: Record<string, string> = {};
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      filteredParams[key] = String(value);
+    }
+  });
+
+  const entries = Object.keys(filteredParams);
+  if (entries.length === 0) return '';
+
+  return '?' + new URLSearchParams(filteredParams).toString();
+}

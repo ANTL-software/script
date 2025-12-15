@@ -1,5 +1,6 @@
 import { apiCalls } from '../APICalls';
 import type { Appel, CreateAppelData, UpdateAppelData } from '../../utils/types';
+import { buildQueryString } from '../../utils/scripts/utils';
 
 export class AppelService {
   private static instance: AppelService;
@@ -33,7 +34,7 @@ export class AppelService {
     prospectId: number,
     params?: { page?: number; limit?: number }
   ): Promise<{ appels: Appel[]; total: number; page: number; totalPages: number }> {
-    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
       items: Appel[];
       pagination: { total: number; page: number; limit: number; totalPages: number };

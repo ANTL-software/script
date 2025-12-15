@@ -4,7 +4,7 @@ export interface Produit {
   description?: string;
   prix_base: number;
   id_categorie?: number;
-  attributs_specifiques?: Record<string, any>;
+  attributs_specifiques?: Record<string, unknown>;
   actif: boolean;
   created_at: string;
   updated_at: string;

@@ -1,6 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { ProduitModel } from '../models/Produit.model';
 import type { Produit } from '../../utils/types';
+import { buildQueryString } from '../../utils/scripts/utils';
 
 export class ProduitService {
   private static instance: ProduitService;
@@ -29,7 +30,7 @@ export class ProduitService {
     actif?: boolean;
     search?: string;
   }): Promise<{ produits: ProduitModel[]; total: number; page: number; totalPages: number }> {
-    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
       items: Produit[];
       pagination: { total: number; page: number; limit: number; totalPages: number };

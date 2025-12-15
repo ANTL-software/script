@@ -49,9 +49,3 @@ export interface AuthResponse {
   message: string;
   data?: Employe;
 }
-
-export interface ApiResponse<T = unknown> {
-  success: boolean;
-  message: string;
-  data?: T;
-}

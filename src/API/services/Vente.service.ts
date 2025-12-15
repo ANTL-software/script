@@ -1,5 +1,6 @@
 import { apiCalls } from '../APICalls';
 import type { Vente, CreateVenteData } from '../../utils/types';
+import { buildQueryString } from '../../utils/scripts/utils';
 
 export class VenteService {
   private static instance: VenteService;
@@ -33,7 +34,7 @@ export class VenteService {
     prospectId: number,
     params?: { page?: number; limit?: number }
   ): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
-    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
       items: Vente[];
       pagination: { total: number; page: number; limit: number; totalPages: number };
@@ -57,7 +58,7 @@ export class VenteService {
     statut?: string;
     campagne?: number;
   }): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
-    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
       items: Vente[];
       pagination: { total: number; page: number; limit: number; totalPages: number };

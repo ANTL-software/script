@@ -27,7 +27,7 @@ export class ProduitModel {
     return this.data.actif;
   }
 
-  get attributsSpecifiques(): Record<string, any> | undefined {
+  get attributsSpecifiques(): Record<string, unknown> | undefined {
     return this.data.attributs_specifiques;
   }
 

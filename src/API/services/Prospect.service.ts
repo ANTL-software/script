@@ -1,6 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { ProspectModel } from '../models/Prospect.model';
 import type { Prospect } from '../../utils/types';
+import { buildQueryString } from '../../utils/scripts/utils';
 
 export class ProspectService {
   private static instance: ProspectService;
@@ -37,7 +38,7 @@ export class ProspectService {
     type_prospect?: string;
     search?: string;
   }): Promise<{ prospects: ProspectModel[]; total: number; page: number; totalPages: number }> {
-    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
       items: Prospect[];
       pagination: { total: number; page: number; limit: number; totalPages: number };

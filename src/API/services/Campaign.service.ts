@@ -1,6 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { CampaignModel } from '../models/Campaign.model';
 import type { Campaign } from '../../utils/types';
+import { buildQueryString } from '../../utils/scripts/utils';
 
 export class CampaignService {
   private static instance: CampaignService;
@@ -27,7 +28,7 @@ export class CampaignService {
     limit?: number;
     actif?: boolean;
   }): Promise<{ campaigns: CampaignModel[]; total: number; page: number; totalPages: number }> {
-    const queryString = params ? '?' + new URLSearchParams(params as any).toString() : '';
+    const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
       items: Campaign[];
       pagination: { total: number; page: number; limit: number; totalPages: number };

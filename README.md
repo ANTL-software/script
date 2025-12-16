@@ -128,6 +128,18 @@ script/src/
 │   │   │   ├── historiqueVentes.scss
 │   │   │   ├── venteCard.scss
 │   │   │   └── index.ts
+│   │   ├── catalogueProduits/
+│   │   │   ├── CatalogueProduits.tsx  # Catalogue avec filtres
+│   │   │   ├── ProduitCard.tsx        # Card individuelle produit
+│   │   │   ├── catalogueProduits.scss
+│   │   │   ├── produitCard.scss
+│   │   │   └── index.ts
+│   │   ├── panier/
+│   │   │   ├── Panier.tsx             # Panier sidebar (commande)
+│   │   │   ├── PanierItem.tsx         # Item du panier avec contrôles
+│   │   │   ├── panier.scss
+│   │   │   ├── panierItem.scss
+│   │   │   └── index.ts
 │   │   ├── header/
 │   │   │   ├── Header.tsx
 │   │   │   └── header.scss
@@ -620,21 +632,36 @@ await loadProspectByPhone('0612345678');
 
 ### 3. CampaignContext
 
-Gestion de la campagne active de l'agent.
+Gestion de la campagne active de l'agent et de son catalogue produits.
 
 ```typescript
 interface CampaignContextType {
   currentCampaign: Campaign | null;
   isLoading: boolean;
   error: string | null;
+
+  // Produits de la campagne
+  produits: Produit[];
+  categories: CategorieProduit[];
+  produitsLoading: boolean;
+  produitsError: string | null;
+
   loadCampaign: (id: number) => Promise<void>;
+  loadProduits: () => Promise<void>;
   clearCampaign: () => void;
   clearError: () => void;
+  clearProduitsError: () => void;
 }
 
 // Usage
-const { currentCampaign, loadCampaign } = useCampaign();
+const { currentCampaign, produits, categories, loadCampaign, loadProduits } = useCampaign();
+
+// Charger une campagne
 await loadCampaign(1);
+
+// Charger les produits de la campagne active
+await loadProduits();
+// Retourne automatiquement les produits + catégories uniques
 ```
 
 ### 4. CartContext
@@ -820,6 +847,10 @@ Boutons d'action pour afficher historiques et autres vues.
   onQuiSommesNous={() => openModal('qui-sommes-nous')}
   onHistoriqueAppels={() => setView('historique-appels')}
   onHistoriqueOffres={() => setView('historique-offres')}
+  onCommande={() => {
+    setView('commande');
+    loadProduits(); // Charger les produits de la campagne
+  }}
 />
 ```
 
@@ -877,6 +908,90 @@ Composant d'affichage de l'historique des ventes/offres d'un prospect.
 
 **Composants enfants** :
 - `VenteCard.tsx` : Card expandable pour chaque vente
+
+### CatalogueProduits
+
+Composant d'affichage du catalogue de produits avec filtres avancés.
+
+```typescript
+<CatalogueProduits />
+// Utilise automatiquement le CampaignContext pour récupérer les produits
+// Affiche le catalogue avec:
+// - Compteur de produits disponibles
+// - Barre de recherche (nom, description)
+// - Filtres par catégorie (buttons dynamiques)
+// - Grille responsive de produits (280px min par card)
+// - Bouton "Ajouter au panier" sur chaque produit
+// - États: loading, error, empty
+```
+
+**Fonctionnalités** :
+- ✅ Recherche textuelle en temps réel (nom + description)
+- ✅ Filtrage par catégorie (extraction automatique des catégories uniques)
+- ✅ Filtres combinables (recherche + catégorie)
+- ✅ Calcul de filteredProduits avec useMemo (performance optimale)
+- ✅ Grille responsive (auto-fill minmax 280px)
+- ✅ Chargement lazy (produits chargés au clic "Commande")
+- ✅ Ajout direct au panier avec addItem()
+
+**Composants enfants** :
+- `ProduitCard.tsx` : Card individuelle pour chaque produit avec badge catégorie
+
+**Architecture** :
+```
+CampaignProvider → loadProduits() → ProduitService → API
+    ↓
+CatalogueProduits → useCampaign() → produits, categories
+    ↓
+useMemo → filteredProduits (searchTerm + selectedCategorie)
+    ↓
+ProduitCard → addItem() → CartContext
+```
+
+### Panier
+
+Composant sidebar de gestion du panier de commande.
+
+```typescript
+<Panier onValidateOrder={() => handleValidation()} />
+// Affiche le panier avec:
+// - Header avec badge compteur d'items
+// - Liste scrollable des produits ajoutés
+// - Contrôles quantité (+/-) sur chaque item
+// - Prix unitaire, remise, sous-total par ligne
+// - Total général calculé automatiquement
+// - Bouton "Vider le panier" (avec confirmation)
+// - Bouton "Valider la commande"
+// - État vide avec message + icône
+```
+
+**Fonctionnalités** :
+- ✅ Gestion quantités avec contrôles +/- (min: 1)
+- ✅ Calcul automatique sous-total (prix × qté - remise)
+- ✅ Calcul automatique total général
+- ✅ Badge compteur d'items dans le header
+- ✅ Confirmation avant vidage du panier
+- ✅ Formatage currency EUR (Intl.NumberFormat)
+- ✅ Scrollbar custom pour liste items
+- ✅ Footer sticky avec total et actions
+- ✅ Suppression item individuelle
+- ✅ État vide avec UI dédiée
+
+**Composants enfants** :
+- `PanierItem.tsx` : Item du panier avec contrôles quantité et bouton supprimer
+
+**Usage dans LandingPage** :
+```typescript
+// Layout grid: catalogue (1fr) + panier (400px fixe)
+<div className="landing-page__commande">
+  <div className="landing-page__catalogue">
+    <CatalogueProduits />
+  </div>
+  <div className="landing-page__panier">
+    <Panier onValidateOrder={handleValidateOrder} />
+  </div>
+</div>
+```
 
 ## 🎨 Design System
 
@@ -1111,16 +1226,22 @@ Vérifier que :
 
 ---
 
-**Version** : 1.0.0 (Sprint 3 complété - 29/29 points)
-**Dernière mise à jour** : 2025-12-15
+**Version** : 1.0.0 (Sprint 4 en cours - 10/26 points)
+**Dernière mise à jour** : 2025-12-16
 
 ## 📈 Progression du projet
 
 - ✅ **Sprint 1** : Base de données + API Core (36/41 points - 87.8%)
 - ✅ **Sprint 2** : API Endpoints complets (36/36 points - 100%)
 - ✅ **Sprint 3** : Script Auth & Base (29/29 points - 100%)
-- 🔄 **Sprint 4** : Historiques & Commandes (0/26 points - À faire)
+- 🔄 **Sprint 4** : Historiques & Commandes (10/26 points - 38.5%)
+  - ✅ US-FRONT-008 : Historique des appels (3 points)
+  - ✅ US-FRONT-009 : Historique des offres (3 points)
+  - ✅ US-FRONT-012 : Catalogue produits et panier (8 points)
+  - 📅 US-FRONT-010 : Enregistrement résultat d'appel (3 points)
+  - 📅 US-FRONT-011 : Finalisation de commande (5 points)
+  - 📅 US-FRONT-013 : Modale confirmation commande (4 points)
 - 📅 **Sprint 5** : RDV & Support vente (20 points)
 - 📅 **Sprint 6** : Notifications & Tests (18 points)
 
-**Total** : 101/170 points complétés (59.4%)
+**Total** : 111/170 points complétés (65.3%)

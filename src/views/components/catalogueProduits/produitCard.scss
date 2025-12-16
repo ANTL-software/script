@@ -1,0 +1,65 @@
+@use '../../../utils/styles/variables' as vars;
+@use '../../../utils/styles/mixins' as mix;
+
+.produit-card {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+  padding: vars.$spacing-lg;
+  background: vars.$colorWhite;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-sm;
+  transition: all vars.$transition-base;
+
+  &:hover {
+    box-shadow: vars.$shadow-md;
+    transform: translateY(-2px);
+  }
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+  }
+
+  &__title {
+    font-size: vars.$fontSize-lg;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorBlack;
+    margin: 0;
+  }
+
+  &__category {
+    display: inline-block;
+    padding: vars.$spacing-xs vars.$spacing-sm;
+    background: vars.$colorGray100;
+    border-radius: vars.$radius-sm;
+    font-size: vars.$fontSize-xs;
+    font-weight: vars.$fontWeight-medium;
+    color: vars.$colorGray700;
+    width: fit-content;
+  }
+
+  &__description {
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray700;
+    line-height: vars.$lineHeight-relaxed;
+    margin: 0;
+    flex: 1;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: vars.$spacing-md;
+    padding-top: vars.$spacing-md;
+    border-top: 1px solid vars.$colorGray200;
+  }
+
+  &__price {
+    font-size: vars.$fontSize-xl;
+    font-weight: vars.$fontWeight-bold;
+    color: vars.$colorPrimary;
+  }
+}

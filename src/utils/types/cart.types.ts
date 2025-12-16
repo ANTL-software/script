@@ -8,6 +8,7 @@ export interface Produit {
   actif: boolean;
   created_at: string;
   updated_at: string;
+  Categorie?: CategorieProduit; // Relation optionnelle avec la catégorie
 }
 
 export interface CategorieProduit {

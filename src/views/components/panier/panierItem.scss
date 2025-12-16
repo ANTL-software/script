@@ -1,0 +1,128 @@
+@use '../../../utils/styles/variables' as vars;
+@use '../../../utils/styles/mixins' as mix;
+
+.panier-item {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  padding: vars.$spacing-md;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-md;
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: vars.$spacing-sm;
+  }
+
+  &__name {
+    font-size: vars.$fontSize-sm;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorBlack;
+    margin: 0;
+    flex: 1;
+    line-height: vars.$lineHeight-tight;
+  }
+
+  &__remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: vars.$radius-sm;
+    color: vars.$colorGray500;
+    cursor: pointer;
+    transition: all vars.$transition-fast;
+
+    &:hover {
+      background: vars.$colorDanger;
+      color: vars.$colorWhite;
+    }
+
+    svg {
+      font-size: 12px;
+    }
+  }
+
+  &__details {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    font-size: vars.$fontSize-xs;
+  }
+
+  &__price {
+    color: vars.$colorGray700;
+  }
+
+  &__remise {
+    color: vars.$colorDanger;
+    font-weight: vars.$fontWeight-medium;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: vars.$spacing-md;
+  }
+
+  &__quantity {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    padding: vars.$spacing-xs;
+    background: vars.$colorGray100;
+    border-radius: vars.$radius-md;
+
+    .quantity-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      background: vars.$colorWhite;
+      border: 1px solid vars.$colorGray300;
+      border-radius: vars.$radius-sm;
+      color: vars.$colorGray700;
+      cursor: pointer;
+      transition: all vars.$transition-fast;
+
+      &:hover:not(:disabled) {
+        background: vars.$colorPrimary;
+        border-color: vars.$colorPrimary;
+        color: vars.$colorWhite;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      svg {
+        font-size: 10px;
+      }
+    }
+
+    .quantity-value {
+      min-width: 30px;
+      text-align: center;
+      font-size: vars.$fontSize-sm;
+      font-weight: vars.$fontWeight-semibold;
+      color: vars.$colorBlack;
+    }
+  }
+
+  &__subtotal {
+    font-size: vars.$fontSize-base;
+    font-weight: vars.$fontWeight-bold;
+    color: vars.$colorPrimary;
+  }
+}

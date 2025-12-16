@@ -1,0 +1,105 @@
+@use '../../../utils/styles/variables' as vars;
+@use '../../../utils/styles/mixins' as mix;
+
+.panier {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: vars.$colorWhite;
+  border-left: 1px solid vars.$colorGray200;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: vars.$spacing-lg;
+    border-bottom: 1px solid vars.$colorGray200;
+
+    h3 {
+      display: flex;
+      align-items: center;
+      gap: vars.$spacing-sm;
+      font-size: vars.$fontSize-lg;
+      font-weight: vars.$fontWeight-semibold;
+      color: vars.$colorBlack;
+      margin: 0;
+    }
+  }
+
+  &__badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 vars.$spacing-xs;
+    background: vars.$colorPrimary;
+    border-radius: vars.$radius-full;
+    font-size: vars.$fontSize-xs;
+    font-weight: vars.$fontWeight-bold;
+    color: vars.$colorWhite;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$spacing-md;
+    padding: vars.$spacing-3xl vars.$spacing-lg;
+    flex: 1;
+    text-align: center;
+
+    svg {
+      font-size: 48px;
+      color: vars.$colorGray300;
+    }
+
+    p {
+      font-size: vars.$fontSize-base;
+      color: vars.$colorGray700;
+      margin: 0;
+    }
+  }
+
+  &__items {
+    flex: 1;
+    overflow-y: auto;
+    padding: vars.$spacing-md;
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-md;
+  }
+
+  &__footer {
+    padding: vars.$spacing-lg;
+    border-top: 1px solid vars.$colorGray200;
+    background: vars.$colorGray100;
+  }
+
+  &__total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: vars.$spacing-md 0;
+    margin-bottom: vars.$spacing-md;
+  }
+
+  &__total-label {
+    font-size: vars.$fontSize-lg;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorBlack;
+  }
+
+  &__total-amount {
+    font-size: vars.$fontSize-2xl;
+    font-weight: vars.$fontWeight-bold;
+    color: vars.$colorPrimary;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+  }
+}

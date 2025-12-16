@@ -1,0 +1,94 @@
+@use '../../../utils/styles/variables' as vars;
+@use '../../../utils/styles/mixins' as mix;
+
+.catalogue-produits {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-lg;
+  height: 100%;
+  overflow-y: auto;
+  padding: vars.$spacing-lg;
+
+  &__header {
+    h2 {
+      font-size: vars.$fontSize-2xl;
+      font-weight: vars.$fontWeight-bold;
+      color: vars.$colorBlack;
+      margin: 0 0 vars.$spacing-xs 0;
+    }
+  }
+
+  &__subtitle {
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray700;
+    margin: 0;
+  }
+
+  &__filters {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-md;
+    padding: vars.$spacing-md;
+    background: vars.$colorWhite;
+    border-radius: vars.$radius-lg;
+    box-shadow: vars.$shadow-sm;
+  }
+
+  &__search {
+    width: 100%;
+  }
+
+  &__categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: vars.$spacing-sm;
+
+    .category-btn {
+      padding: vars.$spacing-sm vars.$spacing-md;
+      background: vars.$colorWhite;
+      border: 1px solid vars.$colorGray300;
+      border-radius: vars.$radius-md;
+      font-size: vars.$fontSize-sm;
+      font-weight: vars.$fontWeight-medium;
+      color: vars.$colorGray700;
+      cursor: pointer;
+      transition: all vars.$transition-base;
+
+      &:hover {
+        background: vars.$colorGray100;
+        border-color: vars.$colorPrimary;
+        color: vars.$colorPrimary;
+      }
+
+      &.active {
+        background: vars.$colorPrimary;
+        border-color: vars.$colorPrimary;
+        color: vars.$colorWhite;
+      }
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: vars.$spacing-lg;
+  }
+
+  &__loader,
+  &__error,
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: vars.$spacing-md;
+    padding: vars.$spacing-3xl;
+    text-align: center;
+
+    p {
+      font-size: vars.$fontSize-base;
+      color: vars.$colorGray700;
+      margin: 0;
+    }
+  }
+}

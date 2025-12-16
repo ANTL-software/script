@@ -1,15 +1,18 @@
 import './landingPage.scss';
 import { useEffect, useState } from 'react';
-import { useProspect } from '../../../hooks';
+import { useProspect, useCampaign } from '../../../hooks';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
+import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
+import Panier from '../../components/panier/Panier';
 
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
+  const { loadProduits } = useCampaign();
   const [activeView, setActiveView] = useState<string>('default');
 
   useEffect(() => {
@@ -37,6 +40,12 @@ export default function LandingPage() {
   const handleHistoriqueOffres = () => {
     setActiveView('offres');
     console.log('Historique offres clicked');
+  };
+
+  const handleCommande = () => {
+    setActiveView('commande');
+    loadProduits();
+    console.log('Commande clicked');
   };
 
   if (isLoading) {
@@ -80,6 +89,7 @@ export default function LandingPage() {
         onQuiSommesNous={handleQuiSommesNous}
         onHistoriqueAppels={handleHistoriqueAppels}
         onHistoriqueOffres={handleHistoriqueOffres}
+        onCommande={handleCommande}
       />
 
       <div className="landing-page__content">
@@ -115,6 +125,17 @@ export default function LandingPage() {
         {activeView === 'appels' && <HistoriqueAppels />}
 
         {activeView === 'offres' && <HistoriqueVentes />}
+
+        {activeView === 'commande' && (
+          <div className="landing-page__commande">
+            <div className="landing-page__catalogue">
+              <CatalogueProduits />
+            </div>
+            <div className="landing-page__panier">
+              <Panier />
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

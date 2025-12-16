@@ -79,4 +79,21 @@
       font-style: italic;
     }
   }
+
+  &__commande {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 0;
+    height: calc(100vh - 300px);
+    overflow: hidden;
+  }
+
+  &__catalogue {
+    overflow-y: auto;
+    padding-right: vars.$spacing-md;
+  }
+
+  &__panier {
+    overflow-y: auto;
+  }
 }

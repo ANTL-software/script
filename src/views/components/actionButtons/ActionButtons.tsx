@@ -1,6 +1,6 @@
 import './actionButtons.scss';
 import Button from '../button/Button';
-import { FaUser, FaBuilding, FaPhone, FaShoppingCart, FaInfoCircle } from 'react-icons/fa';
+import { FaUser, FaBuilding, FaPhone, FaShoppingCart, FaInfoCircle, FaCreditCard } from 'react-icons/fa';
 
 interface ActionButtonsProps {
   onInformationProspect?: () => void;
@@ -8,6 +8,7 @@ interface ActionButtonsProps {
   onQuiSommesNous?: () => void;
   onHistoriqueAppels?: () => void;
   onHistoriqueOffres?: () => void;
+  onCommande?: () => void;
 }
 
 export default function ActionButtons({
@@ -16,6 +17,7 @@ export default function ActionButtons({
   onQuiSommesNous,
   onHistoriqueAppels,
   onHistoriqueOffres,
+  onCommande,
 }: ActionButtonsProps) {
   return (
     <div className="action-buttons">
@@ -37,6 +39,9 @@ export default function ActionButtons({
         </Button>
         <Button variant="primary" size="small" onClick={onHistoriqueOffres}>
           <FaShoppingCart /> Historique offres
+        </Button>
+        <Button variant="primary" size="small" onClick={onCommande}>
+          <FaCreditCard /> Commande
         </Button>
       </div>
     </div>

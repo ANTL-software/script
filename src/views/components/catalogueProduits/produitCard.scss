@@ -57,9 +57,26 @@
     border-top: 1px solid vars.$colorGray200;
   }
 
+  &__price-container {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+  }
+
   &__price {
     font-size: vars.$fontSize-xl;
     font-weight: vars.$fontWeight-bold;
     color: vars.$colorPrimary;
+
+    &--original {
+      font-size: vars.$fontSize-sm;
+      font-weight: vars.$fontWeight-normal;
+      color: vars.$colorGray500;
+      text-decoration: line-through;
+    }
+
+    &--promo {
+      color: vars.$colorSuccess;
+    }
   }
 }

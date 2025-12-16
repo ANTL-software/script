@@ -48,12 +48,24 @@ export class ProduitService {
     };
   }
 
-  public async getProduitsByCampaign(campaignId: number): Promise<ProduitModel[]> {
-    const response = await apiCalls.get<Produit[]>(`/campagnes/${campaignId}/produits`);
+  public async getProduitsByCampaign(campaignId: number, params?: {
+    page?: number;
+    limit?: number;
+  }): Promise<{ produits: ProduitModel[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
+    const queryString = buildQueryString(params);
+    const response = await apiCalls.get<{
+      produits: Produit[];
+      pagination: { page: number; limit: number; total: number; totalPages: number };
+    }>(`/campagnes/${campaignId}/produits${queryString}`);
+
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors de la récupération des produits');
     }
-    return response.data.map(ProduitModel.fromJSON);
+
+    return {
+      produits: response.data.produits.map(ProduitModel.fromJSON),
+      pagination: response.data.pagination
+    };
   }
 }
 

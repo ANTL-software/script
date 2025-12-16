@@ -54,10 +54,17 @@ class ApiClient {
           _retry?: boolean;
         };
 
+        // Ne pas essayer de rafraîchir le token pour les endpoints d'authentification
+        const authEndpoints = ['/auth/login', '/auth/refresh', '/auth/logout'];
+        const isAuthEndpoint = authEndpoints.some(endpoint =>
+          originalRequest?.url?.includes(endpoint)
+        );
+
         if (
           error.response?.status === 401 &&
           !originalRequest._retry &&
-          originalRequest
+          originalRequest &&
+          !isAuthEndpoint
         ) {
           originalRequest._retry = true;
 

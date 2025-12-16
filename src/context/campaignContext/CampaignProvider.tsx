@@ -44,8 +44,8 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
 
     try {
       console.log(`[CAMPAIGN] Chargement produits campagne ID: ${currentCampaign.id_campagne}`);
-      const produitModels = await produitService.getProduitsByCampaign(currentCampaign.id_campagne);
-      const produitsData = produitModels.map((model) => model.toJSON());
+      const result = await produitService.getProduitsByCampaign(currentCampaign.id_campagne);
+      const produitsData = result.produits.map((model) => model.toJSON());
       setProduits(produitsData);
 
       // Extraire les catégories uniques

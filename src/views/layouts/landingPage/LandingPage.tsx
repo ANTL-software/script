@@ -12,12 +12,13 @@ import Panier from '../../components/panier/Panier';
 
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
-  const { loadProduits } = useCampaign();
+  const { loadCampaign, loadProduits } = useCampaign();
   const [activeView, setActiveView] = useState<string>('default');
 
   useEffect(() => {
     loadProspect(1);
-  }, [loadProspect]);
+    loadCampaign(1); // Charger la campagne 1 par défaut (Assurance Auto Q4 2024)
+  }, [loadProspect, loadCampaign]);
 
   const handleInformationProspect = () => {
     setActiveView('default');

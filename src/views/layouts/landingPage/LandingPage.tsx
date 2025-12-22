@@ -9,11 +9,14 @@ import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
+import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
   const { loadCampaign, loadProduits } = useCampaign();
   const [activeView, setActiveView] = useState<string>('default');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   useEffect(() => {
     loadProspect(1);
@@ -47,6 +50,23 @@ export default function LandingPage() {
     setActiveView('commande');
     loadProduits();
     console.log('Commande clicked');
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleOrderSuccess = () => {
+    setShowSuccessMessage(true);
+    setActiveView('default');
+
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 5000);
   };
 
   if (isLoading) {
@@ -93,6 +113,12 @@ export default function LandingPage() {
         onCommande={handleCommande}
       />
 
+      {showSuccessMessage && (
+        <div className="landing-page__success-message">
+          <p>Commande enregistrée avec succès ! Un devis a été envoyé par email au prospect.</p>
+        </div>
+      )}
+
       <div className="landing-page__content">
         {activeView === 'default' && (
           <div className="landing-page__default">
@@ -133,11 +159,17 @@ export default function LandingPage() {
               <CatalogueProduits />
             </div>
             <div className="landing-page__panier">
-              <Panier />
+              <Panier onValidateOrder={handleOpenModal} />
             </div>
           </div>
         )}
       </div>
+
+      <ConfirmOrderModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSuccess={handleOrderSuccess}
+      />
     </main>
   );
 }

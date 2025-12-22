@@ -36,7 +36,9 @@ export const CartProvider = ({ children }: CartProviderProps) => {
       const newItem: CartItem = {
         produit,
         quantite,
-        prix_unitaire: produit.prix_base,
+        prix_unitaire: typeof produit.prix_unitaire === 'string'
+          ? parseFloat(produit.prix_unitaire)
+          : (produit.prix_unitaire || 0),
         remise,
       };
       console.log(`[CART] Ajout produit: ${produit.nom_produit} x${quantite}`);

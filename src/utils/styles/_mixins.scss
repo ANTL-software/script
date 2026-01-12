@@ -1,4 +1,5 @@
 @use './variables' as vars;
+@use 'sass:color';
 
 // Responsive breakpoints
 @mixin responsive($breakpoint) {
@@ -114,7 +115,7 @@
     border-radius: vars.$radius-full;
 
     &:hover {
-      background: darken($thumb-color, 10%);
+      background: color.adjust($thumb-color, $lightness: -10%);
     }
   }
 }

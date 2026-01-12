@@ -1,5 +1,6 @@
 @use '../../../utils/styles/variables' as vars;
 @use '../../../utils/styles/mixins' as mix;
+@use 'sass:color';
 
 .appel-card {
   background: vars.$colorWhite;
@@ -46,18 +47,18 @@
     letter-spacing: 0.5px;
 
     &--success {
-      background: lighten(vars.$colorSuccess, 45%);
-      color: darken(vars.$colorSuccess, 10%);
+      background: color.scale(vars.$colorSuccess, $lightness: 45%);
+      color: color.scale(vars.$colorSuccess, $lightness: -10%);
     }
 
     &--warning {
-      background: lighten(vars.$colorWarning, 45%);
-      color: darken(vars.$colorWarning, 10%);
+      background: color.scale(vars.$colorWarning, $lightness: 45%);
+      color: color.scale(vars.$colorWarning, $lightness: -10%);
     }
 
     &--danger {
-      background: lighten(vars.$colorDanger, 45%);
-      color: darken(vars.$colorDanger, 10%);
+      background: color.scale(vars.$colorDanger, $lightness: 45%);
+      color: color.scale(vars.$colorDanger, $lightness: -10%);
     }
   }
 

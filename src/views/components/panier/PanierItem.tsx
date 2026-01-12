@@ -1,5 +1,4 @@
 import './panierItem.scss';
-import { useState } from 'react';
 import type { CartItem } from '../../../utils/types';
 import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
 
@@ -10,8 +9,6 @@ interface PanierItemProps {
 }
 
 export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierItemProps) {
-  const [quantite, setQuantite] = useState<number>(item.quantite);
-
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
@@ -20,20 +17,16 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
   };
 
   const calculateSubtotal = (): number => {
-    return item.prix_unitaire * quantite - item.remise;
+    return item.prix_unitaire * item.quantite - item.remise;
   };
 
   const handleIncrement = () => {
-    const newQuantite = quantite + 1;
-    setQuantite(newQuantite);
-    onUpdateQuantity(item.produit.id_produit, newQuantite);
+    onUpdateQuantity(item.produit.id_produit, item.quantite + 1);
   };
 
   const handleDecrement = () => {
-    if (quantite > 1) {
-      const newQuantite = quantite - 1;
-      setQuantite(newQuantite);
-      onUpdateQuantity(item.produit.id_produit, newQuantite);
+    if (item.quantite > 1) {
+      onUpdateQuantity(item.produit.id_produit, item.quantite - 1);
     }
   };
 
@@ -62,12 +55,12 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
           <button
             className="quantity-btn"
             onClick={handleDecrement}
-            disabled={quantite <= 1}
+            disabled={item.quantite <= 1}
             aria-label="Diminuer"
           >
             <FaMinus />
           </button>
-          <span className="quantity-value">{quantite}</span>
+          <span className="quantity-value">{item.quantite}</span>
           <button
             className="quantity-btn"
             onClick={handleIncrement}

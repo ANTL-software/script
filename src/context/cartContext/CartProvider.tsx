@@ -28,17 +28,28 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
       if (existingItemIndex > -1) {
         const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantite += quantite;
+        updatedItems[existingItemIndex] = {
+          ...updatedItems[existingItemIndex],
+          quantite: updatedItems[existingItemIndex].quantite + quantite
+        };
         console.log(`[CART] Quantité mise à jour pour ${produit.nom_produit}: ${updatedItems[existingItemIndex].quantite}`);
         return updatedItems;
       }
 
+      const prixPromo = produit.prix_promo
+        ? (typeof produit.prix_promo === 'number' ? produit.prix_promo : parseFloat(String(produit.prix_promo)))
+        : null;
+
+      const prixUnitaire = typeof produit.prix_unitaire === 'string'
+        ? parseFloat(produit.prix_unitaire)
+        : (produit.prix_unitaire || 0);
+
+      const prixFinal = (prixPromo !== null && prixPromo > 0) ? prixPromo : prixUnitaire;
+
       const newItem: CartItem = {
         produit,
         quantite,
-        prix_unitaire: typeof produit.prix_unitaire === 'string'
-          ? parseFloat(produit.prix_unitaire)
-          : (produit.prix_unitaire || 0),
+        prix_unitaire: prixFinal,
         remise,
       };
       console.log(`[CART] Ajout produit: ${produit.nom_produit} x${quantite}`);

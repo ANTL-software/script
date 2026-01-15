@@ -1,6 +1,6 @@
 import { apiCalls } from '../APICalls';
 import { ProduitModel } from '../models/Produit.model';
-import type { Produit } from '../../utils/types';
+import type { Produit, CategorieProduit, ProduitsGroupedResponse } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class ProduitService {
@@ -29,6 +29,7 @@ export class ProduitService {
     categorie?: number;
     actif?: boolean;
     search?: string;
+    grouped?: boolean;
   }): Promise<{ produits: ProduitModel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
@@ -45,6 +46,28 @@ export class ProduitService {
       total: response.data.pagination.total,
       page: response.data.pagination.page,
       totalPages: response.data.pagination.totalPages,
+    };
+  }
+
+  public async getProduitsGrouped(params?: {
+    actif?: boolean;
+  }): Promise<{ categories: CategorieProduit[]; totalProducts: number }> {
+    const queryParams = new URLSearchParams();
+    queryParams.append('grouped', 'true');
+    if (params?.actif !== undefined) {
+      queryParams.append('actif', String(params.actif));
+    }
+
+    const queryString = `?${queryParams.toString()}`;
+    const response = await apiCalls.get<ProduitsGroupedResponse>(`/produits${queryString}`);
+
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Erreur lors de la récupération des produits groupés');
+    }
+
+    return {
+      categories: response.data.categories,
+      totalProducts: response.count.totalProducts,
     };
   }
 

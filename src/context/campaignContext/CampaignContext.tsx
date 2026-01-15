@@ -8,11 +8,13 @@ export interface CampaignContextType {
 
   produits: Produit[];
   categories: CategorieProduit[];
+  categoriesTree: CategorieProduit[];
   produitsLoading: boolean;
   produitsError: string | null;
 
   loadCampaign: (id: number) => Promise<void>;
   loadProduits: () => Promise<void>;
+  loadProduitsGrouped: () => Promise<void>;
   clearCampaign: () => void;
   clearError: () => void;
   clearProduitsError: () => void;

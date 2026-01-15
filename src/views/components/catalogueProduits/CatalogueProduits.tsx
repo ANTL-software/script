@@ -1,42 +1,59 @@
 import './catalogueProduits.scss';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useCampaign, useCart } from '../../../hooks';
 import type { Produit } from '../../../utils/types';
 import ProduitCard from './ProduitCard';
+import CategoryTree from './CategoryTree';
 import Loader from '../loader/Loader';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Input from '../input/Input';
+import Button from '../button/Button';
+import { FaList, FaSitemap, FaSearch } from 'react-icons/fa';
+
+type ViewMode = 'tree' | 'search';
 
 export default function CatalogueProduits() {
-  const { produits, categories, produitsLoading, produitsError, clearProduitsError } = useCampaign();
+  const { produits, categoriesTree, produitsLoading, produitsError, clearProduitsError, loadProduitsGrouped } = useCampaign();
   const { addItem } = useCart();
 
+  const [viewMode, setViewMode] = useState<ViewMode>('tree');
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedCategorie, setSelectedCategorie] = useState<number | null>(null);
+
+  useEffect(() => {
+    loadProduitsGrouped();
+  }, [loadProduitsGrouped]);
 
   const filteredProduits = useMemo(() => {
-    let filtered = produits;
-
-    // Filtre par catégorie
-    if (selectedCategorie) {
-      filtered = filtered.filter((p) => p.id_categorie === selectedCategorie);
+    if (viewMode !== 'search' || !searchTerm) {
+      return produits;
     }
 
-    // Filtre par recherche
-    if (searchTerm) {
-      const search = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.nom_produit.toLowerCase().includes(search) ||
-          p.description?.toLowerCase().includes(search)
-      );
-    }
-
-    return filtered;
-  }, [searchTerm, selectedCategorie, produits]);
+    const search = searchTerm.toLowerCase();
+    return produits.filter(
+      (p) =>
+        p.nom_produit.toLowerCase().includes(search) ||
+        p.description?.toLowerCase().includes(search) ||
+        p.code_produit?.toLowerCase().includes(search)
+    );
+  }, [searchTerm, produits, viewMode]);
 
   const handleAddToCart = (produit: Produit) => {
     addItem(produit, 1, 0);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    if (value.length > 0) {
+      setViewMode('search');
+    }
+  };
+
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (mode === 'tree') {
+      setSearchTerm('');
+    }
   };
 
   if (produitsLoading) {
@@ -63,55 +80,82 @@ export default function CatalogueProduits() {
   return (
     <div className="catalogue-produits">
       <div className="catalogue-produits__header">
-        <h2>Catalogue de produits</h2>
-        <p className="catalogue-produits__subtitle">
-          {filteredProduits.length} produit{filteredProduits.length > 1 ? 's' : ''} disponible{filteredProduits.length > 1 ? 's' : ''}
-        </p>
+        <div className="catalogue-produits__title-group">
+          <h2>Catalogue de produits</h2>
+          <p className="catalogue-produits__subtitle">
+            {viewMode === 'search'
+              ? `${filteredProduits.length} produit${filteredProduits.length > 1 ? 's' : ''} trouvé${filteredProduits.length > 1 ? 's' : ''}`
+              : `${produits.length} produit${produits.length > 1 ? 's' : ''} disponible${produits.length > 1 ? 's' : ''}`
+            }
+          </p>
+        </div>
+
+        <div className="catalogue-produits__view-toggle">
+          <Button
+            variant={viewMode === 'tree' ? 'primary' : 'outline'}
+            size="small"
+            onClick={() => handleViewModeChange('tree')}
+          >
+            <FaSitemap /> Navigation
+          </Button>
+          <Button
+            variant={viewMode === 'search' ? 'primary' : 'outline'}
+            size="small"
+            onClick={() => handleViewModeChange('search')}
+          >
+            <FaList /> Recherche
+          </Button>
+        </div>
       </div>
 
       <div className="catalogue-produits__filters">
         <div className="catalogue-produits__search">
-          <Input
-            type="text"
-            placeholder="Rechercher un produit..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        <div className="catalogue-produits__categories">
-          <button
-            className={`category-btn ${selectedCategorie === null ? 'active' : ''}`}
-            onClick={() => setSelectedCategorie(null)}
-          >
-            Tous
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id_categorie}
-              className={`category-btn ${selectedCategorie === cat.id_categorie ? 'active' : ''}`}
-              onClick={() => setSelectedCategorie(cat.id_categorie)}
-            >
-              {cat.nom_categorie}
-            </button>
-          ))}
+          <div className="search-input-wrapper">
+            <FaSearch className="search-icon" />
+            <Input
+              type="text"
+              placeholder="Rechercher un produit (nom, description, code)..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </div>
         </div>
       </div>
 
-      {filteredProduits.length === 0 ? (
-        <div className="catalogue-produits__empty">
-          <p>Aucun produit trouvé</p>
+      {viewMode === 'tree' && !searchTerm ? (
+        <div className="catalogue-produits__tree-view">
+          <CategoryTree categories={categoriesTree} onAddToCart={handleAddToCart} />
         </div>
       ) : (
-        <div className="catalogue-produits__grid">
-          {filteredProduits.map((produit) => (
-            <ProduitCard
-              key={produit.id_produit}
-              produit={produit}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </div>
+        <>
+          {filteredProduits.length === 0 ? (
+            <div className="catalogue-produits__empty">
+              <p>Aucun produit trouvé</p>
+              {searchTerm && (
+                <Button
+                  variant="outline"
+                  size="small"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setViewMode('tree');
+                  }}
+                >
+                  Réinitialiser la recherche
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="catalogue-produits__grid">
+              {filteredProduits.map((produit) => (
+                <ProduitCard
+                  key={produit.id_produit}
+                  produit={produit}
+                  onAddToCart={handleAddToCart}
+                />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

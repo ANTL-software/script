@@ -10,6 +10,17 @@
   padding: vars.$spacing-lg;
 
   &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: vars.$spacing-md;
+    flex-wrap: wrap;
+  }
+
+  &__title-group {
+    flex: 1;
+    min-width: 200px;
+
     h2 {
       font-size: vars.$fontSize-2xl;
       font-weight: vars.$fontWeight-bold;
@@ -24,6 +35,11 @@
     margin: 0;
   }
 
+  &__view-toggle {
+    display: flex;
+    gap: vars.$spacing-sm;
+  }
+
   &__filters {
     display: flex;
     flex-direction: column;
@@ -36,6 +52,29 @@
 
   &__search {
     width: 100%;
+
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+
+      .search-icon {
+        position: absolute;
+        left: vars.$spacing-md;
+        color: vars.$colorGray500;
+        font-size: vars.$fontSize-sm;
+        pointer-events: none;
+      }
+
+      input {
+        padding-left: calc(vars.$spacing-md + vars.$spacing-lg);
+      }
+    }
+  }
+
+  &__tree-view {
+    flex: 1;
+    overflow-y: auto;
   }
 
   &__categories {

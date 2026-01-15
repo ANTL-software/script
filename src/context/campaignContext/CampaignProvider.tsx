@@ -14,6 +14,7 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
 
   const [produits, setProduits] = useState<Produit[]>([]);
   const [categories, setCategories] = useState<CategorieProduit[]>([]);
+  const [categoriesTree, setCategoriesTree] = useState<CategorieProduit[]>([]);
   const [produitsLoading, setProduitsLoading] = useState<boolean>(false);
   const [produitsError, setProduitsError] = useState<string | null>(null);
 
@@ -67,10 +68,69 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
     }
   }, [currentCampaign]);
 
+  const loadProduitsGrouped = useCallback(async () => {
+    if (!currentCampaign) {
+      console.warn('[CAMPAIGN] Aucune campagne active, impossible de charger les produits groupés');
+      return;
+    }
+
+    setProduitsLoading(true);
+    setProduitsError(null);
+
+    try {
+      console.log(`[CAMPAIGN] Chargement produits groupés campagne ID: ${currentCampaign.id_campagne}`);
+      const result = await produitService.getProduitsGrouped({ actif: true });
+
+      setCategoriesTree(result.categories);
+
+      const allProduits: Produit[] = [];
+      const extractProducts = (cats: CategorieProduit[]) => {
+        cats.forEach(cat => {
+          if (cat.produits) {
+            allProduits.push(...cat.produits);
+          }
+          if (cat.sousCategories) {
+            extractProducts(cat.sousCategories);
+          }
+        });
+      };
+      extractProducts(result.categories);
+
+      setProduits(allProduits);
+
+      const uniqueCategories: CategorieProduit[] = [];
+      const flattenCategories = (cats: CategorieProduit[]) => {
+        cats.forEach(cat => {
+          uniqueCategories.push({
+            id_categorie: cat.id_categorie,
+            nom_categorie: cat.nom_categorie,
+            description: cat.description,
+            id_parent: cat.id_parent,
+            niveau: cat.niveau
+          });
+          if (cat.sousCategories) {
+            flattenCategories(cat.sousCategories);
+          }
+        });
+      };
+      flattenCategories(result.categories);
+      setCategories(uniqueCategories);
+
+      console.log(`[CAMPAIGN] ${allProduits.length} produits groupés chargés, ${result.categories.length} catégories racines`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des produits groupés';
+      setProduitsError(errorMessage);
+      console.error('[CAMPAIGN] Erreur chargement produits groupés:', errorMessage);
+    } finally {
+      setProduitsLoading(false);
+    }
+  }, [currentCampaign]);
+
   const clearCampaign = useCallback(() => {
     setCurrentCampaign(null);
     setProduits([]);
     setCategories([]);
+    setCategoriesTree([]);
     setError(null);
     setProduitsError(null);
   }, []);
@@ -89,10 +149,12 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
     error,
     produits,
     categories,
+    categoriesTree,
     produitsLoading,
     produitsError,
     loadCampaign,
     loadProduits,
+    loadProduitsGrouped,
     clearCampaign,
     clearError,
     clearProduitsError,

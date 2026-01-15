@@ -20,6 +20,39 @@ export interface CategorieProduit {
   id_categorie: number;
   nom_categorie: string;
   description?: string;
+  id_parent?: number | null;
+  niveau?: number;
+  created_at?: string;
+  updated_at?: string;
+  sousCategories?: CategorieProduit[];
+  produits?: Produit[];
+  categorieParente?: CategorieProduit;
+}
+
+export interface CategorieTreeResponse {
+  success: boolean;
+  data: CategorieProduit[];
+  count: number;
+}
+
+export interface CategoriePathResponse {
+  success: boolean;
+  data: {
+    path: CategorieProduit[];
+    pathString: string;
+  };
+}
+
+export interface ProduitsGroupedResponse {
+  success: boolean;
+  data: {
+    categories: CategorieProduit[];
+    mode: 'grouped';
+  };
+  count: {
+    categories: number;
+    totalProducts: number;
+  };
 }
 
 export interface CartItem {

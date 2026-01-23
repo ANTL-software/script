@@ -1,41 +1,28 @@
 import './historiqueVentes.scss';
 
-import { useState, useEffect, useCallback } from 'react';
-import { venteService } from '../../../API/services';
+import { useEffect } from 'react';
 import { useProspect } from '../../../hooks/useProspect';
-import type { Vente } from '../../../utils/types';
 import Loader from '../loader/Loader';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import VenteCard from './VenteCard';
 
 export default function HistoriqueVentes() {
-  const { currentProspect } = useProspect();
-  const [ventes, setVentes] = useState<Vente[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadVentes = useCallback(async () => {
-    if (!currentProspect) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await venteService.getVentesByProspect(currentProspect.id_prospect);
-
-      setVentes(response.ventes);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erreur lors du chargement des ventes');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentProspect]);
+  const {
+    currentProspect,
+    ventes,
+    ventesLoading,
+    ventesError,
+    loadVentes,
+    clearVentesError,
+  } = useProspect();
 
   useEffect(() => {
-    loadVentes();
-  }, [loadVentes]);
+    if (currentProspect) {
+      loadVentes();
+    }
+  }, [currentProspect, loadVentes]);
 
-  if (isLoading) {
+  if (ventesLoading) {
     return (
       <div className="historique-ventes">
         <div className="historique-ventes__loader">
@@ -46,10 +33,10 @@ export default function HistoriqueVentes() {
     );
   }
 
-  if (error) {
+  if (ventesError) {
     return (
       <div className="historique-ventes">
-        <ErrorMessage message={error} onClose={() => setError(null)} />
+        <ErrorMessage message={ventesError} onClose={clearVentesError} />
       </div>
     );
   }
@@ -70,8 +57,8 @@ export default function HistoriqueVentes() {
             <circle cx="20" cy="21" r="1" />
             <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
           </svg>
-          <h3>Aucune vente enregistrée</h3>
-          <p>Ce prospect n'a pas encore effectué de commande.</p>
+          <h3>Aucune vente enregistree</h3>
+          <p>Ce prospect n'a pas encore effectue de commande.</p>
         </div>
       </div>
     );

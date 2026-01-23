@@ -1,4 +1,5 @@
 import type { Prospect, ProspectType, ProspectStatut, TypeFiche } from '../../utils/types';
+import { getTypeFiche } from '../../utils/scripts/utils';
 
 export class ProspectModel {
   private data: Prospect;
@@ -49,16 +50,7 @@ export class ProspectModel {
   }
 
   get typeFiche(): TypeFiche {
-    if (this.data.statut === 'vente_conclue') {
-      return 'client';
-    }
-    if (this.data.statut === 'nouveau') {
-      return 'jamais_appele';
-    }
-    if (this.data.statut === 'non_interesse') {
-      return 'recycle';
-    }
-    return 'deja_appele';
+    return getTypeFiche(this.data.statut);
   }
 
   public toJSON(): Prospect {

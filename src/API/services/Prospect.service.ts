@@ -1,5 +1,6 @@
 import { apiCalls } from '../APICalls';
-import { ProspectModel } from '../models/Prospect.model';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
+import { ProspectModel } from '../models';
 import type { Prospect } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
@@ -17,18 +18,14 @@ export class ProspectService {
 
   public async getProspectById(id: number): Promise<ProspectModel> {
     const response = await apiCalls.get<Prospect>(`/prospects/${id}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération du prospect');
-    }
-    return ProspectModel.fromJSON(response.data);
+    const data = throwIfApiError(response, 'Erreur lors de la récupération du prospect');
+    return ProspectModel.fromJSON(data);
   }
 
   public async getProspectByPhone(phone: string): Promise<ProspectModel> {
     const response = await apiCalls.get<Prospect>(`/prospects/telephone/${phone}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Prospect non trouvé');
-    }
-    return ProspectModel.fromJSON(response.data);
+    const data = throwIfApiError(response, 'Prospect non trouvé');
+    return ProspectModel.fromJSON(data);
   }
 
   public async getProspects(params?: {
@@ -44,15 +41,12 @@ export class ProspectService {
       pagination: { total: number; page: number; limit: number; totalPages: number };
     }>(`/prospects${queryString}`);
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des prospects');
-    }
-
+    const result = extractPaginatedData(response, ProspectModel.fromJSON, 'Erreur lors de la récupération des prospects');
     return {
-      prospects: response.data.items.map(ProspectModel.fromJSON),
-      total: response.data.pagination.total,
-      page: response.data.pagination.page,
-      totalPages: response.data.pagination.totalPages,
+      prospects: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     };
   }
 }

@@ -92,14 +92,14 @@ export default function CatalogueProduits() {
 
         <div className="catalogue-produits__view-toggle">
           <Button
-            variant={viewMode === 'tree' ? 'primary' : 'outline'}
+            variant={viewMode === 'tree' ? 'primary' : 'ghost'}
             size="small"
             onClick={() => handleViewModeChange('tree')}
           >
             <FaSitemap /> Navigation
           </Button>
           <Button
-            variant={viewMode === 'search' ? 'primary' : 'outline'}
+            variant={viewMode === 'search' ? 'primary' : 'ghost'}
             size="small"
             onClick={() => handleViewModeChange('search')}
           >
@@ -133,7 +133,7 @@ export default function CatalogueProduits() {
               <p>Aucun produit trouvé</p>
               {searchTerm && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="small"
                   onClick={() => {
                     setSearchTerm('');

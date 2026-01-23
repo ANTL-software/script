@@ -1,11 +1,9 @@
-import { useContext } from 'react';
 import { ProspectContext } from '../context/prospectContext';
 import type { ProspectContextType } from '../context/prospectContext';
+import { createContextHook } from './createContextHook';
 
-export const useProspect = (): ProspectContextType => {
-  const context = useContext(ProspectContext);
-  if (!context) {
-    throw new Error('useProspect must be used within a ProspectProvider');
-  }
-  return context;
-};
+export const useProspect = createContextHook<ProspectContextType>(
+  ProspectContext,
+  'useProspect',
+  'ProspectProvider'
+);

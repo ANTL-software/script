@@ -86,3 +86,78 @@ export function buildQueryString(params?: Record<string, string | number | boole
 
   return '?' + new URLSearchParams(filteredParams).toString();
 }
+
+/**
+ * Formate un montant en devise EUR avec le format francais
+ * @param amount - Montant a formater
+ * @returns Montant formate (ex: "1 234,56 €")
+ *
+ * @example
+ * formatCurrency(1234.56)
+ * // Returns: "1 234,56 €"
+ */
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(amount);
+}
+
+/**
+ * Calcule le total d'une ligne (prix * quantite - remise)
+ * @param prixUnitaire - Prix unitaire du produit
+ * @param quantite - Quantite commandee
+ * @param remise - Remise appliquee (defaut: 0)
+ * @returns Total de la ligne
+ *
+ * @example
+ * calculateLineTotal(10, 3, 5)
+ * // Returns: 25 (10 * 3 - 5)
+ */
+export function calculateLineTotal(prixUnitaire: number, quantite: number, remise: number = 0): number {
+  return prixUnitaire * quantite - remise;
+}
+
+/**
+ * Parse un prix qui peut etre string ou number en number
+ * Gere les valeurs retournees par PostgreSQL NUMERIC
+ * @param price - Prix en string ou number
+ * @param defaultValue - Valeur par defaut si parsing echoue (defaut: 0)
+ * @returns Prix en number
+ *
+ * @example
+ * parsePrice("123.45")
+ * // Returns: 123.45
+ * parsePrice(123.45)
+ * // Returns: 123.45
+ * parsePrice(undefined)
+ * // Returns: 0
+ */
+export function parsePrice(price: string | number | undefined | null, defaultValue: number = 0): number {
+  if (price === undefined || price === null) {
+    return defaultValue;
+  }
+  if (typeof price === 'number') {
+    return price;
+  }
+  const parsed = parseFloat(price);
+  return isNaN(parsed) ? defaultValue : parsed;
+}
+
+/**
+ * Determine le type de fiche en fonction du statut du prospect
+ * @param statut - Statut du prospect
+ * @returns Type de fiche (client, jamais_appele, deja_appele, recycle)
+ */
+export function getTypeFiche(statut: string): 'client' | 'jamais_appele' | 'deja_appele' | 'recycle' {
+  if (statut === 'vente_conclue') {
+    return 'client';
+  }
+  if (statut === 'nouveau') {
+    return 'jamais_appele';
+  }
+  if (statut === 'non_interesse') {
+    return 'recycle';
+  }
+  return 'deja_appele';
+}

@@ -1,5 +1,6 @@
 import './panierItem.scss';
 import type { CartItem } from '../../../utils/types';
+import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
 
 interface PanierItemProps {
@@ -9,16 +10,7 @@ interface PanierItemProps {
 }
 
 export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierItemProps) {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
-  };
-
-  const calculateSubtotal = (): number => {
-    return item.prix_unitaire * item.quantite - item.remise;
-  };
+  const subtotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
 
   const handleIncrement = () => {
     onUpdateQuantity(item.produit.id_produit, item.quantite + 1);
@@ -70,7 +62,7 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
           </button>
         </div>
 
-        <span className="panier-item__subtotal">{formatCurrency(calculateSubtotal())}</span>
+        <span className="panier-item__subtotal">{formatCurrency(subtotal)}</span>
       </div>
     </div>
   );

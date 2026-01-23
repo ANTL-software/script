@@ -43,12 +43,9 @@ export interface CategoriePathResponse {
   };
 }
 
-export interface ProduitsGroupedResponse {
-  success: boolean;
-  data: {
-    categories: CategorieProduit[];
-    mode: 'grouped';
-  };
+export interface ProduitsGroupedData {
+  categories: CategorieProduit[];
+  mode: 'grouped';
   count: {
     categories: number;
     totalProducts: number;

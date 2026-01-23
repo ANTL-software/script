@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CartContext } from './CartContext';
 import type { CartItem, Produit } from '../../utils/types';
+import { calculateLineTotal, parsePrice } from '../../utils/scripts/utils';
 
 interface CartProviderProps {
   children: React.ReactNode;
@@ -9,13 +10,8 @@ interface CartProviderProps {
 export const CartProvider = ({ children }: CartProviderProps) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  const calculateItemTotal = (item: CartItem): number => {
-    const subtotal = item.prix_unitaire * item.quantite;
-    return subtotal - item.remise;
-  };
-
   const total = useMemo(() => {
-    return items.reduce((sum, item) => sum + calculateItemTotal(item), 0);
+    return items.reduce((sum, item) => sum + calculateLineTotal(item.prix_unitaire, item.quantite, item.remise), 0);
   }, [items]);
 
   const itemCount = useMemo(() => {
@@ -36,14 +32,8 @@ export const CartProvider = ({ children }: CartProviderProps) => {
         return updatedItems;
       }
 
-      const prixPromo = produit.prix_promo
-        ? (typeof produit.prix_promo === 'number' ? produit.prix_promo : parseFloat(String(produit.prix_promo)))
-        : null;
-
-      const prixUnitaire = typeof produit.prix_unitaire === 'string'
-        ? parseFloat(produit.prix_unitaire)
-        : (produit.prix_unitaire || 0);
-
+      const prixPromo = produit.prix_promo ? parsePrice(produit.prix_promo) : null;
+      const prixUnitaire = parsePrice(produit.prix_unitaire);
       const prixFinal = (prixPromo !== null && prixPromo > 0) ? prixPromo : prixUnitaire;
 
       const newItem: CartItem = {

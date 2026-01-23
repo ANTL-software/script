@@ -1,13 +1,9 @@
-import { useContext } from 'react';
-import { UserContext } from '../context/userContext/UserContext';
-import type { UserContextType } from '../context/userContext/UserContext';
+import { UserContext } from '../context/userContext';
+import type { UserContextType } from '../context/userContext';
+import { createContextHook } from './createContextHook';
 
-export const useUser = (): UserContextType => {
-  const context = useContext(UserContext);
-
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
-
-  return context;
-};
+export const useUser = createContextHook<UserContextType>(
+  UserContext,
+  'useUser',
+  'UserProvider'
+);

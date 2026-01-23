@@ -2,6 +2,7 @@ import './venteCard.scss';
 
 import { useState } from 'react';
 import type { Vente } from '../../../utils/types';
+import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 
 interface VenteCardProps {
   vente: Vente;
@@ -17,13 +18,6 @@ export default function VenteCard({ vente }: VenteCardProps) {
       month: '2-digit',
       year: 'numeric',
     });
-  };
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
   };
 
   const getStatutClass = (statut: string): string => {
@@ -46,10 +40,6 @@ export default function VenteCard({ vente }: VenteCardProps) {
       annulee: 'Annulée',
     };
     return labels[statut] || statut;
-  };
-
-  const calculateLineTotal = (prixUnitaire: number, quantite: number, remise: number): number => {
-    return prixUnitaire * quantite - remise;
   };
 
   return (

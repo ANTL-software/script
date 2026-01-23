@@ -1,5 +1,6 @@
 import './panier.scss';
 import { useCart } from '../../../hooks';
+import { formatCurrency } from '../../../utils/scripts/utils';
 import PanierItem from './PanierItem';
 import Button from '../button/Button';
 import { FaShoppingCart, FaTrash, FaCheck } from 'react-icons/fa';
@@ -10,13 +11,6 @@ interface PanierProps {
 
 export default function Panier({ onValidateOrder }: PanierProps) {
   const { items, total, itemCount, clearCart, updateQuantity, removeItem } = useCart();
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
-  };
 
   const handleClearCart = () => {
     if (window.confirm('Voulez-vous vraiment vider le panier ?')) {

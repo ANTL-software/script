@@ -3,8 +3,8 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCard, FaStickyNote } from 'react-icons/fa';
 import { useCart, useProspect, useCampaign, useUser } from '../../../hooks';
-import { venteService } from '../../../API/services';
 import type { ModePaiement } from '../../../utils/types';
+import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import Button from '../button/Button';
 
 interface ConfirmOrderModalProps {
@@ -24,7 +24,7 @@ interface FormData {
 
 export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: ConfirmOrderModalProps) {
   const { items, total, clearCart } = useCart();
-  const { currentProspect } = useProspect();
+  const { currentProspect, createVente } = useProspect();
   const { currentCampaign } = useCampaign();
   const { user } = useUser();
 
@@ -40,13 +40,6 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
-  };
 
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -106,7 +99,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
         })),
       };
 
-      await venteService.createVente(venteData);
+      await createVente(venteData);
 
       clearCart();
       onSuccess();
@@ -160,7 +153,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
             </h3>
             <div className="confirm-order-modal__cart-items">
               {items.map((item) => {
-                const sousTotal = item.prix_unitaire * item.quantite - item.remise;
+                const sousTotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
                 return (
                   <div key={item.produit.id_produit} className="confirm-order-modal__cart-item">
                     <div className="confirm-order-modal__cart-item-info">

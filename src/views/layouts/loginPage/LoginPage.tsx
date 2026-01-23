@@ -6,6 +6,9 @@ import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 
+const BLOCK_DURATION_MS = 60000;
+const MAX_ATTEMPTS = 5;
+
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login, isLoading, error, clearError, isAuthenticated } = useUser();
@@ -28,17 +31,6 @@ export default function LoginPage() {
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
-
-  useEffect(() => {
-    if (attemptCount >= 5) {
-      setIsBlocked(true);
-      const timer = setTimeout(() => {
-        setIsBlocked(false);
-        setAttemptCount(0);
-      }, 60000);
-      return () => clearTimeout(timer);
-    }
-  }, [attemptCount]);
 
   const validateEmail = (email: string): string => {
     if (!email) {
@@ -98,7 +90,15 @@ export default function LoginPage() {
         password: formData.password,
       });
     } catch (err) {
-      setAttemptCount((prev) => prev + 1);
+      const newAttemptCount = attemptCount + 1;
+      setAttemptCount(newAttemptCount);
+      if (newAttemptCount >= MAX_ATTEMPTS) {
+        setIsBlocked(true);
+        setTimeout(() => {
+          setIsBlocked(false);
+          setAttemptCount(0);
+        }, BLOCK_DURATION_MS);
+      }
       console.error('Login failed:', err);
     }
   };

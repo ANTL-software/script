@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Employe, LoginCredentials } from '../../utils/types/user.types';
+import type { Employe, LoginCredentials } from '../../utils/types';
 
 export interface UserContextType {
   user: Employe | null;

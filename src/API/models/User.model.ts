@@ -1,4 +1,4 @@
-import type { Employe, Poste, Departement } from '../../utils/types/user.types';
+import type { Employe, Poste, Departement } from '../../utils/types';
 
 export class UserModel implements Employe {
   id_employe: number;
@@ -31,32 +31,8 @@ export class UserModel implements Employe {
     this.Departement = data.Departement;
   }
 
-  public getFullName(): string {
+  public get fullName(): string {
     return `${this.prenom} ${this.nom}`;
-  }
-
-  public getDisplayName(): string {
-    return this.getFullName();
-  }
-
-  public getPosteLibelle(): string | undefined {
-    return this.Poste?.libelle_poste;
-  }
-
-  public getDepartementName(): string | undefined {
-    return this.Departement?.nom_departement;
-  }
-
-  public isActive(): boolean {
-    return this.actif;
-  }
-
-  public hasPoste(): boolean {
-    return !!this.Poste;
-  }
-
-  public hasDepartement(): boolean {
-    return !!this.Departement;
   }
 
   public toJSON(): Employe {

@@ -27,6 +27,11 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     setCurrentView(view);
   }, []);
 
+  const removeNotification = useCallback((id: string) => {
+    console.log(`[APP] Suppression notification: ${id}`);
+    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+  }, []);
+
   const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
     const id = `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newNotification: Notification = { ...notification, id };
@@ -39,12 +44,7 @@ export const AppProvider = ({ children }: AppProviderProps) => {
         removeNotification(id);
       }, notification.duration);
     }
-  }, []);
-
-  const removeNotification = useCallback((id: string) => {
-    console.log(`[APP] Suppression notification: ${id}`);
-    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
-  }, []);
+  }, [removeNotification]);
 
   const clearNotifications = useCallback(() => {
     console.log('[APP] Suppression de toutes les notifications');

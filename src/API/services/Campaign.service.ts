@@ -1,5 +1,6 @@
 import { apiCalls } from '../APICalls';
-import { CampaignModel } from '../models/Campaign.model';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
+import { CampaignModel } from '../models';
 import type { Campaign } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
@@ -17,10 +18,8 @@ export class CampaignService {
 
   public async getCampaignById(id: number): Promise<CampaignModel> {
     const response = await apiCalls.get<Campaign>(`/campagnes/${id}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération de la campagne');
-    }
-    return CampaignModel.fromJSON(response.data);
+    const data = throwIfApiError(response, 'Erreur lors de la récupération de la campagne');
+    return CampaignModel.fromJSON(data);
   }
 
   public async getCampaigns(params?: {
@@ -34,15 +33,12 @@ export class CampaignService {
       pagination: { total: number; page: number; limit: number; totalPages: number };
     }>(`/campagnes${queryString}`);
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des campagnes');
-    }
-
+    const result = extractPaginatedData(response, CampaignModel.fromJSON, 'Erreur lors de la récupération des campagnes');
     return {
-      campaigns: response.data.items.map(CampaignModel.fromJSON),
-      total: response.data.pagination.total,
-      page: response.data.pagination.page,
-      totalPages: response.data.pagination.totalPages,
+      campaigns: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     };
   }
 }

@@ -1,3 +1,4 @@
+export { createContextHook } from './createContextHook';
 export { useUser } from './useUser';
 export { useProspect } from './useProspect';
 export { useCampaign } from './useCampaign';

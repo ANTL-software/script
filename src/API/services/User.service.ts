@@ -1,6 +1,7 @@
 import apiCalls from '../APICalls';
+import { throwIfApiError } from '../apiHelpers';
 import { apiClient } from '../config';
-import { UserModel } from '../models/User.model';
+import { UserModel } from '../models';
 import type {
   LoginCredentials,
   Employe,
@@ -36,11 +37,7 @@ export class UserService {
       credentials
     );
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Échec de la connexion');
-    }
-
-    const { token, refreshToken, employe } = response.data;
+    const { token, refreshToken, employe } = throwIfApiError(response, 'Échec de la connexion');
 
     apiClient.setTokens(token, refreshToken);
 
@@ -63,37 +60,35 @@ export class UserService {
 
   public async getCurrentUser(): Promise<UserModel> {
     const response = await apiCalls.get<Employe>(this.AUTH_ENDPOINTS.ME);
+    const data = throwIfApiError(response, 'Impossible de récupérer les données utilisateur');
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Impossible de récupérer les données utilisateur');
-    }
-
-    const userModel = UserModel.fromJSON(response.data);
+    const userModel = UserModel.fromJSON(data);
     userModel.saveToLocalStorage();
 
     return userModel;
   }
 
   public async refreshToken(): Promise<string> {
-    const refreshToken = apiClient.getRefreshToken();
+    const currentRefreshToken = apiClient.getRefreshToken();
 
-    if (!refreshToken) {
+    if (!currentRefreshToken) {
       throw new Error('No refresh token available');
     }
 
     const response = await apiCalls.post<{ token: string }>(
       this.AUTH_ENDPOINTS.REFRESH,
-      { refreshToken }
+      { refreshToken: currentRefreshToken }
     );
 
-    if (!response.success || !response.data?.token) {
+    const data = throwIfApiError(response, 'Failed to refresh token');
+
+    if (!data.token) {
       throw new Error('Failed to refresh token');
     }
 
-    const newAccessToken = response.data.token;
-    apiClient.setAccessToken(newAccessToken);
+    apiClient.setAccessToken(data.token);
 
-    return newAccessToken;
+    return data.token;
   }
 
   public getStoredUser(): UserModel | null {

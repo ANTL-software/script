@@ -1,5 +1,6 @@
 import './produitCard.scss';
 import type { Produit } from '../../../utils/types';
+import { formatCurrency, parsePrice } from '../../../utils/scripts/utils';
 import Button from '../button/Button';
 import { FaShoppingCart } from 'react-icons/fa';
 
@@ -9,21 +10,8 @@ interface ProduitCardProps {
 }
 
 export default function ProduitCard({ produit, onAddToCart }: ProduitCardProps) {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
-  };
-
-  // Utiliser le prix du tarif si disponible, sinon le prix du produit
-  const prixUnitaire = typeof produit.prix_unitaire === 'number'
-    ? produit.prix_unitaire
-    : (typeof produit.prix_unitaire === 'string' ? parseFloat(produit.prix_unitaire) : 0);
-
-  const prixPromo = produit.prix_promo
-    ? (typeof produit.prix_promo === 'number' ? produit.prix_promo : parseFloat(String(produit.prix_promo)))
-    : null;
+  const prixUnitaire = parsePrice(produit.prix_unitaire);
+  const prixPromo = produit.prix_promo ? parsePrice(produit.prix_promo) : null;
 
   const hasPrixPromo = prixPromo !== null && prixPromo > 0;
   const prixAffiche = hasPrixPromo ? prixPromo : prixUnitaire;

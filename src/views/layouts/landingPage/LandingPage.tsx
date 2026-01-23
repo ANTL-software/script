@@ -102,7 +102,7 @@ export default function LandingPage() {
 
   return (
     <main id="landingPage">
-      <ProspectInfoHeader prospect={currentProspect} />
+      <ProspectInfoHeader />
 
       <ActionButtons
         onInformationProspect={handleInformationProspect}

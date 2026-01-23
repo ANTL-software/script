@@ -1,6 +1,7 @@
 import { apiCalls } from '../APICalls';
-import { ProduitModel } from '../models/Produit.model';
-import type { Produit, CategorieProduit, ProduitsGroupedResponse } from '../../utils/types';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
+import { ProduitModel } from '../models';
+import type { Produit, CategorieProduit, ProduitsGroupedData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class ProduitService {
@@ -17,10 +18,8 @@ export class ProduitService {
 
   public async getProduitById(id: number): Promise<ProduitModel> {
     const response = await apiCalls.get<Produit>(`/produits/${id}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération du produit');
-    }
-    return ProduitModel.fromJSON(response.data);
+    const data = throwIfApiError(response, 'Erreur lors de la récupération du produit');
+    return ProduitModel.fromJSON(data);
   }
 
   public async getProduits(params?: {
@@ -37,37 +36,25 @@ export class ProduitService {
       pagination: { total: number; page: number; limit: number; totalPages: number };
     }>(`/produits${queryString}`);
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des produits');
-    }
-
+    const result = extractPaginatedData(response, ProduitModel.fromJSON, 'Erreur lors de la récupération des produits');
     return {
-      produits: response.data.items.map(ProduitModel.fromJSON),
-      total: response.data.pagination.total,
-      page: response.data.pagination.page,
-      totalPages: response.data.pagination.totalPages,
+      produits: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     };
   }
 
   public async getProduitsGrouped(params?: {
     actif?: boolean;
   }): Promise<{ categories: CategorieProduit[]; totalProducts: number }> {
-    const queryParams = new URLSearchParams();
-    queryParams.append('grouped', 'true');
-    if (params?.actif !== undefined) {
-      queryParams.append('actif', String(params.actif));
-    }
-
-    const queryString = `?${queryParams.toString()}`;
-    const response = await apiCalls.get<ProduitsGroupedResponse>(`/produits${queryString}`);
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des produits groupés');
-    }
+    const queryString = buildQueryString({ grouped: true, ...params });
+    const response = await apiCalls.get<ProduitsGroupedData>(`/produits${queryString}`);
+    const data = throwIfApiError(response, 'Erreur lors de la recuperation des produits groupes');
 
     return {
-      categories: response.data.categories,
-      totalProducts: response.count.totalProducts,
+      categories: data.categories,
+      totalProducts: data.count?.totalProducts ?? 0,
     };
   }
 
@@ -81,13 +68,11 @@ export class ProduitService {
       pagination: { page: number; limit: number; total: number; totalPages: number };
     }>(`/campagnes/${campaignId}/produits${queryString}`);
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des produits');
-    }
+    const data = throwIfApiError(response, 'Erreur lors de la récupération des produits');
 
     return {
-      produits: response.data.produits.map(ProduitModel.fromJSON),
-      pagination: response.data.pagination
+      produits: data.produits.map(ProduitModel.fromJSON),
+      pagination: data.pagination
     };
   }
 }

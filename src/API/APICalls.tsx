@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
 
 import type { AxiosResponse } from 'axios';
-import type { ApiResponse, ApiError } from '../utils/types/api.types';
+import type { ApiResponse, ApiError } from '../utils/types';
 
 import api from './config';
 

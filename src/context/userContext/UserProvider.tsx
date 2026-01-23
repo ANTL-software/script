@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserContext } from './UserContext';
-import { userService } from '../../API/services/User.service';
+import { userService } from '../../API/services';
 
 import type { ReactNode } from 'react';
-import type { Employe, LoginCredentials } from '../../utils/types/user.types';
+import type { Employe, LoginCredentials } from '../../utils/types';
 
 interface UserProviderProps {
   children: ReactNode;

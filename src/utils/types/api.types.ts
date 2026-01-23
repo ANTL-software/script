@@ -18,6 +18,12 @@ export interface PaginationParams {
   limit?: number;
 }
 
+export interface Pagination {
+  page: number;
+  totalPages: number;
+  total: number;
+}
+
 export interface PaginatedResponse<T> {
   success: boolean;
   message: string;

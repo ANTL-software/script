@@ -161,3 +161,42 @@ export function getTypeFiche(statut: string): 'client' | 'jamais_appele' | 'deja
   }
   return 'deja_appele';
 }
+
+/**
+ * Extrait le prix unitaire d'un produit en tenant compte du tarif campagne
+ * @param produit - Objet produit avec potentiellement un tarif
+ * @returns Prix unitaire (tarif > produit > 0)
+ */
+export function getProductPrice(produit: {
+  prix_unitaire?: string | number;
+  tarif?: { prix_unitaire?: string | number };
+}): number {
+  // Priorité au tarif (prix spécifique campagne)
+  if (produit.tarif?.prix_unitaire !== undefined && produit.tarif?.prix_unitaire !== null) {
+    return parsePrice(produit.tarif.prix_unitaire);
+  }
+  // Sinon prix du produit
+  return parsePrice(produit.prix_unitaire);
+}
+
+/**
+ * Extrait le prix promo d'un produit en tenant compte du tarif campagne
+ * @param produit - Objet produit avec potentiellement un tarif
+ * @returns Prix promo ou null si pas de promo
+ */
+export function getProductPromoPrice(produit: {
+  prix_promo?: string | number;
+  tarif?: { prix_promo?: string | number };
+}): number | null {
+  // Priorité au tarif (prix spécifique campagne)
+  if (produit.tarif?.prix_promo !== undefined && produit.tarif?.prix_promo !== null) {
+    const promo = parsePrice(produit.tarif.prix_promo);
+    return promo > 0 ? promo : null;
+  }
+  // Sinon prix promo du produit
+  if (produit.prix_promo !== undefined && produit.prix_promo !== null) {
+    const promo = parsePrice(produit.prix_promo);
+    return promo > 0 ? promo : null;
+  }
+  return null;
+}

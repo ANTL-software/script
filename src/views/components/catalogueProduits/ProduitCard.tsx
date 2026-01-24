@@ -1,6 +1,6 @@
 import './produitCard.scss';
 import type { Produit } from '../../../utils/types';
-import { formatCurrency, parsePrice } from '../../../utils/scripts/utils';
+import { formatCurrency } from '../../../utils/scripts/utils';
 import Button from '../button/Button';
 import { FaShoppingCart } from 'react-icons/fa';
 
@@ -10,8 +10,22 @@ interface ProduitCardProps {
 }
 
 export default function ProduitCard({ produit, onAddToCart }: ProduitCardProps) {
-  const prixUnitaire = parsePrice(produit.prix_unitaire);
-  const prixPromo = produit.prix_promo ? parsePrice(produit.prix_promo) : null;
+  // Utiliser le prix du tarif si disponible, sinon le prix du produit
+  const tarifPrix = produit.tarif?.prix_unitaire;
+  const produitPrix = produit.prix_unitaire;
+
+  // Priorité: tarif > produit
+  const rawPrix = tarifPrix ?? produitPrix;
+  const prixUnitaire = typeof rawPrix === 'number'
+    ? rawPrix
+    : (typeof rawPrix === 'string' ? parseFloat(rawPrix) : 0);
+
+  const tarifPromo = produit.tarif?.prix_promo;
+  const produitPromo = produit.prix_promo;
+  const rawPromo = tarifPromo ?? produitPromo;
+  const prixPromo = rawPromo
+    ? (typeof rawPromo === 'number' ? rawPromo : parseFloat(String(rawPromo)))
+    : null;
 
   const hasPrixPromo = prixPromo !== null && prixPromo > 0;
   const prixAffiche = hasPrixPromo ? prixPromo : prixUnitaire;

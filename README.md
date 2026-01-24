@@ -1,678 +1,324 @@
-# Script Vendeur ANTL - Frontend
+# Script Vendeur ANTL - Documentation Technique
 
-Application React/TypeScript pour le call center ANTL. Interface vendeur pour la gestion des prospects, appels et ventes téléphoniques.
+Application React/TypeScript pour le call center ANTL. Interface vendeur pour la gestion des prospects, appels, commandes et ventes.
 
-## 📋 Table des matières
+## Table des matières
 
 - [Stack Technique](#stack-technique)
-- [Architecture](#architecture)
 - [Installation](#installation)
-- [Développement](#développement)
-- [Authentication](#authentication)
-- [Composants Réutilisables](#composants-réutilisables)
+- [Architecture Globale](#architecture-globale)
+- [Gestion d'Etat (Contexts)](#gestion-detat-contexts)
+- [Couche API](#couche-api)
+- [Systeme de Types](#systeme-de-types)
+- [Composants](#composants)
+- [Flux de Donnees](#flux-de-donnees)
+- [Design System](#design-system)
 - [Conventions](#conventions)
 
-## 🛠 Stack Technique
+---
 
-- **Framework** : React 19.2
-- **Language** : TypeScript 5.9
-- **Build Tool** : Vite 7.2
-- **Routing** : React Router DOM 7.10
-- **HTTP Client** : Axios 1.13
-- **Styling** : SASS/SCSS
-- **Icons** : React Icons 5.5
+## Stack Technique
 
-## 🏗 Architecture
+| Categorie | Technologie | Version |
+|-----------|-------------|---------|
+| Framework | React | 19.x |
+| Langage | TypeScript | 5.x |
+| Build Tool | Vite | 7.x |
+| Routing | React Router DOM | 7.x |
+| HTTP Client | Axios | 1.x |
+| Styling | SASS/SCSS | - |
+| Icons | React Icons | 5.x |
 
-### Structure des dossiers
+---
 
-```
-script/src/
-├── API/                          # Couche API et services
-│   ├── config.ts                 # Configuration Axios (Singleton)
-│   ├── APICalls.tsx              # Méthodes HTTP génériques (GET, POST, PUT, PATCH, DELETE) + Retry logic
-│   ├── models/                   # Modèles avec logique métier
-│   │   ├── User.model.ts         # Modèle User (Employe)
-│   │   ├── Prospect.model.ts     # Modèle Prospect (fullName, typeFiche, etc.)
-│   │   ├── Campaign.model.ts     # Modèle Campaign
-│   │   ├── Produit.model.ts      # Modèle Produit
-│   │   └── index.ts
-│   ├── services/                 # Services API (Singletons)
-│   │   ├── User.service.ts       # Authentication (login, logout, refresh)
-│   │   ├── Prospect.service.ts   # CRUD prospects, recherche par téléphone
-│   │   ├── Campaign.service.ts   # CRUD campagnes
-│   │   ├── Produit.service.ts    # Catalogue produits, filtres
-│   │   ├── Appel.service.ts      # Gestion des appels (create, update, terminer)
-│   │   ├── Vente.service.ts      # Gestion des ventes (panier multi-produits)
-│   │   └── index.ts
-│   └── index.ts
-├── context/                      # Contexts React
-│   ├── userContext/
-│   │   ├── UserContext.tsx       # Context authentification
-│   │   ├── UserProvider.tsx      # Provider avec login/logout
-│   │   └── index.ts
-│   ├── prospectContext/
-│   │   ├── ProspectContext.tsx   # Context prospect en cours
-│   │   ├── ProspectProvider.tsx  # Provider avec loadProspect()
-│   │   └── index.ts
-│   ├── campaignContext/
-│   │   ├── CampaignContext.tsx   # Context campagne active
-│   │   ├── CampaignProvider.tsx  # Provider avec loadCampaign()
-│   │   └── index.ts
-│   ├── cartContext/
-│   │   ├── CartContext.tsx       # Context panier de commande
-│   │   ├── CartProvider.tsx      # Provider avec addItem, removeItem, etc.
-│   │   └── index.ts
-│   ├── appContext/
-│   │   ├── AppContext.tsx        # Context état global app
-│   │   ├── AppProvider.tsx       # Provider modales/vues/notifications
-│   │   └── index.ts
-│   └── index.ts
-├── hooks/                        # Hooks personnalisés
-│   ├── useUser.ts                # Hook pour UserContext
-│   ├── useProspect.ts            # Hook pour ProspectContext
-│   ├── useCampaign.ts            # Hook pour CampaignContext
-│   ├── useCart.ts                # Hook pour CartContext
-│   ├── useApp.ts                 # Hook pour AppContext
-│   └── index.ts
-├── utils/                        # Utilitaires
-│   ├── scripts/
-│   │   └── utils.tsx             # Fonctions utilitaires (getSalutation, useClock)
-│   ├── styles/                   # Styles globaux
-│   │   ├── global.scss           # Styles globaux
-│   │   ├── reset.scss            # Reset CSS
-│   │   ├── _variables.scss       # Variables SCSS (100 lignes: couleurs, spacing, etc.)
-│   │   └── _mixins.scss          # Mixins SCSS (127 lignes: flex, responsive, etc.)
-│   └── types/                    # Types TypeScript
-│       ├── user.types.ts         # Types utilisateur (Employe, Poste, Departement)
-│       ├── prospect.types.ts     # Types prospect (Prospect, ProspectStatut, TypeFiche)
-│       ├── campaign.types.ts     # Types campagne
-│       ├── produit.types.ts      # Types produit
-│       ├── appel.types.ts        # Types appel (StatutAppel, CreateAppelData)
-│       ├── vente.types.ts        # Types vente (CreateVenteData, DetailVente)
-│       ├── cart.types.ts         # Types panier (CartItem, Cart)
-│       ├── api.types.ts          # Types API (ApiResponse, ApiError)
-│       └── index.ts
-├── views/                        # Composants visuels
-│   ├── components/               # Composants réutilisables
-│   │   ├── button/
-│   │   │   ├── Button.tsx
-│   │   │   └── button.scss
-│   │   ├── input/
-│   │   │   ├── Input.tsx
-│   │   │   └── input.scss
-│   │   ├── loader/
-│   │   │   ├── Loader.tsx
-│   │   │   └── loader.scss
-│   │   ├── errorMessage/
-│   │   │   ├── ErrorMessage.tsx
-│   │   │   └── errorMessage.scss
-│   │   ├── typeFicheBadge/
-│   │   │   ├── TypeFicheBadge.tsx
-│   │   │   └── typeFicheBadge.scss
-│   │   ├── prospectInfoHeader/
-│   │   │   ├── ProspectInfoHeader.tsx
-│   │   │   └── prospectInfoHeader.scss
-│   │   ├── actionButtons/
-│   │   │   ├── ActionButtons.tsx
-│   │   │   └── actionButtons.scss
-│   │   ├── historiqueAppels/
-│   │   │   ├── HistoriqueAppels.tsx   # Liste des appels avec pagination
-│   │   │   ├── AppelCard.tsx          # Card individuelle d'appel
-│   │   │   ├── historiqueAppels.scss
-│   │   │   ├── appelCard.scss
-│   │   │   └── index.ts
-│   │   ├── historiqueVentes/
-│   │   │   ├── HistoriqueVentes.tsx   # Liste des ventes
-│   │   │   ├── VenteCard.tsx          # Card expandable de vente
-│   │   │   ├── historiqueVentes.scss
-│   │   │   ├── venteCard.scss
-│   │   │   └── index.ts
-│   │   ├── catalogueProduits/
-│   │   │   ├── CatalogueProduits.tsx  # Catalogue avec filtres
-│   │   │   ├── ProduitCard.tsx        # Card individuelle produit
-│   │   │   ├── catalogueProduits.scss
-│   │   │   ├── produitCard.scss
-│   │   │   └── index.ts
-│   │   ├── panier/
-│   │   │   ├── Panier.tsx             # Panier sidebar (commande)
-│   │   │   ├── PanierItem.tsx         # Item du panier avec contrôles
-│   │   │   ├── panier.scss
-│   │   │   ├── panierItem.scss
-│   │   │   └── index.ts
-│   │   ├── header/
-│   │   │   ├── Header.tsx
-│   │   │   └── header.scss
-│   │   ├── footer/
-│   │   │   ├── Footer.tsx
-│   │   │   └── footer.scss
-│   │   └── protectedRoute/
-│   │       └── ProtectedRoute.tsx
-│   └── layouts/                  # Pages/Layouts
-│       ├── loginPage/
-│       │   ├── LoginPage.tsx
-│       │   └── loginPage.scss
-│       └── landingPage/
-│           ├── LandingPage.tsx   # Page principale avec fiche prospect
-│           └── landingPage.scss
-├── App.tsx                       # Composant principal avec routing
-└── main.tsx                      # Point d'entrée avec hiérarchie des Providers
-```
+## Installation
 
-### Principes SOLID
-
-L'architecture suit les principes SOLID pour une meilleure maintenabilité :
-
-#### 1. Single Responsibility Principle (SRP)
-- **config.ts** : Configuration Axios et gestion des tokens uniquement
-- **APICalls.tsx** : Méthodes HTTP génériques uniquement
-- **User.model.ts** : Logique métier de l'utilisateur
-- **User.service.ts** : Communication API pour les utilisateurs
-- **UserProvider.tsx** : Gestion de l'état d'authentification
-
-#### 2. Open/Closed Principle (OCP)
-- Les méthodes HTTP génériques peuvent être réutilisées pour toutes les entités
-- Les modèles peuvent être étendus sans modification
-- Nouveaux services ajoutables sans toucher aux existants
-
-#### 3. Dependency Inversion Principle (DIP)
-```
-Component → useUser() → UserContext → UserService → apiCalls → apiClient
-```
-
-### Flux de données d'authentification
-
-```
-LoginPage
-  ↓ useUser().login(credentials)
-UserProvider
-  ↓ userService.login(credentials)
-UserService
-  ↓ apiCalls.post('/auth/login', credentials)
-APICalls
-  ↓ api.post(endpoint, data)
-ApiClient (config.ts)
-  ↓ axios instance with interceptors
-Backend API (/auth/login)
-  ↓ { success, message, data: { token, refreshToken, employe } }
-UserService
-  ↓ apiClient.setTokens(token, refreshToken)
-  ↓ userModel.saveToLocalStorage()
-UserProvider
-  ↓ setUser(userModel.toJSON())
-Component
-  ↓ isAuthenticated = true
-  ↓ navigate('/')
-```
-
-## 🌐 Services API
-
-L'application utilise des services Singleton pour communiquer avec l'API backend. Chaque service encapsule la logique métier et les appels API pour une entité spécifique.
-
-### Architecture des services
-
-- **APICalls** : Couche bas niveau avec retry logic (3 tentatives max sur erreurs réseau)
-- **Services** : Couche métier (UserService, ProspectService, CampaignService, etc.)
-- **Models** : Classes avec méthodes utilitaires et validation
-
-### Services disponibles
-
-#### 1. UserService (Authentication)
-
-```typescript
-import { userService } from '../API/services';
-
-// Connexion
-const loginData = await userService.login({ email, password });
-// Retourne: { token, refreshToken, employe }
-
-// Déconnexion
-await userService.logout();
-
-// Récupérer l'utilisateur actuel
-const employe = await userService.getCurrentUser();
-```
-
-#### 2. ProspectService
-
-```typescript
-import { prospectService } from '../API/services';
-
-// Récupérer un prospect par ID
-const prospect = await prospectService.getProspectById(1);
-
-// Rechercher par téléphone
-const prospect = await prospectService.getProspectByPhone('0612345678');
-
-// Liste avec pagination et filtres
-const { prospects, total, page, totalPages } = await prospectService.getProspects({
-  page: 1,
-  limit: 20,
-  statut: 'interesse',
-  search: 'Dupont'
-});
-```
-
-#### 3. CampaignService
-
-```typescript
-import { campaignService } from '../API/services';
-
-// Récupérer une campagne
-const campaign = await campaignService.getCampaignById(1);
-
-// Liste des campagnes
-const { campaigns, total } = await campaignService.getCampaigns({
-  page: 1,
-  limit: 10,
-  actif: true
-});
-```
-
-#### 4. ProduitService
-
-```typescript
-import { produitService } from '../API/services';
-
-// Récupérer un produit
-const produit = await produitService.getProduitById(1);
-
-// Liste avec filtres
-const { produits, total } = await produitService.getProduits({
-  page: 1,
-  limit: 20,
-  categorie: 1,
-  actif: true,
-  search: 'assurance'
-});
-
-// Produits d'une campagne
-const produits = await produitService.getProduitsByCampaign(1);
-```
-
-#### 5. AppelService
-
-```typescript
-import { appelService } from '../API/services';
-
-// Créer un appel
-const appel = await appelService.createAppel({
-  id_prospect: 1,
-  id_campagne: 1,
-  statut: 'abouti',
-  notes: 'Client intéressé'
-});
-
-// Mettre à jour un appel
-const updated = await appelService.updateAppel(1, {
-  duree_secondes: 300,
-  notes: 'Complément d\'information'
-});
-
-// Terminer un appel (calcul durée automatique)
-const finished = await appelService.terminerAppel(1);
-
-// Historique d'un prospect
-const { appels, total } = await appelService.getAppelsByProspect(1, {
-  page: 1,
-  limit: 10
-});
-```
-
-#### 6. VenteService
-
-```typescript
-import { venteService } from '../API/services';
-
-// Créer une vente
-const vente = await venteService.createVente({
-  id_prospect: 1,
-  id_campagne: 1,
-  mode_paiement: 'CB',
-  details: [
-    {
-      id_produit: 1,
-      quantite: 2,
-      prix_unitaire: 49.99,
-      remise: 5.00
-    }
-  ]
-});
-
-// Historique des ventes d'un prospect
-const { ventes, total } = await venteService.getVentesByProspect(1);
-
-// Liste des ventes avec filtres
-const { ventes } = await venteService.getVentes({
-  page: 1,
-  limit: 20,
-  statut: 'validee',
-  campagne: 1
-});
-
-// Changer le statut
-const updated = await venteService.updateStatut(1, 'validee');
-```
-
-### Retry Logic
-
-Toutes les requêtes bénéficient d'une retry logic automatique :
-
-- **Max retries** : 3 tentatives
-- **Délai** : 1s, 2s, 3s (progressif)
-- **Condition** : Uniquement sur erreurs réseau (timeout, perte de connexion)
-- **Logging** : Console warnings pour traçabilité
-
-```typescript
-// Exemple automatique
-try {
-  const prospect = await prospectService.getProspectById(1);
-  // Si erreur réseau : 3 tentatives automatiques
-} catch (error) {
-  // Après 3 échecs, erreur remontée
-}
-```
-
-### Gestion des erreurs
-
-```typescript
-try {
-  await prospectService.getProspectById(999);
-} catch (error: ApiError) {
-  console.error(error.message); // Message d'erreur API
-  console.error(error.status);  // Code HTTP (404, 500, etc.)
-  console.error(error.errors);  // Détails validation (optionnel)
-}
-```
-
-## 📦 Installation
-
-### Prérequis
+### Prerequis
 
 - Node.js 18+
 - npm ou yarn
-- Backend API olympe en cours d'exécution
+- Backend API olympe en cours d'execution sur le port 8800
 
-### Étapes
+### Etapes
 
 ```bash
-# 1. Installer les dépendances
+# Cloner et installer
 cd script
 npm install
 
-# 2. Configurer les variables d'environnement
+# Configurer l'environnement
 cp .env.example .env
-# Éditer .env avec l'URL de l'API
+# Editer .env avec l'URL de l'API
 
-# 3. Démarrer le serveur de développement
+# Demarrer le serveur de developpement
 npm run dev
 ```
 
 ### Variables d'environnement
 
-Fichier `.env` :
-
 ```env
-# API Configuration
 VITE_API_BASE_URL=http://localhost:8800/api
-
-# Application Configuration
 VITE_APP_NAME=ANTL Script Vendeur
 VITE_APP_VERSION=1.0.0
-
-# Environment
 VITE_NODE_ENV=development
 ```
 
-## 🚀 Développement
-
 ### Scripts disponibles
 
-```bash
-npm run dev        # Démarrer le serveur de développement (port 5173)
-npm run build      # Build de production
-npm run preview    # Preview du build
-npm run lint       # Linter le code
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Serveur de developpement (port 5173) |
+| `npm run build` | Build de production |
+| `npm run preview` | Preview du build |
+| `npm run lint` | Linter le code |
+
+---
+
+## Architecture Globale
+
+```
+script/src/
+├── API/                          # Couche API
+│   ├── config.ts                 # Client Axios (Singleton)
+│   ├── APICalls.tsx              # Methodes HTTP generiques
+│   ├── apiHelpers.ts             # Helpers (throwIfApiError, extractPaginatedData)
+│   ├── models/                   # Modeles avec logique metier
+│   │   ├── User.model.ts
+│   │   ├── Prospect.model.ts
+│   │   ├── Campaign.model.ts
+│   │   ├── Produit.model.ts
+│   │   └── index.ts
+│   ├── services/                 # Services API (Singletons)
+│   │   ├── User.service.ts
+│   │   ├── Prospect.service.ts
+│   │   ├── Campaign.service.ts
+│   │   ├── Produit.service.ts
+│   │   ├── Appel.service.ts
+│   │   ├── Vente.service.ts
+│   │   └── index.ts
+│   └── index.ts
+├── context/                      # Contexts React
+│   ├── userContext/
+│   ├── prospectContext/
+│   ├── campaignContext/
+│   ├── cartContext/
+│   ├── appContext/
+│   └── index.ts
+├── hooks/                        # Hooks personnalises
+│   ├── useUser.ts
+│   ├── useProspect.ts
+│   ├── useCampaign.ts
+│   ├── useCart.ts
+│   ├── useApp.ts
+│   ├── createContextHook.ts      # Factory pour hooks
+│   └── index.ts
+├── utils/
+│   ├── scripts/utils.tsx         # Fonctions utilitaires
+│   ├── styles/                   # Styles globaux
+│   │   ├── global.scss
+│   │   ├── reset.scss
+│   │   ├── _variables.scss
+│   │   └── _mixins.scss
+│   └── types/                    # Types TypeScript
+│       ├── user.types.ts
+│       ├── prospect.types.ts
+│       ├── campaign.types.ts
+│       ├── cart.types.ts
+│       ├── appel.types.ts
+│       ├── vente.types.ts
+│       ├── api.types.ts
+│       └── index.ts
+├── views/
+│   ├── components/               # Composants reutilisables
+│   └── layouts/                  # Pages principales
+├── App.tsx                       # Routing
+└── main.tsx                      # Point d'entree + Providers
 ```
 
-### Ajouter une nouvelle entité
+### Principes Architecturaux
 
-Pour ajouter une nouvelle entité (exemple : Prospect), suivre ce pattern :
+L'application suit les principes SOLID :
 
-#### 1. Créer le modèle
+1. **Single Responsibility** : Chaque fichier a une responsabilite unique
+   - `config.ts` : Configuration Axios uniquement
+   - `User.service.ts` : Communication API utilisateurs uniquement
+   - `UserProvider.tsx` : Gestion de l'etat d'authentification uniquement
 
-```typescript
-// API/models/Prospect.model.ts
-export class ProspectModel {
-  constructor(data: Prospect) { /* ... */ }
+2. **Open/Closed** : Extensions sans modification
+   - Services extensibles via heritage
+   - Modeles extensibles sans toucher aux existants
 
-  // Méthodes métier
-  public getFullName(): string { /* ... */ }
-  public toJSON(): Prospect { /* ... */ }
+3. **Dependency Inversion** : Abstraction des dependances
+   ```
+   Component → useHook → Context → Service → ApiCalls → ApiClient
+   ```
 
-  // Méthodes statiques
-  public static fromJSON(data: Prospect): ProspectModel { /* ... */ }
-}
+---
+
+## Gestion d'Etat (Contexts)
+
+L'application utilise 5 contexts principaux. Chaque context suit le pattern :
+- `Context.tsx` : Definition du context et interface
+- `Provider.tsx` : Implementation avec useState/useCallback
+
+### Hierarchie des Providers
+
+```tsx
+// main.tsx
+<AppProvider>           // Etat global (modales, vues, notifications)
+  <UserProvider>        // Authentification
+    <CampaignProvider>  // Campagne active + produits
+      <ProspectProvider>  // Prospect en cours + appels + ventes
+        <CartProvider>      // Panier de commande
+          <App />
+        </CartProvider>
+      </ProspectProvider>
+    </CampaignProvider>
+  </UserProvider>
+</AppProvider>
 ```
 
-#### 2. Créer le service
+---
 
-```typescript
-// API/services/Prospect.service.ts
-export class ProspectService {
-  private static instance: ProspectService;
+### 1. UserContext - Authentification
 
-  public async getProspects(): Promise<ProspectModel[]> {
-    const response = await apiCalls.get('/prospects');
-    return response.data.items.map(ProspectModel.fromJSON);
-  }
-}
+**Fichiers** : `context/userContext/`
 
-export const prospectService = ProspectService.getInstance();
-```
-
-#### 3. Créer le contexte (optionnel)
-
-```typescript
-// context/prospectContext/ProspectContext.tsx
-export interface ProspectContextType {
-  currentProspect: Prospect | null;
-  loadProspect: (id: number) => Promise<void>;
-}
-
-export const ProspectContext = createContext<ProspectContextType>();
-```
-
-#### 4. Créer le hook
-
-```typescript
-// hooks/useProspect.ts
-export const useProspect = (): ProspectContextType => {
-  const context = useContext(ProspectContext);
-  if (!context) throw new Error('useProspect must be used within ProspectProvider');
-  return context;
-};
-```
-
-## 🔐 Authentication
-
-### Système d'authentification
-
-L'application utilise JWT (JSON Web Tokens) pour l'authentification :
-
-- **Access Token** : 8 heures (renouvelable)
-- **Refresh Token** : 7 jours
-- **Storage** : localStorage
-
-### UserContext
-
-Le contexte utilisateur expose :
-
-```typescript
-interface UserContextType {
-  user: Employe | null;              // Données utilisateur
-  isAuthenticated: boolean;          // Statut authentification
-  isLoading: boolean;                // Chargement en cours
-  error: string | null;              // Message d'erreur
-
-  login: (credentials: LoginCredentials) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
-  clearError: () => void;
-}
-```
-
-### Utilisation dans un composant
-
-```typescript
-import { useUser } from '../hooks/useUser';
-
-const MyComponent = () => {
-  const { user, login, logout, isLoading, error } = useUser();
-
-  const handleLogin = async () => {
-    await login({ email: 'test@antl.com', password: '123456' });
-  };
-
-  return (
-    <div>
-      {user && <p>Bonjour {user.prenom} {user.nom}</p>}
-      {error && <p>{error}</p>}
-      <button onClick={handleLogin} disabled={isLoading}>
-        {isLoading ? 'Connexion...' : 'Se connecter'}
-      </button>
-    </div>
-  );
-};
-```
-
-### Refresh automatique des tokens
-
-Les tokens sont automatiquement rafraîchis par les intercepteurs Axios :
-
-1. Requête API → 401 Unauthorized
-2. Intercepteur détecte le 401
-3. Appel automatique à `/auth/refresh`
-4. Si succès → Nouveau token stocké + Rejeu de la requête originale
-5. Si échec → Déconnexion + Redirection `/login`
-
-### Routes protégées
-
-Utiliser le composant `ProtectedRoute` :
-
-```typescript
-<Route
-  path="/dashboard"
-  element={
-    <ProtectedRoute>
-      <Dashboard />
-    </ProtectedRoute>
-  }
-/>
-```
-
-### Sécurité
-
-- ✅ Protection CSRF (tokens)
-- ✅ Rate limiting (5 tentatives max)
-- ✅ Validation côté client (email, password)
-- ✅ Tokens stockés en localStorage (HTTPS uniquement en prod)
-- ✅ Refresh automatique des tokens
-- ✅ Déconnexion automatique sur 401
-- ✅ Gestion des erreurs réseau
-
-## 🗂️ State Management - Contexts
-
-L'application utilise la Context API pour gérer l'état global. 5 contexts principaux sont disponibles :
-
-### 1. UserContext (Authentication)
-
-Gestion de l'authentification et de l'utilisateur connecté.
-
+**Interface** :
 ```typescript
 interface UserContextType {
+  // Donnees
   user: Employe | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
+
+  // Actions
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   clearError: () => void;
 }
-
-// Usage
-const { user, isAuthenticated, login, logout } = useUser();
 ```
 
-### 2. ProspectContext
+**Flux d'authentification** :
+```
+1. LoginPage → login({ email, password })
+2. UserService → POST /auth/login
+3. Backend → { token, refreshToken, employe }
+4. ApiClient → stocke tokens en localStorage
+5. UserModel → sauvegarde employe en localStorage
+6. UserProvider → setUser(employe)
+7. Navigate → redirect vers '/'
+```
 
-Gestion du prospect en cours de consultation/appel.
+**Persistence** (localStorage) :
+- `accessToken` : JWT access token (8h)
+- `refreshToken` : JWT refresh token (7j)
+- `employe` : Donnees utilisateur serialisees
 
+**Hook** : `useUser()`
+
+---
+
+### 2. ProspectContext - Prospect et Historiques
+
+**Fichiers** : `context/prospectContext/`
+
+**Interface** :
 ```typescript
 interface ProspectContextType {
+  // Prospect
   currentProspect: Prospect | null;
   isLoading: boolean;
   error: string | null;
+  fullName: string;                    // Computed: raison_sociale || prenom + nom
+  typeFiche: TypeFiche;               // Computed: jamais_appele|deja_appele|recycle|client
+
+  // Appels
+  appels: Appel[];
+  appelsLoading: boolean;
+  appelsError: string | null;
+  appelsPagination: { page: number; totalPages: number; total: number };
+
+  // Ventes
+  ventes: Vente[];
+  ventesLoading: boolean;
+  ventesError: string | null;
+
+  // Actions Prospect
   loadProspect: (id: number) => Promise<void>;
   loadProspectByPhone: (phone: string) => Promise<void>;
   clearProspect: () => void;
   clearError: () => void;
+
+  // Actions Appels
+  loadAppels: (page?: number) => Promise<void>;
+  updateAppelNotes: (appelId: number, notes: string) => Promise<void>;
+  clearAppelsError: () => void;
+
+  // Actions Ventes
+  loadVentes: () => Promise<void>;
+  createVente: (data: CreateVenteData) => Promise<Vente>;
+  clearVentesError: () => void;
 }
-
-// Usage
-const { currentProspect, loadProspect } = useProspect();
-
-// Charger un prospect
-await loadProspect(1);
-
-// Rechercher par téléphone
-await loadProspectByPhone('0612345678');
 ```
 
-### 3. CampaignContext
+**Dependances Services** : `prospectService`, `appelService`, `venteService`
 
-Gestion de la campagne active de l'agent et de son catalogue produits.
+**Hook** : `useProspect()`
 
+---
+
+### 3. CampaignContext - Campagne et Catalogue
+
+**Fichiers** : `context/campaignContext/`
+
+**Interface** :
 ```typescript
 interface CampaignContextType {
+  // Campagne
   currentCampaign: Campaign | null;
   isLoading: boolean;
   error: string | null;
 
-  // Produits de la campagne
-  produits: Produit[];
-  categories: CategorieProduit[];
+  // Produits
+  produits: Produit[];               // Liste plate
+  categories: CategorieProduit[];    // Categories uniques
+  categoriesTree: CategorieProduit[]; // Arbre hierarchique
   produitsLoading: boolean;
   produitsError: string | null;
 
+  // Actions
   loadCampaign: (id: number) => Promise<void>;
-  loadProduits: () => Promise<void>;
+  loadProduits: () => Promise<void>;           // Liste paginee
+  loadProduitsGrouped: () => Promise<void>;    // Arbre avec prix
   clearCampaign: () => void;
   clearError: () => void;
   clearProduitsError: () => void;
 }
-
-// Usage
-const { currentCampaign, produits, categories, loadCampaign, loadProduits } = useCampaign();
-
-// Charger une campagne
-await loadCampaign(1);
-
-// Charger les produits de la campagne active
-await loadProduits();
-// Retourne automatiquement les produits + catégories uniques
 ```
 
-### 4. CartContext
+**Modes de chargement produits** :
+- `loadProduits()` : Liste paginee standard
+- `loadProduitsGrouped()` : Arbre hierarchique avec prix extraits des tarifs
 
-Gestion du panier de commande (multi-produits).
+**Hook** : `useCampaign()`
 
+---
+
+### 4. CartContext - Panier
+
+**Fichiers** : `context/cartContext/`
+
+**Interface** :
 ```typescript
 interface CartContextType {
   items: CartItem[];
-  total: number;
-  itemCount: number;
+  total: number;      // Computed avec remises
+  itemCount: number;  // Somme des quantites
+
+  // Actions
   addItem: (produit: Produit, quantite?: number, remise?: number) => void;
   removeItem: (productId: number) => void;
   updateQuantity: (productId: number, quantite: number) => void;
@@ -680,27 +326,28 @@ interface CartContextType {
   clearCart: () => void;
   getItem: (productId: number) => CartItem | undefined;
 }
-
-// Usage
-const { items, total, addItem, removeItem, clearCart } = useCart();
-
-// Ajouter un produit
-addItem(produit, 2, 5.00); // quantité: 2, remise: 5€
-
-// Modifier quantité
-updateQuantity(productId, 3);
-
-// Supprimer
-removeItem(productId);
-
-// Vider le panier
-clearCart();
 ```
 
-### 5. AppContext
+**Logique de prix** (priorite) :
+```typescript
+// 1. Tarif campagne prioritaire sur prix produit
+const tarifPrix = produit.tarif?.prix_unitaire;
+const produitPrix = produit.prix_unitaire;
+const rawPrix = tarifPrix ?? produitPrix;
 
-Gestion de l'état global de l'application (modales, vues, notifications).
+// 2. Prix promo prioritaire si > 0
+const prixFinal = (prixPromo !== null && prixPromo > 0) ? prixPromo : prixUnitaire;
+```
 
+**Hook** : `useCart()`
+
+---
+
+### 5. AppContext - Etat Global Application
+
+**Fichiers** : `context/appContext/`
+
+**Interface** :
 ```typescript
 type ModalType = 'qui-est-ce' | 'qui-sommes-nous' | 'objections' | 'plan-appel' | null;
 type ViewType = 'default' | 'historique-appels' | 'historique-offres' | 'commande';
@@ -710,6 +357,8 @@ interface AppContextType {
   currentView: ViewType;
   notifications: Notification[];
   isAppLoading: boolean;
+
+  // Actions
   openModal: (modal: ModalType) => void;
   closeModal: () => void;
   setView: (view: ViewType) => void;
@@ -718,288 +367,992 @@ interface AppContextType {
   clearNotifications: () => void;
   setAppLoading: (loading: boolean) => void;
 }
-
-// Usage
-const { currentView, setView, openModal, addNotification } = useApp();
-
-// Changer de vue
-setView('historique-appels');
-
-// Ouvrir une modale
-openModal('qui-est-ce');
-
-// Ajouter une notification
-addNotification({
-  type: 'success',
-  message: 'Commande enregistrée',
-  duration: 3000
-});
 ```
 
-### Hiérarchie des Providers
+**Systeme de notifications** :
+- Types : `success`, `error`, `warning`, `info`
+- Auto-dismiss avec `duration` (ms)
+- ID unique genere : `notif-${Date.now()}-${Math.random()}`
 
-Les providers sont imbriqués dans `main.tsx` dans cet ordre :
+**Hook** : `useApp()`
+
+---
+
+## Couche API
+
+### Architecture
+
+```
+Composant
+    ↓ useHook()
+Context Provider
+    ↓ service.method()
+Service (Singleton)
+    ↓ apiCalls.get/post/put/patch/delete()
+APICalls
+    ↓ api.request()
+ApiClient (config.ts)
+    ↓ axios instance
+Backend API
+```
+
+---
+
+### ApiClient (`API/config.ts`)
+
+**Pattern** : Singleton via `ApiClient.getInstance()`
+
+**Configuration** :
+- Base URL : `VITE_API_BASE_URL` (default: `http://localhost:8800/api`)
+- Timeout : 30 secondes
+- Headers : Content-Type application/json
+
+**Intercepteurs Request** :
+```typescript
+// Ajoute automatiquement le token Bearer
+config.headers.Authorization = `Bearer ${accessToken}`;
+```
+
+**Intercepteurs Response** :
+- Refresh automatique sur 401 (sauf endpoints auth)
+- Queue des requetes pendant le refresh
+- Redirect vers `/login` si refresh echoue
+
+**Methodes** :
+```typescript
+getAccessToken(): string | null
+getRefreshToken(): string | null
+setTokens(accessToken: string, refreshToken: string): void
+clearTokens(): void
+hasValidToken(): boolean
+```
+
+---
+
+### APICalls (`API/APICalls.tsx`)
+
+**Methodes generiques avec retry logic** :
+```typescript
+get<T>(endpoint: string, params?: object): Promise<T>
+post<T>(endpoint: string, data?: object): Promise<T>
+put<T>(endpoint: string, data?: object): Promise<T>
+patch<T>(endpoint: string, data?: object): Promise<T>
+delete<T>(endpoint: string): Promise<T>
+```
+
+**Retry Logic** :
+- Max retries : 3 tentatives
+- Delai progressif : 1s, 2s, 3s
+- Condition : Erreurs reseau uniquement (timeout, perte connexion)
+- Log : Console warnings
+
+---
+
+### API Helpers (`API/apiHelpers.ts`)
 
 ```typescript
-<AppProvider>           // État global app
-  <UserProvider>        // Authentification
-    <CampaignProvider>  // Campagne active
-      <ProspectProvider>  // Prospect en cours
-        <CartProvider>      // Panier
-          <App />
-        </CartProvider>
-      </ProspectProvider>
-    </CampaignProvider>
-  </UserProvider>
-</AppProvider>
+// Lance une erreur si la reponse API n'est pas success
+function throwIfApiError<T>(response: ApiResponse<T>, defaultMessage: string): T
+
+// Extrait les donnees paginées d'une reponse API
+function extractPaginatedData<T>(
+  response: ApiResponse<T>,
+  itemsKey: string,
+  defaultMessage: string
+): {
+  items: T[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
 ```
 
-## 🧩 Composants Réutilisables
+---
 
-### Button
+### Services
+
+Tous les services suivent le pattern Singleton avec `getInstance()`.
+
+#### UserService
+```typescript
+login(credentials: LoginCredentials): Promise<UserModel>
+logout(): Promise<void>
+getCurrentUser(): Promise<UserModel>
+refreshToken(): Promise<string>
+getStoredUser(): UserModel | null
+hasValidToken(): boolean
+clearSession(): void
+```
+
+#### ProspectService
+```typescript
+getProspectById(id: number): Promise<ProspectModel>
+getProspectByPhone(phone: string): Promise<ProspectModel>
+getProspects(params: {
+  page?: number;
+  limit?: number;
+  statut?: ProspectStatut;
+  type_prospect?: ProspectType;
+  search?: string;
+}): Promise<{ prospects, total, page, totalPages }>
+```
+
+#### AppelService
+```typescript
+createAppel(data: CreateAppelData): Promise<Appel>
+getAppelById(id: number): Promise<Appel>
+getAppelsByProspect(prospectId: number, params: {
+  page?: number;
+  limit?: number;
+}): Promise<{ appels, total, page, totalPages }>
+updateAppel(id: number, data: UpdateAppelData): Promise<Appel>
+terminerAppel(id: number): Promise<Appel>
+```
+
+#### VenteService
+```typescript
+createVente(data: CreateVenteData): Promise<Vente>
+getVenteById(id: number): Promise<Vente>
+getVentesByProspect(prospectId: number, params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{ ventes, total, page, totalPages }>
+updateStatut(id: number, statut: StatutVente): Promise<Vente>
+```
+
+#### ProduitService
+```typescript
+getProduitById(id: number): Promise<ProduitModel>
+getProduits(params?: {
+  page?: number;
+  limit?: number;
+  categorie?: number;
+  actif?: boolean;
+  search?: string;
+  grouped?: boolean;
+}): Promise<{ produits, total, page, totalPages }>
+getProduitsGrouped(params?: { actif?: boolean }): Promise<{
+  categories: CategorieProduit[];  // Arbre hierarchique avec produits et prix
+  totalProducts: number;
+}>
+getProduitsByCampaign(campaignId: number, params?: {
+  page?: number;
+  limit?: number;
+}): Promise<{ produits, pagination }>
+```
+
+#### CampaignService
+```typescript
+getCampaignById(id: number): Promise<CampaignModel>
+getCampaigns(params?: {
+  page?: number;
+  limit?: number;
+  actif?: boolean;
+}): Promise<{ campaigns, total, page, totalPages }>
+```
+
+---
+
+### Modeles (`API/models/`)
+
+Les modeles encapsulent la logique metier et la transformation des donnees.
+
+#### UserModel
+```typescript
+class UserModel {
+  // Donnees
+  id_employe: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  // ...
+
+  // Methodes
+  getFullName(): string
+  toJSON(): Employe
+  saveToLocalStorage(): void
+
+  // Statiques
+  static fromJSON(data: Employe): UserModel
+  static fromLocalStorage(): UserModel | null
+}
+```
+
+#### ProspectModel
+```typescript
+class ProspectModel {
+  // Methodes
+  getFullName(): string          // raison_sociale || prenom + nom
+  getTypeFiche(): TypeFiche      // jamais_appele|deja_appele|recycle|client
+  toJSON(): Prospect
+
+  // Statiques
+  static fromJSON(data: Prospect): ProspectModel
+}
+```
+
+---
+
+## Systeme de Types
+
+### Types Prospect (`types/prospect.types.ts`)
 
 ```typescript
-<Button
-  variant="primary"      // primary | secondary | danger | ghost
-  size="medium"          // small | medium | large
-  isLoading={false}
-  fullWidth={false}
-  onClick={handleClick}
->
-  Cliquer ici
-</Button>
+type ProspectType = 'Particulier' | 'Entreprise';
+
+type ProspectStatut =
+  | 'nouveau'
+  | 'contacte'
+  | 'interesse'
+  | 'rappel'
+  | 'non_interesse'
+  | 'vente_conclue';
+
+type TypeFiche = 'jamais_appele' | 'deja_appele' | 'recycle' | 'client';
+
+interface Prospect {
+  id_prospect: number;
+  type_prospect: ProspectType;
+  nom: string;
+  prenom?: string;
+  raison_sociale?: string;
+  email?: string;
+  telephone: string;
+  adresse?: string;
+  code_postal?: string;
+  ville?: string;
+  pays?: string;
+  statut: ProspectStatut;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
 ```
 
-### Input
+### Types Appel (`types/appel.types.ts`)
 
 ```typescript
-<Input
-  label="Email"
-  type="email"
-  placeholder="votre.email@antl.com"
-  error="Email invalide"
-  helperText="Texte d'aide"
-  required
-/>
+type StatutAppel =
+  | 'abouti'
+  | 'non_abouti'
+  | 'occupe'
+  | 'pas_de_reponse'
+  | 'messagerie'
+  | 'rdv_pris'
+  | 'vente_conclue'
+  | 'refus_definitif';
+
+interface Appel {
+  id_appel: number;
+  id_prospect: number;
+  id_agent: number;
+  id_campagne: number;
+  date_appel: string;
+  duree_secondes?: number | null;
+  statut: StatutAppel;
+  notes?: string | null;
+  abouti: boolean;
+  created_at: string;
+  updated_at: string;
+  Employe?: Employe;
+}
+
+interface CreateAppelData {
+  id_prospect: number;
+  id_campagne: number;
+  statut: StatutAppel;
+  notes?: string;
+}
+
+interface UpdateAppelData {
+  duree_secondes?: number;
+  statut?: StatutAppel;
+  notes?: string;
+}
 ```
 
-### Loader
+### Types Vente (`types/vente.types.ts`)
 
 ```typescript
-<Loader
-  size="medium"          // small | medium | large
-  color="primary"        // primary | white | gray
-/>
+type StatutVente = 'en_attente' | 'validee' | 'annulee';
+type ModePaiement = 'CB' | 'Prelevement' | 'Cheque' | 'Virement';
+
+interface Vente {
+  id_vente: number;
+  id_prospect: number;
+  id_agent: number;
+  id_campagne: number;
+  id_appel?: number | null;
+  date_vente: string;
+  montant_total: number;
+  mode_paiement?: ModePaiement | null;
+  statut: StatutVente;
+  created_at: string;
+  updated_at: string;
+  details?: DetailVente[];
+  DetailsVentes?: DetailVente[];  // Alias Sequelize
+}
+
+interface DetailVente {
+  id_detail?: number;
+  id_produit: number;
+  quantite: number;
+  prix_unitaire: number;
+  remise: number;
+  montant_ligne?: number;
+  Produit?: Produit;
+}
+
+interface CreateVenteData {
+  id_prospect: number;
+  id_campagne: number;
+  mode_paiement?: ModePaiement;
+  notes?: string;
+  adresse_livraison?: string;
+  code_postal_livraison?: string;
+  ville_livraison?: string;
+  pays_livraison?: string;
+  details: Array<{
+    id_produit: number;
+    quantite: number;
+    prix_unitaire: number;
+    remise: number;
+  }>;
+}
 ```
 
-### ErrorMessage
+### Types Utilisateur (`types/user.types.ts`)
 
 ```typescript
-<ErrorMessage
-  message="Une erreur est survenue"
-  onClose={() => clearError()}
-/>
+interface Employe {
+  id_employe: number;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone?: string;
+  date_embauche?: string;
+  id_poste?: number;
+  id_departement?: number;
+  actif: boolean;
+  created_at?: string;
+  updated_at?: string;
+  Poste?: Poste;
+  Departement?: Departement;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    token: string;
+    refreshToken: string;
+    employe: Employe;
+  };
+}
 ```
 
-### ProtectedRoute
+### Types Produit et Panier (`types/cart.types.ts`)
 
 ```typescript
-<ProtectedRoute>
-  <PrivatePage />
-</ProtectedRoute>
+interface Produit {
+  id_produit: number;
+  code_produit?: string;
+  nom_produit: string;
+  description?: string;
+  type_produit?: string;
+  prix_unitaire?: string | number;
+  prix_promo?: string | number;
+  id_categorie?: number;
+  attributs_specifiques?: Record<string, unknown>;
+  actif: boolean;
+  created_at: string;
+  updated_at: string;
+  categorie?: CategorieProduit;
+  Categorie?: CategorieProduit;  // Alias
+  tarif?: Tarif;                 // Premier tarif disponible
+}
+
+interface CategorieProduit {
+  id_categorie: number;
+  nom_categorie: string;
+  description?: string;
+  id_parent?: number | null;
+  niveau?: number;
+  created_at?: string;
+  updated_at?: string;
+  sousCategories?: CategorieProduit[];  // Enfants (arbre)
+  produits?: Produit[];                  // Produits de cette categorie
+  categorieParente?: CategorieProduit;
+}
+
+interface Tarif {
+  id_tarif: number;
+  id_produit?: number;
+  id_campagne?: number;
+  prix_unitaire?: string | number;
+  prix_promo?: string | number;
+  date_debut_validite?: string;
+  date_fin_validite?: string;
+  devise?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface CartItem {
+  produit: Produit;
+  quantite: number;
+  prix_unitaire: number;  // Prix final utilise
+  remise: number;         // Remise en euros
+}
 ```
 
-### TypeFicheBadge
-
-Badge coloré pour afficher le type de fiche prospect.
+### Types API (`types/api.types.ts`)
 
 ```typescript
-<TypeFicheBadge type="jamais_appele" />
-// Affiche un badge vert "Jamais appelé"
+interface ApiResponse<T = unknown> {
+  success: boolean;
+  message: string;
+  data?: T;
+}
 
-<TypeFicheBadge type="deja_appele" />
-// Affiche un badge orange "Déjà appelé"
+interface Pagination {
+  page: number;
+  totalPages: number;
+  total: number;
+}
 
-<TypeFicheBadge type="recycle" />
-// Affiche un badge bleu "Recyclé"
-
-<TypeFicheBadge type="client" />
-// Affiche un badge violet "Client"
+interface PaginatedResponse<T> {
+  success: boolean;
+  message: string;
+  data: {
+    items: T[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
 ```
 
-### ProspectInfoHeader
+---
 
-Composant d'affichage des informations principales d'un prospect.
+## Composants
 
+### Arborescence des Composants
+
+```
+views/
+├── layouts/
+│   ├── loginPage/
+│   │   ├── LoginPage.tsx
+│   │   └── loginPage.scss
+│   └── landingPage/
+│       ├── LandingPage.tsx
+│       └── landingPage.scss
+└── components/
+    ├── button/
+    ├── input/
+    ├── loader/
+    ├── errorMessage/
+    ├── header/
+    ├── footer/
+    ├── protectedRoute/
+    ├── typeFicheBadge/
+    ├── prospectInfoHeader/
+    ├── actionButtons/
+    ├── historiqueAppels/
+    │   ├── HistoriqueAppels.tsx
+    │   ├── AppelCard.tsx
+    │   └── index.ts
+    ├── historiqueVentes/
+    │   ├── HistoriqueVentes.tsx
+    │   ├── VenteCard.tsx
+    │   └── index.ts
+    ├── catalogueProduits/
+    │   ├── CatalogueProduits.tsx
+    │   ├── CategoryTree.tsx
+    │   ├── ProduitCard.tsx
+    │   └── index.ts
+    ├── panier/
+    │   ├── Panier.tsx
+    │   ├── PanierItem.tsx
+    │   └── index.ts
+    └── confirmOrderModal/
+        ├── ConfirmOrderModal.tsx
+        └── index.ts
+```
+
+---
+
+### Layouts
+
+#### LoginPage
+
+**Fichier** : `views/layouts/loginPage/LoginPage.tsx`
+
+**Props** : Aucune
+
+**Hooks** : `useUser`, `useNavigate`
+
+**Etat local** :
 ```typescript
-<ProspectInfoHeader prospect={currentProspect} />
-// Affiche: Nom, Prénom, Téléphone, Email, Ville, Type de fiche
+formData: { email: string; password: string }
+formErrors: { email: string; password: string }
+attemptCount: number
+isBlocked: boolean
 ```
 
-### ActionButtons
+**Fonctionnalites** :
+- Validation email (regex) et password (min 6 chars)
+- Protection brute-force : 5 tentatives → blocage 60s
+- Redirect automatique si deja authentifie
+- Effacement erreurs a la saisie
 
-Boutons d'action pour afficher historiques et autres vues.
+---
 
+#### LandingPage
+
+**Fichier** : `views/layouts/landingPage/LandingPage.tsx`
+
+**Props** : Aucune
+
+**Hooks** : `useProspect`, `useCampaign`
+
+**Etat local** :
 ```typescript
-<ActionButtons
-  onInformationProspect={() => setView('default')}
-  onQuiEstCe={() => openModal('qui-est-ce')}
-  onQuiSommesNous={() => openModal('qui-sommes-nous')}
-  onHistoriqueAppels={() => setView('historique-appels')}
-  onHistoriqueOffres={() => setView('historique-offres')}
-  onCommande={() => {
-    setView('commande');
-    loadProduits(); // Charger les produits de la campagne
-  }}
-/>
+activeView: 'default' | 'appels' | 'offres' | 'commande'
+isModalOpen: boolean
+showSuccessMessage: boolean
 ```
-
-### HistoriqueAppels
-
-Composant d'affichage de l'historique des appels d'un prospect avec pagination.
-
-```typescript
-<HistoriqueAppels />
-// Utilise automatiquement le currentProspect du ProspectContext
-// Affiche la liste des appels avec:
-// - Date/heure formatée (format français)
-// - Durée de l'appel (MM:SS)
-// - Statut avec badge coloré (success/warning/danger)
-// - Agent ayant effectué l'appel
-// - Notes éditables (click "Modifier" → édition inline → Save/Cancel)
-// - Pagination (20 appels par page)
-// - États: loading, error, empty
-```
-
-**Fonctionnalités** :
-- ✅ Édition inline des notes d'appel
-- ✅ Pagination automatique (prev/next)
-- ✅ 8 statuts d'appel supportés avec codes couleur
-- ✅ Formatage automatique durée (minutes + secondes)
-- ✅ Tri chronologique DESC (plus récents en premier)
 
 **Composants enfants** :
-- `AppelCard.tsx` : Card individuelle pour chaque appel
+- `ProspectInfoHeader` - Informations prospect
+- `ActionButtons` - Boutons de navigation
+- `HistoriqueAppels` - (si activeView === 'appels')
+- `HistoriqueVentes` - (si activeView === 'offres')
+- `CatalogueProduits` + `Panier` - (si activeView === 'commande')
+- `ConfirmOrderModal` - (si isModalOpen)
 
-### HistoriqueVentes
-
-Composant d'affichage de l'historique des ventes/offres d'un prospect.
-
+**Initialisation** :
 ```typescript
-<HistoriqueVentes />
-// Utilise automatiquement le currentProspect du ProspectContext
-// Affiche la liste des ventes avec:
-// - Date formatée (format français)
-// - Statut avec badge coloré (validee/en_attente/annulee)
-// - Montant total formaté (EUR)
-// - Mode de paiement (CB, Prélèvement, Chèque, Virement)
-// - Bouton "Voir détails" → expand/collapse animé
-// - Tableau détaillé des produits (nom, qté, prix, remise, total)
-// - États: loading, error, empty
+useEffect(() => {
+  loadProspect(1);
+  loadCampaign(1);
+}, []);
 ```
 
-**Fonctionnalités** :
-- ✅ Expand/collapse animé pour voir détails produits
-- ✅ Tableau complet des produits commandés
-- ✅ Calcul automatique du total ligne (prix × qté - remise)
-- ✅ Formatage currency EUR (ex: "149,99 €")
-- ✅ Support DetailsVentes et details (alias Sequelize)
-- ✅ Tri chronologique DESC (plus récentes en premier)
+---
+
+### Composants Metier
+
+#### ProspectInfoHeader
+
+**Fichier** : `views/components/prospectInfoHeader/ProspectInfoHeader.tsx`
+
+**Props** : Aucune (utilise `useProspect`)
+
+**Affiche** :
+- Nom complet du prospect (computed)
+- Badge TypeFiche avec couleur
+- Tableau : nom, prenom, telephone, email, ville, type_prospect
+
+---
+
+#### ActionButtons
+
+**Fichier** : `views/components/actionButtons/ActionButtons.tsx`
+
+**Props** :
+```typescript
+interface ActionButtonsProps {
+  onInformationProspect?: () => void;
+  onQuiEstCe?: () => void;
+  onQuiSommesNous?: () => void;
+  onHistoriqueAppels?: () => void;
+  onHistoriqueOffres?: () => void;
+  onCommande?: () => void;
+}
+```
+
+**Structure** : Deux groupes de boutons (secondaires et primaires)
+
+---
+
+#### HistoriqueAppels
+
+**Fichier** : `views/components/historiqueAppels/HistoriqueAppels.tsx`
+
+**Props** : Aucune (utilise `useProspect`)
+
+**Fonctionnalites** :
+- Pagination avec boutons prev/next
+- Edition inline des notes d'appel
+- Etats : loading, error, empty
+- Affiche le total d'appels
+
+**Composant enfant** : `AppelCard`
+
+---
+
+#### AppelCard
+
+**Fichier** : `views/components/historiqueAppels/AppelCard.tsx`
+
+**Props** :
+```typescript
+interface AppelCardProps {
+  appel: Appel;
+  onUpdateNotes: (appelId: number, notes: string) => Promise<void>;
+}
+```
+
+**Affiche** :
+- Date/heure (format francais)
+- Duree (MM:SS)
+- Statut avec badge colore
+- Agent
+- Notes editables (click Modifier → edition inline → Save/Cancel)
+
+**Statuts et couleurs** :
+| Statut | Couleur |
+|--------|---------|
+| abouti, vente_conclue | success (vert) |
+| rdv_pris | warning (orange) |
+| non_abouti, occupe, pas_de_reponse, messagerie, refus_definitif | danger (rouge) |
+
+---
+
+#### HistoriqueVentes
+
+**Fichier** : `views/components/historiqueVentes/HistoriqueVentes.tsx`
+
+**Props** : Aucune (utilise `useProspect`)
+
+**Fonctionnalites** :
+- Charge les ventes au mount
+- Etats : loading, error, empty
+
+**Composant enfant** : `VenteCard`
+
+---
+
+#### VenteCard
+
+**Fichier** : `views/components/historiqueVentes/VenteCard.tsx`
+
+**Props** :
+```typescript
+interface VenteCardProps {
+  vente: Vente;
+}
+```
+
+**Fonctionnalites** :
+- Expand/collapse anime pour voir les details
+- Tableau des produits (nom, qte, prix, remise, total ligne)
+- Supporte `details` et `DetailsVentes` (alias Sequelize)
+
+**Affiche** :
+- Date (format francais)
+- Statut avec badge
+- Montant total (EUR)
+- Mode de paiement
+
+---
+
+#### CatalogueProduits
+
+**Fichier** : `views/components/catalogueProduits/CatalogueProduits.tsx`
+
+**Props** : Aucune (utilise `useCampaign`, `useCart`)
+
+**Etat local** :
+```typescript
+viewMode: 'tree' | 'search'
+searchTerm: string
+```
+
+**Fonctionnalites** :
+- Deux modes : arbre hierarchique ou recherche
+- Recherche sur : nom_produit, description, code_produit
+- Bascule auto vers mode search a la saisie
+- Charge les produits groupes au mount
 
 **Composants enfants** :
-- `VenteCard.tsx` : Card expandable pour chaque vente
+- `CategoryTree` - (mode tree)
+- `ProduitCard` - (mode search/grid)
 
-### CatalogueProduits
+---
 
-Composant d'affichage du catalogue de produits avec filtres avancés.
+#### CategoryTree
 
+**Fichier** : `views/components/catalogueProduits/CategoryTree.tsx`
+
+**Props** :
 ```typescript
-<CatalogueProduits />
-// Utilise automatiquement le CampaignContext pour récupérer les produits
-// Affiche le catalogue avec:
-// - Compteur de produits disponibles
-// - Barre de recherche (nom, description)
-// - Filtres par catégorie (buttons dynamiques)
-// - Grille responsive de produits (280px min par card)
-// - Bouton "Ajouter au panier" sur chaque produit
-// - États: loading, error, empty
+interface CategoryTreeProps {
+  categories: CategorieProduit[];
+  onAddToCart: (produit: Produit) => void;
+}
 ```
 
-**Fonctionnalités** :
-- ✅ Recherche textuelle en temps réel (nom + description)
-- ✅ Filtrage par catégorie (extraction automatique des catégories uniques)
-- ✅ Filtres combinables (recherche + catégorie)
-- ✅ Calcul de filteredProduits avec useMemo (performance optimale)
-- ✅ Grille responsive (auto-fill minmax 280px)
-- ✅ Chargement lazy (produits chargés au clic "Commande")
-- ✅ Ajout direct au panier avec addItem()
+**Fonctionnalites** :
+- Composant recursif pour navigation hierarchique
+- Affiche les produits de chaque categorie
+- Sous-categories expandables
 
-**Composants enfants** :
-- `ProduitCard.tsx` : Card individuelle pour chaque produit avec badge catégorie
+---
 
-**Architecture** :
-```
-CampaignProvider → loadProduits() → ProduitService → API
-    ↓
-CatalogueProduits → useCampaign() → produits, categories
-    ↓
-useMemo → filteredProduits (searchTerm + selectedCategorie)
-    ↓
-ProduitCard → addItem() → CartContext
-```
+#### ProduitCard
 
-### Panier
+**Fichier** : `views/components/catalogueProduits/ProduitCard.tsx`
 
-Composant sidebar de gestion du panier de commande.
-
+**Props** :
 ```typescript
-<Panier onValidateOrder={() => handleValidation()} />
-// Affiche le panier avec:
-// - Header avec badge compteur d'items
-// - Liste scrollable des produits ajoutés
-// - Contrôles quantité (+/-) sur chaque item
-// - Prix unitaire, remise, sous-total par ligne
-// - Total général calculé automatiquement
-// - Bouton "Vider le panier" (avec confirmation)
-// - Bouton "Valider la commande"
-// - État vide avec message + icône
+interface ProduitCardProps {
+  produit: Produit;
+  onAddToCart: (produit: Produit) => void;
+}
 ```
 
-**Fonctionnalités** :
-- ✅ Gestion quantités avec contrôles +/- (min: 1)
-- ✅ Calcul automatique sous-total (prix × qté - remise)
-- ✅ Calcul automatique total général
-- ✅ Badge compteur d'items dans le header
-- ✅ Confirmation avant vidage du panier
-- ✅ Formatage currency EUR (Intl.NumberFormat)
-- ✅ Scrollbar custom pour liste items
-- ✅ Footer sticky avec total et actions
-- ✅ Suppression item individuelle
-- ✅ État vide avec UI dédiée
+**Affiche** :
+- Nom du produit
+- Description (tronquee)
+- Badge categorie
+- Prix (avec logique tarif/promo)
+- Bouton "Ajouter au panier"
 
-**Composants enfants** :
-- `PanierItem.tsx` : Item du panier avec contrôles quantité et bouton supprimer
-
-**Usage dans LandingPage** :
+**Logique de prix** :
 ```typescript
-// Layout grid: catalogue (1fr) + panier (400px fixe)
-<div className="landing-page__commande">
-  <div className="landing-page__catalogue">
-    <CatalogueProduits />
-  </div>
-  <div className="landing-page__panier">
-    <Panier onValidateOrder={handleValidateOrder} />
-  </div>
-</div>
+// Priorite: tarif campagne > prix produit
+const tarifPrix = produit.tarif?.prix_unitaire;
+const produitPrix = produit.prix_unitaire;
+const rawPrix = tarifPrix ?? produitPrix;
+
+// Promo prioritaire si presente
+const prixFinal = (prixPromo > 0) ? prixPromo : prixUnitaire;
 ```
 
-## 🎨 Design System
+---
 
-L'application utilise un design system complet inspiré du design Apple.
+#### Panier
 
-### Variables SCSS (_variables.scss)
+**Fichier** : `views/components/panier/Panier.tsx`
 
-Toutes les variables de design sont centralisées dans `utils/styles/_variables.scss` :
+**Props** :
+```typescript
+interface PanierProps {
+  onValidateOrder?: () => void;
+}
+```
+
+**Hooks** : `useCart`
+
+**Fonctionnalites** :
+- Badge compteur d'items
+- Etat vide avec message
+- Calcul total automatique
+- Confirmation avant vidage
+- Callback validation commande
+
+**Composant enfant** : `PanierItem`
+
+---
+
+#### PanierItem
+
+**Fichier** : `views/components/panier/PanierItem.tsx`
+
+**Props** :
+```typescript
+interface PanierItemProps {
+  item: CartItem;
+  onUpdateQuantity: (productId: number, quantite: number) => void;
+  onRemove: (productId: number) => void;
+}
+```
+
+**Fonctionnalites** :
+- Boutons +/- pour quantite (min: 1)
+- Bouton supprimer
+- Affiche : prix unitaire, remise, sous-total
+
+---
+
+#### ConfirmOrderModal
+
+**Fichier** : `views/components/confirmOrderModal/ConfirmOrderModal.tsx`
+
+**Props** :
+```typescript
+interface ConfirmOrderModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+```
+
+**Hooks** : `useCart`, `useProspect`, `useCampaign`, `useUser`
+
+**Champs du formulaire** :
+- **Livraison** : adresse, code_postal, ville, pays
+- **Paiement** : radio (Prelevement, Cheque, Virement)
+- **Notes** : textarea
+
+**Validation** :
+```typescript
+{
+  adresse: 'Adresse requise',
+  code_postal: 'Code postal requis (5 chiffres)', // regex: ^\d{5}$
+  ville: 'Ville requise',
+  pays: 'Pays requis'
+}
+```
+
+**Fonctionnalites** :
+- Recap des items du panier
+- Pre-remplissage depuis donnees prospect
+- Calcul totaux par ligne
+- Loading state pendant soumission
+- Vide le panier apres succes
+
+---
+
+### Composants UI Reutilisables
+
+#### Button
+
+**Props** :
+```typescript
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  size?: 'small' | 'medium' | 'large';
+  isLoading?: boolean;
+  fullWidth?: boolean;
+}
+```
+
+#### Input
+
+**Props** : Standard HTMLInputElement + `label`, `error`
+
+#### Loader
+
+**Props** :
+```typescript
+interface LoaderProps {
+  size?: 'small' | 'medium' | 'large';
+  color?: 'primary' | 'white' | 'gray';
+}
+```
+
+#### ErrorMessage
+
+**Props** :
+```typescript
+interface ErrorMessageProps {
+  message: string;
+  onClose?: () => void;
+}
+```
+
+#### TypeFicheBadge
+
+**Props** :
+```typescript
+interface TypeFicheBadgeProps {
+  typeFiche: TypeFiche;
+}
+```
+
+**Couleurs** :
+| Type | Couleur | Label |
+|------|---------|-------|
+| jamais_appele | Vert | Jamais appele |
+| deja_appele | Orange | Deja appele |
+| recycle | Bleu | Recycle |
+| client | Violet | Client |
+
+#### ProtectedRoute
+
+**Props** :
+```typescript
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+```
+
+**Comportement** : Redirige vers `/login` si non authentifie
+
+---
+
+## Flux de Donnees
+
+### Chargement Prospect
+
+```
+LandingPage (useEffect)
+  → useProspect().loadProspect(1)
+    → ProspectProvider.loadProspect
+      → prospectService.getProspectById
+        → apiCalls.get('/prospects/1')
+          → ApiClient.request
+            → Backend GET /api/prospects/1
+        → ProspectModel.fromJSON(response.data)
+      → setCurrentProspect(prospectModel)
+      → setFullName(computed)
+      → setTypeFiche(computed)
+```
+
+### Creation de Commande
+
+```
+ConfirmOrderModal (submit)
+  → useProspect().createVente(data)
+    → ProspectProvider.createVente
+      → venteService.createVente({
+          id_prospect,
+          id_campagne,
+          mode_paiement,
+          notes,
+          adresse_livraison,
+          code_postal_livraison,
+          ville_livraison,
+          pays_livraison,
+          details: [ { id_produit, quantite, prix_unitaire, remise }, ... ]
+        })
+        → apiCalls.post('/ventes', data)
+          → Backend POST /api/ventes
+      → loadVentes() // Refresh
+  → useCart().clearCart()
+  → onSuccess()
+  → onClose()
+```
+
+### Ajout au Panier
+
+```
+ProduitCard (click "Ajouter")
+  → useCart().addItem(produit)
+    → CartProvider.addItem
+      → Check si item existe deja
+        → Si oui: incrementer quantite
+        → Si non: creer CartItem
+          → Calculer prix (tarif > produit, promo > unitaire)
+          → Ajouter a items[]
+      → Recalculer total et itemCount
+```
+
+---
+
+## Design System
+
+### Variables SCSS (`_variables.scss`)
 
 ```scss
 // Couleurs principales
@@ -1008,26 +1361,26 @@ $colorSuccess: #34c759;
 $colorWarning: #ff9500;
 $colorDanger: #ff3b30;
 
-// Palette grayscale
+// Grayscale
 $colorBlack: #1d1d1f;
 $colorGray900: #424245;
 $colorGray300: #d2d2d7;
 $colorWhite: #ffffff;
 
-// Couleurs type de fiche
-$colorJamaisAppele: #34c759;      // Vert
-$colorDejaAppele: #ff9500;        // Orange
-$colorRecycle: #007aff;           // Bleu
-$colorClient: #5e5ce6;            // Violet
+// Types de fiche
+$colorJamaisAppele: #34c759;  // Vert
+$colorDejaAppele: #ff9500;    // Orange
+$colorRecycle: #007aff;       // Bleu
+$colorClient: #5e5ce6;        // Violet
 
-// Spacing scale
-$spacing-xs: 0.25rem;    // 4px
-$spacing-sm: 0.5rem;     // 8px
-$spacing-md: 1rem;       // 16px
-$spacing-lg: 1.5rem;     // 24px
-$spacing-xl: 2rem;       // 32px
-$spacing-2xl: 3rem;      // 48px
-$spacing-3xl: 4rem;      // 64px
+// Spacing
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 1rem;      // 16px
+$spacing-lg: 1.5rem;    // 24px
+$spacing-xl: 2rem;      // 32px
+$spacing-2xl: 3rem;     // 48px
+$spacing-3xl: 4rem;     // 64px
 
 // Border radius
 $radius-sm: 4px;
@@ -1049,18 +1402,16 @@ $breakpoint-lg: 1024px;
 $breakpoint-xl: 1280px;
 $breakpoint-2xl: 1536px;
 
-// Z-index layers
+// Z-index
 $z-dropdown: 1000;
 $z-modal: 1050;
 $z-tooltip: 1070;
 ```
 
-### Mixins SCSS (_mixins.scss)
-
-Mixins réutilisables pour styles communs :
+### Mixins SCSS (`_mixins.scss`)
 
 ```scss
-// Flexbox utilities
+// Flexbox
 @mixin flex-center {
   display: flex;
   align-items: center;
@@ -1073,15 +1424,20 @@ Mixins réutilisables pour styles communs :
   justify-content: space-between;
 }
 
-// Responsive breakpoints
+// Responsive
 @mixin responsive($breakpoint) {
-  @if $breakpoint == lg {
+  @if $breakpoint == sm {
+    @media (min-width: vars.$breakpoint-sm) { @content; }
+  } @else if $breakpoint == md {
+    @media (min-width: vars.$breakpoint-md) { @content; }
+  } @else if $breakpoint == lg {
     @media (min-width: vars.$breakpoint-lg) { @content; }
+  } @else if $breakpoint == xl {
+    @media (min-width: vars.$breakpoint-xl) { @content; }
   }
-  // Autres breakpoints...
 }
 
-// Button base styles
+// Button base
 @mixin button-base {
   display: inline-flex;
   align-items: center;
@@ -1103,14 +1459,14 @@ Mixins réutilisables pour styles communs :
   }
 }
 
-// Focus ring (accessibilité)
+// Focus ring (accessibilite)
 @mixin focus-ring($color: vars.$colorPrimary) {
   outline: none;
   box-shadow: 0 0 0 3px rgba($color, 0.2);
 }
 ```
 
-### Utilisation dans les composants
+### Utilisation
 
 ```scss
 @use '../../utils/styles/variables' as vars;
@@ -1138,110 +1494,137 @@ Mixins réutilisables pour styles communs :
 }
 ```
 
-## 📝 Conventions
+---
 
-### Nommage des fichiers
+## Conventions
 
-- **Composants** : PascalCase + `.tsx` (ex: `Button.tsx`)
-- **Styles** : camelCase + `.scss` (ex: `button.scss`)
-- **Hooks** : camelCase + `use` prefix (ex: `useUser.ts`)
-- **Types** : camelCase + `.types.ts` (ex: `user.types.ts`)
-- **Services** : PascalCase + `.service.ts` (ex: `User.service.ts`)
-- **Models** : PascalCase + `.model.ts` (ex: `User.model.ts`)
+### Nommage des Fichiers
 
-### Organisation du code
+| Type | Convention | Exemple |
+|------|------------|---------|
+| Composants | PascalCase + `.tsx` | `Button.tsx` |
+| Styles | camelCase + `.scss` | `button.scss` |
+| Hooks | camelCase + `use` prefix | `useUser.ts` |
+| Types | camelCase + `.types.ts` | `user.types.ts` |
+| Services | PascalCase + `.service.ts` | `User.service.ts` |
+| Models | PascalCase + `.model.ts` | `User.model.ts` |
+| Context | PascalCase + `Context.tsx` | `UserContext.tsx` |
+| Provider | PascalCase + `Provider.tsx` | `UserProvider.tsx` |
 
-1. **Imports** regroupés par catégorie :
-   ```typescript
-   // Styles
-   import './component.scss';
+### Organisation des Imports
 
-   // React et libs externes
-   import { useState } from 'react';
-   import { useNavigate } from 'react-router-dom';
+```typescript
+// 1. Styles
+import './component.scss';
 
-   // Types
-   import type { ComponentProps } from './types';
+// 2. React et libs externes
+import { useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-   // Hooks et contexts
-   import { useUser } from '../hooks/useUser';
+// 3. Types (avec 'type' keyword)
+import type { ComponentProps } from './types';
 
-   // Composants
-   import Button from '../button/Button';
-   ```
+// 4. Hooks et contexts
+import { useUser, useProspect } from '../../hooks';
 
-2. **Composants fonctionnels** avec TypeScript
-3. **Props typées** avec interfaces
-4. **Export default** pour les composants
-5. **Export named** pour les utils et types
-
-### Gestion d'état
-
-- **Context API** pour état global (user, theme, etc.)
-- **useState** pour état local des composants
-- **useCallback** pour fonctions stables
-- **useMemo** pour valeurs calculées coûteuses
-
-### Styles
-
-- **SCSS** avec nesting
-- **Variables** centralisées dans `_variables.scss`
-- **Mixins** dans `_mixins.scss`
-- **BEM** pour nommage des classes (optionnel)
-- **Mobile first** pour le responsive
-
-## 🧪 Tests (à venir)
-
-```bash
-npm run test          # Lancer les tests
-npm run test:coverage # Coverage des tests
+// 5. Composants
+import Button from '../button/Button';
+import Loader from '../loader/Loader';
 ```
 
-## 🐛 Troubleshooting
+### Patterns de Code
 
-### Erreur CORS
+**Composant fonctionnel** :
+```typescript
+interface MyComponentProps {
+  title: string;
+  onAction?: () => void;
+}
 
-Vérifier que l'API backend autorise l'origine `http://localhost:5173` dans la configuration CORS.
+export default function MyComponent({ title, onAction }: MyComponentProps) {
+  // hooks
+  const { user } = useUser();
+  const [state, setState] = useState<string>('');
 
-### Token expiré
+  // handlers
+  const handleClick = useCallback(() => {
+    onAction?.();
+  }, [onAction]);
 
-Le token est automatiquement rafraîchi. Si le refresh échoue, vous serez redirigé vers `/login`.
+  // render
+  return (
+    <div className="my-component">
+      <h1>{title}</h1>
+      <Button onClick={handleClick}>Action</Button>
+    </div>
+  );
+}
+```
 
-### Erreur de connexion
+**Hook personnalise** :
+```typescript
+import { createContextHook } from './createContextHook';
+import { MyContext } from '../context/myContext';
 
-Vérifier que :
-1. Le backend API est démarré (`cd olympe && npm run dev`)
-2. L'URL de l'API dans `.env` est correcte
-3. Les credentials sont valides
-
-## 📄 License
-
-© 2025 ANTL - Tous droits réservés
-
-## 👥 Équipe
-
-- **Développement** : Nicolas DECRESSAC
-- **Backend API** : olympe (Node.js/Express/PostgreSQL)
-- **Frontend** : script (React/TypeScript/Vite)
+export const useMyContext = createContextHook(MyContext, 'useMyContext', 'MyProvider');
+```
 
 ---
 
-**Version** : 1.0.0 (Sprint 4 en cours - 10/26 points)
-**Dernière mise à jour** : 2025-12-16
+## Troubleshooting
 
-## 📈 Progression du projet
+### Erreur CORS
 
-- ✅ **Sprint 1** : Base de données + API Core (36/41 points - 87.8%)
-- ✅ **Sprint 2** : API Endpoints complets (36/36 points - 100%)
-- ✅ **Sprint 3** : Script Auth & Base (29/29 points - 100%)
-- 🔄 **Sprint 4** : Historiques & Commandes (10/26 points - 38.5%)
-  - ✅ US-FRONT-008 : Historique des appels (3 points)
-  - ✅ US-FRONT-009 : Historique des offres (3 points)
-  - ✅ US-FRONT-012 : Catalogue produits et panier (8 points)
-  - 📅 US-FRONT-010 : Enregistrement résultat d'appel (3 points)
-  - 📅 US-FRONT-011 : Finalisation de commande (5 points)
-  - 📅 US-FRONT-013 : Modale confirmation commande (4 points)
-- 📅 **Sprint 5** : RDV & Support vente (20 points)
-- 📅 **Sprint 6** : Notifications & Tests (18 points)
+Verifier que le backend autorise l'origine `http://localhost:5173` :
+```javascript
+// olympe - CORS config
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
 
-**Total** : 111/170 points complétés (65.3%)
+### Token expire
+
+Le token est automatiquement rafraichi. Si le refresh echoue :
+1. Tokens effaces
+2. Redirect vers `/login`
+
+### Erreur de connexion
+
+1. Verifier que le backend est demarre : `cd olympe && npm run dev`
+2. Verifier `VITE_API_BASE_URL` dans `.env`
+3. Verifier les credentials
+
+### Prix non affiches
+
+Verifier que l'endpoint `/api/produits?grouped=true` retourne bien les prix.
+Les prix sont extraits de la table `tarifs` et non de la table `produits`.
+
+---
+
+## Routing
+
+**Fichier** : `App.tsx`
+
+```typescript
+<Routes>
+  <Route path="/login" element={<LoginPage />} />
+  <Route
+    path="/"
+    element={
+      <ProtectedRoute>
+        <Header props={{ pageTitle: 'Script Vendeur' }} />
+        <LandingPage />
+      </ProtectedRoute>
+    }
+  />
+</Routes>
+```
+
+---
+
+## Informations Projet
+
+- **Version** : 1.0.0
+- **Derniere mise a jour** : Janvier 2025
+- **Auteur** : Nicolas DECRESSAC
+- **Backend** : olympe (Node.js/Express/PostgreSQL)
+- **Frontend** : script (React/TypeScript/Vite)

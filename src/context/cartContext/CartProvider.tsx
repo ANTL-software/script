@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CartContext } from './CartContext';
 import type { CartItem, Produit } from '../../utils/types';
-import { calculateLineTotal, parsePrice } from '../../utils/scripts/utils';
+import { calculateLineTotal } from '../../utils/scripts/utils';
 
 interface CartProviderProps {
   children: React.ReactNode;
@@ -32,8 +32,21 @@ export const CartProvider = ({ children }: CartProviderProps) => {
         return updatedItems;
       }
 
-      const prixPromo = produit.prix_promo ? parsePrice(produit.prix_promo) : null;
-      const prixUnitaire = parsePrice(produit.prix_unitaire);
+      // Priorité: tarif campagne > prix produit
+      const tarifPrix = produit.tarif?.prix_unitaire;
+      const produitPrix = produit.prix_unitaire;
+      const rawPrix = tarifPrix ?? produitPrix;
+      const prixUnitaire = typeof rawPrix === 'number'
+        ? rawPrix
+        : (typeof rawPrix === 'string' ? parseFloat(rawPrix) : 0);
+
+      const tarifPromo = produit.tarif?.prix_promo;
+      const produitPromo = produit.prix_promo;
+      const rawPromo = tarifPromo ?? produitPromo;
+      const prixPromo = rawPromo
+        ? (typeof rawPromo === 'number' ? rawPromo : parseFloat(String(rawPromo)))
+        : null;
+
       const prixFinal = (prixPromo !== null && prixPromo > 0) ? prixPromo : prixUnitaire;
 
       const newItem: CartItem = {

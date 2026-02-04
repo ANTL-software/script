@@ -72,6 +72,14 @@
     }
   }
 
+  &__search-hint {
+    display: block;
+    margin-top: vars.$spacing-xs;
+    font-size: vars.$fontSize-xs;
+    color: vars.$colorGray500;
+    font-style: italic;
+  }
+
   &__tree-view {
     flex: 1;
     overflow-y: auto;

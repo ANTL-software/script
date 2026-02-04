@@ -1,12 +1,13 @@
 import './landingPage.scss';
 import { useEffect, useState } from 'react';
-import { useProspect, useCampaign } from '../../../hooks';
+import { useProspect, useCampaign, useApp } from '../../../hooks';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
+import RendezVous from '../../components/rendezVous/RendezVous';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
@@ -14,7 +15,7 @@ import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderMo
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
   const { loadCampaign, loadProduits } = useCampaign();
-  const [activeView, setActiveView] = useState<string>('default');
+  const { currentView, setView } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
@@ -24,7 +25,7 @@ export default function LandingPage() {
   }, [loadProspect, loadCampaign]);
 
   const handleInformationProspect = () => {
-    setActiveView('default');
+    setView('default');
     console.log('Information prospect clicked');
   };
 
@@ -37,17 +38,22 @@ export default function LandingPage() {
   };
 
   const handleHistoriqueAppels = () => {
-    setActiveView('appels');
+    setView('historique-appels');
     console.log('Historique appels clicked');
   };
 
   const handleHistoriqueOffres = () => {
-    setActiveView('offres');
+    setView('historique-offres');
     console.log('Historique offres clicked');
   };
 
+  const handleRendezVous = () => {
+    setView('rendez-vous');
+    console.log('Rendez-vous clicked');
+  };
+
   const handleCommande = () => {
-    setActiveView('commande');
+    setView('commande');
     loadProduits();
     console.log('Commande clicked');
   };
@@ -62,7 +68,7 @@ export default function LandingPage() {
 
   const handleOrderSuccess = () => {
     setShowSuccessMessage(true);
-    setActiveView('default');
+    setView('default');
 
     setTimeout(() => {
       setShowSuccessMessage(false);
@@ -105,11 +111,13 @@ export default function LandingPage() {
       <ProspectInfoHeader />
 
       <ActionButtons
+        currentView={currentView}
         onInformationProspect={handleInformationProspect}
         onQuiEstCe={handleQuiEstCe}
         onQuiSommesNous={handleQuiSommesNous}
         onHistoriqueAppels={handleHistoriqueAppels}
         onHistoriqueOffres={handleHistoriqueOffres}
+        onRendezVous={handleRendezVous}
         onCommande={handleCommande}
       />
 
@@ -120,7 +128,7 @@ export default function LandingPage() {
       )}
 
       <div className="landing-page__content">
-        {activeView === 'default' && (
+        {currentView === 'default' && (
           <div className="landing-page__default">
             <h2>Informations prospect</h2>
             <div className="info-section">
@@ -149,11 +157,13 @@ export default function LandingPage() {
           </div>
         )}
 
-        {activeView === 'appels' && <HistoriqueAppels />}
+        {currentView === 'historique-appels' && <HistoriqueAppels />}
 
-        {activeView === 'offres' && <HistoriqueVentes />}
+        {currentView === 'historique-offres' && <HistoriqueVentes />}
 
-        {activeView === 'commande' && (
+        {currentView === 'rendez-vous' && <RendezVous />}
+
+        {currentView === 'commande' && (
           <div className="landing-page__commande">
             <div className="landing-page__catalogue">
               <CatalogueProduits />

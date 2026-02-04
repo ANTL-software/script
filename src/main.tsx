@@ -7,6 +7,7 @@ import { AppProvider } from "./context/appContext/AppProvider";
 import { CampaignProvider } from "./context/campaignContext/CampaignProvider";
 import { ProspectProvider } from "./context/prospectContext/ProspectProvider";
 import { CartProvider } from "./context/cartContext/CartProvider";
+import { ToastProvider } from "./context/toastContext/ToastProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById("root")!).render(
         <CampaignProvider>
           <ProspectProvider>
             <CartProvider>
-              <App />
+              <ToastProvider>
+                <App />
+              </ToastProvider>
             </CartProvider>
           </ProspectProvider>
         </CampaignProvider>

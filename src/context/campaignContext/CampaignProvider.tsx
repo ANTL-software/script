@@ -143,6 +143,40 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
     setProduitsError(null);
   }, []);
 
+  const extractAllProductsFromTree = useCallback((categories: CategorieProduit[]): Produit[] => {
+    const result: Produit[] = [];
+    const traverse = (cats: CategorieProduit[]) => {
+      for (const cat of cats) {
+        if (cat.produits && cat.produits.length > 0) {
+          result.push(...cat.produits);
+        }
+        if (cat.sousCategories && cat.sousCategories.length > 0) {
+          traverse(cat.sousCategories);
+        }
+      }
+    };
+    traverse(categories);
+    return result;
+  }, []);
+
+  const searchProduits = useCallback((searchTerm: string, minChars = 3): Produit[] => {
+    // Utiliser produits, ou extraire de categoriesTree si produits est vide
+    const allProducts = produits.length > 0 ? produits : extractAllProductsFromTree(categoriesTree);
+
+    if (searchTerm.length < minChars) {
+      return allProducts;
+    }
+
+    const search = searchTerm.toLowerCase().trim();
+    return allProducts.filter(
+      (p) =>
+        p.nom_produit.toLowerCase().includes(search) ||
+        p.description?.toLowerCase().includes(search) ||
+        p.code_produit?.toLowerCase().includes(search) ||
+        p.type_produit?.toLowerCase().includes(search)
+    );
+  }, [produits, categoriesTree, extractAllProductsFromTree]);
+
   const value = {
     currentCampaign,
     isLoading,
@@ -155,6 +189,7 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
     loadCampaign,
     loadProduits,
     loadProduitsGrouped,
+    searchProduits,
     clearCampaign,
     clearError,
     clearProduitsError,

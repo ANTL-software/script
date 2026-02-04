@@ -13,7 +13,7 @@ import { FaList, FaSitemap, FaSearch } from 'react-icons/fa';
 type ViewMode = 'tree' | 'search';
 
 export default function CatalogueProduits() {
-  const { produits, categoriesTree, produitsLoading, produitsError, clearProduitsError, loadProduitsGrouped } = useCampaign();
+  const { produits, categoriesTree, produitsLoading, produitsError, clearProduitsError, loadProduitsGrouped, searchProduits } = useCampaign();
   const { addItem } = useCart();
 
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
@@ -24,18 +24,8 @@ export default function CatalogueProduits() {
   }, [loadProduitsGrouped]);
 
   const filteredProduits = useMemo(() => {
-    if (viewMode !== 'search' || !searchTerm) {
-      return produits;
-    }
-
-    const search = searchTerm.toLowerCase();
-    return produits.filter(
-      (p) =>
-        p.nom_produit.toLowerCase().includes(search) ||
-        p.description?.toLowerCase().includes(search) ||
-        p.code_produit?.toLowerCase().includes(search)
-    );
-  }, [searchTerm, produits, viewMode]);
+    return searchProduits(searchTerm, 3);
+  }, [searchTerm, searchProduits]);
 
   const handleAddToCart = (produit: Produit) => {
     addItem(produit, 1, 0);
@@ -44,7 +34,7 @@ export default function CatalogueProduits() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    if (value.length > 0) {
+    if (value.length >= 3) {
       setViewMode('search');
     }
   };
@@ -83,7 +73,7 @@ export default function CatalogueProduits() {
         <div className="catalogue-produits__title-group">
           <h2>Catalogue de produits</h2>
           <p className="catalogue-produits__subtitle">
-            {viewMode === 'search'
+            {viewMode === 'search' && searchTerm.length >= 3
               ? `${filteredProduits.length} produit${filteredProduits.length > 1 ? 's' : ''} trouvé${filteredProduits.length > 1 ? 's' : ''}`
               : `${produits.length} produit${produits.length > 1 ? 's' : ''} disponible${produits.length > 1 ? 's' : ''}`
             }
@@ -114,15 +104,20 @@ export default function CatalogueProduits() {
             <FaSearch className="search-icon" />
             <Input
               type="text"
-              placeholder="Rechercher un produit (nom, description, code)..."
+              placeholder="Rechercher un produit (min. 3 caractères)..."
               value={searchTerm}
               onChange={handleSearchChange}
             />
           </div>
+          {searchTerm.length > 0 && searchTerm.length < 3 && (
+            <span className="catalogue-produits__search-hint">
+              Saisissez au moins 3 caractères pour lancer la recherche
+            </span>
+          )}
         </div>
       </div>
 
-      {viewMode === 'tree' && !searchTerm ? (
+      {viewMode === 'tree' || searchTerm.length < 3 ? (
         <div className="catalogue-produits__tree-view">
           <CategoryTree categories={categoriesTree} onAddToCart={handleAddToCart} />
         </div>

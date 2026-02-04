@@ -1,9 +1,7 @@
 import "./header.scss";
 
-import type { ReactElement } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../../hooks/useUser";
-import { useClock } from "../../../utils/scripts/utils";
 import Button from "../button/Button";
 
 export interface HeaderProps {
@@ -12,9 +10,8 @@ export interface HeaderProps {
   };
 }
 
-export default function Header({ props }: HeaderProps): ReactElement {
+export default function Header({ props }: HeaderProps) {
   const { pageTitle } = props;
-  const currentTime = useClock();
   const { logout, isLoading } = useUser();
   const navigate = useNavigate();
 
@@ -43,7 +40,6 @@ export default function Header({ props }: HeaderProps): ReactElement {
         >
           Déconnexion
         </Button>
-        <p className="clock">{currentTime}</p>
       </div>
     </header>
   );

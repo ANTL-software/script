@@ -16,7 +16,7 @@ interface CategoryNodeProps {
 }
 
 function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
-  const [isExpanded, setIsExpanded] = useState(level === 1);
+  const [isExpanded, setIsExpanded] = useState(level === 0);
 
   const hasSousCategories = category.sousCategories && category.sousCategories.length > 0;
   const hasProduits = category.produits && category.produits.length > 0;

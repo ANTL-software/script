@@ -1,5 +1,5 @@
 import './panier.scss';
-import { useCart } from '../../../hooks';
+import { useCart, useToast } from '../../../hooks';
 import { formatCurrency } from '../../../utils/scripts/utils';
 import PanierItem from './PanierItem';
 import Button from '../button/Button';
@@ -11,16 +11,26 @@ interface PanierProps {
 
 export default function Panier({ onValidateOrder }: PanierProps) {
   const { items, total, itemCount, clearCart, updateQuantity, removeItem } = useCart();
+  const { confirm, showToast } = useToast();
 
-  const handleClearCart = () => {
-    if (window.confirm('Voulez-vous vraiment vider le panier ?')) {
+  const handleClearCart = async () => {
+    const confirmed = await confirm({
+      title: 'Vider le panier',
+      message: 'Voulez-vous vraiment vider le panier ? Cette action est irréversible.',
+      type: 'danger',
+      confirmText: 'Vider',
+      cancelText: 'Annuler',
+    });
+
+    if (confirmed) {
       clearCart();
+      showToast('success', 'Le panier a été vidé');
     }
   };
 
   const handleValidateOrder = () => {
     if (items.length === 0) {
-      alert('Le panier est vide');
+      showToast('warning', 'Le panier est vide');
       return;
     }
     if (onValidateOrder) {

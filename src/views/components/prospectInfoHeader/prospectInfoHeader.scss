@@ -1,9 +1,10 @@
 @use '../../../utils/styles/variables' as vars;
 
 .prospect-info-header {
-  padding: 1.5rem;
+  padding: 1rem 1.5rem;
   background: white;
   border-bottom: 2px solid #e5e5e7;
+  flex-shrink: 0;
 
   &__title {
     display: flex;

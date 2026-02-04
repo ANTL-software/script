@@ -1,16 +1,16 @@
 @use '../../../utils/styles/variables' as vars;
 
 header {
-    max-height: 10dvh;
     height: 10dvh;
+    flex-shrink: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 2rem;
     background: linear-gradient(
         135deg,
-        #ffffff 0%,
-        #f5f5f7 100%
+        #f5f5f7 0%,
+        #ffffff 100%
     );
     border-bottom: 1px solid #e5e5e7;
 
@@ -18,16 +18,10 @@ header {
         display: flex;
         align-items: center;
         gap: 1rem;
+        margin-right: 160px; // Espace pour le Clock fixe
 
         .logout-button {
             white-space: nowrap;
-        }
-
-        .clock {
-            width: 120px;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-            font-family: vars.$fontFamilyMono;
         }
     }
 }

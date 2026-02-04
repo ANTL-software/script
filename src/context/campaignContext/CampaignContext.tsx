@@ -15,6 +15,7 @@ export interface CampaignContextType {
   loadCampaign: (id: number) => Promise<void>;
   loadProduits: () => Promise<void>;
   loadProduitsGrouped: () => Promise<void>;
+  searchProduits: (searchTerm: string, minChars?: number) => Produit[];
   clearCampaign: () => void;
   clearError: () => void;
   clearProduitsError: () => void;

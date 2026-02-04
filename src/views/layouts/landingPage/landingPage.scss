@@ -1,20 +1,22 @@
 @use '../../../utils/styles/variables' as vars;
 
 #landingPage {
-  min-height: 90dvh;
+  flex: 1;
   background: #fafafa;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .landing-page {
   &__success-message {
-    margin: 1rem 1.5rem 0;
-    padding: 1rem 1.5rem;
+    margin: 0.5rem 1.5rem 0;
+    padding: 0.75rem 1.5rem;
     background-color: rgba(vars.$colorSuccess, 0.1);
     border: 1px solid vars.$colorSuccess;
     border-radius: vars.$radius-md;
     animation: slideDown 0.3s ease-out;
+    flex-shrink: 0;
 
     p {
       margin: 0;
@@ -43,11 +45,14 @@
 
   &__content {
     flex: 1;
-    padding: 2rem 1.5rem;
+    padding: 1rem 1.5rem;
     background: white;
-    margin: 1rem 1.5rem;
+    margin: 0.75rem 1.5rem 1rem;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   &__default {
@@ -96,12 +101,30 @@
     }
   }
 
+  &__default,
+  &__historique {
+    flex: 1;
+    overflow-y: auto;
+  }
+
   &__commande {
+    flex: 1;
     display: grid;
     grid-template-columns: 1fr 400px;
     gap: 0;
-    height: calc(100vh - 300px);
     overflow: hidden;
+  }
+
+  .rendez-vous {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+
+    .rbc-calendar {
+      flex: 1;
+      min-height: 0;
+    }
   }
 
   &__catalogue {

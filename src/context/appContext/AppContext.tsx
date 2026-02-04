@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 
 export type ModalType = 'qui-est-ce' | 'qui-sommes-nous' | 'objections' | 'plan-appel' | null;
-export type ViewType = 'default' | 'historique-appels' | 'historique-offres' | 'commande';
+export type ViewType = 'default' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
 
 export interface Notification {
   id: string;

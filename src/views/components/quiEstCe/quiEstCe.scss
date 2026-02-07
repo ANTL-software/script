@@ -1,0 +1,172 @@
+@use '../../../utils/styles/variables' as vars;
+
+.qui-est-ce {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: vars.$colorGray900;
+      margin: 0;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__section {
+    h3 {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: vars.$colorGray500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 0 0 1rem 0;
+    }
+
+    &--meta {
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid vars.$colorGray200;
+    }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    &--full {
+      grid-column: 1 / -1;
+    }
+
+    .input-container {
+      margin: 0;
+    }
+
+    input {
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+    }
+  }
+
+  &__label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: vars.$colorGray500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+
+  &__value {
+    font-size: 0.9375rem;
+    color: vars.$colorGray900;
+    font-weight: 500;
+
+    &--statut {
+      display: inline-flex;
+      padding: 0.25rem 0.75rem;
+      border-radius: vars.$radius-full;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: capitalize;
+      width: fit-content;
+
+      &[data-statut='nouveau'] {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+      }
+
+      &[data-statut='contacte'] {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+      }
+
+      &[data-statut='interesse'] {
+        background: rgba(168, 85, 247, 0.1);
+        color: #9333ea;
+      }
+
+      &[data-statut='rappel'] {
+        background: rgba(249, 115, 22, 0.1);
+        color: #ea580c;
+      }
+
+      &[data-statut='non_interesse'] {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+      }
+
+      &[data-statut='vente_conclue'] {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+      }
+    }
+  }
+
+  &__notes {
+    background: vars.$colorGray100;
+    border-radius: vars.$radius-md;
+    padding: 1rem;
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: vars.$colorGray700;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: vars.$colorGray500;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+  }
+
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+
+    p {
+      color: vars.$colorGray500;
+      font-style: italic;
+    }
+  }
+}

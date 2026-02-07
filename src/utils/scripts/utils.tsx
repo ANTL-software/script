@@ -10,7 +10,7 @@ export function getSalutation(heure?: number): string {
   const heureActuelle = heure !== undefined ? heure : new Date().getHours();
 
   // Bonsoir à partir de 18h (6 PM), sinon Bonjour
-  return heureActuelle >= 18 ? "Bonsoir" : "Bonjour";
+  return heureActuelle >= 14 ? "Bonne après-midi" : "Bonne journée";
 }
 
 /**

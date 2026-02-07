@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { ProspectContext } from './ProspectContext';
 import { prospectService, appelService, venteService } from '../../API/services';
 import { getTypeFiche } from '../../utils/scripts/utils';
-import type { Prospect, Appel, Vente, CreateVenteData, TypeFiche, Pagination } from '../../utils/types';
+import type { Prospect, Appel, Vente, CreateVenteData, TypeFiche, Pagination, UpdateProspectData } from '../../utils/types';
 
 interface ProspectProviderProps {
   children: React.ReactNode;
@@ -91,6 +91,29 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
   const clearError = useCallback(() => {
     setError(null);
   }, []);
+
+  const updateProspect = useCallback(async (data: UpdateProspectData) => {
+    if (!currentProspect) {
+      console.warn('[PROSPECT] Aucun prospect actif, impossible de mettre a jour');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const prospectModel = await prospectService.updateProspect(currentProspect.id_prospect, data);
+      setCurrentProspect(prospectModel.toJSON());
+      console.log(`[PROSPECT] Prospect ${currentProspect.id_prospect} mis a jour`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise a jour du prospect';
+      setError(errorMessage);
+      console.error('[PROSPECT] Erreur mise a jour:', errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentProspect]);
 
   // Appels actions
   const loadAppels = useCallback(async (page: number = 1) => {
@@ -205,6 +228,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     // Prospect actions
     loadProspect,
     loadProspectByPhone,
+    updateProspect,
     clearProspect,
     clearError,
 

@@ -10,6 +10,7 @@ import ProtectedRoute from './views/components/protectedRoute/ProtectedRoute'
 
 import LandingPage from './views/layouts/landingPage/LandingPage'
 import LoginPage from './views/layouts/loginPage/LoginPage'
+import PlanAppelPage from './views/layouts/planAppelPage/PlanAppelPage'
 
 function App() {
   const { user } = useUser();
@@ -31,6 +32,14 @@ function App() {
             <ProtectedRoute>
               {showHeader && <Header props={props} />}
               <LandingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/plan-appel"
+          element={
+            <ProtectedRoute>
+              <PlanAppelPage />
             </ProtectedRoute>
           }
         />

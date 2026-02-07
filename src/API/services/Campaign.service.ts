@@ -1,7 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
 import { CampaignModel } from '../models';
-import type { Campaign } from '../../utils/types';
+import type { Campaign, PlanAppelEtape } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class CampaignService {
@@ -40,6 +40,12 @@ export class CampaignService {
       page: result.page,
       totalPages: result.totalPages,
     };
+  }
+
+  public async getPlanAppel(campagneId: number): Promise<PlanAppelEtape[]> {
+    const response = await apiCalls.get<PlanAppelEtape[]>(`/campagnes/${campagneId}/plan-appel`);
+    const data = throwIfApiError(response, 'Erreur lors de la recuperation du plan d\'appel');
+    return data;
   }
 }
 

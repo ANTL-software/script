@@ -36,3 +36,16 @@ export interface ProspectInfos {
   ville?: string;
   typeFiche: TypeFiche;
 }
+
+export interface UpdateProspectData {
+  nom?: string;
+  prenom?: string;
+  email?: string;
+  telephone?: string;
+  adresse?: string;
+  code_postal?: string;
+  ville?: string;
+  pays?: string;
+  notes?: string;
+  raison_sociale?: string;
+}

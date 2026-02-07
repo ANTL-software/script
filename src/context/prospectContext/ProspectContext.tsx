@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Prospect, Appel, Vente, CreateVenteData, Pagination } from '../../utils/types';
+import type { Prospect, Appel, Vente, CreateVenteData, Pagination, UpdateProspectData } from '../../utils/types';
 
 export interface ProspectContextType {
   // Prospect
@@ -21,6 +21,7 @@ export interface ProspectContextType {
   // Prospect actions
   loadProspect: (id: number) => Promise<void>;
   loadProspectByPhone: (phone: string) => Promise<void>;
+  updateProspect: (data: UpdateProspectData) => Promise<void>;
   clearProspect: () => void;
   clearError: () => void;
 

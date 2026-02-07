@@ -6,7 +6,7 @@ import Clock from '../clock/Clock';
 import { FaBuilding, FaListOl, FaCommentDots, FaUser } from 'react-icons/fa';
 
 interface ProspectInfoHeaderProps {
-  currentView: 'qui-est-ce' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
+  currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
   onQuiEstCe?: () => void;
   onPlanAppels?: () => void;
   onObjections?: () => void;
@@ -43,7 +43,13 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
           <Button variant="tertiary" size="small" onClick={onObjections}>
             <FaCommentDots /> Objections
           </Button>
-          <Button variant="tertiary" size="small" onClick={onQuiSommesNous}>
+          <Button
+            variant="tertiary"
+            size="small"
+            onClick={onQuiSommesNous}
+            disabled={currentView === 'qui-sommes-nous'}
+            className={currentView === 'qui-sommes-nous' ? 'btn-active' : ''}
+          >
             <FaBuilding /> Qui sommes-nous ?
           </Button>
           <Clock />

@@ -3,7 +3,7 @@ import Button from '../button/Button';
 import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
 
 interface ActionButtonsProps {
-  currentView: 'qui-est-ce' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
+  currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
   onHistoriqueAppels?: () => void;
   onHistoriqueOffres?: () => void;
   onRendezVous?: () => void;

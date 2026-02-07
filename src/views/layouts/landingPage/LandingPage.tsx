@@ -5,6 +5,8 @@ import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfo
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
+import QuiEstCe from '../../components/quiEstCe/QuiEstCe';
+import QuiSommesNous from '../../components/quiSommesNous/QuiSommesNous';
 import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
 import RendezVous from '../../components/rendezVous/RendezVous';
@@ -14,7 +16,7 @@ import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderMo
 
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
-  const { loadCampaign, loadProduits } = useCampaign();
+  const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -29,7 +31,9 @@ export default function LandingPage() {
   };
 
   const handlePlanAppels = () => {
-    console.log('Plan d\'appels clicked');
+    const campagneId = currentCampaign?.id_campagne || 1;
+    const url = `/plan-appel?campagne=${campagneId}`;
+    window.open(url, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleObjections = () => {
@@ -37,7 +41,7 @@ export default function LandingPage() {
   };
 
   const handleQuiSommesNous = () => {
-    console.log('Qui sommes-nous clicked');
+    setView('qui-sommes-nous');
   };
 
   const handleHistoriqueAppels = () => {
@@ -134,34 +138,9 @@ export default function LandingPage() {
       )}
 
       <div className="landing-page__content">
-        {currentView === 'qui-est-ce' && (
-          <div className="landing-page__qui-est-ce">
-            <h2>Qui est-ce ?</h2>
-            <div className="info-section">
-              <h3>Détails</h3>
-              <p><strong>Statut :</strong> {currentProspect.statut}</p>
-              <p><strong>Type :</strong> {currentProspect.type_prospect}</p>
-              {currentProspect.raison_sociale && (
-                <p><strong>Raison sociale :</strong> {currentProspect.raison_sociale}</p>
-              )}
-              {currentProspect.adresse && (
-                <p><strong>Adresse :</strong> {currentProspect.adresse}</p>
-              )}
-              {currentProspect.code_postal && (
-                <p><strong>Code postal :</strong> {currentProspect.code_postal}</p>
-              )}
-              {currentProspect.pays && (
-                <p><strong>Pays :</strong> {currentProspect.pays}</p>
-              )}
-            </div>
-            {currentProspect.notes && (
-              <div className="info-section">
-                <h3>Notes</h3>
-                <p>{currentProspect.notes}</p>
-              </div>
-            )}
-          </div>
-        )}
+        {currentView === 'qui-est-ce' && <QuiEstCe />}
+
+        {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
 
         {currentView === 'historique-appels' && <HistoriqueAppels />}
 

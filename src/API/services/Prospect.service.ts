@@ -1,7 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
 import { ProspectModel } from '../models';
-import type { Prospect } from '../../utils/types';
+import type { Prospect, UpdateProspectData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class ProspectService {
@@ -48,6 +48,12 @@ export class ProspectService {
       page: result.page,
       totalPages: result.totalPages,
     };
+  }
+
+  public async updateProspect(id: number, data: UpdateProspectData): Promise<ProspectModel> {
+    const response = await apiCalls.put<Prospect>(`/prospects/${id}`, data);
+    const updatedProspect = throwIfApiError(response, 'Erreur lors de la mise a jour du prospect');
+    return ProspectModel.fromJSON(updatedProspect);
   }
 }
 

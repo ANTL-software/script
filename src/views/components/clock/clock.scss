@@ -1,16 +1,17 @@
 @use '../../../utils/styles/variables' as vars;
 
 .clock-fixed {
-  position: fixed;
-  top: 1.5rem;
-  right: 2rem;
-  z-index: 1000;
-  width: 120px;
+  display: inline-flex;
+  align-items: center;
+  width: 100px;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font-family: vars.$fontFamilyMono;
   background: rgba(255, 255, 255, 0.9);
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: 0.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
 }

@@ -8,7 +8,7 @@ interface AppProviderProps {
 
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [currentModal, setCurrentModal] = useState<ModalType>(null);
-  const [currentView, setCurrentView] = useState<ViewType>('default');
+  const [currentView, setCurrentView] = useState<ViewType>('qui-est-ce');
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isAppLoading, setIsAppLoading] = useState<boolean>(false);
 

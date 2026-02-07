@@ -1,8 +1,19 @@
 import './prospectInfoHeader.scss';
 import { useProspect } from '../../../hooks/useProspect';
 import TypeFicheBadge from '../typeFicheBadge/TypeFicheBadge';
+import Button from '../button/Button';
+import Clock from '../clock/Clock';
+import { FaBuilding, FaListOl, FaCommentDots, FaUser } from 'react-icons/fa';
 
-export default function ProspectInfoHeader() {
+interface ProspectInfoHeaderProps {
+  currentView: 'qui-est-ce' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
+  onQuiEstCe?: () => void;
+  onPlanAppels?: () => void;
+  onObjections?: () => void;
+  onQuiSommesNous?: () => void;
+}
+
+export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous }: ProspectInfoHeaderProps) {
   const { currentProspect, fullName, typeFiche } = useProspect();
 
   if (!currentProspect) {
@@ -11,9 +22,32 @@ export default function ProspectInfoHeader() {
 
   return (
     <div className="prospect-info-header">
-      <div className="prospect-info-header__title">
-        <h1>{fullName}</h1>
-        <TypeFicheBadge typeFiche={typeFiche} />
+      <div className="prospect-info-header__top">
+        <div className="prospect-info-header__title">
+          <h1>{fullName}</h1>
+          <TypeFicheBadge typeFiche={typeFiche} />
+        </div>
+        <div className="prospect-info-header__actions">
+          <Button
+            variant="tertiary"
+            size="small"
+            onClick={onQuiEstCe}
+            disabled={currentView === 'qui-est-ce'}
+            className={currentView === 'qui-est-ce' ? 'btn-active' : ''}
+          >
+            <FaUser /> Qui est-ce ?
+          </Button>
+          <Button variant="tertiary" size="small" onClick={onPlanAppels}>
+            <FaListOl /> Plan d'appels
+          </Button>
+          <Button variant="tertiary" size="small" onClick={onObjections}>
+            <FaCommentDots /> Objections
+          </Button>
+          <Button variant="tertiary" size="small" onClick={onQuiSommesNous}>
+            <FaBuilding /> Qui sommes-nous ?
+          </Button>
+          <Clock />
+        </div>
       </div>
 
       <table className="prospect-info-table">

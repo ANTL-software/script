@@ -1,12 +1,9 @@
 import './actionButtons.scss';
 import Button from '../button/Button';
-import { FaUser, FaBuilding, FaPhone, FaShoppingCart, FaInfoCircle, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
+import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
 
 interface ActionButtonsProps {
-  currentView: 'default' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
-  onInformationProspect?: () => void;
-  onQuiEstCe?: () => void;
-  onQuiSommesNous?: () => void;
+  currentView: 'qui-est-ce' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
   onHistoriqueAppels?: () => void;
   onHistoriqueOffres?: () => void;
   onRendezVous?: () => void;
@@ -15,9 +12,6 @@ interface ActionButtonsProps {
 
 export default function ActionButtons({
   currentView,
-  onInformationProspect,
-  onQuiEstCe,
-  onQuiSommesNous,
   onHistoriqueAppels,
   onHistoriqueOffres,
   onRendezVous,
@@ -25,18 +19,6 @@ export default function ActionButtons({
 }: ActionButtonsProps) {
   return (
     <div className="action-buttons">
-      <div className="action-buttons__group">
-        <Button variant="secondary" size="small" onClick={onInformationProspect}>
-          <FaInfoCircle /> Information prospect
-        </Button>
-        <Button variant="secondary" size="small" onClick={onQuiEstCe}>
-          <FaUser /> Qui est-ce ?
-        </Button>
-        <Button variant="secondary" size="small" onClick={onQuiSommesNous}>
-          <FaBuilding /> Qui sommes-nous ?
-        </Button>
-      </div>
-
       <div className="action-buttons__group">
         <Button
           variant="primary"

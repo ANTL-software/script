@@ -5,7 +5,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { getSalutation } from "./utils/scripts/utils";
 import { useUser, useApp } from './hooks';
 
-import Clock from './views/components/clock/Clock'
 import Header from './views/components/header/Header'
 import ProtectedRoute from './views/components/protectedRoute/ProtectedRoute'
 
@@ -30,7 +29,6 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <Clock />
               {showHeader && <Header props={props} />}
               <LandingPage />
             </ProtectedRoute>

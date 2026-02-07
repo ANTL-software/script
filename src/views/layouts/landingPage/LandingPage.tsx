@@ -24,13 +24,16 @@ export default function LandingPage() {
     loadCampaign(1); // Charger la campagne 1 par défaut (Assurance Auto Q4 2024)
   }, [loadProspect, loadCampaign]);
 
-  const handleInformationProspect = () => {
-    setView('default');
-    console.log('Information prospect clicked');
+  const handleQuiEstCe = () => {
+    setView('qui-est-ce');
   };
 
-  const handleQuiEstCe = () => {
-    console.log('Qui est-ce clicked');
+  const handlePlanAppels = () => {
+    console.log('Plan d\'appels clicked');
+  };
+
+  const handleObjections = () => {
+    console.log('Objections clicked');
   };
 
   const handleQuiSommesNous = () => {
@@ -68,7 +71,7 @@ export default function LandingPage() {
 
   const handleOrderSuccess = () => {
     setShowSuccessMessage(true);
-    setView('default');
+    setView('qui-est-ce');
 
     setTimeout(() => {
       setShowSuccessMessage(false);
@@ -108,13 +111,16 @@ export default function LandingPage() {
 
   return (
     <main id="landingPage">
-      <ProspectInfoHeader />
+      <ProspectInfoHeader
+        currentView={currentView}
+        onQuiEstCe={handleQuiEstCe}
+        onPlanAppels={handlePlanAppels}
+        onObjections={handleObjections}
+        onQuiSommesNous={handleQuiSommesNous}
+      />
 
       <ActionButtons
         currentView={currentView}
-        onInformationProspect={handleInformationProspect}
-        onQuiEstCe={handleQuiEstCe}
-        onQuiSommesNous={handleQuiSommesNous}
         onHistoriqueAppels={handleHistoriqueAppels}
         onHistoriqueOffres={handleHistoriqueOffres}
         onRendezVous={handleRendezVous}
@@ -128,9 +134,9 @@ export default function LandingPage() {
       )}
 
       <div className="landing-page__content">
-        {currentView === 'default' && (
-          <div className="landing-page__default">
-            <h2>Informations prospect</h2>
+        {currentView === 'qui-est-ce' && (
+          <div className="landing-page__qui-est-ce">
+            <h2>Qui est-ce ?</h2>
             <div className="info-section">
               <h3>Détails</h3>
               <p><strong>Statut :</strong> {currentProspect.statut}</p>

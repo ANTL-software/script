@@ -11,6 +11,7 @@ import ProtectedRoute from './views/components/protectedRoute/ProtectedRoute'
 import LandingPage from './views/layouts/landingPage/LandingPage'
 import LoginPage from './views/layouts/loginPage/LoginPage'
 import PlanAppelPage from './views/layouts/planAppelPage/PlanAppelPage'
+import ObjectionsPage from './views/layouts/objectionsPage/ObjectionsPage'
 
 function App() {
   const { user } = useUser();
@@ -40,6 +41,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PlanAppelPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/objections"
+          element={
+            <ProtectedRoute>
+              <ObjectionsPage />
             </ProtectedRoute>
           }
         />

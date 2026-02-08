@@ -64,7 +64,7 @@
 
   &__icon {
     font-size: 1.5rem;
-    color: vars.$colorPrimary;
+    color: #0d9488;
   }
 
   &__campaign-name {
@@ -103,7 +103,7 @@
     }
 
     &--active {
-      background: vars.$colorPrimary;
+      background: #0d9488;
 
       .plan-appel-page__step-number,
       .plan-appel-page__step-title {
@@ -111,15 +111,15 @@
       }
 
       &:hover {
-        background: vars.$colorPrimaryHover;
+        background: #0f766e;
       }
     }
 
     &--completed {
-      background: vars.$colorPrimaryLight;
+      background: rgba(13, 148, 136, 0.1);
 
       .plan-appel-page__step-number {
-        background: vars.$colorPrimary;
+        background: #0d9488;
         color: vars.$colorWhite;
       }
     }
@@ -171,7 +171,7 @@
 
   &__etape-header {
     padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, vars.$colorPrimary 0%, vars.$colorPrimaryHover 100%);
+    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
     color: vars.$colorWhite;
   }
 

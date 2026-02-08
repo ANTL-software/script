@@ -6,6 +6,7 @@ import Button from '../../components/button/Button';
 import Loader from '../../components/loader/Loader';
 import { FaPrint, FaChevronLeft, FaChevronRight, FaListOl } from 'react-icons/fa';
 import type { PlanAppelEtape } from '../../../utils/types';
+import { getErrorMessage } from '../../../utils/scripts/formatters';
 
 export default function PlanAppelPage() {
   const [searchParams] = useSearchParams();
@@ -41,8 +42,7 @@ export default function PlanAppelPage() {
           setError('Aucune etape definie pour cette campagne');
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement';
-        setError(errorMessage);
+        setError(getErrorMessage(err, 'Erreur lors du chargement'));
       } finally {
         setIsLoading(false);
       }

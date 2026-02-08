@@ -13,6 +13,8 @@ import RendezVous from '../../components/rendezVous/RendezVous';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
+import ClosingModal from '../../components/closingModal/ClosingModal';
+import { closingService, type PendingClosing } from '../../../API/services';
 
 export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
@@ -20,6 +22,15 @@ export default function LandingPage() {
   const { currentView, setView } = useApp();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [pendingClosing, setPendingClosing] = useState<PendingClosing | null>(null);
+
+  // Verifier s'il y a un closing en attente au chargement
+  useEffect(() => {
+    const stored = closingService.getPending();
+    if (stored) {
+      setPendingClosing(stored);
+    }
+  }, []);
 
   useEffect(() => {
     loadProspect(1);
@@ -37,7 +48,9 @@ export default function LandingPage() {
   };
 
   const handleObjections = () => {
-    console.log('Objections clicked');
+    const campagneId = currentCampaign?.id_campagne || 1;
+    const url = `/objections?campagne=${campagneId}`;
+    window.open(url, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleQuiSommesNous = () => {
@@ -74,6 +87,15 @@ export default function LandingPage() {
   };
 
   const handleOrderSuccess = () => {
+    // Recuperer le pending closing qui vient d'etre sauvegarde
+    const stored = closingService.getPending();
+    if (stored) {
+      setPendingClosing(stored);
+    }
+  };
+
+  const handleClosingComplete = () => {
+    setPendingClosing(null);
     setShowSuccessMessage(true);
     setView('qui-est-ce');
 
@@ -165,6 +187,17 @@ export default function LandingPage() {
         onClose={handleCloseModal}
         onSuccess={handleOrderSuccess}
       />
+
+      {pendingClosing && (
+        <ClosingModal
+          isOpen={true}
+          prospectId={pendingClosing.prospectId}
+          prospectName={pendingClosing.prospectName}
+          campagneId={pendingClosing.campagneId}
+          dureeAppel={pendingClosing.dureeAppel}
+          onComplete={handleClosingComplete}
+        />
+      )}
     </main>
   );
 }

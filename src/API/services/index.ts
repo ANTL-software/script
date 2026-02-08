@@ -6,3 +6,6 @@ export { ProduitService, produitService } from './Produit.service';
 export { CategorieService, categorieService } from './Categorie.service';
 export { AppelService, appelService } from './Appel.service';
 export { VenteService, venteService } from './Vente.service';
+export { RendezVousService, rendezVousService } from './RendezVous.service';
+export { ClosingService, closingService } from './Closing.service';
+export type { PendingClosing } from './Closing.service';

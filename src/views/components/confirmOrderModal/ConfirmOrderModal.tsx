@@ -5,6 +5,7 @@ import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCa
 import { useCart, useProspect, useCampaign, useUser } from '../../../hooks';
 import type { ModePaiement } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
+import { closingService } from '../../../API/services';
 import Button from '../button/Button';
 
 interface ConfirmOrderModalProps {
@@ -100,6 +101,17 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
       };
 
       await createVente(venteData);
+
+      // Sauvegarder l'etat de closing obligatoire
+      const prospectName = currentProspect.prenom
+        ? `${currentProspect.prenom} ${currentProspect.nom}`
+        : currentProspect.nom;
+
+      closingService.savePending({
+        prospectId: currentProspect.id_prospect,
+        prospectName,
+        campagneId: currentCampaign.id_campagne,
+      });
 
       clearCart();
       onSuccess();

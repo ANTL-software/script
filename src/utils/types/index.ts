@@ -6,3 +6,5 @@ export * from './cart.types';
 export * from './appel.types';
 export * from './vente.types';
 export * from './planAppel.types';
+export * from './objection.types';
+export * from './rendezVous.types';

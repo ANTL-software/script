@@ -1,7 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
 import { CampaignModel } from '../models';
-import type { Campaign, PlanAppelEtape } from '../../utils/types';
+import type { Campaign, PlanAppelEtape, Objection } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class CampaignService {
@@ -45,6 +45,12 @@ export class CampaignService {
   public async getPlanAppel(campagneId: number): Promise<PlanAppelEtape[]> {
     const response = await apiCalls.get<PlanAppelEtape[]>(`/campagnes/${campagneId}/plan-appel`);
     const data = throwIfApiError(response, 'Erreur lors de la recuperation du plan d\'appel');
+    return data;
+  }
+
+  public async getObjections(campagneId: number): Promise<Objection[]> {
+    const response = await apiCalls.get<Objection[]>(`/campagnes/${campagneId}/objections`);
+    const data = throwIfApiError(response, 'Erreur lors de la recuperation des objections');
     return data;
   }
 }

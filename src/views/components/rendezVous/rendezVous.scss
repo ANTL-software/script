@@ -5,6 +5,86 @@
   flex: 1;
   min-height: 0;
 
+  &--loading {
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+
+    p {
+      color: #6b7280;
+      font-size: 0.875rem;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  &__icon {
+    color: #3b82f6;
+    font-size: 1.125rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__legend {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  &__legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+
+    &::before {
+      content: '';
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+    }
+
+    &--planifie::before {
+      background-color: #3b82f6;
+    }
+
+    &--effectue::before {
+      background-color: #22c55e;
+    }
+
+    &--reporte::before {
+      background-color: #f59e0b;
+    }
+
+    &--annule::before {
+      background-color: #ef4444;
+    }
+  }
+
   .rbc-calendar {
     font-family: inherit;
     flex: 1;

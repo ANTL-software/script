@@ -6,6 +6,7 @@ import Button from '../button/Button';
 import Input from '../input/Input';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types';
+import { formatDateLong } from '../../../utils/scripts/formatters';
 
 interface EditableFields {
   email: string;
@@ -139,15 +140,6 @@ export default function QuiEstCe() {
     } finally {
       setIsSaving(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
   };
 
   return (
@@ -295,8 +287,8 @@ export default function QuiEstCe() {
 
         <div className="qui-est-ce__section qui-est-ce__section--meta">
           <div className="qui-est-ce__meta">
-            <span>Cree le {formatDate(currentProspect.created_at)}</span>
-            <span>Modifie le {formatDate(currentProspect.updated_at)}</span>
+            <span>Cree le {formatDateLong(currentProspect.created_at)}</span>
+            <span>Modifie le {formatDateLong(currentProspect.updated_at)}</span>
           </div>
         </div>
       </div>

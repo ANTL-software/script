@@ -14,12 +14,12 @@ export default function LoginPage() {
   const { login, isLoading, error, clearError, isAuthenticated } = useUser();
 
   const [formData, setFormData] = useState({
-    email: '',
+    identifiant: '',
     password: '',
   });
 
   const [formErrors, setFormErrors] = useState({
-    email: '',
+    identifiant: '',
     password: '',
   });
 
@@ -32,13 +32,14 @@ export default function LoginPage() {
     }
   }, [isAuthenticated, navigate]);
 
-  const validateEmail = (email: string): string => {
-    if (!email) {
-      return 'Email requis';
+  const validateIdentifiant = (identifiant: string): string => {
+    if (!identifiant) {
+      return 'Identifiant requis';
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return 'Email invalide';
+    // Format: 5 lettres + 3 chiffres (ex: ndecr001)
+    const identifiantRegex = /^[a-z]{5}[0-9]{3}$/;
+    if (!identifiantRegex.test(identifiant.toLowerCase())) {
+      return 'Format invalide (ex: ndecr001)';
     }
     return '';
   };
@@ -73,12 +74,12 @@ export default function LoginPage() {
       return;
     }
 
-    const emailError = validateEmail(formData.email);
+    const identifiantError = validateIdentifiant(formData.identifiant);
     const passwordError = validatePassword(formData.password);
 
-    if (emailError || passwordError) {
+    if (identifiantError || passwordError) {
       setFormErrors({
-        email: emailError,
+        identifiant: identifiantError,
         password: passwordError,
       });
       return;
@@ -86,7 +87,7 @@ export default function LoginPage() {
 
     try {
       await login({
-        email: formData.email,
+        identifiant: formData.identifiant.toLowerCase(),
         password: formData.password,
       });
     } catch (err) {
@@ -131,17 +132,17 @@ export default function LoginPage() {
           )}
 
           <Input
-            id="email"
-            name="email"
-            type="email"
-            label="Email"
-            placeholder="votre.email@antl.com"
-            value={formData.email}
+            id="identifiant"
+            name="identifiant"
+            type="text"
+            label="Identifiant"
+            placeholder="ndecr001"
+            value={formData.identifiant}
             onChange={handleChange}
-            error={formErrors.email}
+            error={formErrors.identifiant}
             required
             disabled={isLoading || isBlocked}
-            autoComplete="email"
+            autoComplete="username"
             autoFocus
           />
 

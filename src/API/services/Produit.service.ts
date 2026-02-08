@@ -47,6 +47,7 @@ export class ProduitService {
 
   public async getProduitsGrouped(params?: {
     actif?: boolean;
+    campagne?: number;
   }): Promise<{ categories: CategorieProduit[]; totalProducts: number }> {
     const queryString = buildQueryString({ grouped: true, ...params });
     const response = await apiCalls.get<ProduitsGroupedData>(`/produits${queryString}`);

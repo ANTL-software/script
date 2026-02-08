@@ -1,6 +1,11 @@
 import { apiCalls } from '../APICalls';
-import type { Vente, CreateVenteData } from '../../utils/types';
+import type { Vente, CreateVenteData, ApiError } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
+
+// Type guard for ApiError
+function isApiError(error: unknown): error is ApiError {
+  return typeof error === 'object' && error !== null && 'message' in error;
+}
 
 export class VenteService {
   private static instance: VenteService;
@@ -15,11 +20,17 @@ export class VenteService {
   }
 
   public async createVente(data: CreateVenteData): Promise<Vente> {
-    const response = await apiCalls.post<Vente>('/ventes', data);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la création de la vente');
+    try {
+      const response = await apiCalls.post<Vente>('/ventes', data);
+      if (!response.success || !response.data) {
+        throw new Error(response.message || 'Erreur lors de la création de la vente');
+      }
+      return response.data;
+    } catch (err) {
+      // Extraire le message d'erreur de ApiError ou Error
+      const errorMessage = isApiError(err) ? err.message : (err instanceof Error ? err.message : 'Erreur lors de la création de la vente');
+      throw new Error(errorMessage);
     }
-    return response.data;
   }
 
   public async getVenteById(id: number): Promise<Vente> {

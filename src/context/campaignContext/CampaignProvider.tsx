@@ -79,7 +79,7 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
 
     try {
       console.log(`[CAMPAIGN] Chargement produits groupés campagne ID: ${currentCampaign.id_campagne}`);
-      const result = await produitService.getProduitsGrouped({ actif: true });
+      const result = await produitService.getProduitsGrouped({ actif: true, campagne: currentCampaign.id_campagne });
 
       setCategoriesTree(result.categories);
 

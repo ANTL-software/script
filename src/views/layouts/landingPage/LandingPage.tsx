@@ -1,6 +1,6 @@
 import './landingPage.scss';
 import { useEffect, useState } from 'react';
-import { useProspect, useCampaign, useApp } from '../../../hooks';
+import { useProspect, useCampaign, useApp, useCart } from '../../../hooks';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
@@ -20,9 +20,11 @@ export default function LandingPage() {
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
+  const { clearCart } = useCart();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [pendingClosing, setPendingClosing] = useState<PendingClosing | null>(null);
+  const [previousProspectId, setPreviousProspectId] = useState<number | null>(null);
 
   // Verifier s'il y a un closing en attente au chargement
   useEffect(() => {
@@ -31,6 +33,20 @@ export default function LandingPage() {
       setPendingClosing(stored);
     }
   }, []);
+
+  // Reset du panier quand le prospect change (sauf si closing en cours)
+  useEffect(() => {
+    if (currentProspect && currentProspect.id_prospect !== previousProspectId) {
+      // Ne pas vider le panier si on est en mode closing
+      const isClosing = closingService.hasPending();
+      if (!isClosing && previousProspectId !== null) {
+        console.log('[LANDING] Nouveau prospect, reset du panier');
+        clearCart();
+        setView('qui-est-ce');
+      }
+      setPreviousProspectId(currentProspect.id_prospect);
+    }
+  }, [currentProspect, previousProspectId, clearCart, setView]);
 
   useEffect(() => {
     loadProspect(1);

@@ -45,6 +45,15 @@ export default function ProduitCard({ produit, onAddToCart }: ProduitCardProps) 
         <p className="produit-card__description">{produit.description}</p>
       )}
 
+      {(produit.format || produit.grammage || produit.couleur || produit.quantite_lot) && (
+        <div className="produit-card__details">
+          {produit.format && <span className="produit-card__detail">Format: {produit.format}</span>}
+          {produit.grammage && <span className="produit-card__detail">{produit.grammage}</span>}
+          {produit.couleur && <span className="produit-card__detail">{produit.couleur}</span>}
+          {produit.quantite_lot && <span className="produit-card__detail">Lot de {produit.quantite_lot}</span>}
+        </div>
+      )}
+
       <div className="produit-card__footer">
         <div className="produit-card__price-container">
           {hasPrixPromo && (

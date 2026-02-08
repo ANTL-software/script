@@ -11,6 +11,7 @@ import { formatDateLong } from '../../../utils/scripts/formatters';
 interface EditableFields {
   email: string;
   telephone: string;
+  telephone_contact: string;
   adresse: string;
   code_postal: string;
   ville: string;
@@ -25,6 +26,7 @@ export default function QuiEstCe() {
   const [editedFields, setEditedFields] = useState<EditableFields>({
     email: '',
     telephone: '',
+    telephone_contact: '',
     adresse: '',
     code_postal: '',
     ville: '',
@@ -36,6 +38,7 @@ export default function QuiEstCe() {
       setEditedFields({
         email: currentProspect.email || '',
         telephone: currentProspect.telephone || '',
+        telephone_contact: currentProspect.telephone_contact || '',
         adresse: currentProspect.adresse || '',
         code_postal: currentProspect.code_postal || '',
         ville: currentProspect.ville || '',
@@ -92,6 +95,7 @@ export default function QuiEstCe() {
       setEditedFields({
         email: currentProspect.email || '',
         telephone: currentProspect.telephone || '',
+        telephone_contact: currentProspect.telephone_contact || '',
         adresse: currentProspect.adresse || '',
         code_postal: currentProspect.code_postal || '',
         ville: currentProspect.ville || '',
@@ -124,6 +128,9 @@ export default function QuiEstCe() {
       }
       if (editedFields.ville !== (currentProspect.ville || '')) {
         dataToUpdate.ville = editedFields.ville || undefined;
+      }
+      if (editedFields.telephone_contact !== (currentProspect.telephone_contact || '')) {
+        dataToUpdate.telephone_contact = editedFields.telephone_contact || undefined;
       }
 
       if (Object.keys(dataToUpdate).length === 0) {
@@ -195,9 +202,43 @@ export default function QuiEstCe() {
           </div>
         </div>
 
+        {currentProspect.type_prospect === 'Entreprise' && (
+          <div className="qui-est-ce__section">
+            <h3>Informations entreprise</h3>
+            <div className="qui-est-ce__grid">
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">SIRET</span>
+                <span className="qui-est-ce__value">{currentProspect.siret || '-'}</span>
+              </div>
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">Code NAF</span>
+                <span className="qui-est-ce__value">{currentProspect.code_naf || '-'}</span>
+              </div>
+              <div className="qui-est-ce__field qui-est-ce__field--full">
+                <span className="qui-est-ce__label">Activite</span>
+                <span className="qui-est-ce__value">{currentProspect.activite || '-'}</span>
+              </div>
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">Secteur</span>
+                <span className="qui-est-ce__value">{currentProspect.secteur || '-'}</span>
+              </div>
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">Region</span>
+                <span className="qui-est-ce__value">{currentProspect.region || '-'}</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="qui-est-ce__section">
           <h3>Contact</h3>
           <div className="qui-est-ce__grid">
+            {currentProspect.civilite && (
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">Civilite</span>
+                <span className="qui-est-ce__value">{currentProspect.civilite}</span>
+              </div>
+            )}
             <div className="qui-est-ce__field">
               <span className="qui-est-ce__label">Telephone</span>
               {isEditing ? (
@@ -209,6 +250,19 @@ export default function QuiEstCe() {
                 />
               ) : (
                 <span className="qui-est-ce__value">{currentProspect.telephone}</span>
+              )}
+            </div>
+            <div className="qui-est-ce__field">
+              <span className="qui-est-ce__label">Tel. contact</span>
+              {isEditing ? (
+                <Input
+                  value={editedFields.telephone_contact}
+                  onChange={(e) => handleFieldChange('telephone_contact', e.target.value)}
+                  disabled={isLoading || isSaving}
+                  placeholder="Ligne directe / portable"
+                />
+              ) : (
+                <span className="qui-est-ce__value">{currentProspect.telephone_contact || '-'}</span>
               )}
             </div>
             <div className="qui-est-ce__field">

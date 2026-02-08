@@ -47,6 +47,21 @@
     overflow: hidden;
   }
 
+  &__details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  &__detail {
+    font-size: 0.625rem;
+    color: vars.$colorGray500;
+    background: vars.$colorGray100;
+    padding: 0.1rem 0.3rem;
+    border-radius: 0.2rem;
+    white-space: nowrap;
+  }
+
   &__footer {
     display: flex;
     align-items: center;

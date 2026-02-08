@@ -15,9 +15,10 @@ export interface Departement {
 
 export interface Employe {
   id_employe: number;
+  identifiant: string;
   nom: string;
   prenom: string;
-  email: string;
+  email?: string;
   telephone?: string;
   date_embauche?: string;
   id_poste?: number;
@@ -25,12 +26,12 @@ export interface Employe {
   actif: boolean;
   created_at?: string;
   updated_at?: string;
-  Poste?: Poste;
-  Departement?: Departement;
+  poste?: Poste;
+  departement?: Departement;
 }
 
 export interface LoginCredentials {
-  email: string;
+  identifiant: string;
   password: string;
 }
 

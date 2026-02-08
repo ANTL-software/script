@@ -24,6 +24,13 @@ export interface Prospect {
   pays?: string;
   statut: ProspectStatut;
   notes?: string;
+  siret?: string;
+  code_naf?: string;
+  activite?: string;
+  secteur?: string;
+  region?: string;
+  civilite?: string;
+  telephone_contact?: string;
   created_at: string;
   updated_at: string;
 }
@@ -48,4 +55,11 @@ export interface UpdateProspectData {
   pays?: string;
   notes?: string;
   raison_sociale?: string;
+  siret?: string;
+  code_naf?: string;
+  activite?: string;
+  secteur?: string;
+  region?: string;
+  civilite?: string;
+  telephone_contact?: string;
 }

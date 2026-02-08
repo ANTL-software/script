@@ -2,9 +2,10 @@ import type { Employe, Poste, Departement } from '../../utils/types';
 
 export class UserModel implements Employe {
   id_employe: number;
+  identifiant: string;
   nom: string;
   prenom: string;
-  email: string;
+  email?: string;
   telephone?: string;
   date_embauche?: string;
   id_poste?: number;
@@ -12,11 +13,12 @@ export class UserModel implements Employe {
   actif: boolean;
   created_at?: string;
   updated_at?: string;
-  Poste?: Poste;
-  Departement?: Departement;
+  poste?: Poste;
+  departement?: Departement;
 
   constructor(data: Employe) {
     this.id_employe = data.id_employe;
+    this.identifiant = data.identifiant;
     this.nom = data.nom;
     this.prenom = data.prenom;
     this.email = data.email;
@@ -27,8 +29,8 @@ export class UserModel implements Employe {
     this.actif = data.actif;
     this.created_at = data.created_at;
     this.updated_at = data.updated_at;
-    this.Poste = data.Poste;
-    this.Departement = data.Departement;
+    this.poste = data.poste;
+    this.departement = data.departement;
   }
 
   public get fullName(): string {
@@ -38,6 +40,7 @@ export class UserModel implements Employe {
   public toJSON(): Employe {
     return {
       id_employe: this.id_employe,
+      identifiant: this.identifiant,
       nom: this.nom,
       prenom: this.prenom,
       email: this.email,
@@ -48,8 +51,8 @@ export class UserModel implements Employe {
       actif: this.actif,
       created_at: this.created_at,
       updated_at: this.updated_at,
-      Poste: this.Poste,
-      Departement: this.Departement,
+      poste: this.poste,
+      departement: this.departement,
     };
   }
 

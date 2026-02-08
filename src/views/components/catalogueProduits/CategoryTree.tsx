@@ -15,10 +15,36 @@ interface CategoryNodeProps {
   onAddToCart: (produit: Produit) => void;
 }
 
+// Compte le nombre total de produits dans une catégorie (incluant sous-catégories)
+function countTotalProducts(category: CategorieProduit): number {
+  let count = category.produits?.length || 0;
+  if (category.sousCategories) {
+    for (const sub of category.sousCategories) {
+      count += countTotalProducts(sub);
+    }
+  }
+  return count;
+}
+
+// Filtre les catégories pour ne garder que celles qui ont des produits
+function filterNonEmptyCategories(categories: CategorieProduit[]): CategorieProduit[] {
+  return categories
+    .map(cat => ({
+      ...cat,
+      sousCategories: cat.sousCategories ? filterNonEmptyCategories(cat.sousCategories) : undefined
+    }))
+    .filter(cat => countTotalProducts(cat) > 0);
+}
+
 function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
   const [isExpanded, setIsExpanded] = useState(level === 0);
 
-  const hasSousCategories = category.sousCategories && category.sousCategories.length > 0;
+  // Filtrer les sous-catégories vides
+  const filteredSousCategories = category.sousCategories
+    ? filterNonEmptyCategories(category.sousCategories)
+    : [];
+
+  const hasSousCategories = filteredSousCategories.length > 0;
   const hasProduits = category.produits && category.produits.length > 0;
   const hasContent = hasSousCategories || hasProduits;
 
@@ -49,7 +75,7 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
           <div className="category-node__counts">
             {hasSousCategories && (
               <span className="category-node__count">
-                {category.sousCategories!.length} sous-catégorie{category.sousCategories!.length > 1 ? 's' : ''}
+                {filteredSousCategories.length} sous-catégorie{filteredSousCategories.length > 1 ? 's' : ''}
               </span>
             )}
             {hasProduits && (
@@ -65,7 +91,7 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
         <div className="category-node__content">
           {hasSousCategories && (
             <div className="category-node__subcategories">
-              {category.sousCategories!.map((subCat) => (
+              {filteredSousCategories.map((subCat) => (
                 <CategoryNode
                   key={subCat.id_categorie}
                   category={subCat}
@@ -94,7 +120,10 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
 }
 
 export default function CategoryTree({ categories, onAddToCart }: CategoryTreeProps) {
-  if (categories.length === 0) {
+  // Filtrer les catégories vides à la racine aussi
+  const filteredCategories = filterNonEmptyCategories(categories);
+
+  if (filteredCategories.length === 0) {
     return (
       <div className="category-tree__empty">
         <p>Aucune catégorie disponible</p>
@@ -104,7 +133,7 @@ export default function CategoryTree({ categories, onAddToCart }: CategoryTreePr
 
   return (
     <div className="category-tree">
-      {categories.map((category) => (
+      {filteredCategories.map((category) => (
         <CategoryNode
           key={category.id_categorie}
           category={category}

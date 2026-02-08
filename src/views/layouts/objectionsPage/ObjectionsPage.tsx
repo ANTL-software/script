@@ -19,7 +19,7 @@ export default function ObjectionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [campagneName, setCampagneName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const loadObjections = async () => {
@@ -93,24 +93,11 @@ export default function ObjectionsPage() {
   }, [filteredObjections]);
 
   const toggleCategory = (categorie: string) => {
-    setExpandedCategories(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(categorie)) {
-        newSet.delete(categorie);
-      } else {
-        newSet.add(categorie);
-      }
-      return newSet;
-    });
+    setOpenCategory(prev => prev === categorie ? null : categorie);
   };
 
-  const expandAll = () => {
-    const allCategories = new Set(objectionsByCategorie.map(g => g.categorie));
-    setExpandedCategories(allCategories);
-  };
-
-  const collapseAll = () => {
-    setExpandedCategories(new Set());
+  const closeCategory = () => {
+    setOpenCategory(null);
   };
 
   const handlePrint = () => {
@@ -168,14 +155,11 @@ export default function ObjectionsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <div className="objections-page__expand-actions">
-          <Button variant="ghost" size="small" onClick={expandAll}>
-            Tout ouvrir
+        {openCategory && (
+          <Button variant="ghost" size="small" onClick={closeCategory}>
+            Fermer
           </Button>
-          <Button variant="ghost" size="small" onClick={collapseAll}>
-            Tout fermer
-          </Button>
-        </div>
+        )}
       </div>
 
       <main className="objections-page__content">
@@ -184,8 +168,13 @@ export default function ObjectionsPage() {
             <p>Aucune objection ne correspond a votre recherche</p>
           </div>
         ) : (
-          objectionsByCategorie.map(group => (
-            <div key={group.categorie} className="objections-page__category">
+          objectionsByCategorie.map(group => {
+            const isOpen = openCategory === group.categorie;
+            return (
+            <div
+              key={group.categorie}
+              className={`objections-page__category ${isOpen ? 'objections-page__category--open' : 'objections-page__category--closed'}`}
+            >
               <button
                 className="objections-page__category-header"
                 onClick={() => toggleCategory(group.categorie)}
@@ -196,14 +185,14 @@ export default function ObjectionsPage() {
                     {pluralize(group.objections.length, 'objection')}
                   </span>
                 </div>
-                {expandedCategories.has(group.categorie) ? (
+                {isOpen ? (
                   <FaChevronUp className="objections-page__category-icon" />
                 ) : (
                   <FaChevronDown className="objections-page__category-icon" />
                 )}
               </button>
 
-              {expandedCategories.has(group.categorie) && (
+              {isOpen && (
                 <div className="objections-page__category-content">
                   {group.objections.map(objection => (
                     <div key={objection.id_objection} className="objections-page__objection">
@@ -225,7 +214,8 @@ export default function ObjectionsPage() {
                 </div>
               )}
             </div>
-          ))
+            );
+          })
         )}
       </main>
     </div>

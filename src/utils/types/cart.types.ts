@@ -9,6 +9,12 @@ export interface Produit {
   id_categorie?: number;
   attributs_specifiques?: Record<string, unknown>;
   actif: boolean;
+  format?: string;
+  grammage?: string;
+  couleur?: string;
+  conditionnement?: string;
+  photo?: string;
+  quantite_lot?: number;
   created_at: string;
   updated_at: string;
   categorie?: CategorieProduit; // Relation optionnelle avec la catégorie (lowercase pour correspondre à l'API)

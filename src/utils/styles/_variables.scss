@@ -3,12 +3,15 @@ $fontFamilyPrimary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans
 $fontFamilyMono: 'Fira Code', 'Consolas', monospace;
 $fontPrimaryColor: '#1d1d1f';
 
-// Colors - Apple inspired
-$colorPrimary: #007aff;
-$colorPrimaryHover: #0051d5;
-$colorPrimaryLight: #e5f1ff;
+// Colors - antl
+$colorPrimary: #7c3aed;
+$colorPrimaryHover: #5b21b6;
+$colorPrimaryDark: #4c1d95;
+$colorPrimaryLight: #ede9fe;
+$colorPrimaryMuted: #c4b5fd;
+$colorPrimaryFocus: rgba(#7c3aed, 0.3);
 
-$colorSecondary: #5e5ce6;
+$colorSecondary: #a78bfa;
 $colorSuccess: #34c759;
 $colorWarning: #ff9500;
 $colorDanger: #ff3b30;

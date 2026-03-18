@@ -64,7 +64,7 @@
 
   &__icon {
     font-size: 1.5rem;
-    color: #0d9488;
+    color: vars.$colorPrimary;
   }
 
   &__campaign-name {
@@ -184,13 +184,13 @@
     align-items: center;
     width: 100%;
     padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    background: linear-gradient(135deg, vars.$colorPrimary 0%, vars.$colorPrimaryHover 100%);
     border: none;
     cursor: pointer;
     transition: background 0.2s;
 
     &:hover {
-      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      background: linear-gradient(135deg, vars.$colorPrimaryHover 0%, vars.$colorPrimaryDark 100%);
     }
 
     @media print {

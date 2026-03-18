@@ -1,0 +1,359 @@
+@use '../../../utils/styles/variables' as vars;
+
+#dashboardPage {
+  flex: 1;
+  padding: vars.$spacing-xl;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-lg;
+  max-width: 1100px;
+  margin: 0 auto;
+  width: 100%;
+
+  .dashboard__section-title {
+    font-size: vars.$fontSize-sm;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorGray700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: vars.$spacing-md;
+  }
+
+  // Recherche
+  .dashboard__search {
+    .dashboard__search-form {
+      display: flex;
+      gap: vars.$spacing-sm;
+    }
+
+    .dashboard__search-input {
+      flex: 1;
+      padding: vars.$spacing-sm vars.$spacing-md;
+      border: 1px solid vars.$colorGray300;
+      border-radius: vars.$radius-md;
+      font-size: vars.$fontSize-base;
+      background: vars.$colorWhite;
+      transition: border-color vars.$transition-fast;
+
+      &:focus {
+        outline: none;
+        border-color: vars.$colorPrimary;
+      }
+
+      &::placeholder {
+        color: vars.$colorGray500;
+      }
+    }
+
+    .dashboard__search-btn {
+      padding: vars.$spacing-sm vars.$spacing-lg;
+      background: vars.$colorPrimary;
+      color: vars.$colorWhite;
+      border: none;
+      border-radius: vars.$radius-md;
+      font-size: vars.$fontSize-sm;
+      font-weight: vars.$fontWeight-medium;
+      cursor: pointer;
+      transition: background vars.$transition-fast;
+      white-space: nowrap;
+
+      &:hover:not(:disabled) {
+        background: vars.$colorPrimaryHover;
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+
+    .dashboard__search-error {
+      margin-top: vars.$spacing-sm;
+      font-size: vars.$fontSize-sm;
+      color: vars.$colorDanger;
+    }
+
+    .dashboard__search-results {
+      list-style: none;
+      margin-top: vars.$spacing-sm;
+      border: 1px solid vars.$colorGray200;
+      border-radius: vars.$radius-md;
+      overflow: hidden;
+
+      li button {
+        display: block;
+        width: 100%;
+        padding: vars.$spacing-sm vars.$spacing-md;
+        text-align: left;
+        background: vars.$colorWhite;
+        border: none;
+        cursor: pointer;
+        font-size: vars.$fontSize-sm;
+        color: vars.$colorGray900;
+
+        &:hover {
+          background: vars.$colorGray100;
+        }
+      }
+    }
+  }
+
+  // Grille RDV + Notifs
+  .dashboard__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: vars.$spacing-lg;
+
+    @media (max-width: vars.$breakpoint-md) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  // Cards génériques
+  .dashboard__card {
+    background: vars.$colorWhite;
+    border: 1px solid vars.$colorGray200;
+    border-radius: vars.$radius-lg;
+    padding: vars.$spacing-lg;
+    box-shadow: vars.$shadow-sm;
+  }
+
+  // Empty state
+  .dashboard__empty-state {
+    color: vars.$colorGray500;
+    font-size: vars.$fontSize-sm;
+
+    p { margin: 0 0 vars.$spacing-xs; }
+
+    .dashboard__empty-hint {
+      font-size: vars.$fontSize-xs;
+      color: vars.$colorGray300;
+      font-style: italic;
+    }
+  }
+
+  // Stats
+  .dashboard__stats-grid {
+    display: flex;
+    gap: vars.$spacing-xl;
+    flex-wrap: wrap;
+  }
+
+  .dashboard__stat {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+
+    .dashboard__stat-value {
+      font-size: vars.$fontSize-2xl;
+      font-weight: vars.$fontWeight-bold;
+      color: vars.$colorGray900;
+    }
+
+    .dashboard__stat-label {
+      font-size: vars.$fontSize-xs;
+      color: vars.$colorGray500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    &--highlight .dashboard__stat-value {
+      color: vars.$colorPrimary;
+    }
+  }
+
+  // Jauge mensuelle
+  .dashboard__gauge {
+    // La jauge prend toute la largeur disponible
+    width: 100%;
+  }
+
+  // Waiting indicator
+  .dashboard__waiting {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    padding: vars.$spacing-md vars.$spacing-lg;
+    background: vars.$colorPrimaryLight;
+    border-radius: vars.$radius-md;
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorPrimary;
+
+    .dashboard__waiting-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: vars.$colorPrimary;
+      flex-shrink: 0;
+      animation: pulse-blue 1.5s infinite;
+    }
+
+    p { margin: 0; }
+  }
+
+  // Badges compteurs
+  .dashboard__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 vars.$spacing-xs;
+    background: vars.$colorGray300;
+    color: vars.$colorGray700;
+    border-radius: vars.$radius-full;
+    font-size: vars.$fontSize-xs;
+    font-weight: vars.$fontWeight-bold;
+    margin-left: vars.$spacing-xs;
+
+    &--alert {
+      background: vars.$colorDanger;
+      color: vars.$colorWhite;
+    }
+  }
+
+  // Loading
+  .dashboard__loading {
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray500;
+    margin: 0;
+  }
+
+  // Bouton lien discret
+  .dashboard__link-btn {
+    background: none;
+    border: none;
+    color: vars.$colorPrimary;
+    font-size: vars.$fontSize-xs;
+    cursor: pointer;
+    padding: 0;
+    white-space: nowrap;
+
+    &:hover { text-decoration: underline; }
+  }
+
+  // Liste RDV
+  .dashboard__rdv-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+  }
+
+  .dashboard__rdv-item {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    padding: vars.$spacing-sm;
+    border-radius: vars.$radius-md;
+    background: vars.$colorGray100;
+
+    .dashboard__rdv-heure {
+      font-size: vars.$fontSize-sm;
+      font-weight: vars.$fontWeight-bold;
+      font-family: vars.$fontFamilyMono;
+      color: vars.$colorGray900;
+      min-width: 42px;
+    }
+
+    .dashboard__rdv-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .dashboard__rdv-nom {
+      font-size: vars.$fontSize-sm;
+      font-weight: vars.$fontWeight-medium;
+      color: vars.$colorGray900;
+    }
+
+    .dashboard__rdv-tel {
+      font-size: vars.$fontSize-xs;
+      color: vars.$colorGray500;
+      font-family: vars.$fontFamilyMono;
+    }
+
+    .dashboard__rdv-motif {
+      font-size: vars.$fontSize-xs;
+      color: vars.$colorGray700;
+      font-style: italic;
+    }
+
+    .dashboard__rdv-btn {
+      padding: vars.$spacing-xs vars.$spacing-sm;
+      background: vars.$colorPrimary;
+      color: vars.$colorWhite;
+      border: none;
+      border-radius: vars.$radius-sm;
+      font-size: vars.$fontSize-xs;
+      font-weight: vars.$fontWeight-medium;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background vars.$transition-fast;
+
+      &:hover:not(:disabled) { background: vars.$colorPrimaryHover; }
+      &:disabled { opacity: 0.4; cursor: default; }
+    }
+  }
+
+  // Notifications
+  .dashboard__notifications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: vars.$spacing-md;
+
+    .dashboard__section-title { margin-bottom: 0; }
+  }
+
+  .dashboard__notif-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+  }
+
+  .dashboard__notif-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: vars.$spacing-sm;
+    padding: vars.$spacing-sm;
+    border-radius: vars.$radius-md;
+    background: vars.$colorGray100;
+  }
+
+  .dashboard__notif-content {
+    display: flex;
+    align-items: flex-start;
+    gap: vars.$spacing-sm;
+    flex: 1;
+  }
+
+  .dashboard__notif-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+
+    &--rdv_30min { background: vars.$colorWarning; }
+    &--rdv_10min { background: vars.$colorDanger; }
+    &--rdv_manque { background: vars.$colorGray500; }
+    &--info { background: vars.$colorInfo; }
+  }
+
+  .dashboard__notif-message {
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray900;
+    margin: 0;
+    line-height: vars.$lineHeight-normal;
+  }
+}
+
+@keyframes pulse-blue {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
+}

@@ -3,13 +3,12 @@
 .closing-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   padding: 1rem;
-  backdrop-filter: blur(4px);
 }
 
 .closing-modal {
@@ -17,40 +16,38 @@
   border-radius: vars.$radius-xl;
   box-shadow: vars.$shadow-xl;
   width: 100%;
-  max-width: 900px;
-  max-height: 90vh;
-  overflow-y: auto;
-  animation: modalSlideIn 0.3s ease-out;
+  max-width: 1300px;
+  height: 93vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalSlideIn 0.25s ease-out;
 
   @keyframes modalSlideIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95) translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
+    from { opacity: 0; transform: scale(0.97) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
   }
 
   &__header {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1.5rem 2rem;
-    background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    padding: 1.25rem 1.75rem;
+    background: linear-gradient(135deg, vars.$colorPrimary 0%, vars.$colorPrimaryHover 100%);
     color: vars.$colorWhite;
+    flex-shrink: 0;
   }
 
   &__header-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3rem;
+    height: 3rem;
     background: rgba(255, 255, 255, 0.2);
     border-radius: vars.$radius-lg;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
+    flex-shrink: 0;
   }
 
   &__header-content {
@@ -58,53 +55,76 @@
 
     h2 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1.25rem;
       font-weight: 700;
     }
   }
 
   &__prospect-name {
-    margin: 0.25rem 0 0 0;
-    font-size: 1rem;
-    opacity: 0.9;
+    margin: 0.2rem 0 0 0;
+    font-size: 0.9rem;
+    opacity: 0.85;
   }
 
   &__duration {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.6rem 1rem;
     background: rgba(255, 255, 255, 0.2);
     border-radius: vars.$radius-lg;
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
+    flex-shrink: 0;
   }
 
   &__warning {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.75rem;
     background: #fef3c7;
     color: #92400e;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: 500;
+    flex-shrink: 0;
+    border-bottom: 1px solid #fde68a;
 
     svg {
       flex-shrink: 0;
-      font-size: 1.125rem;
     }
   }
 
-  &__form {
-    padding: 2rem;
+  // ── Corps en 2 colonnes ───────────────────────────────────────────
+  &__body {
     display: flex;
-    flex-direction: column;
-    gap: 2rem;
+    flex: 1;
+    min-height: 0;
   }
 
+  &__left {
+    width: 400px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    padding: 1rem 1.25rem;
+    overflow-y: hidden;
+    border-right: 1px solid vars.$colorGray200;
+  }
+
+  &__right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem;
+    overflow: hidden;
+  }
+
+  // ── Sections gauche ───────────────────────────────────────────────
   &__error {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     background: #fef2f2;
     border: 1px solid #fecaca;
     border-radius: vars.$radius-md;
@@ -116,9 +136,9 @@
     h3 {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      margin: 0 0 1rem 0;
-      font-size: 1.125rem;
+      gap: 0.4rem;
+      margin: 0 0 0.5rem 0;
+      font-size: 0.825rem;
       font-weight: 600;
       color: vars.$colorGray900;
 
@@ -130,32 +150,25 @@
 
   &__statut-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-
-    @media (max-width: 800px) {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    @media (max-width: 500px) {
-      grid-template-columns: 1fr;
-    }
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 0.35rem;
   }
 
   &__statut-option {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1.25rem 1rem;
+    gap: 0.2rem;
+    padding: 0.5rem 0.4rem;
     background: vars.$colorWhite;
     border: 2px solid vars.$colorGray200;
-    border-radius: vars.$radius-lg;
+    border-radius: vars.$radius-md;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     text-align: center;
 
-    &:hover {
+    &:hover:not(:disabled) {
       border-color: var(--option-color);
       background: vars.$colorGray100;
     }
@@ -163,7 +176,7 @@
     &--selected {
       border-color: var(--option-color);
       background: vars.$colorGray100;
-      box-shadow: 0 0 0 3px var(--option-color);
+      box-shadow: 0 0 0 2px var(--option-color);
 
       .closing-modal__statut-label {
         color: var(--option-color);
@@ -177,37 +190,37 @@
   }
 
   &__statut-icon {
-    font-size: 2rem;
+    font-size: 1.1rem;
     line-height: 1;
   }
 
   &__statut-label {
-    font-size: 0.9375rem;
+    font-size: 0.775rem;
     font-weight: 600;
     color: vars.$colorGray900;
   }
 
   &__statut-description {
-    font-size: 0.75rem;
+    font-size: 0.63rem;
     color: vars.$colorGray500;
-    line-height: 1.3;
+    line-height: 1.2;
   }
 
   &__textarea {
     width: 100%;
-    padding: 1rem;
+    padding: 0.75rem;
     border: 1px solid vars.$colorGray300;
     border-radius: vars.$radius-md;
     font-family: inherit;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     resize: vertical;
-    min-height: 120px;
+    min-height: 70px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
     &:focus {
       outline: none;
-      border-color: #0d9488;
-      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.1);
+      border-color: vars.$colorPrimary;
+      box-shadow: 0 0 0 3px vars.$colorPrimaryFocus;
     }
 
     &::placeholder {
@@ -221,29 +234,17 @@
   }
 
   &__footer {
-    display: flex;
-    justify-content: center;
+    margin-top: auto;
     padding-top: 1rem;
     border-top: 1px solid vars.$colorGray200;
-
-    button {
-      min-width: 250px;
-      padding: 1rem 2rem;
-      font-size: 1rem;
-    }
   }
 }
 
-// Animation for spinner
 .spinner {
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

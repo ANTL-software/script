@@ -14,6 +14,7 @@ interface RendezVousModalProps {
   rendezVous: RendezVous | null;
   initialDate?: Date;
   prospectName?: string;
+  isReadOnly?: boolean;
   onCreate: (data: { date: Date; motif: string; notes: string }) => Promise<void>;
   onUpdate: (data: { date: Date; motif: string; notes: string; statut: string }) => Promise<void>;
   onDelete: () => Promise<void>;
@@ -25,6 +26,7 @@ export default function RendezVousModal({
   rendezVous,
   initialDate,
   prospectName,
+  isReadOnly = false,
   onCreate,
   onUpdate,
   onDelete,
@@ -102,7 +104,9 @@ export default function RendezVousModal({
     <div className="rdv-modal-overlay" onClick={onClose}>
       <div className="rdv-modal" onClick={(e) => e.stopPropagation()}>
         <div className="rdv-modal__header">
-          <h2>{isEditMode ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}</h2>
+          <h2>
+            {isReadOnly ? 'Rendez-vous (autre agent)' : isEditMode ? 'Modifier le rendez-vous' : 'Nouveau rendez-vous'}
+          </h2>
           <button className="rdv-modal__close" onClick={onClose}>
             <FaTimes />
           </button>
@@ -110,9 +114,10 @@ export default function RendezVousModal({
 
         <form className="rdv-modal__form" onSubmit={handleSubmit}>
           {displayProspectName && (
-            <div className="rdv-modal__prospect">
+            <div className={`rdv-modal__prospect${isReadOnly ? ' rdv-modal__prospect--autre-agent' : ''}`}>
               <FaUser className="rdv-modal__prospect-icon" />
               <span>{displayProspectName}</span>
+              {isReadOnly && <span className="rdv-modal__prospect-badge">Autre agent</span>}
             </div>
           )}
 
@@ -125,8 +130,9 @@ export default function RendezVousModal({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                min={today}
+                min={isReadOnly ? undefined : today}
                 required
+                disabled={isReadOnly}
               />
             </div>
 
@@ -139,6 +145,7 @@ export default function RendezVousModal({
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
                 required
+                disabled={isReadOnly}
               />
             </div>
           </div>
@@ -149,7 +156,8 @@ export default function RendezVousModal({
               type="text"
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
-              placeholder="Ex: Devis a finaliser, Relance commerciale..."
+              placeholder="Ex: Devis à finaliser, Relance commerciale..."
+              disabled={isReadOnly}
             />
           </div>
 
@@ -159,8 +167,9 @@ export default function RendezVousModal({
               className="rdv-modal__textarea"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes supplementaires..."
+              placeholder="Notes supplémentaires..."
               rows={3}
+              disabled={isReadOnly}
             />
           </div>
 
@@ -171,6 +180,7 @@ export default function RendezVousModal({
                 className="rdv-modal__select"
                 value={statut}
                 onChange={(e) => setStatut(e.target.value as RendezVousStatut)}
+                disabled={isReadOnly}
               >
                 {STATUT_RENDEZ_VOUS_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -181,61 +191,50 @@ export default function RendezVousModal({
             </div>
           )}
 
-          <div className="rdv-modal__actions">
-            {isEditMode && !showDeleteConfirm && (
-              <Button
-                type="button"
-                variant="danger"
-                size="small"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isSubmitting}
-              >
-                <FaTrash /> Supprimer
-              </Button>
-            )}
-
-            {showDeleteConfirm && (
-              <div className="rdv-modal__delete-confirm">
-                <span>Confirmer la suppression ?</span>
+          {isReadOnly ? (
+            <div className="rdv-modal__actions">
+              <div className="rdv-modal__actions-right">
+                <Button type="button" variant="ghost" onClick={onClose}>
+                  Fermer
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="rdv-modal__actions">
+              {isEditMode && !showDeleteConfirm && (
                 <Button
                   type="button"
                   variant="danger"
                   size="small"
-                  onClick={handleDelete}
+                  onClick={() => setShowDeleteConfirm(true)}
                   disabled={isSubmitting}
                 >
-                  Oui, supprimer
+                  <FaTrash /> Supprimer
                 </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="small"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={isSubmitting}
-                >
+              )}
+
+              {showDeleteConfirm && (
+                <div className="rdv-modal__delete-confirm">
+                  <span>Confirmer la suppression ?</span>
+                  <Button type="button" variant="danger" size="small" onClick={handleDelete} disabled={isSubmitting}>
+                    Oui, supprimer
+                  </Button>
+                  <Button type="button" variant="ghost" size="small" onClick={() => setShowDeleteConfirm(false)} disabled={isSubmitting}>
+                    Annuler
+                  </Button>
+                </div>
+              )}
+
+              <div className="rdv-modal__actions-right">
+                <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>
                   Annuler
                 </Button>
+                <Button type="submit" variant="primary" disabled={isSubmitting}>
+                  {isSubmitting ? 'Enregistrement...' : isEditMode ? 'Modifier' : 'Créer'}
+                </Button>
               </div>
-            )}
-
-            <div className="rdv-modal__actions-right">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={onClose}
-                disabled={isSubmitting}
-              >
-                Annuler
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Enregistrement...' : isEditMode ? 'Modifier' : 'Creer'}
-              </Button>
             </div>
-          </div>
+          )}
         </form>
       </div>
     </div>

@@ -6,7 +6,7 @@ export default function QuiSommesNous() {
     <div className="qui-sommes-nous">
       <div className="qui-sommes-nous__header">
         <h2>Qui sommes-nous ?</h2>
-        <p className="qui-sommes-nous__subtitle">Presentation de l'entreprise ANTL</p>
+        <p className="qui-sommes-nous__subtitle">Presentation de l'entreprise antl</p>
       </div>
 
       <div className="qui-sommes-nous__content">
@@ -16,7 +16,7 @@ export default function QuiSommesNous() {
             <h3>Notre entreprise</h3>
           </div>
           <p>
-            ANTL est une entreprise specialisee dans le conseil et la vente de solutions
+            antl est une entreprise specialisee dans le conseil et la vente de solutions
             d'assurance adaptees aux besoins de chaque client. Depuis notre creation, nous
             accompagnons les particuliers et les entreprises dans la protection de leurs biens
             et de leurs proches.
@@ -112,7 +112,7 @@ export default function QuiSommesNous() {
 
         <section className="qui-sommes-nous__section qui-sommes-nous__section--legal">
           <p className="qui-sommes-nous__legal">
-            ANTL - SARL au capital de 50 000 euros - RCS Paris 123 456 789 -
+            antl - SARL au capital de 50 000 euros - RCS Paris 123 456 789 -
             ORIAS n° 12 345 678 - Courtier en assurances
           </p>
         </section>

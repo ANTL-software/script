@@ -64,7 +64,7 @@ export default function ProduitCard({ produit, onAddToCart }: ProduitCardProps) 
           </span>
         </div>
         <Button
-          variant="primary"
+          variant="tertiary"
           size="small"
           onClick={() => onAddToCart(produit)}
         >

@@ -1,0 +1,91 @@
+@use '../../../utils/styles/variables' as vars;
+
+.incoming-call-banner {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: vars.$z-modal;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-lg;
+  padding: vars.$spacing-md vars.$spacing-lg;
+  background: vars.$colorWhite;
+  border: 2px solid vars.$colorSuccess;
+  border-radius: vars.$radius-xl;
+  box-shadow: vars.$shadow-xl;
+  min-width: 360px;
+  animation: banner-in 200ms ease-out;
+
+  &__info {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+  }
+
+  &__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: vars.$colorSuccess;
+    flex-shrink: 0;
+    animation: pulse-green 1.2s infinite;
+  }
+
+  &__label {
+    font-size: vars.$fontSize-xs;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorGray500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+
+  &__from {
+    font-size: vars.$fontSize-base;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorGray900;
+    margin: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: vars.$spacing-sm;
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    padding: vars.$spacing-sm vars.$spacing-md;
+    border: none;
+    border-radius: vars.$radius-full;
+    font-size: vars.$fontSize-sm;
+    font-weight: vars.$fontWeight-medium;
+    cursor: pointer;
+    transition: opacity vars.$transition-fast;
+
+    &:hover { opacity: 0.85; }
+
+    &--answer {
+      background: vars.$colorSuccess;
+      color: vars.$colorWhite;
+    }
+
+    &--reject {
+      background: vars.$colorDanger;
+      color: vars.$colorWhite;
+    }
+  }
+}
+
+@keyframes banner-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes pulse-green {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.3); }
+}

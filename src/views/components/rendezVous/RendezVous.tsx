@@ -1,23 +1,23 @@
 import './rendezVous.scss';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import type { View, NavigateAction, SlotInfo } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, startOfDay, isBefore, addHours, parseISO } from 'date-fns';
+import type { View, NavigateAction } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay, startOfDay, isBefore, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FaPlus, FaCalendarAlt } from 'react-icons/fa';
-import { useUser, useProspect, useCampaign, useToast } from '../../../hooks';
-import { rendezVousService } from '../../../API/services';
-import type { RendezVous as RendezVousType, CalendarEvent, CreateRendezVousData } from '../../../utils/types';
+import { FaPlus, FaCalendarAlt, FaUser, FaExclamationTriangle } from 'react-icons/fa';
+import { useProspect } from '../../../hooks';
+import { useRendezVous } from '../../../hooks/useRendezVous';
+import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
-import { getErrorMessage, formatProspectName } from '../../../utils/scripts/formatters';
+import { formatHeure } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
 import Loader from '../loader/Loader';
 import RendezVousModal from '../rendezVousModal/RendezVousModal';
+import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
 
-const locales = {
-  'fr': fr,
-};
+const locales = { 'fr': fr };
 
 const localizer = dateFnsLocalizer({
   format,
@@ -27,179 +27,99 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-export default function RendezVous() {
-  const { user } = useUser();
-  const { currentProspect, fullName: prospectFullName } = useProspect();
-  const { currentCampaign } = useCampaign();
-  const { showToast } = useToast();
+function eventStyleGetter(event: CalendarEvent) {
+  const { statut } = event.resource;
+  const { eventType } = event;
 
-  const today = startOfDay(new Date());
+  if (eventType === 'other-agent-prospect') {
+    return {
+      style: {
+        backgroundColor: '#d97706',
+        borderRadius: '0.375rem',
+        border: 'none',
+        color: 'white',
+        opacity: 0.9,
+        fontStyle: 'italic',
+      },
+      className: 'event--other-agent',
+    };
+  }
+
+  const color = STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie;
+
+  if (eventType === 'mine-prospect') {
+    return {
+      style: {
+        backgroundColor: color,
+        borderRadius: '0.375rem',
+        border: 'none',
+        boxShadow: `inset 0 0 0 2px white, 0 0 0 2px ${color}`,
+        color: 'white',
+        fontWeight: 600,
+      },
+      className: 'event--mine-prospect',
+    };
+  }
+
+  return {
+    style: {
+      backgroundColor: color,
+      borderRadius: '0.375rem',
+      border: 'none',
+      color: 'white',
+      opacity: statut === 'annule' ? 0.35 : 0.65,
+    },
+    className: 'event--mine-other',
+  };
+}
+
+export default function RendezVous() {
+  const { fullName: prospectFullName, currentProspect } = useProspect();
+  const {
+    today,
+    events,
+    isLoading,
+    isModalOpen,
+    isReadOnly,
+    selectedRendezVous,
+    selectedSlot,
+    otherAgentRdvList,
+    myProspectRdvs,
+    nextMyProspectRdv,
+    handleSelectSlot,
+    handleSelectEvent,
+    handleCreateRendezVous,
+    handleUpdateRendezVous,
+    handleDeleteRendezVous,
+    handleCloseModal,
+    handleNewRendezVous,
+  } = useRendezVous();
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>('week');
-  const [rendezVousList, setRendezVousList] = useState<RendezVousType[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRendezVous, setSelectedRendezVous] = useState<RendezVousType | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<{ start: Date; end: Date } | null>(null);
-
-  const loadRendezVous = useCallback(async () => {
-    if (!user?.id_employe) return;
-
-    try {
-      setIsLoading(true);
-      const data = await rendezVousService.getRendezVousByAgent(user.id_employe);
-      setRendezVousList(data);
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user?.id_employe, showToast]);
-
-  useEffect(() => {
-    loadRendezVous();
-  }, [loadRendezVous]);
-
-  const events: CalendarEvent[] = useMemo(() => {
-    return rendezVousList.map(rdv => {
-      const [hours, minutes] = rdv.heure_rdv.split(':').map(Number);
-      const startDate = parseISO(rdv.date_rdv);
-      startDate.setHours(hours, minutes, 0, 0);
-      const endDate = addHours(startDate, 1);
-
-      const prospectName = rdv.prospect
-        ? formatProspectName(rdv.prospect)
-        : 'Prospect';
-
-      return {
-        id: rdv.id_rendez_vous,
-        title: `${prospectName}${rdv.motif ? ` - ${rdv.motif}` : ''}`,
-        start: startDate,
-        end: endDate,
-        resource: rdv,
-      };
-    });
-  }, [rendezVousList]);
+  const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; event: CalendarEvent | null }>({
+    visible: false, x: 0, y: 0, event: null,
+  });
 
   const handleNavigate = useCallback((newDate: Date, _view: View, action: NavigateAction) => {
-    if (action === 'PREV' && isBefore(startOfDay(newDate), today)) {
-      return;
-    }
+    if (action === 'PREV' && isBefore(startOfDay(newDate), today)) return;
     setCurrentDate(newDate);
   }, [today]);
 
-  const handleViewChange = useCallback((view: View) => {
-    setCurrentView(view);
-  }, []);
+  const handleViewChange = useCallback((view: View) => setCurrentView(view), []);
 
-  const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
-    if (isBefore(slotInfo.start, new Date())) {
-      showToast('error', 'Impossible de creer un rendez-vous dans le passe');
-      return;
-    }
-
-    if (!currentProspect) {
-      showToast('error', 'Veuillez selectionner un prospect');
-      return;
-    }
-
-    setSelectedSlot({ start: slotInfo.start, end: slotInfo.end });
-    setSelectedRendezVous(null);
-    setIsModalOpen(true);
-  }, [currentProspect, showToast]);
-
-  const handleSelectEvent = useCallback((event: CalendarEvent) => {
-    setSelectedRendezVous(event.resource);
-    setSelectedSlot(null);
-    setIsModalOpen(true);
-  }, []);
-
-  const handleCreateRendezVous = async (data: { date: Date; motif: string; notes: string }) => {
-    if (!user?.id_employe || !currentProspect || !currentCampaign) {
-      showToast('error', 'Donnees manquantes pour creer le rendez-vous');
-      return;
-    }
-
-    const createData: CreateRendezVousData = {
-      id_agent: user.id_employe,
-      id_prospect: currentProspect.id_prospect,
-      id_campagne: currentCampaign.id_campagne,
-      date_rdv: format(data.date, 'yyyy-MM-dd'),
-      heure_rdv: format(data.date, 'HH:mm:ss'),
-      motif: data.motif || undefined,
-      notes: data.notes || undefined,
-    };
-
-    try {
-      await rendezVousService.createRendezVous(createData);
-      showToast('success', 'Rendez-vous cree avec succes');
-      setIsModalOpen(false);
-      loadRendezVous();
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la creation'));
-    }
-  };
-
-  const handleUpdateRendezVous = async (data: { date: Date; motif: string; notes: string; statut: string }) => {
-    if (!selectedRendezVous) return;
-
-    try {
-      await rendezVousService.updateRendezVous(selectedRendezVous.id_rendez_vous, {
-        date_rdv: format(data.date, 'yyyy-MM-dd'),
-        heure_rdv: format(data.date, 'HH:mm:ss'),
-        motif: data.motif || undefined,
-        notes: data.notes || undefined,
-        statut: data.statut as 'planifie' | 'effectue' | 'annule' | 'reporte',
-      });
-      showToast('success', 'Rendez-vous mis a jour');
-      setIsModalOpen(false);
-      loadRendezVous();
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la mise a jour'));
-    }
-  };
-
-  const handleDeleteRendezVous = async () => {
-    if (!selectedRendezVous) return;
-
-    try {
-      await rendezVousService.deleteRendezVous(selectedRendezVous.id_rendez_vous);
-      showToast('success', 'Rendez-vous supprime');
-      setIsModalOpen(false);
-      loadRendezVous();
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
-    }
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedRendezVous(null);
-    setSelectedSlot(null);
-  };
-
-  const handleNewRendezVous = () => {
-    if (!currentProspect) {
-      showToast('error', 'Veuillez selectionner un prospect');
-      return;
-    }
-    setSelectedSlot({ start: new Date(), end: addHours(new Date(), 1) });
-    setSelectedRendezVous(null);
-    setIsModalOpen(true);
-  };
-
-  const eventStyleGetter = useCallback((event: CalendarEvent) => {
-    const statut = event.resource.statut;
-    const backgroundColor = STATUT_RENDEZ_VOUS_COLORS[statut] || STATUT_RENDEZ_VOUS_COLORS.planifie;
-
-    return {
-      style: {
-        backgroundColor,
-        borderRadius: '0.375rem',
-        opacity: statut === 'annule' ? 0.6 : 1,
-        border: 'none',
-        color: 'white',
-      },
+  const CustomEventComponent = useMemo(() => {
+    return function CustomEvent({ event }: { event: CalendarEvent }) {
+      return (
+        <div
+          className="cal-event-content"
+          onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, event })}
+          onMouseMove={(e) => setTooltip((prev) => ({ ...prev, x: e.clientX, y: e.clientY }))}
+          onMouseLeave={() => setTooltip((prev) => ({ ...prev, visible: false }))}
+        >
+          {event.title}
+        </div>
+      );
     };
   }, []);
 
@@ -217,20 +137,50 @@ export default function RendezVous() {
       <div className="rendez-vous__header">
         <div className="rendez-vous__title">
           <FaCalendarAlt className="rendez-vous__icon" />
-          <h2>Mes Rendez-vous</h2>
+          <h2>Rendez-vous</h2>
         </div>
         <div className="rendez-vous__actions">
           <div className="rendez-vous__legend">
-            <span className="rendez-vous__legend-item rendez-vous__legend-item--planifie">Planifie</span>
-            <span className="rendez-vous__legend-item rendez-vous__legend-item--effectue">Effectue</span>
-            <span className="rendez-vous__legend-item rendez-vous__legend-item--reporte">Reporte</span>
-            <span className="rendez-vous__legend-item rendez-vous__legend-item--annule">Annule</span>
+            <span className="rendez-vous__legend-group-label">Mon planning :</span>
+            <span className="rendez-vous__legend-item rendez-vous__legend-item--planifie">Planifié</span>
+            <span className="rendez-vous__legend-item rendez-vous__legend-item--effectue">Effectué</span>
+            <span className="rendez-vous__legend-item rendez-vous__legend-item--reporte">Reporté</span>
+            <span className="rendez-vous__legend-item rendez-vous__legend-item--annule">Annulé</span>
+            <span className="rendez-vous__legend-sep" />
+            <span className="rendez-vous__legend-item rendez-vous__legend-item--prospect">Ce prospect</span>
+            <span className="rendez-vous__legend-item rendez-vous__legend-item--autre-agent">Autre agent</span>
           </div>
           <Button variant="primary" size="small" onClick={handleNewRendezVous}>
             <FaPlus /> Nouveau
           </Button>
         </div>
       </div>
+
+      {currentProspect && myProspectRdvs.length > 0 && (
+        <div className="rendez-vous__prospect-banner">
+          <FaUser className="rendez-vous__prospect-banner-icon" />
+          <span>
+            <strong>{prospectFullName}</strong> —{' '}
+            {myProspectRdvs.length} RDV{myProspectRdvs.length > 1 ? 's' : ''} existant{myProspectRdvs.length > 1 ? 's' : ''}
+          </span>
+          {nextMyProspectRdv && (
+            <span className="rendez-vous__prospect-banner-next">
+              · Prochain le{' '}
+              {format(parseISO(nextMyProspectRdv.date_rdv), 'EEE d MMM', { locale: fr })}{' '}
+              à {formatHeure(nextMyProspectRdv.heure_rdv)}
+            </span>
+          )}
+        </div>
+      )}
+
+      {currentProspect && otherAgentRdvList.length > 0 && (
+        <div className="rendez-vous__prospect-banner rendez-vous__prospect-banner--warning">
+          <FaExclamationTriangle className="rendez-vous__prospect-banner-icon" />
+          <span>
+            {otherAgentRdvList.length} RDV{otherAgentRdvList.length > 1 ? 's' : ''} pris avec ce prospect par un autre agent
+          </span>
+        </div>
+      )}
 
       <Calendar
         localizer={localizer}
@@ -251,7 +201,13 @@ export default function RendezVous() {
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}
         eventPropGetter={eventStyleGetter}
+        components={{ event: CustomEventComponent }}
       />
+
+      {tooltip.visible && tooltip.event && createPortal(
+        <CalendarTooltip event={tooltip.event} x={tooltip.x} y={tooltip.y} />,
+        document.body
+      )}
 
       <RendezVousModal
         isOpen={isModalOpen}
@@ -259,6 +215,7 @@ export default function RendezVous() {
         rendezVous={selectedRendezVous}
         initialDate={selectedSlot?.start}
         prospectName={prospectFullName || undefined}
+        isReadOnly={isReadOnly}
         onCreate={handleCreateRendezVous}
         onUpdate={handleUpdateRendezVous}
         onDelete={handleDeleteRendezVous}

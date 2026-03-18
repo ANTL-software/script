@@ -1,6 +1,6 @@
 import './landingPage.scss';
-import { useEffect, useState } from 'react';
-import { useProspect, useCampaign, useApp, useCart } from '../../../hooks';
+import { useParams } from 'react-router-dom';
+import { useLandingPage } from '../../../hooks/useLandingPage';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
@@ -14,111 +14,19 @@ import CatalogueProduits from '../../components/catalogueProduits/CatalogueProdu
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import ClosingModal from '../../components/closingModal/ClosingModal';
-import { closingService, type PendingClosing } from '../../../API/services';
+import ConfirmModal from '../../components/confirmModal/ConfirmModal';
 
 export default function LandingPage() {
-  const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
-  const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
-  const { currentView, setView } = useApp();
-  const { clearCart } = useCart();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [pendingClosing, setPendingClosing] = useState<PendingClosing | null>(null);
-  const [previousProspectId, setPreviousProspectId] = useState<number | null>(null);
-
-  // Verifier s'il y a un closing en attente au chargement
-  useEffect(() => {
-    const stored = closingService.getPending();
-    if (stored) {
-      setPendingClosing(stored);
-    }
-  }, []);
-
-  // Reset du panier quand le prospect change (sauf si closing en cours)
-  useEffect(() => {
-    if (currentProspect && currentProspect.id_prospect !== previousProspectId) {
-      // Ne pas vider le panier si on est en mode closing
-      const isClosing = closingService.hasPending();
-      if (!isClosing && previousProspectId !== null) {
-        console.log('[LANDING] Nouveau prospect, reset du panier');
-        clearCart();
-        setView('qui-est-ce');
-      }
-      setPreviousProspectId(currentProspect.id_prospect);
-    }
-  }, [currentProspect, previousProspectId, clearCart, setView]);
-
-  useEffect(() => {
-    loadProspect(1);
-    loadCampaign(1); // Charger la campagne 1 par défaut (Assurance Auto Q4 2024)
-  }, [loadProspect, loadCampaign]);
-
-  const handleQuiEstCe = () => {
-    setView('qui-est-ce');
-  };
-
-  const handlePlanAppels = () => {
-    const campagneId = currentCampaign?.id_campagne || 1;
-    const url = `/plan-appel?campagne=${campagneId}`;
-    window.open(url, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
-  };
-
-  const handleObjections = () => {
-    const campagneId = currentCampaign?.id_campagne || 1;
-    const url = `/objections?campagne=${campagneId}`;
-    window.open(url, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
-  };
-
-  const handleQuiSommesNous = () => {
-    setView('qui-sommes-nous');
-  };
-
-  const handleHistoriqueAppels = () => {
-    setView('historique-appels');
-    console.log('Historique appels clicked');
-  };
-
-  const handleHistoriqueOffres = () => {
-    setView('historique-offres');
-    console.log('Historique offres clicked');
-  };
-
-  const handleRendezVous = () => {
-    setView('rendez-vous');
-    console.log('Rendez-vous clicked');
-  };
-
-  const handleCommande = () => {
-    setView('commande');
-    loadProduits();
-    console.log('Commande clicked');
-  };
-
-  const handleOpenModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleOrderSuccess = () => {
-    // Recuperer le pending closing qui vient d'etre sauvegarde
-    const stored = closingService.getPending();
-    if (stored) {
-      setPendingClosing(stored);
-    }
-  };
-
-  const handleClosingComplete = () => {
-    setPendingClosing(null);
-    setShowSuccessMessage(true);
-    setView('qui-est-ce');
-
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 5000);
-  };
+  const { id } = useParams<{ id: string }>();
+  const {
+    currentProspect, currentView, isLoading, error, clearError,
+    isModalOpen, setIsModalOpen, showSuccessMessage, pendingClosing,
+    confirmModal, setConfirmModal,
+    handlePlanAppels, handleObjections, handleCommande,
+    handleDoublon, handleRss, handleConfirmAction,
+    handleOrderSuccess, handleClosingComplete,
+    setView,
+  } = useLandingPage(id);
 
   if (isLoading) {
     return (
@@ -155,18 +63,20 @@ export default function LandingPage() {
     <main id="landingPage">
       <ProspectInfoHeader
         currentView={currentView}
-        onQuiEstCe={handleQuiEstCe}
+        onQuiEstCe={() => setView('qui-est-ce')}
         onPlanAppels={handlePlanAppels}
         onObjections={handleObjections}
-        onQuiSommesNous={handleQuiSommesNous}
+        onQuiSommesNous={() => setView('qui-sommes-nous')}
       />
 
       <ActionButtons
         currentView={currentView}
-        onHistoriqueAppels={handleHistoriqueAppels}
-        onHistoriqueOffres={handleHistoriqueOffres}
-        onRendezVous={handleRendezVous}
+        onHistoriqueAppels={() => setView('historique-appels')}
+        onHistoriqueOffres={() => setView('historique-offres')}
+        onRendezVous={() => setView('rendez-vous')}
         onCommande={handleCommande}
+        onDoublon={handleDoublon}
+        onRss={handleRss}
       />
 
       {showSuccessMessage && (
@@ -177,22 +87,17 @@ export default function LandingPage() {
 
       <div className="landing-page__content">
         {currentView === 'qui-est-ce' && <QuiEstCe />}
-
         {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
-
         {currentView === 'historique-appels' && <HistoriqueAppels />}
-
         {currentView === 'historique-offres' && <HistoriqueVentes />}
-
         {currentView === 'rendez-vous' && <RendezVous />}
-
         {currentView === 'commande' && (
           <div className="landing-page__commande">
             <div className="landing-page__catalogue">
               <CatalogueProduits />
             </div>
             <div className="landing-page__panier">
-              <Panier onValidateOrder={handleOpenModal} />
+              <Panier onValidateOrder={() => setIsModalOpen(true)} />
             </div>
           </div>
         )}
@@ -200,7 +105,7 @@ export default function LandingPage() {
 
       <ConfirmOrderModal
         isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        onClose={() => setIsModalOpen(false)}
         onSuccess={handleOrderSuccess}
       />
 
@@ -214,6 +119,21 @@ export default function LandingPage() {
           onComplete={handleClosingComplete}
         />
       )}
+
+      <ConfirmModal
+        isOpen={confirmModal.type !== null}
+        type={confirmModal.type === 'optout' ? 'danger' : 'warning'}
+        title={confirmModal.type === 'doublon' ? 'Signaler un doublon' : 'Opt-out — Ne plus contacter'}
+        message={
+          confirmModal.type === 'doublon'
+            ? 'Ce prospect sera marqué comme doublon. Cette action est définitive. Continuer ?'
+            : 'Ce prospect ne sera plus jamais contacté. Cette action est définitive et irréversible. Continuer ?'
+        }
+        confirmText={confirmModal.type === 'doublon' ? 'Signaler doublon' : 'Confirmer opt-out'}
+        isLoading={confirmModal.isLoading}
+        onConfirm={handleConfirmAction}
+        onCancel={() => setConfirmModal({ type: null, isLoading: false })}
+      />
     </main>
   );
 }

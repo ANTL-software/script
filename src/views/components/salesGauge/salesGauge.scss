@@ -1,0 +1,160 @@
+@use '../../../utils/styles/variables' as vars;
+
+.sales-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  &__header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+  }
+
+  &__niveau {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: vars.$colorGray900;
+  }
+
+  &__mois-stats {
+    font-size: 0.8125rem;
+    color: vars.$colorGray500;
+  }
+
+  &__prime {
+    font-size: 0.875rem;
+    font-weight: 700;
+
+    &--active {
+      color: vars.$colorPrimary;
+    }
+
+    &--none {
+      color: vars.$colorGray500;
+      font-weight: 400;
+      font-style: italic;
+    }
+  }
+
+  &__objectif {
+    font-size: 0.75rem;
+    color: vars.$colorGray500;
+  }
+
+  // Zone de la jauge (barre + labels)
+  &__track-wrapper {
+    position: relative;
+    padding-bottom: 2.25rem; // espace pour les labels sous la barre
+  }
+
+  &__track {
+    position: relative;
+    height: 0.875rem;
+    background: vars.$colorGray200;
+    border-radius: vars.$radius-full;
+    overflow: visible;
+  }
+
+  &__fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, vars.$colorPrimaryLight 0%, vars.$colorPrimary 100%);
+    border-radius: vars.$radius-full;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 0;
+  }
+
+  // Marqueur vertical au niveau de chaque palier
+  &__marker {
+    position: absolute;
+    top: -3px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  &__marker-line {
+    width: 2px;
+    height: calc(0.875rem + 6px);
+    background: vars.$colorGray300;
+    border-radius: 1px;
+
+    .sales-gauge__marker--unlocked & {
+      background: vars.$colorPrimaryDark;
+    }
+  }
+
+  // Labels sous la barre (palier % + montant prime)
+  &__labels {
+    position: absolute;
+    top: calc(0.875rem + 8px);
+    left: 0;
+    right: 0;
+  }
+
+  &__label {
+    position: absolute;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    color: vars.$colorGray500;
+
+    &--unlocked {
+      color: vars.$colorPrimary;
+    }
+
+    // Évite que le premier et dernier label débordent
+    &:first-child  { transform: translateX(-10%); }
+    &:last-child   { transform: translateX(-90%); }
+  }
+
+  &__label-pct {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  &__label-prime {
+    font-size: 0.625rem;
+    white-space: nowrap;
+  }
+
+  // Texte de progression en bas
+  &__progress-text {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: vars.$colorGray700;
+    margin-top: 0.25rem;
+  }
+
+  &__pct-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: vars.$colorPrimary;
+  }
+}

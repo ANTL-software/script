@@ -70,10 +70,33 @@
     border-radius: vars.$radius-md;
     font-weight: 500;
     color: vars.$colorGray700;
+
+    &--autre-agent {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      color: #92400e;
+
+      .rdv-modal__prospect-icon {
+        color: #d97706;
+      }
+    }
   }
 
   &__prospect-icon {
     color: #3b82f6;
+    flex-shrink: 0;
+  }
+
+  &__prospect-badge {
+    margin-left: auto;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #d97706;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   &__row {

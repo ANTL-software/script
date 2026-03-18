@@ -1,10 +1,12 @@
 import "./header.scss";
 
 import { useNavigate } from "react-router-dom";
+import antlLogo from "../../../assets/antlLogo.png";
+import { LuLogOut } from "react-icons/lu";
 import { useUser } from "../../../hooks/useUser";
 import { useToast } from "../../../hooks/useToast";
 import { closingService } from "../../../API/services";
-import Button from "../button/Button";
+import DialerStatus from "../dialerStatus/DialerStatus";
 
 export interface HeaderProps {
   props: {
@@ -36,19 +38,20 @@ export default function Header({ props }: HeaderProps) {
   return (
     <header>
       <figure>
-        <img alt="ANTL" />
+        <img src={antlLogo} alt="ANTL" />
       </figure>
       <h1>{pageTitle ? pageTitle : ""}</h1>
       <div className="header-actions">
-        <Button
-          variant="ghost"
-          size="small"
+        <DialerStatus />
+        <button
+          className={`logout-btn${isLoading ? " logout-btn--loading" : ""}`}
           onClick={handleLogout}
-          isLoading={isLoading}
-          className="logout-button"
+          disabled={isLoading}
+          title="Déconnexion"
+          aria-label="Déconnexion"
         >
-          Déconnexion
-        </Button>
+          <LuLogOut size={18} />
+        </button>
       </div>
     </header>
   );

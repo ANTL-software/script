@@ -9,3 +9,6 @@ export { VenteService, venteService } from './Vente.service';
 export { RendezVousService, rendezVousService } from './RendezVous.service';
 export { ClosingService, closingService } from './Closing.service';
 export type { PendingClosing } from './Closing.service';
+export { DialerService, dialerService } from './Dialer.service';
+export { NotificationService, notificationService } from './Notification.service';
+export { StatsService, statsService } from './Stats.service';

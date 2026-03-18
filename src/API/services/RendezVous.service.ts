@@ -45,12 +45,16 @@ export class RendezVousService {
     return response.data;
   }
 
-  public async getRendezVousToday(): Promise<RendezVous[]> {
-    const response = await apiCalls.get<RendezVous[]>('/rendez-vous/today');
+  public async getRendezVousToday(agentId?: number): Promise<RendezVous[]> {
+    const query = agentId ? `?agent=${agentId}` : '';
+    const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/today${query}`);
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors de la recuperation des rendez-vous du jour');
     }
-    return response.data;
+    // L'API renvoie { success, data: [...], count } — on extrait data
+    return Array.isArray(response.data)
+      ? response.data
+      : (response.data as unknown as { data: RendezVous[] }).data ?? [];
   }
 
   public async updateRendezVous(id: number, data: UpdateRendezVousData): Promise<RendezVous> {

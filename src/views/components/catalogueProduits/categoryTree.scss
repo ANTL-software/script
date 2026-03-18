@@ -1,3 +1,5 @@
+@use '../../../utils/styles/variables' as vars;
+
 .category-tree {
   display: flex;
   flex-direction: column;
@@ -59,7 +61,7 @@
     justify-content: center;
     width: 1.25rem;
     height: 1.25rem;
-    color: #3b82f6;
+    color: vars.$colorPrimary;
     font-size: 1rem;
     flex-shrink: 0;
   }

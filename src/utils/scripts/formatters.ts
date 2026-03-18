@@ -99,6 +99,40 @@ export function getErrorMessage(error: unknown, fallback: string = 'Une erreur e
  * @param prospect - Objet avec nom, prenom, raison_sociale et type_prospect
  * @returns Nom complet formate
  */
+/**
+ * Convertit un numéro de téléphone français en format E.164 (+33XXXXXXXXX)
+ * Gère les formats : 0XXXXXXXXX, 33XXXXXXXXX, +33XXXXXXXXX
+ * @param phone - Numéro de téléphone brut
+ * @returns Numéro au format E.164
+ */
+export function formatPhoneE164(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0') && digits.length === 10) {
+    return `+33${digits.slice(1)}`;
+  }
+  if (digits.startsWith('33') && digits.length === 11) {
+    return `+${digits}`;
+  }
+  if (phone.startsWith('+')) {
+    return phone.replace(/[^\d+]/g, '');
+  }
+  return `+${digits}`;
+}
+
+/**
+ * Formate un montant en euros (ex: 1 200 €)
+ */
+export function formatEur(n: number): string {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
+}
+
+/**
+ * Formate une heure "HH:MM:SS" en "HH:MM"
+ */
+export function formatHeure(heure: string): string {
+  return heure.substring(0, 5);
+}
+
 export function formatProspectName(prospect: {
   nom: string;
   prenom?: string | null;

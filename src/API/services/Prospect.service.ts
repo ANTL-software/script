@@ -55,6 +55,20 @@ export class ProspectService {
     const updatedProspect = throwIfApiError(response, 'Erreur lors de la mise a jour du prospect');
     return ProspectModel.fromJSON(updatedProspect);
   }
+
+  public async markDoublon(id: number): Promise<void> {
+    const response = await apiCalls.patch(`/prospects/${id}/doublon`, {});
+    if (!response.success) {
+      throw new Error(response.message || 'Erreur lors du signalement doublon');
+    }
+  }
+
+  public async markOptout(id: number): Promise<void> {
+    const response = await apiCalls.patch(`/prospects/${id}/optout`, {});
+    if (!response.success) {
+      throw new Error(response.message || 'Erreur lors de l\'enregistrement opt-out');
+    }
+  }
 }
 
 export const prospectService = ProspectService.getInstance();

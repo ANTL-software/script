@@ -41,9 +41,6 @@ export default function CatalogueProduits() {
 
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
-    if (mode === 'tree') {
-      setSearchTerm('');
-    }
   };
 
   if (produitsLoading) {
@@ -82,19 +79,21 @@ export default function CatalogueProduits() {
 
         <div className="catalogue-produits__view-toggle">
           <Button
-            variant={viewMode === 'tree' ? 'primary' : 'ghost'}
+            variant={viewMode === 'tree' ? 'tertiary' : 'ghost'}
             size="small"
             onClick={() => handleViewModeChange('tree')}
           >
             <FaSitemap /> Navigation
           </Button>
-          <Button
-            variant={viewMode === 'search' ? 'primary' : 'ghost'}
-            size="small"
-            onClick={() => handleViewModeChange('search')}
-          >
-            <FaList /> Recherche
-          </Button>
+          {searchTerm.length >= 3 && (
+            <Button
+              variant={viewMode === 'search' ? 'tertiary' : 'ghost'}
+              size="small"
+              onClick={() => handleViewModeChange('search')}
+            >
+              <FaList /> Résultats ({filteredProduits.length})
+            </Button>
+          )}
         </div>
       </div>
 

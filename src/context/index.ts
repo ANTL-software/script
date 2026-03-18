@@ -21,3 +21,7 @@ export type { AppContextType, ModalType, ViewType, Notification } from './appCon
 export { ToastContext } from './toastContext/ToastContext';
 export { ToastProvider } from './toastContext/ToastProvider';
 export type { ToastContextType, Toast, ConfirmOptions } from './toastContext/ToastContext';
+
+export { DialerContext } from './dialerContext/DialerContext';
+export { DialerProvider } from './dialerContext/DialerProvider';
+export type { DialerContextType } from './dialerContext/DialerContext';

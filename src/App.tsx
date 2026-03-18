@@ -7,7 +7,9 @@ import { useUser, useApp } from './hooks';
 
 import Header from './views/components/header/Header'
 import ProtectedRoute from './views/components/protectedRoute/ProtectedRoute'
+import IncomingCallBanner from './views/components/incomingCallBanner/IncomingCallBanner'
 
+import DashboardPage from './views/layouts/dashboardPage/DashboardPage'
 import LandingPage from './views/layouts/landingPage/LandingPage'
 import LoginPage from './views/layouts/loginPage/LoginPage'
 import PlanAppelPage from './views/layouts/planAppelPage/PlanAppelPage'
@@ -18,17 +20,28 @@ function App() {
   const { currentView } = useApp();
 
   const props = {
-    pageTitle: user ? `${getSalutation()} ${user.prenom} !` : `${getSalutation()} !`,
+    pageTitle: getSalutation(user?.prenom),
   }
 
   const showHeader = currentView !== 'commande' && currentView !== 'rendez-vous';
 
   return (
     <Router>
+      <audio id="remoteAudio" autoPlay />
+      <IncomingCallBanner />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route
           path="/"
+          element={
+            <ProtectedRoute>
+              <Header props={props} />
+              <DashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/prospect/:id"
           element={
             <ProtectedRoute>
               {showHeader && <Header props={props} />}

@@ -38,10 +38,13 @@ export interface UpdateRendezVousData {
   statut?: RendezVousStatut;
 }
 
+export type CalendarEventType = 'mine-other' | 'mine-prospect' | 'other-agent-prospect';
+
 export interface CalendarEvent {
   id: number;
   title: string;
   start: Date;
   end: Date;
   resource: RendezVous;
+  eventType: CalendarEventType;
 }

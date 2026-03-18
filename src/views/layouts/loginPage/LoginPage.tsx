@@ -1,115 +1,23 @@
 import './loginPage.scss';
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from '../../../hooks/useUser';
+import antlLogo from '../../../assets/antlLogo.png';
+import { useLoginForm } from '../../../hooks/useLoginForm';
 import Input from '../../components/input/Input';
 import Button from '../../components/button/Button';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 
-const BLOCK_DURATION_MS = 60000;
-const MAX_ATTEMPTS = 5;
-
 export default function LoginPage() {
-  const navigate = useNavigate();
-  const { login, isLoading, error, clearError, isAuthenticated } = useUser();
-
-  const [formData, setFormData] = useState({
-    identifiant: '',
-    password: '',
-  });
-
-  const [formErrors, setFormErrors] = useState({
-    identifiant: '',
-    password: '',
-  });
-
-  const [attemptCount, setAttemptCount] = useState(0);
-  const [isBlocked, setIsBlocked] = useState(false);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate('/', { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-
-  const validateIdentifiant = (identifiant: string): string => {
-    if (!identifiant) {
-      return 'Identifiant requis';
-    }
-    // Format: 5 lettres + 3 chiffres (ex: ndecr001)
-    const identifiantRegex = /^[a-z]{5}[0-9]{3}$/;
-    if (!identifiantRegex.test(identifiant.toLowerCase())) {
-      return 'Format invalide (ex: ndecr001)';
-    }
-    return '';
-  };
-
-  const validatePassword = (password: string): string => {
-    if (!password) {
-      return 'Mot de passe requis';
-    }
-    if (password.length < 6) {
-      return 'Le mot de passe doit contenir au moins 6 caractères';
-    }
-    return '';
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-
-    if (formErrors[name as keyof typeof formErrors]) {
-      setFormErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-
-    if (error) {
-      clearError();
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (isBlocked) {
-      return;
-    }
-
-    const identifiantError = validateIdentifiant(formData.identifiant);
-    const passwordError = validatePassword(formData.password);
-
-    if (identifiantError || passwordError) {
-      setFormErrors({
-        identifiant: identifiantError,
-        password: passwordError,
-      });
-      return;
-    }
-
-    try {
-      await login({
-        identifiant: formData.identifiant.toLowerCase(),
-        password: formData.password,
-      });
-    } catch (err) {
-      const newAttemptCount = attemptCount + 1;
-      setAttemptCount(newAttemptCount);
-      if (newAttemptCount >= MAX_ATTEMPTS) {
-        setIsBlocked(true);
-        setTimeout(() => {
-          setIsBlocked(false);
-          setAttemptCount(0);
-        }, BLOCK_DURATION_MS);
-      }
-      console.error('Login failed:', err);
-    }
-  };
+  const {
+    formData, formErrors, attemptCount, isBlocked,
+    isLoading, error, clearError,
+    handleChange, handleSubmit, MAX_ATTEMPTS,
+  } = useLoginForm();
 
   return (
     <div className="login-page">
       <div className="login-container">
         <div className="login-header">
           <figure className="login-logo">
-            <img src="/logo-antl.png" alt="ANTL" />
+            <img src={antlLogo} alt="ANTL" />
           </figure>
           <h1 className="login-title">Connexion</h1>
           <p className="login-subtitle">
@@ -118,12 +26,7 @@ export default function LoginPage() {
         </div>
 
         <form className="login-form" onSubmit={handleSubmit}>
-          {error && (
-            <ErrorMessage
-              message={error}
-              onClose={clearError}
-            />
-          )}
+          {error && <ErrorMessage message={error} onClose={clearError} />}
 
           {isBlocked && (
             <ErrorMessage
@@ -171,16 +74,16 @@ export default function LoginPage() {
             Se connecter
           </Button>
 
-          {attemptCount > 0 && attemptCount < 5 && (
+          {attemptCount > 0 && attemptCount < MAX_ATTEMPTS && (
             <p className="login-attempt-warning">
-              Tentative {attemptCount}/5
+              Tentative {attemptCount}/{MAX_ATTEMPTS}
             </p>
           )}
         </form>
 
         <div className="login-footer">
           <p className="login-footer-text">
-            © {new Date().getFullYear()} ANTL - Tous droits réservés
+            © {new Date().getFullYear()} antl - Tous droits réservés
           </p>
         </div>
       </div>

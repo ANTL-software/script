@@ -1,16 +1,46 @@
 import { useState, useEffect } from 'react';
 
 /**
- * Retourne une salutation appropriée en fonction de l'heure actuelle
- * @param heure - Heure optionnelle pour tester (0-23). Si non fournie, utilise l'heure actuelle
- * @returns "Bonjour" ou "Bonsoir"
+ * Retourne un message d'accueil contextuel selon l'heure, le jour et le prénom.
+ * Les commerciaux ANTL travaillent du lundi au jeudi.
+ *
+ * @param prenom - Prénom de l'utilisateur connecté
+ * @param _heure - Heure optionnelle pour tests (0-23). Utilise l'heure réelle si absent.
+ * @param _jour  - Jour optionnel pour tests (0=dim…6=sam). Utilise le jour réel si absent.
  */
-export function getSalutation(heure?: number): string {
-  // Si aucune heure n'est fournie, on utilise l'heure actuelle
-  const heureActuelle = heure !== undefined ? heure : new Date().getHours();
+export function getSalutation(prenom?: string, _heure?: number, _jour?: number): string {
+  const now   = new Date();
+  const h     = _heure !== undefined ? _heure : now.getHours();
+  const jour  = _jour  !== undefined ? _jour  : now.getDay(); // 0=dim, 1=lun … 4=jeu
+  const p     = prenom ? ` ${prenom}` : "";
 
-  // Bonsoir à partir de 18h (6 PM), sinon Bonjour
-  return heureActuelle >= 14 ? "Bonne après-midi" : "Bonne journée";
+  // Nuit tardive — 0h à 5h
+  if (h < 5)  return `Vous êtes couché·e très tard${p} !`;
+
+  // Tôt le matin — 5h à 9h
+  if (h < 9)  return `Belle matinée${p}, on attaque !`;
+
+  // Matinée — 9h à 12h
+  if (h < 12) {
+    if (jour === 1) return `Belle semaine en perspective${p} !`;
+    if (jour === 4) return `Dernier grand jour de la semaine${p}, on y va !`;
+    return `Bonjour${p} !`;
+  }
+
+  // Pause déjeuner — 12h à 14h
+  if (h < 14) return `Bon appétit${p} !`;
+
+  // Après-midi — 14h à 18h
+  if (h < 18) {
+    if (jour === 4) return `Le weekend approche${p}, plus que quelques appels !`;
+    return `Bon après-midi${p} !`;
+  }
+
+  // Soirée — 18h à 21h
+  if (h < 21) return `Bonne soirée${p} !`;
+
+  // Nuit — 21h+
+  return `Encore au bureau${p} ? Rentrez vous reposer !`;
 }
 
 /**

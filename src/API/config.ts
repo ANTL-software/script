@@ -14,12 +14,13 @@ export interface ApiConfig {
 class ApiClient {
   private static instance: ApiClient;
   private axiosInstance: AxiosInstance;
-  private refreshTokenPromise: Promise<string> | null = null;
+  private refreshTokenPromise: Promise<void> | null = null;
 
   private constructor() {
     this.axiosInstance = axios.create({
       baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8800/api",
       timeout: 30000,
+      withCredentials: true, // Envoie les cookies httpOnly automatiquement
       headers: {
         "Content-Type": "application/json",
       },
@@ -36,16 +37,7 @@ class ApiClient {
   }
 
   private setupInterceptors(): void {
-    this.axiosInstance.interceptors.request.use(
-      (config: InternalAxiosRequestConfig) => {
-        const token = this.getAccessToken();
-        if (token && config.headers) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
+    // Pas d'injection de Bearer token — le cookie httpOnly est envoyé automatiquement
 
     this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
@@ -54,7 +46,6 @@ class ApiClient {
           _retry?: boolean;
         };
 
-        // Ne pas essayer de rafraîchir le token pour les endpoints d'authentification
         const authEndpoints = ['/auth/login', '/auth/refresh', '/auth/logout'];
         const isAuthEndpoint = authEndpoints.some(endpoint =>
           originalRequest?.url?.includes(endpoint)
@@ -69,13 +60,11 @@ class ApiClient {
           originalRequest._retry = true;
 
           try {
-            const newAccessToken = await this.handleTokenRefresh();
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            }
+            await this.handleTokenRefresh();
+            // Le cookie rafraîchi est posé par le serveur — on rejoue la requête
             return this.axiosInstance(originalRequest);
           } catch (refreshError) {
-            this.clearTokens();
+            this.clearSession();
             window.location.href = "/login";
             return Promise.reject(refreshError);
           }
@@ -86,30 +75,19 @@ class ApiClient {
     );
   }
 
-  private async handleTokenRefresh(): Promise<string> {
+  private async handleTokenRefresh(): Promise<void> {
     if (this.refreshTokenPromise) {
       return this.refreshTokenPromise;
     }
 
     this.refreshTokenPromise = (async () => {
       try {
-        const refreshToken = this.getRefreshToken();
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        const response = await axios.post(
+        // Le refresh token httpOnly est envoyé automatiquement via withCredentials
+        await axios.post(
           `${this.axiosInstance.defaults.baseURL}/auth/refresh`,
-          { refreshToken }
+          {},
+          { withCredentials: true }
         );
-
-        if (response.data.success && response.data.data?.token) {
-          const newAccessToken = response.data.data.token;
-          this.setAccessToken(newAccessToken);
-          return newAccessToken;
-        }
-
-        throw new Error("Failed to refresh token");
       } finally {
         this.refreshTokenPromise = null;
       }
@@ -122,35 +100,17 @@ class ApiClient {
     return this.axiosInstance;
   }
 
-  public getAccessToken(): string | null {
-    return localStorage.getItem("accessToken");
-  }
-
-  public getRefreshToken(): string | null {
-    return localStorage.getItem("refreshToken");
-  }
-
-  public setAccessToken(token: string): void {
-    localStorage.setItem("accessToken", token);
-  }
-
-  public setRefreshToken(token: string): void {
-    localStorage.setItem("refreshToken", token);
-  }
-
-  public setTokens(accessToken: string, refreshToken: string): void {
-    this.setAccessToken(accessToken);
-    this.setRefreshToken(refreshToken);
-  }
-
-  public clearTokens(): void {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("employe");
-  }
-
+  /**
+   * Vérifie si une session est active via le cookie lisible `session_active`
+   * (le token JWT lui-même est httpOnly et inaccessible au JS)
+   */
   public hasValidToken(): boolean {
-    return !!this.getAccessToken();
+    return document.cookie.split(';').some(c => c.trim().startsWith('session_active='));
+  }
+
+  /** Supprime les données de session côté client (les cookies httpOnly sont effacés par le serveur) */
+  public clearSession(): void {
+    localStorage.removeItem("employe");
   }
 }
 

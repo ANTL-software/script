@@ -47,30 +47,19 @@ export class VenteService {
   ): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<{
-      items?: Vente[];
+      ventes?: Vente[];
       pagination?: { total: number; page: number; limit: number; totalPages: number };
-    } | Vente[]>(`/ventes/prospect/${prospectId}/ventes${queryString}`);
+    }>(`/prospects/${prospectId}/ventes${queryString}`);
 
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors de la récupération des ventes');
     }
 
-    // Si la réponse est un array simple (pas de pagination)
-    if (Array.isArray(response.data)) {
-      return {
-        ventes: response.data,
-        total: response.data.length,
-        page: 1,
-        totalPages: 1,
-      };
-    }
-
-    // Si la réponse a une structure avec items et pagination
-    const items = response.data.items || [];
-    const pagination = response.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 };
+    const ventes = response.data.ventes || [];
+    const pagination = response.data.pagination || { total: ventes.length, page: 1, limit: 20, totalPages: 1 };
 
     return {
-      ventes: items,
+      ventes,
       total: pagination.total,
       page: pagination.page,
       totalPages: pagination.totalPages,

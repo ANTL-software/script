@@ -1,12 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './useUser';
 import { prospectService, rendezVousService, statsService, notificationService } from '../API/services';
 import type { RendezVous, StatsDuJour, Notification } from '../utils/types';
 
+const NOTIFS_POLL_INTERVAL = 60_000;
+
 export function useDashboardData() {
   const { user } = useUser();
   const navigate = useNavigate();
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -21,6 +24,16 @@ export function useDashboardData() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [nonLues, setNonLues] = useState(0);
   const [notifsLoading, setNotifsLoading] = useState(true);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const result = await notificationService.getMyNotifications(false);
+      setNotifications(result.notifications);
+      setNonLues(result.non_lues);
+    } catch {
+      // silencieux — on réessaie au prochain tick
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -52,6 +65,14 @@ export function useDashboardData() {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    if (!user) return;
+    pollRef.current = setInterval(fetchNotifications, NOTIFS_POLL_INTERVAL);
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [user, fetchNotifications]);
+
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
@@ -60,9 +81,11 @@ export function useDashboardData() {
     setSearchError(null);
 
     try {
-      const isPhone = /^[\d\s+().-]{6,}$/.test(searchQuery.trim());
+      // Nettoyer tous les séparateurs courants avant envoi (le backend normalise le reste)
+      const cleaned = searchQuery.trim().replace(/[\s\-().]/g, '');
+      const isPhone = /^[+\d]{6,}$/.test(cleaned);
       if (isPhone) {
-        const prospectModel = await prospectService.getProspectByPhone(searchQuery.trim().replace(/\s/g, ''));
+        const prospectModel = await prospectService.getProspectByPhone(cleaned);
         navigate(`/prospect/${prospectModel.toJSON().id_prospect}`);
       } else {
         setSearchError('Recherche par nom non disponible pour le moment. Saisissez un numéro de téléphone.');

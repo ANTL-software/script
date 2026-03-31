@@ -1,5 +1,5 @@
 import { apiCalls } from '../APICalls';
-import type { StatutDialer, RaisonPause, StatutDialerResponse, SipCredentials } from '../../utils/types';
+import type { StatutDialer, RaisonPause, StatutDialerResponse, SipCredentials, Prospect, ProspectAssigne } from '../../utils/types';
 
 export class DialerService {
   private static instance: DialerService;
@@ -34,6 +34,14 @@ export class DialerService {
     const response = await apiCalls.patch<StatutDialerResponse>('/agents/me/statut', payload);
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors du changement de statut');
+    }
+    return response.data;
+  }
+
+  public async getNextProspect(): Promise<Prospect & ProspectAssigne> {
+    const response = await apiCalls.get<Prospect & ProspectAssigne>('/agents/me/next-prospect');
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Aucun prospect disponible dans le pool');
     }
     return response.data;
   }

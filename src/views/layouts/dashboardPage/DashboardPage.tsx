@@ -1,6 +1,8 @@
 import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
+import { useDialer } from '../../../hooks';
 import { formatEur, formatHeure, formatProspectName } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
 import SalesGauge from '../../components/salesGauge/SalesGauge';
@@ -13,6 +15,17 @@ function prospectLabel(rdv: RendezVous): string {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { prochainProspect, clearProchainProspect, call } = useDialer();
+
+  // Quand le contexte dialer reçoit un prospect assigné, on ouvre sa fiche et on lance l'appel
+  useEffect(() => {
+    if (!prochainProspect) return;
+    const { id_prospect, telephone, id_campagne_assignee } = prochainProspect;
+    clearProchainProspect();
+    navigate(`/prospect/${id_prospect}`);
+    call(telephone, id_campagne_assignee ?? undefined, id_prospect);
+  }, [prochainProspect, clearProchainProspect, navigate, call]);
+
   const {
     searchQuery, setSearchQuery, isSearching, searchError,
     rdvDuJour, rdvLoading,

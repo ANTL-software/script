@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useProspect, useCampaign, useApp, useCart } from './index';
+import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
 import { closingService, prospectService, type PendingClosing } from '../API/services';
+import { formatProspectName } from '../utils/scripts/formatters';
 
 export function useLandingPage(id: string | undefined) {
   const navigate = useNavigate();
@@ -9,6 +10,7 @@ export function useLandingPage(id: string | undefined) {
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
   const { clearCart } = useCart();
+  const { statut, callDuration, currentCampagneId } = useDialer();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -22,6 +24,7 @@ export function useLandingPage(id: string | undefined) {
 
   const previousProspectIdRef = useRef<number | null>(null);
 
+  // Réinitialise la vue et le panier à chaque changement de prospect
   useEffect(() => {
     if (!currentProspect) return;
     if (currentProspect.id_prospect === previousProspectIdRef.current) return;
@@ -34,6 +37,8 @@ export function useLandingPage(id: string | undefined) {
     previousProspectIdRef.current = currentProspect.id_prospect;
   }, [currentProspect, clearCart, setView]);
 
+  // Charge le prospect et la campagne associée à l'appel en cours
+  // currentCampagneId vient du DialerContext (renseigné par call())
   useEffect(() => {
     const prospectId = id ? parseInt(id, 10) : NaN;
     if (isNaN(prospectId)) {
@@ -41,16 +46,37 @@ export function useLandingPage(id: string | undefined) {
       return;
     }
     loadProspect(prospectId);
-    loadCampaign(1);
-  }, [id, loadProspect, loadCampaign, navigate]);
+    loadCampaign(currentCampagneId ?? 1);
+  }, [id, loadProspect, loadCampaign, navigate, currentCampagneId]);
+
+  // Déclenche la closing modal dès que l'appel se termine (statut = apres_appel)
+  // sans passer par une vente — garantit que chaque appel est enregistré en DB
+  useEffect(() => {
+    if (statut !== 'apres_appel') return;
+    if (!currentProspect) return;
+    if (closingService.hasPending()) return;
+
+    const campagneId = currentCampagneId ?? currentCampaign?.id_campagne ?? 0;
+    if (!campagneId) return;
+
+    const pending: Omit<PendingClosing, 'timestamp'> = {
+      prospectId: currentProspect.id_prospect,
+      prospectName: formatProspectName({ nom: currentProspect.nom, prenom: currentProspect.prenom }),
+      campagneId,
+      dureeAppel: callDuration,
+    };
+
+    closingService.savePending(pending);
+    setPendingClosing(closingService.getPending());
+  }, [statut, currentProspect, currentCampaign, currentCampagneId, callDuration]);
 
   const handlePlanAppels = () => {
-    const campagneId = currentCampaign?.id_campagne || 1;
+    const campagneId = currentCampaign?.id_campagne ?? 1;
     window.open(`/plan-appel?campagne=${campagneId}`, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleObjections = () => {
-    const campagneId = currentCampaign?.id_campagne || 1;
+    const campagneId = currentCampaign?.id_campagne ?? 1;
     window.open(`/objections?campagne=${campagneId}`, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 

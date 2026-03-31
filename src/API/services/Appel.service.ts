@@ -1,5 +1,5 @@
 import { apiCalls } from '../APICalls';
-import type { Appel, CreateAppelData, UpdateAppelData } from '../../utils/types';
+import type { Appel, CreateAppelData, TerminerAppelData, UpdateAppelData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class AppelService {
@@ -74,8 +74,8 @@ export class AppelService {
     return response.data;
   }
 
-  public async terminerAppel(id: number): Promise<Appel> {
-    const response = await apiCalls.patch<Appel>(`/appels/${id}/terminer`);
+  public async terminerAppel(id: number, data: TerminerAppelData): Promise<Appel> {
+    const response = await apiCalls.patch<Appel>(`/appels/${id}/terminer`, data);
     if (!response.success || !response.data) {
       throw new Error(response.message || 'Erreur lors de la terminaison de l\'appel');
     }

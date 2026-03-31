@@ -37,10 +37,9 @@ export class UserService {
       credentials
     );
 
-    const { token, refreshToken, employe } = throwIfApiError(response, 'Échec de la connexion');
-
-    apiClient.setTokens(token, refreshToken);
-
+    const { employe } = throwIfApiError(response, 'Échec de la connexion');
+    // Les tokens sont désormais dans les cookies httpOnly posés par le serveur.
+    // On stocke uniquement les données de profil (non-sensibles) en localStorage.
     const userModel = UserModel.fromJSON(employe);
     userModel.saveToLocalStorage();
 
@@ -53,7 +52,8 @@ export class UserService {
     } catch (error) {
       console.error('Error during logout API call:', error);
     } finally {
-      apiClient.clearTokens();
+      // Le serveur efface les cookies httpOnly — on nettoie le localStorage
+      apiClient.clearSession();
       UserModel.clearFromLocalStorage();
     }
   }
@@ -68,27 +68,9 @@ export class UserService {
     return userModel;
   }
 
-  public async refreshToken(): Promise<string> {
-    const currentRefreshToken = apiClient.getRefreshToken();
-
-    if (!currentRefreshToken) {
-      throw new Error('No refresh token available');
-    }
-
-    const response = await apiCalls.post<{ token: string }>(
-      this.AUTH_ENDPOINTS.REFRESH,
-      { refreshToken: currentRefreshToken }
-    );
-
-    const data = throwIfApiError(response, 'Failed to refresh token');
-
-    if (!data.token) {
-      throw new Error('Failed to refresh token');
-    }
-
-    apiClient.setAccessToken(data.token);
-
-    return data.token;
+  public async refreshToken(): Promise<void> {
+    // Le refresh token httpOnly est envoyé automatiquement par le navigateur
+    await apiCalls.post(this.AUTH_ENDPOINTS.REFRESH, {});
   }
 
   public getStoredUser(): UserModel | null {
@@ -100,7 +82,7 @@ export class UserService {
   }
 
   public clearSession(): void {
-    apiClient.clearTokens();
+    apiClient.clearSession();
     UserModel.clearFromLocalStorage();
   }
 }

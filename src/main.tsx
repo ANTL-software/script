@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import { ErrorBoundary } from "./views/components/errorBoundary/ErrorBoundary";
 
 import { UserProvider } from "./context/userContext/UserProvider";
 import { AppProvider } from "./context/appContext/AppProvider";
@@ -12,6 +13,7 @@ import { DialerProvider } from "./context/dialerContext/DialerProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
+    <ErrorBoundary>
     <AppProvider>
       <UserProvider>
         <DialerProvider>
@@ -27,5 +29,6 @@ createRoot(document.getElementById("root")!).render(
         </DialerProvider>
       </UserProvider>
     </AppProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

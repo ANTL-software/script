@@ -93,8 +93,8 @@ export default function AppelCard({ appel, onUpdateNotes }: AppelCardProps) {
           <span className="appel-card__date">{formatDate(appel.created_at)}</span>
           <span className="appel-card__time">{formatTime(appel.created_at)}</span>
         </div>
-        <span className={`appel-card__statut ${getStatutClass(appel.statut)}`}>
-          {getStatutLabel(appel.statut)}
+        <span className={`appel-card__statut ${getStatutClass(appel.statut_appel)}`}>
+          {getStatutLabel(appel.statut_appel)}
         </span>
       </div>
 

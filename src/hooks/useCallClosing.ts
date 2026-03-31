@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useUser, useToast } from './index';
+import { useUser, useToast, useDialer } from './index';
 import { appelService, closingService } from '../API/services';
 import type { StatutAppel } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
@@ -14,6 +14,7 @@ interface UseCallClosingOptions {
 export function useCallClosing({ prospectId, campagneId, onComplete }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
+  const { currentAppelId } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
   const [notes, setNotes] = useState('');
@@ -37,12 +38,21 @@ export function useCallClosing({ prospectId, campagneId, onComplete }: UseCallCl
     setIsSubmitting(true);
 
     try {
-      await appelService.createAppel({
-        id_prospect: prospectId,
-        id_campagne: campagneId,
-        statut: selectedStatut,
-        notes: notes.trim() || undefined,
-      });
+      if (currentAppelId) {
+        // Appel SIP : terminer l'appel existant avec le statut final
+        await appelService.terminerAppel(currentAppelId, {
+          statut_appel: selectedStatut,
+          notes: notes.trim() || undefined,
+        });
+      } else {
+        // Mode manuel : créer l'appel directement (pas de session SIP tracée)
+        await appelService.createAppel({
+          id_prospect: prospectId,
+          id_campagne: campagneId,
+          statut_appel: selectedStatut,
+          notes: notes.trim() || undefined,
+        });
+      }
 
       closingService.clearPending();
       showToast('success', "Resultat d'appel enregistre");

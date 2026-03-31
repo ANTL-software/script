@@ -6,8 +6,8 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { dialerService } from '../../API/services';
-import type { StatutDialer, RaisonPause } from '../../utils/types';
+import { dialerService, appelService } from '../../API/services';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne } from '../../utils/types';
 import { formatPhoneE164 } from '../../utils/scripts/formatters';
 
 interface DialerProviderProps {
@@ -26,6 +26,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [callDuration, setCallDuration] = useState(0);
 
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const [prochainProspect, setProchainProspect] = useState<(Prospect & ProspectAssigne) | null>(null);
+  const [currentCampagneId, setCurrentCampagneId] = useState<number | null>(null);
+  const [currentAppelId, setCurrentAppelId] = useState<number | null>(null);
 
   const uaRef = useRef<UserAgent | null>(null);
   const registererRef = useRef<Registerer | null>(null);
@@ -68,12 +71,30 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           return;
         }
 
+        const iceServers: RTCIceServer[] = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+        ];
+        const turnUrl = import.meta.env.VITE_TURN_URL;
+        if (turnUrl) {
+          iceServers.push({
+            urls: turnUrl,
+            username: import.meta.env.VITE_TURN_USERNAME,
+            credential: import.meta.env.VITE_TURN_CREDENTIAL,
+          });
+        }
+
         const ua = new UserAgent({
           uri,
           transportOptions: { server: creds.ws_url },
           authorizationPassword: creds.sip_password,
           authorizationUsername: username,
           logLevel: 'error',
+          sessionDescriptionHandlerFactoryOptions: {
+            peerConnectionOptions: {
+              rtcConfiguration: { iceServers },
+            },
+          },
           delegate: {
             onInvite: (invitation: Invitation) => {
               if (cancelled) return;
@@ -134,7 +155,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     };
   }, [isAuthenticated, stopCallTimer]);
 
-  const call = useCallback(async (phoneNumber: string) => {
+  const call = useCallback(async (phoneNumber: string, campagneId?: number, prospectId?: number) => {
     if (!uaRef.current || !sipConnected) {
       console.warn('[SIP] Non connecté, impossible d\'appeler');
       return;
@@ -142,6 +163,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      setCurrentCampagneId(campagneId ?? null);
+      setCurrentAppelId(null);
 
       const e164 = formatPhoneE164(phoneNumber);
       const targetURI = UserAgent.makeURI(`sip:${e164}@${sipDomainRef.current}`);
@@ -169,11 +193,25 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           setStatut('en_appel');
           setDepuisLe(new Date());
           startCallTimer();
+
+          // Créer l'appel en DB au moment où la communication est établie
+          if (campagneId && prospectId) {
+            appelService.createAppel({
+              id_prospect: prospectId,
+              id_campagne: campagneId,
+              statut_appel: 'en_cours',
+            }).then(appel => {
+              setCurrentAppelId(appel.id_appel);
+            }).catch(err => {
+              console.error('[Appel] Erreur création appel:', err);
+            });
+          }
         } else if (state === SessionState.Terminated) {
           stopCallTimer();
           setStatut('apres_appel');
           setDepuisLe(new Date());
           sessionRef.current = null;
+          setCurrentAppelId(null);
           const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
           if (audioEl) audioEl.srcObject = null;
         }
@@ -230,6 +268,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     incomingSessionRef.current = null;
   }, []);
 
+  const clearProchainProspect = useCallback(() => {
+    setProchainProspect(null);
+  }, []);
+
   const changerStatut = useCallback(async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
     setIsLoading(true);
     try {
@@ -237,6 +279,18 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setStatut(nouveauStatut);
       setRaisonPause(raison ?? null);
       setDepuisLe(new Date());
+
+      // Quand l'agent se met en disponible, on lui prépare automatiquement le prochain prospect
+      if (nouveauStatut === 'disponible') {
+        try {
+          const prospect = await dialerService.getNextProspect();
+          setProchainProspect(prospect);
+        } catch {
+          // Pool vide ou agent non encore persisté — silencieux
+        }
+      } else {
+        setProchainProspect(null);
+      }
     } catch (error) {
       console.warn('[Dialer] Endpoint non disponible, mise à jour locale uniquement', error);
       setStatut(nouveauStatut);
@@ -256,7 +310,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       sipConnected,
       callDuration,
       incomingCall,
+      prochainProspect,
+      currentCampagneId,
+      currentAppelId,
       changerStatut,
+      clearProchainProspect,
       call,
       hangup,
       answer,

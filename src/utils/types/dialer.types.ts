@@ -29,3 +29,9 @@ export interface SipCredentials {
   ws_url: string;
   sip_domain: string;
 }
+
+// Prospect retourné par /agents/me/next-prospect
+// Étend Prospect avec la campagne à utiliser pour l'appel
+export interface ProspectAssigne {
+  id_campagne_assignee: number | null;
+}

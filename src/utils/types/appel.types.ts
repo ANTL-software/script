@@ -1,6 +1,7 @@
 import type { Employe } from './user.types';
 
 export type StatutAppel =
+  | 'en_cours'
   | 'abouti'
   | 'non_abouti'
   | 'occupe'
@@ -17,23 +18,29 @@ export interface Appel {
   id_campagne: number;
   date_appel: string;
   duree_secondes?: number | null;
-  statut: StatutAppel;
+  statut_appel: StatutAppel;
   notes?: string | null;
   abouti: boolean;
   created_at: string;
   updated_at: string;
-  Employe?: Employe; // Relation optionnelle avec l'agent
+  Employe?: Employe;
 }
 
 export interface CreateAppelData {
   id_prospect: number;
   id_campagne: number;
-  statut?: StatutAppel;
+  statut_appel?: StatutAppel;
   notes?: string;
 }
 
+export interface TerminerAppelData {
+  statut_appel: StatutAppel;
+  notes?: string;
+  abouti?: boolean;
+}
+
 export interface UpdateAppelData {
-  statut?: StatutAppel;
+  statut_appel?: StatutAppel;
   duree_secondes?: number;
   notes?: string;
   abouti?: boolean;

@@ -31,12 +31,15 @@ export interface CreateAppelData {
   id_campagne: number;
   statut_appel?: StatutAppel;
   notes?: string;
+  id_prospection?: number;
 }
 
 export interface TerminerAppelData {
   statut_appel: StatutAppel;
   notes?: string;
   abouti?: boolean;
+  duree_secondes?: number;
+  id_prospection?: number;
 }
 
 export interface UpdateAppelData {

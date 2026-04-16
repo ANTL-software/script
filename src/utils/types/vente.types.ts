@@ -1,7 +1,7 @@
 import type { Produit } from './cart.types';
 
 export type StatutVente = 'en_attente' | 'validee' | 'annulee';
-export type ModePaiement = 'CB' | 'Prelevement' | 'Cheque' | 'Virement';
+export type ModePaiement = 'Prelevement' | 'Cheque' | 'Virement';
 
 export interface DetailVente {
   id_detail?: number;

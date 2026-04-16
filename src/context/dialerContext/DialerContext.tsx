@@ -17,6 +17,7 @@ export interface DialerContextType {
   prochainProspect: (Prospect & ProspectAssigne) | null;
   currentCampagneId: number | null;
   currentAppelId: number | null;
+  currentIdProspection: number | null;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;
   clearProchainProspect: () => void;
   call: (phoneNumber: string, campagneId?: number, prospectId?: number) => Promise<void>;

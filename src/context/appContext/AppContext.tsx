@@ -3,7 +3,7 @@ import { createContext } from 'react';
 export type ModalType = 'qui-est-ce' | 'qui-sommes-nous' | 'objections' | 'plan-appel' | null;
 export type ViewType = 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
 
-export interface Notification {
+export interface ToastNotification {
   id: string;
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
@@ -13,13 +13,13 @@ export interface Notification {
 export interface AppContextType {
   currentModal: ModalType;
   currentView: ViewType;
-  notifications: Notification[];
+  notifications: ToastNotification[];
   isAppLoading: boolean;
 
   openModal: (modal: ModalType) => void;
   closeModal: () => void;
   setView: (view: ViewType) => void;
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  addNotification: (notification: Omit<ToastNotification, 'id'>) => void;
   removeNotification: (id: string) => void;
   clearNotifications: () => void;
   setAppLoading: (loading: boolean) => void;

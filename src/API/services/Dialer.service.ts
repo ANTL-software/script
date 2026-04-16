@@ -45,6 +45,10 @@ export class DialerService {
     }
     return response.data;
   }
+
+  public async heartbeat(): Promise<void> {
+    await apiCalls.post('/agents/me/heartbeat');
+  }
 }
 
 export const dialerService = DialerService.getInstance();

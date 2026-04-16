@@ -9,12 +9,13 @@ interface UseCallClosingOptions {
   prospectId: number;
   campagneId: number;
   onComplete: () => void;
+  dureeAppel?: number;
 }
 
-export function useCallClosing({ prospectId, campagneId, onComplete }: UseCallClosingOptions) {
+export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
-  const { currentAppelId } = useDialer();
+  const { currentAppelId, currentIdProspection, callDuration } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
   const [notes, setNotes] = useState('');
@@ -40,9 +41,14 @@ export function useCallClosing({ prospectId, campagneId, onComplete }: UseCallCl
     try {
       if (currentAppelId) {
         // Appel SIP : terminer l'appel existant avec le statut final
+        const finalDuration = dureeAppel ?? callDuration;
+        const abouti = ['vente_conclue', 'rdv_pris', 'abouti', 'refus_definitif'].includes(selectedStatut);
         await appelService.terminerAppel(currentAppelId, {
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,
+          abouti,
+          duree_secondes: finalDuration > 0 ? finalDuration : undefined,
+          id_prospection: currentIdProspection ?? undefined,
         });
       } else {
         // Mode manuel : créer l'appel directement (pas de session SIP tracée)

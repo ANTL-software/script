@@ -87,6 +87,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         id_prospect: currentProspect.id_prospect,
         id_campagne: currentCampaign.id_campagne,
         mode_paiement: formData.mode_paiement,
+        notes: formData.notes.trim() || undefined,
         details: items.map(item => ({
           id_produit: item.produit.id_produit,
           quantite: item.quantite,

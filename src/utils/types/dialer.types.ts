@@ -1,6 +1,7 @@
 export type StatutDialer =
   | 'disponible'
   | 'en_appel'
+  | 'appel_sortant'
   | 'apres_appel'
   | 'pause'
   | 'hors_ligne';
@@ -20,7 +21,7 @@ export interface StatutDialerPayload {
 export interface StatutDialerResponse {
   statut: StatutDialer;
   raison_pause?: RaisonPause;
-  depuis: string;
+  debut_statut: string;
 }
 
 export interface SipCredentials {
@@ -34,4 +35,6 @@ export interface SipCredentials {
 // Étend Prospect avec la campagne à utiliser pour l'appel
 export interface ProspectAssigne {
   id_campagne_assignee: number | null;
+  id_prospection?: number;
+  nb_tentatives?: number;
 }

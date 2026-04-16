@@ -6,7 +6,7 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { dialerService, appelService } from '../../API/services';
+import { dialerService, appelService, closingService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne } from '../../utils/types';
 import { formatPhoneE164 } from '../../utils/scripts/formatters';
 
@@ -29,6 +29,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [prochainProspect, setProchainProspect] = useState<(Prospect & ProspectAssigne) | null>(null);
   const [currentCampagneId, setCurrentCampagneId] = useState<number | null>(null);
   const [currentAppelId, setCurrentAppelId] = useState<number | null>(null);
+  const [currentIdProspection, setCurrentIdProspection] = useState<number | null>(null);
 
   const uaRef = useRef<UserAgent | null>(null);
   const registererRef = useRef<Registerer | null>(null);
@@ -36,6 +37,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const incomingSessionRef = useRef<Invitation | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sipDomainRef = useRef<string>('');
+  const isClosingRef = useRef<boolean>(false);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const isCallActiveRef = useRef<boolean>(false);
 
   const startCallTimer = useCallback(() => {
     setCallDuration(0);
@@ -50,6 +54,85 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       timerRef.current = null;
     }
   }, []);
+
+  // ─── Recovery : récupérer le statut backend au mount ───
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const recoverStatus = async () => {
+      try {
+        const data = await dialerService.getStatut();
+        setStatut(data.statut);
+        setRaisonPause(data.raison_pause ?? null);
+        if (data.debut_statut) {
+          setDepuisLe(new Date(data.debut_statut));
+        }
+      } catch {
+        // Silencieux — reste hors_ligne
+      }
+    };
+
+    recoverStatus();
+  }, [isAuthenticated]);
+
+  // ─── Heartbeat : signal que l'agent est actif (toutes les 60s) ───
+  useEffect(() => {
+    if (!isAuthenticated || statut === 'hors_ligne') return;
+
+    const sendHeartbeat = () => {
+      dialerService.heartbeat().catch(() => {});
+    };
+
+    sendHeartbeat();
+    const id = setInterval(sendHeartbeat, 60000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, statut]);
+
+  // ─── beforeunload : passage auto en hors_ligne si on ferme l'onglet ───
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleBeforeUnload = () => {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8800/api';
+      fetch(`${baseUrl}/agents/me/statut`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ statut: 'hors_ligne' }),
+        keepalive: true,
+      }).catch(() => {});
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isAuthenticated]);
+
+  // ─── visibilitychange : rafraîchir le statut si on revient après longtemps ───
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        sessionStorage.setItem('antl_hidden_since', Date.now().toString());
+      } else {
+        const hiddenSince = sessionStorage.getItem('antl_hidden_since');
+        if (hiddenSince) {
+          const elapsed = Date.now() - parseInt(hiddenSince, 10);
+          sessionStorage.removeItem('antl_hidden_since');
+          if (elapsed > 10 * 60 * 1000) {
+            dialerService.getStatut().then(data => {
+              setStatut(data.statut);
+              setRaisonPause(data.raison_pause ?? null);
+              if (data.debut_statut) setDepuisLe(new Date(data.debut_statut));
+            }).catch(() => {});
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [isAuthenticated]);
 
   // Initialisation SIP uniquement quand l'utilisateur est authentifié
   useEffect(() => {
@@ -110,6 +193,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
                   setIncomingCall(null);
                   incomingSessionRef.current = null;
                   stopCallTimer();
+                  isCallActiveRef.current = false;
                   setStatut('apres_appel');
                   setDepuisLe(new Date());
                   sessionRef.current = null;
@@ -123,11 +207,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
         const registerer = new Registerer(ua);
 
-        registerer.stateChange.addListener((state) => {
+        registerer.stateChange.addListener(async (state) => {
           if (cancelled) return;
           if (state === 'Registered') {
             setSipConnected(true);
-            setStatut('disponible');
+            console.info('[DIALER] SIP enregistré — en attente de passage manuel en disponible');
           } else if (state === 'Unregistered' || state === 'Terminated') {
             setSipConnected(false);
             setStatut('hors_ligne');
@@ -140,7 +224,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         uaRef.current = ua;
         registererRef.current = registerer;
       } catch {
-        // Pas connecté ou pas de credentials configurés — mode dégradé silencieux
         console.info('[SIP] Non initialisé (non authentifié ou credentials manquants)');
       }
     };
@@ -150,6 +233,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     return () => {
       cancelled = true;
       stopCallTimer();
+      isCallActiveRef.current = false;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+        mediaStreamRef.current = null;
+      }
       registererRef.current?.unregister().catch(() => {});
       uaRef.current?.stop().catch(() => {});
     };
@@ -161,16 +249,26 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       return;
     }
 
+    // Guard : empêcher un appel concurrent
+    if (isCallActiveRef.current) {
+      console.warn('[SIP] Un appel est déjà en cours');
+      return;
+    }
+
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
 
       setCurrentCampagneId(campagneId ?? null);
       setCurrentAppelId(null);
+      isClosingRef.current = false;
+      isCallActiveRef.current = true;
 
       const e164 = formatPhoneE164(phoneNumber);
       const targetURI = UserAgent.makeURI(`sip:${e164}@${sipDomainRef.current}`);
       if (!targetURI) {
         console.error('[SIP] URI cible invalide:', e164);
+        isCallActiveRef.current = false;
         return;
       }
 
@@ -178,7 +276,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       inviter.stateChange.addListener((state) => {
         if (state === SessionState.Established) {
-          // Attacher le flux audio distant à l'élément <audio>
           const sdh = inviter.sessionDescriptionHandler;
           if (sdh && 'peerConnection' in sdh) {
             const pc = (sdh as { peerConnection: RTCPeerConnection }).peerConnection;
@@ -195,23 +292,30 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           startCallTimer();
 
           // Créer l'appel en DB au moment où la communication est établie
-          if (campagneId && prospectId) {
+          if (campagneId && prospectId && !isClosingRef.current) {
             appelService.createAppel({
               id_prospect: prospectId,
               id_campagne: campagneId,
               statut_appel: 'en_cours',
+              id_prospection: prochainProspect?.id_prospection,
             }).then(appel => {
-              setCurrentAppelId(appel.id_appel);
+              if (!isClosingRef.current) {
+                setCurrentAppelId(appel.id_appel);
+              }
             }).catch(err => {
               console.error('[Appel] Erreur création appel:', err);
             });
           }
         } else if (state === SessionState.Terminated) {
           stopCallTimer();
+          isCallActiveRef.current = false;
           setStatut('apres_appel');
           setDepuisLe(new Date());
           sessionRef.current = null;
-          setCurrentAppelId(null);
+          if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach(t => t.stop());
+            mediaStreamRef.current = null;
+          }
           const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
           if (audioEl) audioEl.srcObject = null;
         }
@@ -220,9 +324,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await inviter.invite();
       sessionRef.current = inviter;
     } catch (err) {
+      isCallActiveRef.current = false;
       console.error('[SIP] Erreur lors de l\'appel:', err);
     }
-  }, [sipConnected, startCallTimer, stopCallTimer]);
+  }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect]);
 
   const hangup = useCallback(() => {
     if (sessionRef.current) {
@@ -236,12 +341,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     const invitation = incomingSessionRef.current;
     if (!invitation) return;
     try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+      isCallActiveRef.current = true;
       await invitation.accept();
       sessionRef.current = invitation;
       setIncomingCall(null);
 
-      // Attacher le flux audio distant
       const sdh = invitation.sessionDescriptionHandler;
       if (sdh && 'peerConnection' in sdh) {
         const pc = (sdh as { peerConnection: RTCPeerConnection }).peerConnection;
@@ -258,6 +364,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setDepuisLe(new Date());
       startCallTimer();
     } catch (err) {
+      isCallActiveRef.current = false;
       console.error('[SIP] Erreur lors de la prise d\'appel:', err);
     }
   }, [startCallTimer]);
@@ -270,15 +377,33 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   const clearProchainProspect = useCallback(() => {
     setProchainProspect(null);
+    setCurrentAppelId(null);
+    setCurrentIdProspection(null);
+    isClosingRef.current = false;
   }, []);
 
   const changerStatut = useCallback(async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
+    // Guard : ne pas passer disponible si un closing est en attente
+    if (nouveauStatut === 'disponible' && closingService.hasPending()) {
+      console.warn('[DIALER] Impossible de passer disponible : closing en attente');
+      return;
+    }
+
+    // Guard : ne pas passer disponible si un appel est en cours
+    if (nouveauStatut === 'disponible' && isCallActiveRef.current) {
+      console.warn('[DIALER] Impossible de passer disponible : appel en cours');
+      return;
+    }
+
+    // Mise à jour immédiate du state local (optimiste)
+    setStatut(nouveauStatut);
+    setRaisonPause(raison ?? null);
+    setDepuisLe(new Date());
+    setProchainProspect(null);
+
     setIsLoading(true);
     try {
       await dialerService.changerStatut(nouveauStatut, raison);
-      setStatut(nouveauStatut);
-      setRaisonPause(raison ?? null);
-      setDepuisLe(new Date());
 
       // Quand l'agent se met en disponible, on lui prépare automatiquement le prochain prospect
       if (nouveauStatut === 'disponible') {
@@ -286,16 +411,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           const prospect = await dialerService.getNextProspect();
           setProchainProspect(prospect);
         } catch {
-          // Pool vide ou agent non encore persisté — silencieux
+          // Pool vide — silencieux
         }
-      } else {
-        setProchainProspect(null);
       }
     } catch (error) {
-      console.warn('[Dialer] Endpoint non disponible, mise à jour locale uniquement', error);
-      setStatut(nouveauStatut);
-      setRaisonPause(raison ?? null);
-      setDepuisLe(new Date());
+      console.warn('[Dialer] Échec synchro backend, statut local appliqué', error);
     } finally {
       setIsLoading(false);
     }
@@ -313,6 +433,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       prochainProspect,
       currentCampagneId,
       currentAppelId,
+      currentIdProspection,
       changerStatut,
       clearProchainProspect,
       call,

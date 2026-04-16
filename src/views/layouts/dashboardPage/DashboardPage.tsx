@@ -15,7 +15,7 @@ function prospectLabel(rdv: RendezVous): string {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { prochainProspect, clearProchainProspect, call } = useDialer();
+  const { prochainProspect, clearProchainProspect, call, changerStatut } = useDialer();
 
   // Quand le contexte dialer reçoit un prospect assigné, on ouvre sa fiche et on lance l'appel
   useEffect(() => {
@@ -34,11 +34,18 @@ export default function DashboardPage() {
     handleSearch, handleMarquerLue, handleMarquerToutLu,
   } = useDashboardData();
 
+  // Ouvrir un prospect manuellement (recherche ou RDV) : sortir du statut disponible
+  // pour empêcher le dequeue automatique d'un nouveau prospect
+  const openManualProspect = (prospectId: number) => {
+    changerStatut('appel_sortant').catch(() => {});
+    navigate(`/prospect/${prospectId}`);
+  };
+
   return (
     <main id="dashboardPage">
       <section className="dashboard__search">
         <h2 className="dashboard__section-title">Recherche manuelle</h2>
-        <form onSubmit={handleSearch} className="dashboard__search-form">
+        <form onSubmit={(e) => { changerStatut('appel_sortant').catch(() => {}); handleSearch(e); }} className="dashboard__search-form">
           <input
             type="text"
             className="dashboard__search-input"
@@ -81,7 +88,7 @@ export default function DashboardPage() {
                   </div>
                   <button
                     className="dashboard__rdv-btn"
-                    onClick={() => rdv.prospect && navigate(`/prospect/${rdv.prospect.id_prospect}`)}
+                    onClick={() => rdv.prospect && openManualProspect(rdv.prospect.id_prospect)}
                     disabled={!rdv.prospect}
                   >
                     Ouvrir

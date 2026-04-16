@@ -6,6 +6,7 @@ import type { StatutDialer, RaisonPause } from '../../../utils/types';
 const LABELS_STATUT: Record<StatutDialer, string> = {
   disponible: 'Disponible',
   en_appel: 'En appel',
+  appel_sortant: 'Appel sortant',
   apres_appel: 'Après appel',
   pause: 'En pause',
   hors_ligne: 'Hors ligne',
@@ -53,7 +54,7 @@ export default function DialerStatus() {
   }, []);
 
   const handleSelectStatut = async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
-    // en_appel ne peut pas être sélectionné manuellement
+    // Seul en_appel est automatique (géré par le dialer)
     if (nouveauStatut === 'en_appel') return;
     setIsOpen(false);
     await changerStatut(nouveauStatut, raison);
@@ -73,7 +74,7 @@ export default function DialerStatus() {
       >
         <span className="dialer-status__dot" />
         <span className="dialer-status__label">{labelActuel}</span>
-        {(statut === 'pause' || statut === 'apres_appel') && (
+        {(statut === 'pause' || statut === 'apres_appel' || statut === 'en_appel' || statut === 'appel_sortant') && (
           <span className="dialer-status__timer">{duree}</span>
         )}
         {statut !== 'en_appel' && (
@@ -90,6 +91,13 @@ export default function DialerStatus() {
             >
               <span className="dialer-status__dot dialer-status__dot--disponible" />
               Disponible
+            </button>
+            <button
+              className={`dialer-status__option dialer-status__option--appel_sortant ${statut === 'appel_sortant' ? 'dialer-status__option--active' : ''}`}
+              onClick={() => handleSelectStatut('appel_sortant')}
+            >
+              <span className="dialer-status__dot dialer-status__dot--appel_sortant" />
+              Appel sortant
             </button>
             <button
               className={`dialer-status__option dialer-status__option--apres_appel ${statut === 'apres_appel' ? 'dialer-status__option--active' : ''}`}

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { AppContext } from './AppContext';
-import type { ModalType, ViewType, Notification } from './AppContext';
+import type { ModalType, ViewType, ToastNotification } from './AppContext';
 
 interface AppProviderProps {
   children: React.ReactNode;
@@ -9,7 +9,7 @@ interface AppProviderProps {
 export const AppProvider = ({ children }: AppProviderProps) => {
   const [currentModal, setCurrentModal] = useState<ModalType>(null);
   const [currentView, setCurrentView] = useState<ViewType>('qui-est-ce');
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<ToastNotification[]>([]);
   const [isAppLoading, setIsAppLoading] = useState<boolean>(false);
 
   const openModal = useCallback((modal: ModalType) => {
@@ -32,9 +32,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
     setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   }, []);
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
+  const addNotification = useCallback((notification: Omit<ToastNotification, 'id'>) => {
     const id = `notif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newNotification: Notification = { ...notification, id };
+    const newNotification: ToastNotification = { ...notification, id };
 
     console.log(`[APP] Notification ajoutée: ${notification.type} - ${notification.message}`);
     setNotifications((prev) => [...prev, newNotification]);

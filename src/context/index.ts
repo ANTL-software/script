@@ -16,7 +16,7 @@ export type { CartContextType } from './cartContext/CartContext';
 
 export { AppContext } from './appContext/AppContext';
 export { AppProvider } from './appContext/AppProvider';
-export type { AppContextType, ModalType, ViewType, Notification } from './appContext/AppContext';
+export type { AppContextType, ModalType, ViewType, ToastNotification } from './appContext/AppContext';
 
 export { ToastContext } from './toastContext/ToastContext';
 export { ToastProvider } from './toastContext/ToastProvider';

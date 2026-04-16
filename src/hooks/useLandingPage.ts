@@ -46,7 +46,11 @@ export function useLandingPage(id: string | undefined) {
       return;
     }
     loadProspect(prospectId);
-    loadCampaign(currentCampagneId ?? 1);
+    // Charger la campagne de l'agent (via le dialer ou le prospect assigné)
+    // Ne pas fallback à 1 — si aucune campagne, l'agent n'est pas assigné
+    if (currentCampagneId) {
+      loadCampaign(currentCampagneId);
+    }
   }, [id, loadProspect, loadCampaign, navigate, currentCampagneId]);
 
   // Déclenche la closing modal dès que l'appel se termine (statut = apres_appel)
@@ -71,12 +75,14 @@ export function useLandingPage(id: string | undefined) {
   }, [statut, currentProspect, currentCampaign, currentCampagneId, callDuration]);
 
   const handlePlanAppels = () => {
-    const campagneId = currentCampaign?.id_campagne ?? 1;
+    const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
+    if (!campagneId) return;
     window.open(`/plan-appel?campagne=${campagneId}`, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleObjections = () => {
-    const campagneId = currentCampaign?.id_campagne ?? 1;
+    const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
+    if (!campagneId) return;
     window.open(`/objections?campagne=${campagneId}`, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
@@ -111,9 +117,9 @@ export function useLandingPage(id: string | undefined) {
 
   const handleClosingComplete = () => {
     setPendingClosing(null);
-    setShowSuccessMessage(true);
-    setView('qui-est-ce');
-    setTimeout(() => setShowSuccessMessage(false), 5000);
+    // Retour au dashboard — le statut dialer est déjà 'apres_appel'
+    // (positionné par SessionState.Terminated + backend terminerAppel)
+    navigate('/');
   };
 
   return {

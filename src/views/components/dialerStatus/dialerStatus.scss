@@ -5,6 +5,7 @@ $color-disponible: vars.$colorSuccess;
 $color-en-appel: vars.$colorDanger;
 $color-apres-appel: vars.$colorWarning;
 $color-pause: #f59e0b;
+$color-appel-sortant: #6366f1; // indigo
 $color-hors-ligne: vars.$colorGray500;
 
 .dialer-status {
@@ -61,6 +62,7 @@ $color-hors-ligne: vars.$colorGray500;
   // Dot coloré selon statut courant dans le trigger
   &--disponible .dialer-status__dot { background: $color-disponible; }
   &--en_appel .dialer-status__dot { background: $color-en-appel; animation: pulse-red 1.5s infinite; }
+  &--appel_sortant .dialer-status__dot { background: $color-appel-sortant; }
   &--apres_appel .dialer-status__dot { background: $color-apres-appel; }
   &--pause .dialer-status__dot { background: $color-pause; }
   &--hors_ligne .dialer-status__dot { background: $color-hors-ligne; }

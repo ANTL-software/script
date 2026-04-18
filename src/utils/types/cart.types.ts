@@ -35,18 +35,11 @@ export interface CategorieProduit {
   categorieParente?: CategorieProduit;
 }
 
-export interface CategorieTreeResponse {
-  success: boolean;
-  data: CategorieProduit[];
-  count: number;
-}
+export type CategorieTreeResponse = CategorieProduit[];
 
 export interface CategoriePathResponse {
-  success: boolean;
-  data: {
-    path: CategorieProduit[];
-    pathString: string;
-  };
+  path: CategorieProduit[];
+  pathString: string;
 }
 
 export interface ProduitsGroupedData {

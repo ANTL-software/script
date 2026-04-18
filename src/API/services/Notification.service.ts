@@ -1,13 +1,6 @@
 import { apiCalls } from '../APICalls';
+import { throwIfApiError } from '../apiHelpers';
 import type { Notification } from '../../utils/types';
-
-interface NotificationsResponse {
-  success: boolean;
-  message: string;
-  data: Notification[];
-  count: number;
-  non_lues: number;
-}
 
 export class NotificationService {
   private static instance: NotificationService;
@@ -23,14 +16,12 @@ export class NotificationService {
 
   public async getMyNotifications(lu?: boolean): Promise<{ notifications: Notification[]; non_lues: number }> {
     const query = lu !== undefined ? `?lu=${lu}` : '';
-    const response = await apiCalls.get<NotificationsResponse>(`/notifications/me${query}`);
-    if (!response.success) {
-      throw new Error(response.message || 'Erreur lors de la récupération des notifications');
-    }
-    const payload = response.data as unknown as NotificationsResponse;
+    const response = await apiCalls.get<Notification[]>(`/notifications/me${query}`);
+    const data = throwIfApiError(response, 'Erreur lors de la récupération des notifications');
+    const notifications = Array.isArray(data) ? data : [];
     return {
-      notifications: payload?.data ?? [],
-      non_lues: payload?.non_lues ?? 0
+      notifications,
+      non_lues: notifications.filter(n => !n.lu).length,
     };
   }
 

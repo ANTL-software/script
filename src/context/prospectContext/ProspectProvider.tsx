@@ -4,7 +4,7 @@ import { prospectService } from '../../API/services';
 import { getTypeFiche } from '../../utils/scripts/utils';
 import { useProspectAppels } from '../../hooks/useProspectAppels';
 import { useProspectVentes } from '../../hooks/useProspectVentes';
-import type { Prospect, CreateVenteData, TypeFiche, UpdateProspectData } from '../../utils/types';
+import type { Prospect, TypeFiche, UpdateProspectData } from '../../utils/types';
 
 interface ProspectProviderProps {
   children: React.ReactNode;
@@ -73,7 +73,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     setError(null);
     appelsHook.reset();
     ventesHook.reset();
-  }, [appelsHook.reset, ventesHook.reset]);
+  }, [appelsHook, ventesHook]);
 
   const clearError = useCallback(() => {
     setError(null);

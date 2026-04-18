@@ -13,7 +13,6 @@ export function useLandingPage(id: string | undefined) {
   const { statut, callDuration, currentCampagneId } = useDialer();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [pendingClosing, setPendingClosing] = useState<PendingClosing | null>(
     () => closingService.getPending()
   );
@@ -71,7 +70,8 @@ export function useLandingPage(id: string | undefined) {
     };
 
     closingService.savePending(pending);
-    setPendingClosing(closingService.getPending());
+    // Async pour éviter le cascading render (React Compiler)
+    queueMicrotask(() => setPendingClosing({ ...pending, timestamp: Date.now() }));
   }, [statut, currentProspect, currentCampaign, currentCampagneId, callDuration]);
 
   const handlePlanAppels = () => {
@@ -131,7 +131,6 @@ export function useLandingPage(id: string | undefined) {
     clearError,
     isModalOpen,
     setIsModalOpen,
-    showSuccessMessage,
     pendingClosing,
     confirmModal,
     setConfirmModal,

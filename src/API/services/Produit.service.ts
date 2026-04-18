@@ -31,10 +31,7 @@ export class ProduitService {
     grouped?: boolean;
   }): Promise<{ produits: ProduitModel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
-    const response = await apiCalls.get<{
-      items: Produit[];
-      pagination: { total: number; page: number; limit: number; totalPages: number };
-    }>(`/produits${queryString}`);
+    const response = await apiCalls.get<Produit[]>(`/produits${queryString}`);
 
     const result = extractPaginatedData(response, ProduitModel.fromJSON, 'Erreur lors de la récupération des produits');
     return {
@@ -55,7 +52,7 @@ export class ProduitService {
 
     return {
       categories: data.categories,
-      totalProducts: data.count?.totalProducts ?? 0,
+      totalProducts: data.categories.reduce((sum, cat) => sum + (cat.produits?.length ?? 0), 0),
     };
   }
 
@@ -64,16 +61,17 @@ export class ProduitService {
     limit?: number;
   }): Promise<{ produits: ProduitModel[]; pagination: { page: number; limit: number; total: number; totalPages: number } }> {
     const queryString = buildQueryString(params);
-    const response = await apiCalls.get<{
-      produits: Produit[];
-      pagination: { page: number; limit: number; total: number; totalPages: number };
-    }>(`/campagnes/${campaignId}/produits${queryString}`);
+    const response = await apiCalls.get<Produit[]>(`/campagnes/${campaignId}/produits${queryString}`);
 
-    const data = throwIfApiError(response, 'Erreur lors de la récupération des produits');
-
+    const result = extractPaginatedData(response, ProduitModel.fromJSON, 'Erreur lors de la récupération des produits');
     return {
-      produits: data.produits.map(ProduitModel.fromJSON),
-      pagination: data.pagination
+      produits: result.items,
+      pagination: {
+        page: result.page,
+        limit: response.pagination?.limit ?? 20,
+        total: result.total,
+        totalPages: result.totalPages,
+      }
     };
   }
 }

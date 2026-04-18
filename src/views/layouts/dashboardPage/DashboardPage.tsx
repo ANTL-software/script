@@ -16,7 +16,7 @@ function prospectLabel(rdv: RendezVous): string {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { prochainProspect, clearProchainProspect, call, changerStatut, openProspectManual } = useDialer();
+  const { prochainProspect, clearProchainProspect, call, openProspectManual } = useDialer();
 
   // Quand le contexte dialer reçoit un prospect assigné, on ouvre sa fiche et on lance l'appel
   useEffect(() => {

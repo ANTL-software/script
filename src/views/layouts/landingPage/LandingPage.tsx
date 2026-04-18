@@ -20,7 +20,7 @@ export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const {
     currentProspect, currentView, isLoading, error, clearError,
-    isModalOpen, setIsModalOpen, showSuccessMessage, pendingClosing,
+    isModalOpen, setIsModalOpen, pendingClosing,
     confirmModal, setConfirmModal,
     handlePlanAppels, handleObjections, handleCommande,
     handleDoublon, handleRss, handleConfirmAction,
@@ -78,12 +78,6 @@ export default function LandingPage() {
         onDoublon={handleDoublon}
         onRss={handleRss}
       />
-
-      {showSuccessMessage && (
-        <div className="landing-page__success-message">
-          <p>Commande enregistrée avec succès ! Un devis a été envoyé par email au prospect.</p>
-        </div>
-      )}
 
       <div className="landing-page__content">
         {currentView === 'qui-est-ce' && <QuiEstCe />}

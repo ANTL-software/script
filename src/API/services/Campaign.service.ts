@@ -28,10 +28,7 @@ export class CampaignService {
     actif?: boolean;
   }): Promise<{ campaigns: CampaignModel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
-    const response = await apiCalls.get<{
-      items: Campaign[];
-      pagination: { total: number; page: number; limit: number; totalPages: number };
-    }>(`/campagnes${queryString}`);
+    const response = await apiCalls.get<Campaign[]>(`/campagnes${queryString}`);
 
     const result = extractPaginatedData(response, CampaignModel.fromJSON, 'Erreur lors de la récupération des campagnes');
     return {

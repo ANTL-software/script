@@ -1,4 +1,5 @@
 import { apiCalls } from '../APICalls';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
 import type { Appel, CreateAppelData, TerminerAppelData, UpdateAppelData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
@@ -16,18 +17,12 @@ export class AppelService {
 
   public async createAppel(data: CreateAppelData): Promise<Appel> {
     const response = await apiCalls.post<Appel>('/appels', data);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la création de l\'appel');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la création de l\'appel');
   }
 
   public async getAppelById(id: number): Promise<Appel> {
     const response = await apiCalls.get<Appel>(`/appels/${id}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération de l\'appel');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération de l\'appel');
   }
 
   public async getAppelsByProspect(
@@ -35,51 +30,25 @@ export class AppelService {
     params?: { page?: number; limit?: number }
   ): Promise<{ appels: Appel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
-    const response = await apiCalls.get<{
-      items?: Appel[];
-      pagination?: { total: number; page: number; limit: number; totalPages: number };
-    } | Appel[]>(`/prospects/${prospectId}/appels${queryString}`);
+    const response = await apiCalls.get<Appel[]>(`/prospects/${prospectId}/appels${queryString}`);
 
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des appels');
-    }
-
-    // Si la réponse est un array simple (pas de pagination)
-    if (Array.isArray(response.data)) {
-      return {
-        appels: response.data,
-        total: response.data.length,
-        page: 1,
-        totalPages: 1,
-      };
-    }
-
-    // Si la réponse a une structure avec items et pagination
-    const items = response.data.items || [];
-    const pagination = response.data.pagination || { total: 0, page: 1, limit: 20, totalPages: 1 };
-
+    const result = extractPaginatedData(response, (a: Appel) => a, 'Erreur lors de la récupération des appels');
     return {
-      appels: items,
-      total: pagination.total,
-      page: pagination.page,
-      totalPages: pagination.totalPages,
+      appels: result.items,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     };
   }
 
   public async updateAppel(id: number, data: UpdateAppelData): Promise<Appel> {
     const response = await apiCalls.put<Appel>(`/appels/${id}`, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la mise à jour de l\'appel');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la mise à jour de l\'appel');
   }
 
   public async terminerAppel(id: number, data: TerminerAppelData): Promise<Appel> {
     const response = await apiCalls.patch<Appel>(`/appels/${id}/terminer`, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la terminaison de l\'appel');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la terminaison de l\'appel');
   }
 }
 

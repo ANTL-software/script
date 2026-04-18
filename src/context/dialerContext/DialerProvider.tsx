@@ -349,7 +349,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const hangup = useCallback(() => {
     if (sessionRef.current) {
       sessionRef.current.bye().catch(() => {
-        sessionRef.current?.cancel().catch(() => {});
+        // cancel() n'existe que sur Inviter (appels sortants pas encore établis)
+        (sessionRef.current as Inviter | null)?.cancel().catch(() => {});
       });
     }
   }, []);

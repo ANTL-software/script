@@ -2,6 +2,12 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface ApiError {
@@ -27,11 +33,11 @@ export interface Pagination {
 export interface PaginatedResponse<T> {
   success: boolean;
   message: string;
-  data: {
-    items: T[];
-    total: number;
+  data: T[];
+  pagination: {
     page: number;
     limit: number;
+    total: number;
     totalPages: number;
   };
 }

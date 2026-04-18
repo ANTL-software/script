@@ -1,4 +1,5 @@
 import { apiCalls } from '../APICalls';
+import { throwIfApiError } from '../apiHelpers';
 import type { StatsDuJour } from '../../utils/types';
 
 export class StatsService {
@@ -15,10 +16,7 @@ export class StatsService {
 
   public async getMyStatsDuJour(): Promise<StatsDuJour> {
     const response = await apiCalls.get<StatsDuJour>('/employes/me/stats');
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des stats');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération des stats');
   }
 }
 

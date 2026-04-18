@@ -1,4 +1,5 @@
 import { apiCalls } from '../APICalls';
+import { throwIfApiError } from '../apiHelpers';
 import type { RendezVous, CreateRendezVousData, UpdateRendezVousData, RendezVousStatut } from '../../utils/types';
 
 export class RendezVousService {
@@ -15,62 +16,38 @@ export class RendezVousService {
 
   public async createRendezVous(data: CreateRendezVousData): Promise<RendezVous> {
     const response = await apiCalls.post<RendezVous>('/rendez-vous', data);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la creation du rendez-vous');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la creation du rendez-vous');
   }
 
   public async getRendezVousById(id: number): Promise<RendezVous> {
     const response = await apiCalls.get<RendezVous>(`/rendez-vous/${id}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la recuperation du rendez-vous');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la recuperation du rendez-vous');
   }
 
   public async getRendezVousByAgent(agentId: number): Promise<RendezVous[]> {
     const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/agent/${agentId}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la recuperation des rendez-vous');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la recuperation des rendez-vous');
   }
 
   public async getRendezVousByProspect(prospectId: number): Promise<RendezVous[]> {
     const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/prospect/${prospectId}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la recuperation des rendez-vous');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la recuperation des rendez-vous');
   }
 
   public async getRendezVousToday(agentId?: number): Promise<RendezVous[]> {
     const query = agentId ? `?agent=${agentId}` : '';
     const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/today${query}`);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la recuperation des rendez-vous du jour');
-    }
-    // L'API renvoie { success, data: [...], count } — on extrait data
-    return Array.isArray(response.data)
-      ? response.data
-      : (response.data as unknown as { data: RendezVous[] }).data ?? [];
+    return throwIfApiError(response, 'Erreur lors de la recuperation des rendez-vous du jour');
   }
 
   public async updateRendezVous(id: number, data: UpdateRendezVousData): Promise<RendezVous> {
     const response = await apiCalls.put<RendezVous>(`/rendez-vous/${id}`, data);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la mise a jour du rendez-vous');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la mise a jour du rendez-vous');
   }
 
   public async updateStatut(id: number, statut: RendezVousStatut): Promise<RendezVous> {
     const response = await apiCalls.patch<RendezVous>(`/rendez-vous/${id}/statut`, { statut });
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la mise a jour du statut');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la mise a jour du statut');
   }
 
   public async deleteRendezVous(id: number): Promise<void> {

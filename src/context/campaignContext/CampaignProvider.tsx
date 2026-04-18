@@ -53,8 +53,8 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
       const uniqueCategories: CategorieProduit[] = Array.from(
         new Map(
           produitsData
-            .filter((p) => p.Categorie)
-            .map((p) => [p.Categorie!.id_categorie, p.Categorie!])
+            .filter((p) => p.categorie)
+            .map((p) => [p.categorie!.id_categorie, p.categorie!])
         ).values()
       );
       setCategories(uniqueCategories);

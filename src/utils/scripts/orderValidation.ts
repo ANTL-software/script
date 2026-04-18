@@ -1,3 +1,5 @@
+import type { ModePaiement } from '../types';
+
 interface OrderFormData {
   adresse: string;
   code_postal: string;
@@ -43,7 +45,7 @@ export function buildVentePayload(params: {
   return {
     id_prospect: prospectId,
     id_campagne: campagneId,
-    mode_paiement: formData.mode_paiement,
+    mode_paiement: formData.mode_paiement as ModePaiement,
     notes: formData.notes.trim() || undefined,
     details: items.map(item => ({
       id_produit: item.produit.id_produit,

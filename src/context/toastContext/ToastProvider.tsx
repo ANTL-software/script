@@ -11,7 +11,6 @@ interface ToastProviderProps {
 interface ConfirmState {
   isOpen: boolean;
   options: ConfirmOptions;
-  resolve: ((value: boolean) => void) | null;
 }
 
 export function ToastProvider({ children }: ToastProviderProps) {
@@ -19,8 +18,8 @@ export function ToastProvider({ children }: ToastProviderProps) {
   const [confirmState, setConfirmState] = useState<ConfirmState>({
     isOpen: false,
     options: { title: '', message: '' },
-    resolve: null,
   });
+  const resolveRef = useRef<((value: boolean) => void) | null>(null);
 
   const toastIdCounter = useRef(0);
 
@@ -35,23 +34,25 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
   const confirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
     return new Promise((resolve) => {
+      resolveRef.current = resolve;
       setConfirmState({
         isOpen: true,
         options,
-        resolve,
       });
     });
   }, []);
 
   const handleConfirm = useCallback(() => {
-    confirmState.resolve?.(true);
-    setConfirmState((prev) => ({ ...prev, isOpen: false, resolve: null }));
-  }, [confirmState.resolve]);
+    resolveRef.current?.(true);
+    resolveRef.current = null;
+    setConfirmState((prev) => ({ ...prev, isOpen: false }));
+  }, []);
 
   const handleCancel = useCallback(() => {
-    confirmState.resolve?.(false);
-    setConfirmState((prev) => ({ ...prev, isOpen: false, resolve: null }));
-  }, [confirmState.resolve]);
+    resolveRef.current?.(false);
+    resolveRef.current = null;
+    setConfirmState((prev) => ({ ...prev, isOpen: false }));
+  }, []);
 
   const value: ToastContextType = {
     toasts,

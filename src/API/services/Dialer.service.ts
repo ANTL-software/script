@@ -1,4 +1,5 @@
 import { apiCalls } from '../APICalls';
+import { throwIfApiError } from '../apiHelpers';
 import type { StatutDialer, RaisonPause, StatutDialerResponse, SipCredentials, Prospect, ProspectAssigne } from '../../utils/types';
 
 export class DialerService {
@@ -15,35 +16,23 @@ export class DialerService {
 
   public async getStatut(): Promise<StatutDialerResponse> {
     const response = await apiCalls.get<StatutDialerResponse>('/agents/me/statut');
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération du statut');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération du statut');
   }
 
   public async getSipCredentials(): Promise<SipCredentials> {
     const response = await apiCalls.get<SipCredentials>('/auth/sip-credentials');
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des credentials SIP');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération des credentials SIP');
   }
 
   public async changerStatut(statut: StatutDialer, raison_pause?: RaisonPause): Promise<StatutDialerResponse> {
     const payload = raison_pause ? { statut, raison_pause } : { statut };
     const response = await apiCalls.patch<StatutDialerResponse>('/agents/me/statut', payload);
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors du changement de statut');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors du changement de statut');
   }
 
   public async getNextProspect(): Promise<Prospect & ProspectAssigne> {
     const response = await apiCalls.get<Prospect & ProspectAssigne>('/agents/me/next-prospect');
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Aucun prospect disponible dans le pool');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Aucun prospect disponible dans le pool');
   }
 
   public async heartbeat(): Promise<void> {
@@ -52,10 +41,7 @@ export class DialerService {
 
   public async getCampagnesAgent(): Promise<Array<{ id_campagne: number; nom_campagne: string; statut: string }>> {
     const response = await apiCalls.get<Array<{ id_campagne: number; nom_campagne: string; statut: string }>>('/agents/me/campagnes');
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des campagnes');
-    }
-    return response.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération des campagnes');
   }
 }
 

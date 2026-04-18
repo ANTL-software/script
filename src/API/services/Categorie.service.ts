@@ -1,4 +1,5 @@
 import { apiCalls } from '../APICalls';
+import { throwIfApiError } from '../apiHelpers';
 import type {
   CategorieProduit,
   CategorieTreeResponse,
@@ -18,16 +19,8 @@ export class CategorieService {
   }
 
   public async getCategories(): Promise<CategorieProduit[]> {
-    const response = await apiCalls.get<{
-      data: CategorieProduit[];
-      count: number;
-    }>('/categories');
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération des catégories');
-    }
-
-    return response.data.data;
+    const response = await apiCalls.get<CategorieProduit[]>('/categories');
+    return throwIfApiError(response, 'Erreur lors de la récupération des catégories');
   }
 
   public async getCategoriesTree(params?: {
@@ -44,34 +37,17 @@ export class CategorieService {
 
     const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     const response = await apiCalls.get<CategorieTreeResponse>(`/categories/tree${queryString}`);
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération de l\'arbre des catégories');
-    }
-
-    return response.data.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération de l\'arbre des catégories');
   }
 
   public async getCategorieById(id: number): Promise<CategorieProduit> {
-    const response = await apiCalls.get<{
-      data: CategorieProduit;
-    }>(`/categories/${id}`);
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération de la catégorie');
-    }
-
-    return response.data.data;
+    const response = await apiCalls.get<CategorieProduit>(`/categories/${id}`);
+    return throwIfApiError(response, 'Erreur lors de la récupération de la catégorie');
   }
 
   public async getCategoryPath(id: number): Promise<{ path: CategorieProduit[]; pathString: string }> {
     const response = await apiCalls.get<CategoriePathResponse>(`/categories/${id}/path`);
-
-    if (!response.success || !response.data) {
-      throw new Error(response.message || 'Erreur lors de la récupération du chemin de la catégorie');
-    }
-
-    return response.data.data;
+    return throwIfApiError(response, 'Erreur lors de la récupération du chemin de la catégorie');
   }
 }
 

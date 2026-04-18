@@ -36,10 +36,7 @@ export class ProspectService {
     search?: string;
   }): Promise<{ prospects: ProspectModel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
-    const response = await apiCalls.get<{
-      items: Prospect[];
-      pagination: { total: number; page: number; limit: number; totalPages: number };
-    }>(`/prospects${queryString}`);
+    const response = await apiCalls.get<Prospect[]>(`/prospects${queryString}`);
 
     const result = extractPaginatedData(response, ProspectModel.fromJSON, 'Erreur lors de la récupération des prospects');
     return {

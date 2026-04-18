@@ -74,6 +74,7 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
  * Couleurs par statut d'appel (pour affichage simplifie)
  */
 export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
+  en_cours: '#3b82f6',
   vente_conclue: '#22c55e',
   rdv_pris: '#3b82f6',
   abouti: '#8b5cf6',

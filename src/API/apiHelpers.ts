@@ -1,8 +1,8 @@
 import type { ApiResponse } from '../utils/types';
 
 /**
- * Valide une réponse API et retourne les données typées
- * @throws Error si la réponse n'est pas un succès ou si les données sont manquantes
+ * Valide une reponse API et retourne les donnees typees
+ * @throws Error si la reponse n'est pas un succes ou si les donnees sont manquantes
  */
 export function throwIfApiError<T>(
   response: ApiResponse<T>,
@@ -15,32 +15,24 @@ export function throwIfApiError<T>(
 }
 
 /**
- * Interface standard pour les réponses paginées
- */
-export interface PaginatedApiData<T> {
-  items: T[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-/**
- * Extrait et normalise les données paginées d'une réponse API
+ * Extrait et normalise les donnees paginees d'une reponse API
+ *
+ * Le backend paginated() retourne :
+ * { success, data: T[], pagination: { page, limit, total, totalPages } }
  */
 export function extractPaginatedData<T, R>(
-  response: ApiResponse<PaginatedApiData<T>>,
+  response: ApiResponse<T[]>,
   transformer: (item: T) => R,
   defaultErrorMessage: string = 'Erreur lors de la récupération des données'
 ): { items: R[]; total: number; page: number; totalPages: number } {
   const data = throwIfApiError(response, defaultErrorMessage);
+  const items = Array.isArray(data) ? data : [];
+  const pagination = response.pagination || { total: items.length, page: 1, limit: 20, totalPages: 1 };
 
   return {
-    items: data.items.map(transformer),
-    total: data.pagination.total,
-    page: data.pagination.page,
-    totalPages: data.pagination.totalPages,
+    items: items.map(transformer),
+    total: pagination.total,
+    page: pagination.page,
+    totalPages: pagination.totalPages,
   };
 }

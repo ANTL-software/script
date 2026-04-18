@@ -1,6 +1,7 @@
 import './categoryTree.scss';
 import { useState } from 'react';
 import type { CategorieProduit, Produit } from '../../../utils/types';
+import { filterNonEmptyCategories } from '../../../utils/scripts/utils';
 import ProduitCard from './ProduitCard';
 import { FaChevronDown, FaChevronRight, FaFolder, FaFolderOpen } from 'react-icons/fa';
 
@@ -13,27 +14,6 @@ interface CategoryNodeProps {
   category: CategorieProduit;
   level: number;
   onAddToCart: (produit: Produit) => void;
-}
-
-// Compte le nombre total de produits dans une catégorie (incluant sous-catégories)
-function countTotalProducts(category: CategorieProduit): number {
-  let count = category.produits?.length || 0;
-  if (category.sousCategories) {
-    for (const sub of category.sousCategories) {
-      count += countTotalProducts(sub);
-    }
-  }
-  return count;
-}
-
-// Filtre les catégories pour ne garder que celles qui ont des produits
-function filterNonEmptyCategories(categories: CategorieProduit[]): CategorieProduit[] {
-  return categories
-    .map(cat => ({
-      ...cat,
-      sousCategories: cat.sousCategories ? filterNonEmptyCategories(cat.sousCategories) : undefined
-    }))
-    .filter(cat => countTotalProducts(cat) > 0);
 }
 
 function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {

@@ -6,7 +6,7 @@ import Button from '../button/Button';
 import Input from '../input/Input';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types';
-import { formatDateLong } from '../../../utils/scripts/formatters';
+import { formatDateLong, getStatutProspectLabel } from '../../../utils/scripts/formatters';
 
 interface EditableFields {
   email: string;
@@ -182,7 +182,7 @@ export default function QuiEstCe() {
             <div className="qui-est-ce__field">
               <span className="qui-est-ce__label">Statut</span>
               <span className="qui-est-ce__value qui-est-ce__value--statut" data-statut={currentProspect.statut}>
-                {currentProspect.statut.replace('_', ' ')}
+                {getStatutProspectLabel(currentProspect.statut)}
               </span>
             </div>
             <div className="qui-est-ce__field">

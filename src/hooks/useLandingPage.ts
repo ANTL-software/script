@@ -53,10 +53,10 @@ export function useLandingPage(id: string | undefined) {
     }
   }, [id, loadProspect, loadCampaign, navigate, currentCampagneId]);
 
-  // Déclenche la closing modal dès que l'appel se termine (statut = apres_appel)
+  // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
   // sans passer par une vente — garantit que chaque appel est enregistré en DB
   useEffect(() => {
-    if (statut !== 'apres_appel') return;
+    if (statut !== 'pause_apres_appel') return;
     if (!currentProspect) return;
     if (closingService.hasPending()) return;
 
@@ -117,7 +117,7 @@ export function useLandingPage(id: string | undefined) {
 
   const handleClosingComplete = () => {
     setPendingClosing(null);
-    // Retour au dashboard — le statut dialer est déjà 'apres_appel'
+    // Retour au dashboard — le statut dialer est déjà 'pause_apres_appel'
     // (positionné par SessionState.Terminated + backend terminerAppel)
     navigate('/');
   };

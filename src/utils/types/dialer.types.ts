@@ -2,16 +2,16 @@ export type StatutDialer =
   | 'disponible'
   | 'en_appel'
   | 'appel_sortant'
-  | 'apres_appel'
+  | 'pause_apres_appel'
   | 'pause'
   | 'hors_ligne';
 
 export type RaisonPause =
-  | 'dejeuner'
   | 'technique'
-  | 'formation'
-  | 'reunion'
-  | 'personnel';
+  | 'repas'
+  | 'personnelle'
+  | 'legale'
+  | 'brief';
 
 export interface StatutDialerPayload {
   statut: StatutDialer;

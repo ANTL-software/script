@@ -2,32 +2,26 @@ import './dialerStatus.scss';
 import { useState, useEffect, useRef } from 'react';
 import { useDialer } from '../../../hooks';
 import type { StatutDialer, RaisonPause } from '../../../utils/types';
+import { formatTimerDuration } from '../../../utils/scripts/formatters';
 
 const LABELS_STATUT: Record<StatutDialer, string> = {
   disponible: 'Disponible',
   en_appel: 'En appel',
   appel_sortant: 'Appel sortant',
-  apres_appel: 'Après appel',
+  pause_apres_appel: 'Pause après appel',
   pause: 'En pause',
   hors_ligne: 'Hors ligne',
 };
 
 const LABELS_PAUSE: Record<RaisonPause, string> = {
-  dejeuner: 'Pause déjeuner',
   technique: 'Pause technique',
-  formation: 'Formation',
-  reunion: 'Réunion',
-  personnel: 'Personnel',
+  repas: 'Pause repas',
+  personnelle: 'Pause personnelle',
+  legale: 'Pause légale',
+  brief: 'Pause Brief',
 };
 
-const RAISONS_PAUSE: RaisonPause[] = ['dejeuner', 'technique', 'formation', 'reunion', 'personnel'];
-
-function formatDuree(depuis: Date): string {
-  const secondes = Math.floor((Date.now() - depuis.getTime()) / 1000);
-  const m = Math.floor(secondes / 60).toString().padStart(2, '0');
-  const s = (secondes % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-}
+const RAISONS_PAUSE: RaisonPause[] = ['repas', 'personnelle', 'legale', 'brief', 'technique'];
 
 export default function DialerStatus() {
   const { statut, raisonPause, depuisLe, isLoading, changerStatut } = useDialer();
@@ -37,7 +31,7 @@ export default function DialerStatus() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setDuree(formatDuree(depuisLe));
+      setDuree(formatTimerDuration(depuisLe));
     }, 1000);
     return () => clearInterval(interval);
   }, [depuisLe]);
@@ -54,8 +48,8 @@ export default function DialerStatus() {
   }, []);
 
   const handleSelectStatut = async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
-    // Seul en_appel est automatique (géré par le dialer)
-    if (nouveauStatut === 'en_appel') return;
+    // Statuts automatiques / non sélectionnables manuellement
+    if (nouveauStatut === 'en_appel' || nouveauStatut === 'pause_apres_appel' || nouveauStatut === 'hors_ligne') return;
     setIsOpen(false);
     await changerStatut(nouveauStatut, raison);
   };
@@ -74,7 +68,7 @@ export default function DialerStatus() {
       >
         <span className="dialer-status__dot" />
         <span className="dialer-status__label">{labelActuel}</span>
-        {(statut === 'pause' || statut === 'apres_appel' || statut === 'en_appel' || statut === 'appel_sortant') && (
+        {(statut === 'pause' || statut === 'pause_apres_appel' || statut === 'en_appel' || statut === 'appel_sortant') && (
           <span className="dialer-status__timer">{duree}</span>
         )}
         {statut !== 'en_appel' && (
@@ -98,13 +92,6 @@ export default function DialerStatus() {
             >
               <span className="dialer-status__dot dialer-status__dot--appel_sortant" />
               Appel sortant
-            </button>
-            <button
-              className={`dialer-status__option dialer-status__option--apres_appel ${statut === 'apres_appel' ? 'dialer-status__option--active' : ''}`}
-              onClick={() => handleSelectStatut('apres_appel')}
-            >
-              <span className="dialer-status__dot dialer-status__dot--apres_appel" />
-              Après appel (ACW)
             </button>
           </div>
 

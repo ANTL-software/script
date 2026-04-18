@@ -11,6 +11,8 @@ export type StatutAppel =
   | 'vente_conclue'
   | 'refus_definitif';
 
+export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
+
 export interface Appel {
   id_appel: number;
   id_prospect: number;
@@ -32,6 +34,8 @@ export interface CreateAppelData {
   statut_appel?: StatutAppel;
   notes?: string;
   id_prospection?: number;
+  origine_appel?: OrigineAppel;
+  numero_telephone?: string;
 }
 
 export interface TerminerAppelData {

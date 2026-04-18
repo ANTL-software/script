@@ -100,6 +100,16 @@ export function getErrorMessage(error: unknown, fallback: string = 'Une erreur e
  * @returns Nom complet formate
  */
 /**
+ * Nettoie et valide un numéro de téléphone saisi.
+ * @returns Le numéro nettoyé si valide, ou null si invalide.
+ */
+export function cleanAndValidatePhone(input: string): string | null {
+  const cleaned = input.trim().replace(/[\s\-().]/g, '');
+  if (/^[+\d]{6,}$/.test(cleaned)) return cleaned;
+  return null;
+}
+
+/**
  * Convertit un numéro de téléphone français en format E.164 (+33XXXXXXXXX)
  * Gère les formats : 0XXXXXXXXX, 33XXXXXXXXX, +33XXXXXXXXX
  * @param phone - Numéro de téléphone brut
@@ -143,4 +153,85 @@ export function formatProspectName(prospect: {
     return prospect.raison_sociale;
   }
   return prospect.prenom ? `${prospect.prenom} ${prospect.nom}` : prospect.nom;
+}
+
+/**
+ * Formate une heure "HH:MM" depuis une date ISO
+ */
+export function formatTime(dateString: string): string {
+  return new Date(dateString).toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/**
+ * Formate une durée en secondes en "Xm Xs" ou "N/A"
+ */
+export function formatDurationFromSeconds(seconds: number | null): string {
+  if (!seconds) return 'N/A';
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${minutes}m ${secs}s`;
+}
+
+/**
+ * Retourne la classe CSS associée à un statut d'appel
+ */
+export function getStatutAppelClass(statut: string): string {
+  switch (statut) {
+    case 'abouti':
+    case 'vente_conclue':
+    case 'rdv_pris':
+      return 'appel-card__statut--success';
+    case 'non_abouti':
+    case 'pas_de_reponse':
+    case 'occupe':
+    case 'messagerie':
+      return 'appel-card__statut--warning';
+    case 'refus_definitif':
+      return 'appel-card__statut--danger';
+    default:
+      return '';
+  }
+}
+
+/** Labels français pour les statuts d'appel */
+const STATUT_APPEL_LABELS: Record<string, string> = {
+  abouti: 'Abouti',
+  non_abouti: 'Non abouti',
+  occupe: 'Occupé',
+  pas_de_reponse: 'Pas de réponse',
+  messagerie: 'Messagerie',
+  rdv_pris: 'RDV pris',
+  vente_conclue: 'Vente conclue',
+  refus_definitif: 'Refus définitif',
+  en_cours: 'En cours',
+};
+
+/**
+ * Retourne le label français d'un statut d'appel
+ */
+export function getStatutAppelLabel(statut: string): string {
+  return STATUT_APPEL_LABELS[statut] || statut;
+}
+
+const STATUT_PROSPECT_LABELS: Record<string, string> = {
+  nouveau: 'Nouveau',
+  contacte: 'Contacté',
+  interesse: 'Intéressé',
+  rappel: 'Rappel',
+  non_interesse: 'Non intéressé',
+  vente_conclue: 'Vente conclue',
+};
+
+export function getStatutProspectLabel(statut: string): string {
+  return STATUT_PROSPECT_LABELS[statut] || statut;
+}
+
+export function formatTimerDuration(depuis: Date): string {
+  const secondes = Math.floor((Date.now() - depuis.getTime()) / 1000);
+  const m = Math.floor(secondes / 60).toString().padStart(2, '0');
+  const s = (secondes % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
 }

@@ -7,7 +7,7 @@ import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService } from '../../API/services';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne } from '../../utils/types';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
 import { formatPhoneE164 } from '../../utils/scripts/formatters';
 
 interface DialerProviderProps {
@@ -30,6 +30,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [currentCampagneId, setCurrentCampagneId] = useState<number | null>(null);
   const [currentAppelId, setCurrentAppelId] = useState<number | null>(null);
   const [currentIdProspection, setCurrentIdProspection] = useState<number | null>(null);
+  const [currentOrigineAppel, setCurrentOrigineAppel] = useState<OrigineAppel | null>(null);
 
   const uaRef = useRef<UserAgent | null>(null);
   const registererRef = useRef<Registerer | null>(null);
@@ -94,10 +95,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     const handleBeforeUnload = () => {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8800/api';
+      const token = localStorage.getItem('authToken');
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
       fetch(`${baseUrl}/agents/me/statut`, {
         method: 'PATCH',
         credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ statut: 'hors_ligne' }),
         keepalive: true,
       }).catch(() => {});
@@ -190,12 +194,18 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
               invitation.stateChange.addListener((state) => {
                 if (state === SessionState.Terminated) {
+                  console.info('[SIP] Appel entrant terminé → sync backend pause_apres_appel');
                   setIncomingCall(null);
                   incomingSessionRef.current = null;
                   stopCallTimer();
                   isCallActiveRef.current = false;
-                  setStatut('apres_appel');
+                  setStatut('pause_apres_appel');
                   setDepuisLe(new Date());
+                  dialerService.changerStatut('pause_apres_appel').then(() => {
+                    console.info('[SIP] ✅ Backend sync pause_apres_appel (entrant) OK');
+                  }).catch(err => {
+                    console.error('[SIP] ❌ Échec sync backend pause_apres_appel (entrant):', err);
+                  });
                   sessionRef.current = null;
                   const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
                   if (audioEl) audioEl.srcObject = null;
@@ -260,9 +270,26 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       mediaStreamRef.current = stream;
 
       setCurrentCampagneId(campagneId ?? null);
-      setCurrentAppelId(null);
       isClosingRef.current = false;
       isCallActiveRef.current = true;
+
+      // Créer l'appel en DB au ringing (AVANT le SIP invite)
+      // Sauf si currentAppelId est déjà set (cas openProspectManual)
+      if (!currentAppelId && campagneId && prospectId) {
+        setCurrentOrigineAppel('auto');
+        try {
+          const appel = await appelService.createAppel({
+            id_prospect: prospectId,
+            id_campagne: campagneId,
+            statut_appel: 'en_cours',
+            origine_appel: 'auto',
+            id_prospection: prochainProspect?.id_prospection,
+          });
+          setCurrentAppelId(appel.id_appel);
+        } catch (err) {
+          console.error('[Appel] Erreur création appel (ringing):', err);
+        }
+      }
 
       const e164 = formatPhoneE164(phoneNumber);
       const targetURI = UserAgent.makeURI(`sip:${e164}@${sipDomainRef.current}`);
@@ -290,27 +317,17 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           setStatut('en_appel');
           setDepuisLe(new Date());
           startCallTimer();
-
-          // Créer l'appel en DB au moment où la communication est établie
-          if (campagneId && prospectId && !isClosingRef.current) {
-            appelService.createAppel({
-              id_prospect: prospectId,
-              id_campagne: campagneId,
-              statut_appel: 'en_cours',
-              id_prospection: prochainProspect?.id_prospection,
-            }).then(appel => {
-              if (!isClosingRef.current) {
-                setCurrentAppelId(appel.id_appel);
-              }
-            }).catch(err => {
-              console.error('[Appel] Erreur création appel:', err);
-            });
-          }
         } else if (state === SessionState.Terminated) {
+          console.info('[SIP] Appel terminé → sync backend pause_apres_appel');
           stopCallTimer();
           isCallActiveRef.current = false;
-          setStatut('apres_appel');
+          setStatut('pause_apres_appel');
           setDepuisLe(new Date());
+          dialerService.changerStatut('pause_apres_appel').then(() => {
+            console.info('[SIP] ✅ Backend sync pause_apres_appel OK');
+          }).catch(err => {
+            console.error('[SIP] ❌ Échec sync backend pause_apres_appel:', err);
+          });
           sessionRef.current = null;
           if (mediaStreamRef.current) {
             mediaStreamRef.current.getTracks().forEach(t => t.stop());
@@ -327,7 +344,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       isCallActiveRef.current = false;
       console.error('[SIP] Erreur lors de l\'appel:', err);
     }
-  }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect]);
+  }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect, currentAppelId]);
 
   const hangup = useCallback(() => {
     if (sessionRef.current) {
@@ -363,6 +380,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setStatut('en_appel');
       setDepuisLe(new Date());
       startCallTimer();
+      // NOTE: pas de sync backend ici — l'appel entrant n'a pas de createAppel,
+      // mais le SessionState.Terminated handler ci-dessous gère le pause_apres_appel
     } catch (err) {
       isCallActiveRef.current = false;
       console.error('[SIP] Erreur lors de la prise d\'appel:', err);
@@ -379,6 +398,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setProchainProspect(null);
     setCurrentAppelId(null);
     setCurrentIdProspection(null);
+    setCurrentOrigineAppel(null);
     isClosingRef.current = false;
   }, []);
 
@@ -421,6 +441,46 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
+  const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
+    try {
+      // 1. Récupérer la 1re campagne active de l'agent
+      const campagnes = await dialerService.getCampagnesAgent();
+      if (!campagnes || campagnes.length === 0) {
+        console.warn('[DIALER] Aucune campagne active');
+        return;
+      }
+      const campagneId = campagnes[0].id_campagne;
+
+      // 2. Status → appel_sortant (empêche auto-dequeue)
+      setStatut('appel_sortant');
+      setRaisonPause(null);
+      setDepuisLe(new Date());
+      setProchainProspect(null);
+      await dialerService.changerStatut('appel_sortant');
+
+      // 3. Créer l'appel en BDD
+      const appel = await appelService.createAppel({
+        id_prospect: prospectId,
+        id_campagne: campagneId,
+        statut_appel: 'en_cours',
+        origine_appel: origin,
+        numero_telephone: prospectPhone,
+      });
+
+      setCurrentAppelId(appel.id_appel);
+      setCurrentCampagneId(campagneId);
+      setCurrentOrigineAppel(origin);
+
+      // 4. Lancer l'appel SIP (même flow que auto-dequeue mais agent-choisi)
+      if (prospectPhone) {
+        await call(prospectPhone, campagneId, prospectId);
+      }
+    } catch (err) {
+      console.error('[DIALER] Erreur openProspectManual:', err);
+      throw err;
+    }
+  }, [call]);
+
   return (
     <DialerContext.Provider value={{
       statut,
@@ -434,12 +494,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       currentCampagneId,
       currentAppelId,
       currentIdProspection,
+      currentOrigineAppel,
       changerStatut,
       clearProchainProspect,
       call,
       hangup,
       answer,
       reject,
+      openProspectManual,
     }}>
       {children}
     </DialerContext.Provider>

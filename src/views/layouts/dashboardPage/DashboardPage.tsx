@@ -1,9 +1,10 @@
 import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
 import { useDialer } from '../../../hooks';
-import { formatEur, formatHeure, formatProspectName } from '../../../utils/scripts/formatters';
+import { prospectService } from '../../../API/services';
+import { formatEur, formatHeure, formatProspectName, cleanAndValidatePhone } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
 import SalesGauge from '../../components/salesGauge/SalesGauge';
 
@@ -15,7 +16,7 @@ function prospectLabel(rdv: RendezVous): string {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { prochainProspect, clearProchainProspect, call, changerStatut } = useDialer();
+  const { prochainProspect, clearProchainProspect, call, changerStatut, openProspectManual } = useDialer();
 
   // Quand le contexte dialer reçoit un prospect assigné, on ouvre sa fiche et on lance l'appel
   useEffect(() => {
@@ -27,25 +28,51 @@ export default function DashboardPage() {
   }, [prochainProspect, clearProchainProspect, navigate, call]);
 
   const {
-    searchQuery, setSearchQuery, isSearching, searchError,
+    searchQuery, setSearchQuery,
     rdvDuJour, rdvLoading,
     stats, statsLoading,
     notifications, nonLues, notifsLoading,
-    handleSearch, handleMarquerLue, handleMarquerToutLu,
+    handleMarquerLue, handleMarquerToutLu,
   } = useDashboardData();
 
-  // Ouvrir un prospect manuellement (recherche ou RDV) : sortir du statut disponible
-  // pour empêcher le dequeue automatique d'un nouveau prospect
-  const openManualProspect = (prospectId: number) => {
-    changerStatut('appel_sortant').catch(() => {});
-    navigate(`/prospect/${prospectId}`);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+
+  const handleManualSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    setSearchError(null);
+    try {
+      const cleaned = cleanAndValidatePhone(searchQuery);
+      if (!cleaned) {
+        setSearchError('Saisissez un numéro de téléphone.');
+        return;
+      }
+      const prospect = await prospectService.getProspectByPhone(cleaned);
+      openManualProspect(prospect.toJSON().id_prospect, 'manuel', cleaned);
+    } catch {
+      setSearchError('Aucun prospect trouvé pour ce numéro.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Ouvrir un prospect manuellement (recherche ou RDV) : lance aussi un appel SIP
+  const openManualProspect = (prospectId: number, origin: 'manuel' | 'rappel' = 'manuel', phone?: string) => {
+    openProspectManual(prospectId, origin, phone)
+      .then(() => navigate(`/prospect/${prospectId}`))
+      .catch((err) => {
+        const msg = err?.response?.data?.message || err?.message || 'Impossible d\'ouvrir ce prospect';
+        setSearchError(msg);
+      });
   };
 
   return (
     <main id="dashboardPage">
       <section className="dashboard__search">
         <h2 className="dashboard__section-title">Recherche manuelle</h2>
-        <form onSubmit={(e) => { changerStatut('appel_sortant').catch(() => {}); handleSearch(e); }} className="dashboard__search-form">
+        <form onSubmit={handleManualSearch} className="dashboard__search-form">
           <input
             type="text"
             className="dashboard__search-input"
@@ -88,7 +115,7 @@ export default function DashboardPage() {
                   </div>
                   <button
                     className="dashboard__rdv-btn"
-                    onClick={() => rdv.prospect && openManualProspect(rdv.prospect.id_prospect)}
+                    onClick={() => rdv.prospect && openManualProspect(rdv.prospect.id_prospect, 'rappel', rdv.prospect.telephone)}
                     disabled={!rdv.prospect}
                   >
                     Ouvrir

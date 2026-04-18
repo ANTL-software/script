@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne } from '../../utils/types';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
 
 export interface IncomingCall {
   from: string;
@@ -18,12 +18,14 @@ export interface DialerContextType {
   currentCampagneId: number | null;
   currentAppelId: number | null;
   currentIdProspection: number | null;
+  currentOrigineAppel: OrigineAppel | null;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;
   clearProchainProspect: () => void;
   call: (phoneNumber: string, campagneId?: number, prospectId?: number) => Promise<void>;
   hangup: () => void;
   answer: () => Promise<void>;
   reject: () => void;
+  openProspectManual: (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => Promise<void>;
 }
 
 export const DialerContext = createContext<DialerContextType | undefined>(undefined);

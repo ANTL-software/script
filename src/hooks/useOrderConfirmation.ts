@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { useCart, useProspect, useCampaign, useUser } from './index';
 import type { ModePaiement } from '../utils/types';
 import { closingService } from '../API/services';
+import { validateOrderForm, buildVentePayload } from '../utils/scripts/orderValidation';
 
 interface FormData {
   adresse: string;
@@ -37,22 +38,6 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-
-    if (!formData.adresse.trim()) errors.adresse = "L'adresse est obligatoire";
-    if (!formData.code_postal.trim()) {
-      errors.code_postal = 'Le code postal est obligatoire';
-    } else if (!/^\d{5}$/.test(formData.code_postal)) {
-      errors.code_postal = 'Le code postal doit contenir 5 chiffres';
-    }
-    if (!formData.ville.trim()) errors.ville = 'La ville est obligatoire';
-    if (!formData.pays.trim()) errors.pays = 'Le pays est obligatoire';
-
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (validationErrors[field]) {
@@ -68,7 +53,11 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     e.preventDefault();
     setError(null);
 
-    if (!validateForm()) return;
+    const errors = validateOrderForm(formData);
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
 
     if (!currentProspect || !currentCampaign || !user) {
       setError('Informations manquantes (prospect, campagne ou utilisateur)');
@@ -83,18 +72,12 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     setIsSubmitting(true);
 
     try {
-      const venteData = {
-        id_prospect: currentProspect.id_prospect,
-        id_campagne: currentCampaign.id_campagne,
-        mode_paiement: formData.mode_paiement,
-        notes: formData.notes.trim() || undefined,
-        details: items.map(item => ({
-          id_produit: item.produit.id_produit,
-          quantite: item.quantite,
-          prix_unitaire: item.prix_unitaire,
-          remise: item.remise,
-        })),
-      };
+      const venteData = buildVentePayload({
+        prospectId: currentProspect.id_prospect,
+        campagneId: currentCampaign.id_campagne,
+        formData,
+        items,
+      });
 
       await createVente(venteData);
 

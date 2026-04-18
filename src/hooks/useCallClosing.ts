@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useUser, useToast, useDialer } from './index';
-import { appelService, closingService } from '../API/services';
+import { appelService, closingService, dialerService } from '../API/services';
 import type { StatutAppel } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 
@@ -52,12 +52,15 @@ export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel 
         });
       } else {
         // Mode manuel : créer l'appel directement (pas de session SIP tracée)
+        // Le backend crée une session pause_apres_appel (car statut_appel ≠ en_cours)
         await appelService.createAppel({
           id_prospect: prospectId,
           id_campagne: campagneId,
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,
         });
+        // Garde : s'assurer que le backend est bien en pause_apres_appel
+        await dialerService.changerStatut('pause_apres_appel');
       }
 
       closingService.clearPending();

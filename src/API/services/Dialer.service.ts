@@ -49,6 +49,14 @@ export class DialerService {
   public async heartbeat(): Promise<void> {
     await apiCalls.post('/agents/me/heartbeat');
   }
+
+  public async getCampagnesAgent(): Promise<Array<{ id_campagne: number; nom_campagne: string; statut: string }>> {
+    const response = await apiCalls.get<Array<{ id_campagne: number; nom_campagne: string; statut: string }>>('/agents/me/campagnes');
+    if (!response.success || !response.data) {
+      throw new Error(response.message || 'Erreur lors de la récupération des campagnes');
+    }
+    return response.data;
+  }
 }
 
 export const dialerService = DialerService.getInstance();

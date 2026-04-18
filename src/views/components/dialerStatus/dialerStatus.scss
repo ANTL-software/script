@@ -63,7 +63,7 @@ $color-hors-ligne: vars.$colorGray500;
   &--disponible .dialer-status__dot { background: $color-disponible; }
   &--en_appel .dialer-status__dot { background: $color-en-appel; animation: pulse-red 1.5s infinite; }
   &--appel_sortant .dialer-status__dot { background: $color-appel-sortant; }
-  &--apres_appel .dialer-status__dot { background: $color-apres-appel; }
+  &--pause_apres_appel .dialer-status__dot { background: $color-apres-appel; }
   &--pause .dialer-status__dot { background: $color-pause; }
   &--hors_ligne .dialer-status__dot { background: $color-hors-ligne; }
 
@@ -128,7 +128,7 @@ $color-hors-ligne: vars.$colorGray500;
 
     // Dots colorés dans les options
     &--disponible .dialer-status__dot { background: $color-disponible; }
-    &--apres_appel .dialer-status__dot { background: $color-apres-appel; }
+    &--pause_apres_appel .dialer-status__dot { background: $color-apres-appel; }
     &--pause .dialer-status__dot { background: $color-pause; }
   }
 }

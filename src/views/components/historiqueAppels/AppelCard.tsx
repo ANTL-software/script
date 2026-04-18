@@ -2,6 +2,7 @@ import './appelCard.scss';
 
 import { useState } from 'react';
 import type { Appel } from '../../../utils/types';
+import { formatDateShort, formatTime, formatDurationFromSeconds, getStatutAppelClass, getStatutAppelLabel } from '../../../utils/scripts/formatters';
 
 interface AppelCardProps {
   appel: Appel;
@@ -12,62 +13,6 @@ export default function AppelCard({ appel, onUpdateNotes }: AppelCardProps) {
   const [isEditingNotes, setIsEditingNotes] = useState<boolean>(false);
   const [notes, setNotes] = useState<string>(appel.notes || '');
   const [isSaving, setIsSaving] = useState<boolean>(false);
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  };
-
-  const formatTime = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatDuration = (seconds: number | null): string => {
-    if (!seconds) return 'N/A';
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes}m ${secs}s`;
-  };
-
-  const getStatutClass = (statut: string): string => {
-    switch (statut) {
-      case 'abouti':
-      case 'vente_conclue':
-      case 'rdv_pris':
-        return 'appel-card__statut--success';
-      case 'non_abouti':
-      case 'pas_de_reponse':
-      case 'occupe':
-      case 'messagerie':
-        return 'appel-card__statut--warning';
-      case 'refus_definitif':
-        return 'appel-card__statut--danger';
-      default:
-        return '';
-    }
-  };
-
-  const getStatutLabel = (statut: string): string => {
-    const labels: Record<string, string> = {
-      abouti: 'Abouti',
-      non_abouti: 'Non abouti',
-      occupe: 'Occupé',
-      pas_de_reponse: 'Pas de réponse',
-      messagerie: 'Messagerie',
-      rdv_pris: 'RDV pris',
-      vente_conclue: 'Vente conclue',
-      refus_definitif: 'Refus définitif',
-    };
-    return labels[statut] || statut;
-  };
 
   const handleSaveNotes = async () => {
     setIsSaving(true);
@@ -90,11 +35,11 @@ export default function AppelCard({ appel, onUpdateNotes }: AppelCardProps) {
     <div className="appel-card">
       <div className="appel-card__header">
         <div className="appel-card__date-time">
-          <span className="appel-card__date">{formatDate(appel.created_at)}</span>
+          <span className="appel-card__date">{formatDateShort(appel.created_at)}</span>
           <span className="appel-card__time">{formatTime(appel.created_at)}</span>
         </div>
-        <span className={`appel-card__statut ${getStatutClass(appel.statut_appel)}`}>
-          {getStatutLabel(appel.statut_appel)}
+        <span className={`appel-card__statut ${getStatutAppelClass(appel.statut_appel)}`}>
+          {getStatutAppelLabel(appel.statut_appel)}
         </span>
       </div>
 
@@ -102,7 +47,7 @@ export default function AppelCard({ appel, onUpdateNotes }: AppelCardProps) {
         <div className="appel-card__info">
           <div className="appel-card__info-item">
             <span className="info-label">Durée:</span>
-            <span className="info-value">{formatDuration(appel.duree_secondes ?? null)}</span>
+            <span className="info-value">{formatDurationFromSeconds(appel.duree_secondes ?? null)}</span>
           </div>
           {appel.Employe && (
             <div className="appel-card__info-item">

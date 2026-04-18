@@ -230,3 +230,28 @@ export function getProductPromoPrice(produit: {
   }
   return null;
 }
+
+/**
+ * Compte le nombre total de produits dans une catégorie (incluant sous-catégories)
+ */
+export function countTotalProducts(category: { produits?: unknown[]; sousCategories?: unknown[] }): number {
+  let count = category.produits?.length || 0;
+  if (category.sousCategories) {
+    for (const sub of category.sousCategories) {
+      count += countTotalProducts(sub as { produits?: unknown[]; sousCategories?: unknown[] });
+    }
+  }
+  return count;
+}
+
+/**
+ * Filtre les catégories pour ne garder que celles qui ont des produits
+ */
+export function filterNonEmptyCategories<T extends { produits?: unknown[]; sousCategories?: T[] }>(categories: T[]): T[] {
+  return categories
+    .map(cat => ({
+      ...cat,
+      sousCategories: cat.sousCategories ? filterNonEmptyCategories(cat.sousCategories) : undefined
+    }))
+    .filter(cat => countTotalProducts(cat) > 0);
+}

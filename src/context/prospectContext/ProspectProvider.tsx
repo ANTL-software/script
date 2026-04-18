@@ -1,14 +1,14 @@
 import { useState, useCallback, useMemo } from 'react';
 import { ProspectContext } from './ProspectContext';
-import { prospectService, appelService, venteService } from '../../API/services';
+import { prospectService } from '../../API/services';
 import { getTypeFiche } from '../../utils/scripts/utils';
-import type { Prospect, Appel, Vente, CreateVenteData, TypeFiche, Pagination, UpdateProspectData } from '../../utils/types';
+import { useProspectAppels } from '../../hooks/useProspectAppels';
+import { useProspectVentes } from '../../hooks/useProspectVentes';
+import type { Prospect, CreateVenteData, TypeFiche, UpdateProspectData } from '../../utils/types';
 
 interface ProspectProviderProps {
   children: React.ReactNode;
 }
-
-const APPELS_LIMIT = 20;
 
 export const ProspectProvider = ({ children }: ProspectProviderProps) => {
   // Prospect state
@@ -16,20 +16,10 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Appels state
-  const [appels, setAppels] = useState<Appel[]>([]);
-  const [appelsLoading, setAppelsLoading] = useState<boolean>(false);
-  const [appelsError, setAppelsError] = useState<string | null>(null);
-  const [appelsPagination, setAppelsPagination] = useState<Pagination>({
-    page: 1,
-    totalPages: 1,
-    total: 0,
-  });
-
-  // Ventes state
-  const [ventes, setVentes] = useState<Vente[]>([]);
-  const [ventesLoading, setVentesLoading] = useState<boolean>(false);
-  const [ventesError, setVentesError] = useState<string | null>(null);
+  // Sous-hooks spécialisés
+  const prospectId = currentProspect?.id_prospect ?? null;
+  const appelsHook = useProspectAppels(prospectId);
+  const ventesHook = useProspectVentes(prospectId);
 
   // Computed properties
   const fullName = useMemo(() => {
@@ -80,13 +70,10 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
 
   const clearProspect = useCallback(() => {
     setCurrentProspect(null);
-    setAppels([]);
-    setVentes([]);
     setError(null);
-    setAppelsError(null);
-    setVentesError(null);
-    setAppelsPagination({ page: 1, totalPages: 1, total: 0 });
-  }, []);
+    appelsHook.reset();
+    ventesHook.reset();
+  }, [appelsHook.reset, ventesHook.reset]);
 
   const clearError = useCallback(() => {
     setError(null);
@@ -115,115 +102,22 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     }
   }, [currentProspect]);
 
-  // Appels actions
-  const loadAppels = useCallback(async (page: number = 1) => {
-    if (!currentProspect) {
-      console.warn('[PROSPECT] Aucun prospect actif, impossible de charger les appels');
-      return;
-    }
-
-    setAppelsLoading(true);
-    setAppelsError(null);
-
-    try {
-      const response = await appelService.getAppelsByProspect(
-        currentProspect.id_prospect,
-        { page, limit: APPELS_LIMIT }
-      );
-      setAppels(response.appels);
-      setAppelsPagination({
-        page: response.page,
-        totalPages: response.totalPages,
-        total: response.total,
-      });
-      console.log(`[PROSPECT] ${response.total} appels charges`);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des appels';
-      setAppelsError(errorMessage);
-      console.error('[PROSPECT] Erreur chargement appels:', errorMessage);
-    } finally {
-      setAppelsLoading(false);
-    }
-  }, [currentProspect]);
-
-  const updateAppelNotes = useCallback(async (appelId: number, notes: string) => {
-    setAppelsError(null);
-    try {
-      await appelService.updateAppel(appelId, { notes });
-      // Recharger les appels apres modification
-      await loadAppels(appelsPagination.page);
-      console.log(`[PROSPECT] Notes de l'appel ${appelId} mises a jour`);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise a jour des notes';
-      setAppelsError(errorMessage);
-      console.error('[PROSPECT] Erreur mise a jour notes:', errorMessage);
-      throw err;
-    }
-  }, [loadAppels, appelsPagination.page]);
-
-  const clearAppelsError = useCallback(() => {
-    setAppelsError(null);
-  }, []);
-
-  // Ventes actions
-  const loadVentes = useCallback(async () => {
-    if (!currentProspect) {
-      console.warn('[PROSPECT] Aucun prospect actif, impossible de charger les ventes');
-      return;
-    }
-
-    setVentesLoading(true);
-    setVentesError(null);
-
-    try {
-      const response = await venteService.getVentesByProspect(currentProspect.id_prospect);
-      setVentes(response.ventes);
-      console.log(`[PROSPECT] ${response.ventes.length} ventes chargees`);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des ventes';
-      setVentesError(errorMessage);
-      console.error('[PROSPECT] Erreur chargement ventes:', errorMessage);
-    } finally {
-      setVentesLoading(false);
-    }
-  }, [currentProspect]);
-
-  const createVente = useCallback(async (data: CreateVenteData): Promise<Vente> => {
-    setVentesError(null);
-    try {
-      const vente = await venteService.createVente(data);
-      // Recharger les ventes apres creation
-      await loadVentes();
-      console.log(`[PROSPECT] Vente ${vente.id_vente} creee`);
-      return vente;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la creation de la vente';
-      setVentesError(errorMessage);
-      console.error('[PROSPECT] Erreur creation vente:', errorMessage);
-      throw err;
-    }
-  }, [loadVentes]);
-
-  const clearVentesError = useCallback(() => {
-    setVentesError(null);
-  }, []);
-
   const value = {
     // Prospect
     currentProspect,
     isLoading,
     error,
 
-    // Appels
-    appels,
-    appelsLoading,
-    appelsError,
-    appelsPagination,
+    // Appels (delegué au hook)
+    appels: appelsHook.appels,
+    appelsLoading: appelsHook.loading,
+    appelsError: appelsHook.error,
+    appelsPagination: appelsHook.pagination,
 
-    // Ventes
-    ventes,
-    ventesLoading,
-    ventesError,
+    // Ventes (delegué au hook)
+    ventes: ventesHook.ventes,
+    ventesLoading: ventesHook.loading,
+    ventesError: ventesHook.error,
 
     // Prospect actions
     loadProspect,
@@ -233,14 +127,14 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     clearError,
 
     // Appels actions
-    loadAppels,
-    updateAppelNotes,
-    clearAppelsError,
+    loadAppels: appelsHook.load,
+    updateAppelNotes: appelsHook.updateNotes,
+    clearAppelsError: appelsHook.clearError,
 
     // Ventes actions
-    loadVentes,
-    createVente,
-    clearVentesError,
+    loadVentes: ventesHook.load,
+    createVente: ventesHook.create,
+    clearVentesError: ventesHook.clearError,
 
     // Computed properties
     fullName,

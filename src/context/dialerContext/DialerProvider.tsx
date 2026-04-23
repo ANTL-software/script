@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { UserAgent, Registerer, Inviter, SessionState, UserAgentState } from 'sip.js';
 import type { Session, Invitation } from 'sip.js';
@@ -44,9 +44,19 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const isClosingRef = useRef<boolean>(false);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const isCallActiveRef = useRef<boolean>(false);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
+  const hasCalledEstablishedRef = useRef<boolean>(false);
+
+  // Formatage de la durée d'appel en MM:SS
+  const callDurationFormatted = useMemo(() => {
+    const minutes = Math.floor(callDuration / 60);
+    const seconds = callDuration % 60;
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }, [callDuration]);
 
   const startCallTimer = useCallback(() => {
     setCallDuration(0);
+    hasCalledEstablishedRef.current = false;
     timerRef.current = setInterval(() => {
       setCallDuration(prev => prev + 1);
     }, 1000);
@@ -155,9 +165,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await new Promise(resolve => setTimeout(resolve, delay));
 
       try {
-        if (uaRef.current && registererRef.current) {
-          await uaRef.current.start();
-          await registererRef.current.register();
+        const ua = uaRef.current;
+        const registerer = registererRef.current;
+        if (ua && registerer) {
+          await ua.start();
+          await registerer.register();
           setSipConnected(true);
           setSipReconnecting(false);
           showToast('success', 'Connexion SIP rétablie');
@@ -247,8 +259,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
                     console.error('[SIP] ❌ Échec sync backend pause_apres_appel (entrant):', err);
                   });
                   sessionRef.current = null;
-                  const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
-                  if (audioEl) audioEl.srcObject = null;
+                  if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+                  dialerService.endSession().catch(() => {});
                 }
               });
             },
@@ -418,10 +430,21 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             pc.getReceivers().forEach(receiver => {
               if (receiver.track) {
                 const stream = new MediaStream([receiver.track]);
-                const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
-                if (audioEl) audioEl.srcObject = stream;
+                if (remoteAudioRef.current) {
+                  remoteAudioRef.current.srcObject = stream;
+                  remoteAudioRef.current.play().catch(() => {});
+                }
               }
             });
+
+            // Notification d'appel établi (une seule fois)
+            if (!hasCalledEstablishedRef.current && prospectId && campagneId) {
+              hasCalledEstablishedRef.current = true;
+              showToast('success', 'Appel établi', 3000);
+              dialerService.startSession(prospectId, campagneId).catch(err => {
+                console.error('[Session] Erreur startSession:', err);
+              });
+            }
 
             // Surveillance de l'état ICE et de connexion
             let iceDisconnectedNotified = false;
@@ -507,7 +530,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
                   highPacketLossCount = 0;
                 }
 
-                // Envoyer les stats au backend (via POST /api/dialer/session)
+                // Envoyer les stats au backend (via PATCH /api/dialer/session)
                 if (currentAppelId && totalPackets > 0) {
                   dialerService.updateSession({
                     duration_seconds: callDuration,
@@ -555,8 +578,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             mediaStreamRef.current.getTracks().forEach(t => t.stop());
             mediaStreamRef.current = null;
           }
-          const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
-          if (audioEl) audioEl.srcObject = null;
+          if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+          dialerService.endSession().catch(() => {});
         }
       });
 
@@ -572,7 +595,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.error('[SIP] Erreur lors de l\'appel:', errorMsg);
       showToast('error', 'Échec de l\'appel — Vérifiez votre connexion téléphonique', 5000);
     }
-  }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect, currentAppelId]);
+  }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect, currentAppelId, callDuration, showToast]);
 
   const hangup = useCallback(() => {
     if (sessionRef.current) {
@@ -608,8 +631,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         pc.getReceivers().forEach(receiver => {
           if (receiver.track) {
             const stream = new MediaStream([receiver.track]);
-            const audioEl = document.getElementById('remoteAudio') as HTMLAudioElement | null;
-            if (audioEl) { audioEl.srcObject = stream; audioEl.play().catch(() => {}); }
+            if (remoteAudioRef.current) {
+              remoteAudioRef.current.srcObject = stream;
+              remoteAudioRef.current.play().catch(() => {});
+            }
           }
         });
       }
@@ -618,7 +643,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setDepuisLe(new Date());
       startCallTimer();
       // NOTE: pas de sync backend ici — l'appel entrant n'a pas de createAppel,
-      // mais le SessionState.Terminated handler ci-dessous gère le pause_apres_appel
+      // mais le SessionState.Terminated handler ci-dessus gère le pause_apres_appel
     } catch (err) {
       isCallActiveRef.current = false;
       if (mediaStreamRef.current) {
@@ -629,7 +654,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.error('[SIP] Erreur lors de la prise d\'appel:', errorMsg);
       showToast('error', 'Impossible de répondre — Vérifiez votre microphone et connexion', 5000);
     }
-  }, [startCallTimer]);
+  }, [startCallTimer, showToast]);
 
   const reject = useCallback(() => {
     incomingSessionRef.current?.reject().catch(() => {});
@@ -698,7 +723,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [sipConnected, showToast]);
 
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
     if (prospectPhone && isMobilePhone(prospectPhone)) {
@@ -754,12 +779,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       sipConnected,
       sipReconnecting,
       callDuration,
+      callDurationFormatted,
       incomingCall,
       prochainProspect,
       currentCampagneId,
       currentAppelId,
       currentIdProspection,
       currentOrigineAppel,
+      remoteAudioRef,
       changerStatut,
       clearProchainProspect,
       call,
@@ -769,6 +796,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       openProspectManual,
     }}>
       {children}
+      <audio ref={remoteAudioRef} id="remoteAudio" autoPlay playsInline />
     </DialerContext.Provider>
   );
 };

@@ -58,6 +58,14 @@ export class DialerService {
   }): Promise<void> {
     await apiCalls.patch('/dialer/session', stats);
   }
+
+  public async startSession(prospectId: number, campagneId: number): Promise<void> {
+    await apiCalls.post('/dialer/session', { id_prospect: prospectId, id_campagne: campagneId });
+  }
+
+  public async endSession(): Promise<void> {
+    await apiCalls.delete('/dialer/session');
+  }
 }
 
 export const dialerService = DialerService.getInstance();

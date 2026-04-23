@@ -14,12 +14,14 @@ export interface DialerContextType {
   sipConnected: boolean;
   sipReconnecting: boolean;
   callDuration: number;
+  callDurationFormatted: string;
   incomingCall: IncomingCall | null;
   prochainProspect: (Prospect & ProspectAssigne) | null;
   currentCampagneId: number | null;
   currentAppelId: number | null;
   currentIdProspection: number | null;
   currentOrigineAppel: OrigineAppel | null;
+  remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;
   clearProchainProspect: () => void;
   call: (phoneNumber: string, campagneId?: number, prospectId?: number) => Promise<void>;

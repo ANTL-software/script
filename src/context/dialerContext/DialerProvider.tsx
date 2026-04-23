@@ -8,7 +8,7 @@ import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
-import { formatPhoneE164 } from '../../utils/scripts/formatters';
+import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 
 interface DialerProviderProps {
   children: ReactNode;
@@ -254,6 +254,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, [isAuthenticated, stopCallTimer]);
 
   const call = useCallback(async (phoneNumber: string, campagneId?: number, prospectId?: number) => {
+    if (isMobilePhone(phoneNumber)) {
+      console.error('[SIP] Appel bloqué : numéro mobile détecté', phoneNumber);
+      return;
+    }
+
     if (!uaRef.current || !sipConnected) {
       console.warn('[SIP] Non connecté, impossible d\'appeler');
       return;
@@ -428,11 +433,20 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       // Quand l'agent se met en disponible, on lui prépare automatiquement le prochain prospect
       if (nouveauStatut === 'disponible') {
-        try {
-          const prospect = await dialerService.getNextProspect();
-          setProchainProspect(prospect);
-        } catch {
-          // Pool vide — silencieux
+        const MAX_SKIPS = 10;
+        for (let i = 0; i < MAX_SKIPS; i++) {
+          try {
+            const candidate = await dialerService.getNextProspect();
+            if (candidate.telephone && isMobilePhone(candidate.telephone)) {
+              console.warn(`[DIALER] Prospect #${candidate.id_prospect} skip (mobile ${candidate.telephone})`);
+              if (candidate.id_prospection) dialerService.markMobile(candidate.id_prospection).catch(() => {});
+              continue;
+            }
+            setProchainProspect(candidate);
+            break;
+          } catch {
+            break;
+          }
         }
       }
     } catch (error) {
@@ -443,6 +457,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, []);
 
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
+    if (prospectPhone && isMobilePhone(prospectPhone)) {
+      console.error('[DIALER] Appel bloqué : numéro mobile détecté', prospectPhone);
+      throw new Error('Impossible d\'appeler un numéro mobile');
+    }
+
     try {
       // 1. Récupérer la 1re campagne active de l'agent
       const campagnes = await dialerService.getCampagnesAgent();

@@ -129,6 +129,11 @@ export function formatPhoneE164(phone: string): string {
   return `+${digits}`;
 }
 
+export function isMobilePhone(phone: string): boolean {
+  const digits = phone.replace(/[\s.\-()]/g, '');
+  return /^(\+33|0033|0)[67]/.test(digits);
+}
+
 /**
  * Formate un montant en euros (ex: 1 200 €)
  */

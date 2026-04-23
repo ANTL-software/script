@@ -43,6 +43,10 @@ export class DialerService {
     const response = await apiCalls.get<Array<{ id_campagne: number; nom_campagne: string; statut: string }>>('/agents/me/campagnes');
     return throwIfApiError(response, 'Erreur lors de la récupération des campagnes');
   }
+
+  public async markMobile(idProspection: number): Promise<void> {
+    await apiCalls.patch(`/agents/queue/${idProspection}/mark-mobile`);
+  }
 }
 
 export const dialerService = DialerService.getInstance();

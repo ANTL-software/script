@@ -1,10 +1,10 @@
 import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
 import { useDialer } from '../../../hooks';
-import { prospectService } from '../../../API/services';
-import { formatEur, formatHeure, formatProspectName, cleanAndValidatePhone } from '../../../utils/scripts/formatters';
+import { useToast } from '../../../hooks';
+import { formatEur, formatHeure, formatProspectName } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
 import SalesGauge from '../../components/salesGauge/SalesGauge';
 
@@ -17,6 +17,46 @@ function prospectLabel(rdv: RendezVous): string {
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { prochainProspect, clearProchainProspect, call, openProspectManual } = useDialer();
+  const { showToast } = useToast();
+  const networkWarningShown = useRef(false);
+
+  // Vérification de la qualité de connexion réseau
+  useEffect(() => {
+    // Interface pour l'API Network Information (non standard)
+    interface NetworkConnection {
+      effectiveType?: string;
+      addEventListener?(event: string, listener: () => void): void;
+      removeEventListener?(event: string, listener: () => void): void;
+    }
+
+    interface NavigatorWithConnection extends Navigator {
+      connection?: NetworkConnection;
+      mozConnection?: NetworkConnection;
+      webkitConnection?: NetworkConnection;
+    }
+
+    const nav = navigator as NavigatorWithConnection;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+    if (!connection) return;
+
+    const checkConnection = () => {
+      const type = connection.effectiveType;
+      if ((type === 'slow-2g' || type === '2g') && !networkWarningShown.current) {
+        showToast('warning', 'Connexion internet faible — Qualité audio risque d\'être dégradée', 7000);
+        networkWarningShown.current = true;
+      } else if (type !== 'slow-2g' && type !== '2g') {
+        networkWarningShown.current = false;
+      }
+    };
+
+    checkConnection();
+    if (connection.addEventListener) {
+      connection.addEventListener('change', checkConnection);
+      return () => {
+        connection.removeEventListener?.('change', checkConnection);
+      };
+    }
+  }, [showToast]);
 
   // Quand le contexte dialer reçoit un prospect assigné, on ouvre sa fiche et on lance l'appel
   useEffect(() => {
@@ -29,50 +69,18 @@ export default function DashboardPage() {
 
   const {
     searchQuery, setSearchQuery,
+    isSearching, searchError,
     rdvDuJour, rdvLoading,
     stats, statsLoading,
     notifications, nonLues, notifsLoading,
-    handleMarquerLue, handleMarquerToutLu,
+    handleSearch, handleMarquerLue, handleMarquerToutLu,
   } = useDashboardData();
-
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-
-  const handleManualSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    setIsSearching(true);
-    setSearchError(null);
-    try {
-      const cleaned = cleanAndValidatePhone(searchQuery);
-      if (!cleaned) {
-        setSearchError('Saisissez un numéro de téléphone.');
-        return;
-      }
-      const prospect = await prospectService.getProspectByPhone(cleaned);
-      openManualProspect(prospect.toJSON().id_prospect, 'manuel', cleaned);
-    } catch {
-      setSearchError('Aucun prospect trouvé pour ce numéro.');
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Ouvrir un prospect manuellement (recherche ou RDV) : lance aussi un appel SIP
-  const openManualProspect = (prospectId: number, origin: 'manuel' | 'rappel' = 'manuel', phone?: string) => {
-    openProspectManual(prospectId, origin, phone)
-      .then(() => navigate(`/prospect/${prospectId}`))
-      .catch((err) => {
-        const msg = err?.response?.data?.message || err?.message || 'Impossible d\'ouvrir ce prospect';
-        setSearchError(msg);
-      });
-  };
 
   return (
     <main id="dashboardPage">
       <section className="dashboard__search">
         <h2 className="dashboard__section-title">Recherche manuelle</h2>
-        <form onSubmit={handleManualSearch} className="dashboard__search-form">
+        <form onSubmit={handleSearch} className="dashboard__search-form">
           <input
             type="text"
             className="dashboard__search-input"
@@ -115,7 +123,7 @@ export default function DashboardPage() {
                   </div>
                   <button
                     className="dashboard__rdv-btn"
-                    onClick={() => rdv.prospect && openManualProspect(rdv.prospect.id_prospect, 'rappel', rdv.prospect.telephone)}
+                    onClick={() => rdv.prospect && openProspectManual(rdv.prospect.id_prospect, 'rappel', rdv.prospect.telephone)}
                     disabled={!rdv.prospect}
                   >
                     Ouvrir

@@ -1,103 +1,32 @@
 import './objectionsPage.scss';
-import { useState, useEffect, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { campaignService } from '../../../API/services';
+import { useState } from 'react';
 import Button from '../../components/button/Button';
 import Input from '../../components/input/Input';
 import Loader from '../../components/loader/Loader';
 import { FaPrint, FaCommentDots, FaChevronDown, FaChevronUp, FaSearch } from 'react-icons/fa';
-import type { Objection, ObjectionsByCategorie } from '../../../utils/types';
-import { OBJECTION_CATEGORIES_ORDER } from '../../../utils/constants';
-import { getErrorMessage, pluralize } from '../../../utils/scripts/formatters';
+import { useObjections } from '../../../hooks/useObjections';
+import { pluralize } from '../../../utils/scripts/formatters';
 
 export default function ObjectionsPage() {
-  const [searchParams] = useSearchParams();
-  const campagneId = searchParams.get('campagne');
+  const {
+    objectionsByCategory,
+    campagneName,
+    isLoading,
+    error,
+    searchTerm,
+    setSearchTerm,
+    filteredObjections,
+  } = useObjections();
 
-  const [objections, setObjections] = useState<Objection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [campagneName, setCampagneName] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadObjections = async () => {
-      if (!campagneId) {
-        setError('ID de campagne manquant');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Charger la campagne pour avoir le nom
-        const campaign = await campaignService.getCampaignById(Number(campagneId));
-        setCampagneName(campaign.toJSON().nom_campagne);
-
-        // Charger les objections
-        const objectionsData = await campaignService.getObjections(Number(campagneId));
-        setObjections(objectionsData);
-
-        if (objectionsData.length === 0) {
-          setError('Aucune objection definie pour cette campagne');
-        }
-      } catch (err) {
-        setError(getErrorMessage(err, 'Erreur lors du chargement'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadObjections();
-  }, [campagneId]);
-
-  // Filtrer les objections par recherche
-  const filteredObjections = useMemo(() => {
-    if (!searchTerm.trim()) return objections;
-
-    const term = searchTerm.toLowerCase();
-    return objections.filter(
-      o =>
-        o.titre.toLowerCase().includes(term) ||
-        o.texte_reponse.toLowerCase().includes(term) ||
-        (o.texte_objection && o.texte_objection.toLowerCase().includes(term))
-    );
-  }, [objections, searchTerm]);
-
-  // Grouper par categorie
-  const objectionsByCategorie = useMemo((): ObjectionsByCategorie[] => {
-    const grouped: Record<string, Objection[]> = {};
-
-    filteredObjections.forEach(objection => {
-      const cat = objection.categorie || 'Autre';
-      if (!grouped[cat]) {
-        grouped[cat] = [];
-      }
-      grouped[cat].push(objection);
-    });
-
-    // Trier par ordre defini
-    return Object.entries(grouped)
-      .sort(([a], [b]) => {
-        const indexA = OBJECTION_CATEGORIES_ORDER.indexOf(a);
-        const indexB = OBJECTION_CATEGORIES_ORDER.indexOf(b);
-        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
-        if (indexA === -1) return 1;
-        if (indexB === -1) return -1;
-        return indexA - indexB;
-      })
-      .map(([categorie, objs]) => ({ categorie, objections: objs }));
-  }, [filteredObjections]);
+  const [localOpenCategory, setLocalOpenCategory] = useState<string | null>(null);
 
   const toggleCategory = (categorie: string) => {
-    setOpenCategory(prev => prev === categorie ? null : categorie);
+    const newOpen = localOpenCategory === categorie ? null : categorie;
+    setLocalOpenCategory(newOpen);
   };
 
   const closeCategory = () => {
-    setOpenCategory(null);
+    setLocalOpenCategory(null);
   };
 
   const handlePrint = () => {
@@ -115,7 +44,7 @@ export default function ObjectionsPage() {
     );
   }
 
-  if (error && objections.length === 0) {
+  if (error && filteredObjections.length === 0) {
     return (
       <div className="objections-page">
         <div className="objections-page__error">
@@ -155,7 +84,7 @@ export default function ObjectionsPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {openCategory && (
+        {localOpenCategory && (
           <Button variant="ghost" size="small" onClick={closeCategory}>
             Fermer
           </Button>
@@ -163,13 +92,13 @@ export default function ObjectionsPage() {
       </div>
 
       <main className="objections-page__content">
-        {objectionsByCategorie.length === 0 ? (
+        {objectionsByCategory.length === 0 ? (
           <div className="objections-page__empty">
             <p>Aucune objection ne correspond a votre recherche</p>
           </div>
         ) : (
-          objectionsByCategorie.map(group => {
-            const isOpen = openCategory === group.categorie;
+          objectionsByCategory.map(group => {
+            const isOpen = localOpenCategory === group.categorie;
             return (
             <div
               key={group.categorie}

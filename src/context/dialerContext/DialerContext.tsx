@@ -12,6 +12,7 @@ export interface DialerContextType {
   depuisLe: Date;
   isLoading: boolean;
   sipConnected: boolean;
+  sipReconnecting: boolean;
   callDuration: number;
   incomingCall: IncomingCall | null;
   prochainProspect: (Prospect & ProspectAssigne) | null;

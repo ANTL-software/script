@@ -5,7 +5,7 @@ import antlLogo from "../../../assets/antlLogo.png";
 import { LuLogOut } from "react-icons/lu";
 import { useUser } from "../../../hooks/useUser";
 import { useToast } from "../../../hooks/useToast";
-import { closingService } from "../../../API/services";
+import { useClosing } from "../../../hooks/useClosing";
 import DialerStatus from "../dialerStatus/DialerStatus";
 
 export interface HeaderProps {
@@ -18,11 +18,12 @@ export default function Header({ props }: HeaderProps) {
   const { pageTitle } = props;
   const { logout, isLoading } = useUser();
   const { showToast } = useToast();
+  const { hasPending } = useClosing();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
     // Bloquer la deconnexion si un closing est en attente
-    if (closingService.hasPending()) {
+    if (hasPending()) {
       showToast('error', 'Veuillez d\'abord enregistrer le resultat de l\'appel');
       return;
     }

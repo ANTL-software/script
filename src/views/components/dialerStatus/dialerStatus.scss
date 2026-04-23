@@ -126,6 +126,12 @@ $color-hors-ligne: vars.$colorGray500;
       font-weight: vars.$fontWeight-medium;
     }
 
+    &--disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     // Dots colorés dans les options
     &--disponible .dialer-status__dot { background: $color-disponible; }
     &--pause_apres_appel .dialer-status__dot { background: $color-apres-appel; }
@@ -141,4 +147,16 @@ $color-hors-ligne: vars.$colorGray500;
 @keyframes dropdown-in {
   from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+// Badge de reconnexion SIP
+.dialer-status__reconnecting {
+  animation: pulse 1s infinite;
+  margin-left: vars.$spacing-xs;
+  font-size: vars.$fontSize-sm;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }

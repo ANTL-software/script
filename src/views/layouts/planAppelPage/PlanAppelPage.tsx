@@ -1,55 +1,18 @@
 import './planAppelPage.scss';
-import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { campaignService } from '../../../API/services';
+import { usePlanAppel } from '../../../hooks/usePlanAppel';
 import Button from '../../components/button/Button';
 import Loader from '../../components/loader/Loader';
 import { FaPrint, FaChevronLeft, FaChevronRight, FaListOl } from 'react-icons/fa';
-import type { PlanAppelEtape } from '../../../utils/types';
-import { getErrorMessage } from '../../../utils/scripts/formatters';
 
 export default function PlanAppelPage() {
-  const [searchParams] = useSearchParams();
-  const campagneId = searchParams.get('campagne');
-
-  const [etapes, setEtapes] = useState<PlanAppelEtape[]>([]);
-  const [currentEtapeIndex, setCurrentEtapeIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [campagneName, setCampagneName] = useState<string>('');
-
-  useEffect(() => {
-    const loadPlanAppel = async () => {
-      if (!campagneId) {
-        setError('ID de campagne manquant');
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Charger la campagne pour avoir le nom
-        const campaign = await campaignService.getCampaignById(Number(campagneId));
-        setCampagneName(campaign.toJSON().nom_campagne);
-
-        // Charger le plan d'appel
-        const planAppel = await campaignService.getPlanAppel(Number(campagneId));
-        setEtapes(planAppel);
-
-        if (planAppel.length === 0) {
-          setError('Aucune etape definie pour cette campagne');
-        }
-      } catch (err) {
-        setError(getErrorMessage(err, 'Erreur lors du chargement'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadPlanAppel();
-  }, [campagneId]);
+  const {
+    etapes,
+    currentEtapeIndex,
+    setCurrentEtapeIndex,
+    campagneName,
+    isLoading,
+    error,
+  } = usePlanAppel();
 
   const handlePrevious = () => {
     if (currentEtapeIndex > 0) {

@@ -24,7 +24,7 @@ const LABELS_PAUSE: Record<RaisonPause, string> = {
 const RAISONS_PAUSE: RaisonPause[] = ['repas', 'personnelle', 'legale', 'brief', 'technique'];
 
 export default function DialerStatus() {
-  const { statut, raisonPause, depuisLe, isLoading, changerStatut } = useDialer();
+  const { statut, raisonPause, depuisLe, isLoading, changerStatut, sipReconnecting } = useDialer();
   const [isOpen, setIsOpen] = useState(false);
   const [duree, setDuree] = useState('00:00');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -35,6 +35,10 @@ export default function DialerStatus() {
     }, 1000);
     return () => clearInterval(interval);
   }, [depuisLe]);
+
+  // NOTE: En BtoB (professionnel), il n'y a PAS de restriction d'horaire légale
+  // On peut appeler les professionnels à toute heure du lundi au samedi
+  // Le code ci-dessous a été désactivé car il s'applique au BtoC uniquement
 
   // Fermer le dropdown si clic en dehors
   useEffect(() => {
@@ -48,6 +52,8 @@ export default function DialerStatus() {
   }, []);
 
   const handleSelectStatut = async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
+    // En BtoB, pas de vérification d'horaire (contrairement au BtoC)
+    // Les agents peuvent passer "Disponible" à tout moment
     // Statuts automatiques / non sélectionnables manuellement
     if (nouveauStatut === 'en_appel' || nouveauStatut === 'pause_apres_appel' || nouveauStatut === 'hors_ligne') return;
     setIsOpen(false);
@@ -68,6 +74,11 @@ export default function DialerStatus() {
       >
         <span className="dialer-status__dot" />
         <span className="dialer-status__label">{labelActuel}</span>
+        {sipReconnecting && (
+          <span className="dialer-status__reconnecting" title="Reconnexion SIP en cours...">
+            🔄
+          </span>
+        )}
         {(statut === 'pause' || statut === 'pause_apres_appel' || statut === 'en_appel' || statut === 'appel_sortant') && (
           <span className="dialer-status__timer">{duree}</span>
         )}

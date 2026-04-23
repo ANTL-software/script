@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { UserAgent, Registerer, Inviter, SessionState } from 'sip.js';
+import { UserAgent, Registerer, Inviter, SessionState, UserAgentState } from 'sip.js';
 import type { Session, Invitation } from 'sip.js';
 import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
@@ -9,6 +9,7 @@ import { useContext } from 'react';
 import { dialerService, appelService, closingService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
+import { useToast } from '../../hooks';
 
 interface DialerProviderProps {
   children: ReactNode;
@@ -17,12 +18,14 @@ interface DialerProviderProps {
 export const DialerProvider = ({ children }: DialerProviderProps) => {
   const userContext = useContext(UserContext);
   const isAuthenticated = userContext?.isAuthenticated ?? false;
+  const { showToast } = useToast();
 
   const [statut, setStatut] = useState<StatutDialer>('hors_ligne');
   const [raisonPause, setRaisonPause] = useState<RaisonPause | null>(null);
   const [depuisLe, setDepuisLe] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [sipConnected, setSipConnected] = useState(false);
+  const [sipReconnecting, setSipReconnecting] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
 
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
@@ -138,6 +141,42 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [isAuthenticated]);
 
+  // Fonction de reconnexion SIP automatique avec backoff exponentiel
+  const reconnectSip = useCallback(async () => {
+    const MAX_ATTEMPTS = 5;
+    const BASE_DELAY = 1000;
+
+    showToast('warning', 'Connexion SIP perdue — Tentative de reconnexion automatique...');
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const delay = Math.min(BASE_DELAY * Math.pow(2, attempt - 1), 30000);
+      console.info(`[SIP] Tentative de reconnexion ${attempt}/${MAX_ATTEMPTS} dans ${delay}ms`);
+
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      try {
+        if (uaRef.current && registererRef.current) {
+          await uaRef.current.start();
+          await registererRef.current.register();
+          setSipConnected(true);
+          setSipReconnecting(false);
+          showToast('success', 'Connexion SIP rétablie');
+          console.info('[SIP] ✅ Reconnexion réussie');
+          return;
+        }
+      } catch (err) {
+        console.error(`[SIP] ❌ Échec tentative ${attempt}:`, err);
+      }
+    }
+
+    console.error('[SIP] ❌ Reconnexion impossible après 5 tentatives');
+    setSipReconnecting(false);
+    showToast('error', 'Impossible de reconnecter SIP — Passage en pause technique');
+    setStatut('pause');
+    setRaisonPause('technique');
+    dialerService.changerStatut('pause', 'technique').catch(() => {});
+  }, [showToast]);
+
   // Initialisation SIP uniquement quand l'utilisateur est authentifié
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -215,6 +254,28 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           },
         });
 
+        // Listener sur l'état du UserAgent pour détecter les déconnexions
+        ua.stateChange.addListener((state: UserAgentState) => {
+          if (cancelled) return;
+          if (state === UserAgentState.Stopped) {
+            setSipConnected(false);
+            setSipReconnecting(true);
+            showToast('warning', 'Connexion SIP interrompue — Reconnexion en cours...', 3000);
+            console.warn('[SIP] UserAgent arrêté — tentative de reconnexion');
+            // Lancer la reconnexion automatique
+            reconnectSip().catch(err => {
+              console.error('[SIP] Erreur lors de la reconnexion:', err);
+            });
+          } else if (state === UserAgentState.Started) {
+            if (!sipConnected) {
+              setSipConnected(true);
+              setSipReconnecting(false);
+              showToast('success', 'Connexion SIP rétablie');
+              console.info('[SIP] UserAgent démarré avec succès');
+            }
+          }
+        });
+
         const registerer = new Registerer(ua);
 
         registerer.stateChange.addListener(async (state) => {
@@ -251,7 +312,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       registererRef.current?.unregister().catch(() => {});
       uaRef.current?.stop().catch(() => {});
     };
-  }, [isAuthenticated, stopCallTimer]);
+  }, [isAuthenticated, stopCallTimer, showToast, reconnectSip, sipConnected]);
 
   const call = useCallback(async (phoneNumber: string, campagneId?: number, prospectId?: number) => {
     if (isMobilePhone(phoneNumber)) {
@@ -271,7 +332,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+          sampleRate: 48000,
+        },
+      });
       mediaStreamRef.current = stream;
 
       setCurrentCampagneId(campagneId ?? null);
@@ -347,6 +416,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       sessionRef.current = inviter;
     } catch (err) {
       isCallActiveRef.current = false;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+        mediaStreamRef.current = null;
+      }
       console.error('[SIP] Erreur lors de l\'appel:', err);
     }
   }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect, currentAppelId]);
@@ -364,7 +437,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     const invitation = incomingSessionRef.current;
     if (!invitation) return;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          channelCount: 1,
+          sampleRate: 48000,
+        },
+      });
       mediaStreamRef.current = stream;
       isCallActiveRef.current = true;
       await invitation.accept();
@@ -390,6 +471,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       // mais le SessionState.Terminated handler ci-dessous gère le pause_apres_appel
     } catch (err) {
       isCallActiveRef.current = false;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach(t => t.stop());
+        mediaStreamRef.current = null;
+      }
       console.error('[SIP] Erreur lors de la prise d\'appel:', err);
     }
   }, [startCallTimer]);
@@ -508,6 +593,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       depuisLe,
       isLoading,
       sipConnected,
+      sipReconnecting,
       callDuration,
       incomingCall,
       prochainProspect,

@@ -25,21 +25,21 @@ import { DialerProvider } from "./context/dialerContext/DialerProvider";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>
-    <AppProvider>
-      <UserProvider>
-        <DialerProvider>
-          <CampaignProvider>
-            <ProspectProvider>
-              <CartProvider>
-                <ToastProvider>
-                  <App />
-                </ToastProvider>
-              </CartProvider>
-            </ProspectProvider>
-          </CampaignProvider>
-        </DialerProvider>
-      </UserProvider>
-    </AppProvider>
+      <ToastProvider>
+        <AppProvider>
+          <UserProvider>
+            <DialerProvider>
+              <CampaignProvider>
+                <ProspectProvider>
+                  <CartProvider>
+                    <App />
+                  </CartProvider>
+                </ProspectProvider>
+              </CampaignProvider>
+            </DialerProvider>
+          </UserProvider>
+        </AppProvider>
+      </ToastProvider>
     </ErrorBoundary>
   </StrictMode>
 );

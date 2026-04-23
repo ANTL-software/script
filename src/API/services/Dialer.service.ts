@@ -47,6 +47,17 @@ export class DialerService {
   public async markMobile(idProspection: number): Promise<void> {
     await apiCalls.patch(`/agents/queue/${idProspection}/mark-mobile`);
   }
+
+  public async updateSession(stats: {
+    duration_seconds: number;
+    packets_lost?: number;
+    packets_received?: number;
+    packet_loss_percent?: number;
+    round_trip_time?: number;
+    jitter?: number;
+  }): Promise<void> {
+    await apiCalls.patch('/dialer/session', stats);
+  }
 }
 
 export const dialerService = DialerService.getInstance();

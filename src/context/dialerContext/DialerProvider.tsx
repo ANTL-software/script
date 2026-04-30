@@ -362,11 +362,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, [isAuthenticated, stopCallTimer, showToast, reconnectSip, sipConnected]);
 
   const call = useCallback(async (phoneNumber: string, campagneId?: number, prospectId?: number) => {
-    if (isMobilePhone(phoneNumber)) {
-      console.error('[SIP] Appel bloqué : numéro mobile détecté', phoneNumber);
-      return;
-    }
-
     if (!uaRef.current || !sipConnected) {
       console.warn('[SIP] Non connecté, impossible d\'appeler');
       return;
@@ -706,7 +701,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         for (let i = 0; i < MAX_SKIPS; i++) {
           try {
             const candidate = await dialerService.getNextProspect();
-            if (candidate.telephone && isMobilePhone(candidate.telephone)) {
+            // Le backend filtre déjà selon autoriser_mobile, mais on garde une sécurité frontend
+            if (candidate.telephone && isMobilePhone(candidate.telephone) && !candidate.autoriser_mobile) {
               console.warn(`[DIALER] Prospect #${candidate.id_prospect} skip (mobile ${candidate.telephone})`);
               if (candidate.id_prospection) dialerService.markMobile(candidate.id_prospection).catch(() => {});
               continue;
@@ -726,11 +722,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, [sipConnected, showToast]);
 
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
-    if (prospectPhone && isMobilePhone(prospectPhone)) {
-      console.error('[DIALER] Appel bloqué : numéro mobile détecté', prospectPhone);
-      throw new Error('Impossible d\'appeler un numéro mobile');
-    }
-
     try {
       // 1. Récupérer la 1re campagne active de l'agent
       const campagnes = await dialerService.getCampagnesAgent();
@@ -738,16 +729,23 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         console.warn('[DIALER] Aucune campagne active');
         return;
       }
-      const campagneId = campagnes[0].id_campagne;
+      const campagne = campagnes[0];
+      const campagneId = campagne.id_campagne;
 
-      // 2. Status → appel_sortant (empêche auto-dequeue)
+      // 2. Vérifier si c'est un mobile et si la campagne l'autorise
+      if (prospectPhone && isMobilePhone(prospectPhone) && !campagne.autoriser_mobile) {
+        console.error('[DIALER] Appel bloqué : numéro mobile détecté', prospectPhone);
+        throw new Error('Impossible d\'appeler un numéro mobile (campagne ne l\'autorise pas)');
+      }
+
+      // 3. Status → appel_sortant (empêche auto-dequeue)
       setStatut('appel_sortant');
       setRaisonPause(null);
       setDepuisLe(new Date());
       setProchainProspect(null);
       await dialerService.changerStatut('appel_sortant');
 
-      // 3. Créer l'appel en BDD
+      // 4. Créer l'appel en BDD
       const appel = await appelService.createAppel({
         id_prospect: prospectId,
         id_campagne: campagneId,
@@ -760,7 +758,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentCampagneId(campagneId);
       setCurrentOrigineAppel(origin);
 
-      // 4. Lancer l'appel SIP (même flow que auto-dequeue mais agent-choisi)
+      // 5. Lancer l'appel SIP (même flow que auto-dequeue mais agent-choisi)
       if (prospectPhone) {
         await call(prospectPhone, campagneId, prospectId);
       }

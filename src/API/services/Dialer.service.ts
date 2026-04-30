@@ -39,8 +39,8 @@ export class DialerService {
     await apiCalls.post('/agents/me/heartbeat');
   }
 
-  public async getCampagnesAgent(): Promise<Array<{ id_campagne: number; nom_campagne: string; statut: string }>> {
-    const response = await apiCalls.get<Array<{ id_campagne: number; nom_campagne: string; statut: string }>>('/agents/me/campagnes');
+  public async getCampagnesAgent(): Promise<Array<{ id_campagne: number; nom_campagne: string; statut: string; autoriser_mobile: boolean }>> {
+    const response = await apiCalls.get<Array<{ id_campagne: number; nom_campagne: string; statut: string; autoriser_mobile: boolean }>>('/agents/me/campagnes');
     return throwIfApiError(response, 'Erreur lors de la récupération des campagnes');
   }
 

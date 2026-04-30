@@ -37,4 +37,5 @@ export interface ProspectAssigne {
   id_campagne_assignee: number | null;
   id_prospection?: number;
   nb_tentatives?: number;
+  autoriser_mobile?: boolean;
 }

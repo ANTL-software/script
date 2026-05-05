@@ -20,19 +20,33 @@ export class DialerService {
   }
 
   public async getSipCredentials(): Promise<SipCredentials> {
+    console.groupCollapsed('🔑 [API] Credentials SIP');
     const response = await apiCalls.get<SipCredentials>('/auth/sip-credentials');
-    return throwIfApiError(response, 'Erreur lors de la récupération des credentials SIP');
+    const creds = throwIfApiError(response, 'Erreur lors de la récupération des credentials SIP');
+    console.log('✅ Reçus');
+    console.groupEnd();
+    return creds;
   }
 
   public async changerStatut(statut: StatutDialer, raison_pause?: RaisonPause): Promise<StatutDialerResponse> {
+    const logRaison = raison_pause ? ` (${raison_pause})` : '';
+    console.groupCollapsed(`📊 [API] Changement statut: ${statut}${logRaison}`);
     const payload = raison_pause ? { statut, raison_pause } : { statut };
     const response = await apiCalls.patch<StatutDialerResponse>('/agents/me/statut', payload);
-    return throwIfApiError(response, 'Erreur lors du changement de statut');
+    const result = throwIfApiError(response, 'Erreur lors du changement de statut');
+    console.log('✅ OK');
+    console.groupEnd();
+    return result;
   }
 
   public async getNextProspect(): Promise<Prospect & ProspectAssigne> {
+    console.groupCollapsed('📥 [API] Demande prospect');
     const response = await apiCalls.get<Prospect & ProspectAssigne>('/agents/me/next-prospect');
-    return throwIfApiError(response, 'Aucun prospect disponible dans le pool');
+    const prospect = throwIfApiError(response, 'Aucun prospect disponible');
+    console.log(`✅ ${prospect.id_prospect} - ${prospect.nom} ${prospect.prenom}`);
+    console.log(`📱 ${prospect.telephone}`);
+    console.groupEnd();
+    return prospect;
   }
 
   public async heartbeat(): Promise<void> {
@@ -60,11 +74,18 @@ export class DialerService {
   }
 
   public async startSession(prospectId: number, campagneId: number): Promise<void> {
+    console.groupCollapsed('📞 [API] Session start');
+    console.log(`Prospect: ${prospectId} | Campagne: ${campagneId}`);
     await apiCalls.post('/dialer/session', { id_prospect: prospectId, id_campagne: campagneId });
+    console.log('✅ OK');
+    console.groupEnd();
   }
 
   public async endSession(): Promise<void> {
+    console.groupCollapsed('📞 [API] Session end');
     await apiCalls.delete('/dialer/session');
+    console.log('✅ OK');
+    console.groupEnd();
   }
 }
 

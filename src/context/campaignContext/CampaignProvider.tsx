@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { CampaignContext } from './CampaignContext';
 import type { Campaign, Produit, CategorieProduit } from '../../utils/types';
 import { campaignService, produitService } from '../../API/services';
@@ -125,6 +125,13 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
       setProduitsLoading(false);
     }
   }, [currentCampaign]);
+
+  // Charger automatiquement les produits quand la campagne est définie
+  useEffect(() => {
+    if (currentCampaign) {
+      loadProduitsGrouped();
+    }
+  }, [currentCampaign, loadProduitsGrouped]);
 
   const clearCampaign = useCallback(() => {
     setCurrentCampaign(null);

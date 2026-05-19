@@ -1,9 +1,9 @@
 import './categoryTree.scss';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { CategorieProduit, Produit } from '../../../utils/types';
 import { filterNonEmptyCategories } from '../../../utils/scripts/utils';
 import ProduitCard from './ProduitCard';
-import { FaChevronDown, FaChevronRight, FaFolder, FaFolderOpen } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight, FaFolder, FaFolderOpen, FaTag } from 'react-icons/fa';
 
 interface CategoryTreeProps {
   categories: CategorieProduit[];
@@ -27,6 +27,27 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
   const hasSousCategories = filteredSousCategories.length > 0;
   const hasProduits = category.produits && category.produits.length > 0;
   const hasContent = hasSousCategories || hasProduits;
+
+  // Grouper les produits par type de produit
+  const produitsParType = useMemo(() => {
+    if (!category.produits) return {};
+
+    const grouped: Record<string, Produit[]> = {};
+    category.produits.forEach(p => {
+      const type = p.typeProduit?.libelle_type || 'Autres';
+      if (!grouped[type]) grouped[type] = [];
+      grouped[type].push(p);
+    });
+
+    return grouped;
+  }, [category.produits]);
+
+  // Trier les types : "Autres" à la fin, les autres par ordre alphabétique
+  const types = Object.keys(produitsParType).sort((a, b) => {
+    if (a === 'Autres') return 1;
+    if (b === 'Autres') return -1;
+    return a.localeCompare(b);
+  });
 
   const handleToggle = () => {
     if (hasContent) {
@@ -83,13 +104,26 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
           )}
 
           {hasProduits && (
-            <div className="category-node__products">
-              {category.produits!.map((produit) => (
-                <ProduitCard
-                  key={produit.id_produit}
-                  produit={produit}
-                  onAddToCart={onAddToCart}
-                />
+            <div className="category-node__products-grouped">
+              {types.map(typeLibelle => (
+                <div key={typeLibelle} className="category-node__type-group">
+                  <div className="category-node__type-header">
+                    <FaTag />
+                    <h4>{typeLibelle}</h4>
+                    <span className="category-node__type-count">
+                      {produitsParType[typeLibelle].length} produit{produitsParType[typeLibelle].length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="category-node__products">
+                    {produitsParType[typeLibelle].map((produit) => (
+                      <ProduitCard
+                        key={produit.id_produit}
+                        produit={produit}
+                        onAddToCart={onAddToCart}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           )}

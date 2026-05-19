@@ -117,6 +117,57 @@
     gap: 0.5rem;
   }
 
+  &__products-grouped {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  &__type-group {
+    border-left: 2px solid #e5e7eb;
+    padding-left: 0.75rem;
+  }
+
+  &__type-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: default;
+    transition: background-color 0.15s ease;
+    margin-bottom: 0.5rem;
+    background-color: #f9fafb;
+    border: 1px solid #f3f4f6;
+
+    &:hover {
+      background-color: #f3f4f6;
+      border-color: #e5e7eb;
+    }
+
+    svg {
+      color: vars.$colorSecondary;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    h4 {
+      flex: 1;
+      margin: 0;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #1f2937;
+    }
+  }
+
+  &__type-count {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
   &__products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));

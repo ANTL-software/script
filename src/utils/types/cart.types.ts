@@ -1,9 +1,18 @@
+export interface TypeProduit {
+  id_type_produit: number;
+  id_categorie: number;
+  libelle_type: string;
+  actif: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Produit {
   id_produit: number;
   code_produit?: string;
   nom_produit: string;
   description?: string;
-  type_produit?: string;
+  id_type_produit?: number | null;
   prix_unitaire?: string | number; // String from PostgreSQL NUMERIC
   prix_promo?: string | number;    // String from PostgreSQL NUMERIC
   id_categorie?: number;
@@ -19,6 +28,7 @@ export interface Produit {
   updated_at: string;
   categorie?: CategorieProduit; // Relation optionnelle avec la catégorie (lowercase pour correspondre à l'API)
   Categorie?: CategorieProduit; // Alias pour compatibilité avec le code existant
+  typeProduit?: TypeProduit; // Relation avec le type de produit
   tarif?: Tarif; // Tarif spécifique à la campagne
 }
 

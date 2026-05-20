@@ -1,5 +1,5 @@
 import './categoryTree.scss';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import type { CategorieProduit, Produit } from '../../../utils/types';
 import { filterNonEmptyCategories } from '../../../utils/scripts/utils';
 import ProduitCard from './ProduitCard';
@@ -14,11 +14,13 @@ interface CategoryNodeProps {
   category: CategorieProduit;
   level: number;
   onAddToCart: (produit: Produit) => void;
+  isExpanded: boolean;
+  onToggle: (categoryId: number) => void;
+  expandedType: string | null;
+  onTypeToggle: (typeLabel: string | null) => void;
 }
 
-function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
-  const [isExpanded, setIsExpanded] = useState(level === 0);
-
+function CategoryNode({ category, level, onAddToCart, isExpanded, onToggle, expandedType, onTypeToggle }: CategoryNodeProps) {
   // Filtrer les sous-catégories vides
   const filteredSousCategories = category.sousCategories
     ? filterNonEmptyCategories(category.sousCategories)
@@ -49,11 +51,19 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
     return a.localeCompare(b);
   });
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     if (hasContent) {
-      setIsExpanded(!isExpanded);
+      onToggle(category.id_categorie);
     }
-  };
+  }, [hasContent, onToggle, category.id_categorie]);
+
+  const handleTypeToggle = useCallback((typeLabel: string) => {
+    if (expandedType === typeLabel) {
+      onTypeToggle(null); // Fermer si déjà ouvert
+    } else {
+      onTypeToggle(typeLabel);
+    }
+  }, [expandedType, onTypeToggle]);
 
   return (
     <div className={`category-node category-node--level-${level}`}>
@@ -98,6 +108,10 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
                   category={subCat}
                   level={level + 1}
                   onAddToCart={onAddToCart}
+                  isExpanded={false}
+                  onToggle={onToggle}
+                  expandedType={expandedType}
+                  onTypeToggle={onTypeToggle}
                 />
               ))}
             </div>
@@ -105,26 +119,37 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
 
           {hasProduits && (
             <div className="category-node__products-grouped">
-              {types.map(typeLibelle => (
-                <div key={typeLibelle} className="category-node__type-group">
-                  <div className="category-node__type-header">
-                    <FaTag />
-                    <h4>{typeLibelle}</h4>
-                    <span className="category-node__type-count">
-                      {produitsParType[typeLibelle].length} produit{produitsParType[typeLibelle].length > 1 ? 's' : ''}
-                    </span>
+              {types.map(typeLibelle => {
+                const isTypeExpanded = expandedType === typeLibelle;
+                return (
+                  <div key={typeLibelle} className="category-node__type-group">
+                    <div
+                      className="category-node__type-header"
+                      onClick={() => handleTypeToggle(typeLibelle)}
+                    >
+                      <div className="category-node__type-toggle">
+                        {isTypeExpanded ? <FaChevronDown /> : <FaChevronRight />}
+                      </div>
+                      <FaTag />
+                      <h4>{typeLibelle}</h4>
+                      <span className="category-node__type-count">
+                        {produitsParType[typeLibelle].length} produit{produitsParType[typeLibelle].length > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {isTypeExpanded && (
+                      <div className="category-node__products">
+                        {produitsParType[typeLibelle].map((produit) => (
+                          <ProduitCard
+                            key={produit.id_produit}
+                            produit={produit}
+                            onAddToCart={onAddToCart}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <div className="category-node__products">
-                    {produitsParType[typeLibelle].map((produit) => (
-                      <ProduitCard
-                        key={produit.id_produit}
-                        produit={produit}
-                        onAddToCart={onAddToCart}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -136,6 +161,25 @@ function CategoryNode({ category, level, onAddToCart }: CategoryNodeProps) {
 export default function CategoryTree({ categories, onAddToCart }: CategoryTreeProps) {
   // Filtrer les catégories vides à la racine aussi
   const filteredCategories = filterNonEmptyCategories(categories);
+
+  // État pour la catégorie ouverte (accordéon)
+  const [expandedCategoryId, setExpandedCategoryId] = useState<number | null>(null);
+
+  // État pour le type ouvert (accordéon)
+  const [expandedType, setExpandedType] = useState<string | null>(null);
+
+  const handleCategoryToggle = useCallback((categoryId: number) => {
+    if (expandedCategoryId === categoryId) {
+      setExpandedCategoryId(null); // Fermer si déjà ouvert
+    } else {
+      setExpandedCategoryId(categoryId); // Ouvrir et fermer les autres
+      setExpandedType(null); // Fermer le type ouvert quand on change de catégorie
+    }
+  }, [expandedCategoryId]);
+
+  const handleTypeToggle = useCallback((typeLabel: string | null) => {
+    setExpandedType(typeLabel);
+  }, []);
 
   if (filteredCategories.length === 0) {
     return (
@@ -153,6 +197,10 @@ export default function CategoryTree({ categories, onAddToCart }: CategoryTreePr
           category={category}
           level={1}
           onAddToCart={onAddToCart}
+          isExpanded={expandedCategoryId === category.id_categorie}
+          onToggle={handleCategoryToggle}
+          expandedType={expandedType}
+          onTypeToggle={handleTypeToggle}
         />
       ))}
     </div>

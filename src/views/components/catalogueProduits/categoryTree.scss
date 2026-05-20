@@ -135,7 +135,7 @@
     gap: 0.5rem;
     padding: 0.5rem 0.75rem;
     border-radius: 6px;
-    cursor: default;
+    cursor: pointer;
     transition: background-color 0.15s ease;
     margin-bottom: 0.5rem;
     background-color: #f9fafb;
@@ -146,10 +146,23 @@
       border-color: #e5e7eb;
     }
 
-    svg {
-      color: vars.$colorSecondary;
-      font-size: 0.9rem;
+    .category-node__type-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 0.875rem;
+      height: 0.875rem;
+      color: #6b7280;
+      font-size: 0.65rem;
       flex-shrink: 0;
+    }
+
+    svg {
+      &:not(.category-node__type-toggle svg) {
+        color: vars.$colorSecondary;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+      }
     }
 
     h4 {

@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import type { IndexHtmlTransformContext } from 'vite';
 
 // Plugin pour injecter la version dans le service worker (même approche que USV)
 const injectVersion = () => {

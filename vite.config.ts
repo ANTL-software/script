@@ -1,58 +1,62 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import type { IndexHtmlTransformContext } from 'vite';
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    VitePWA({
-      registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt'],
-      manifest: {
-        name: 'ANTL Script d\'appel',
-        short_name: 'ANTL',
-        description: 'Script d\'appel pour télévendeurs ANTL',
-        theme_color: '#2563eb',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
-        icons: [
-          {
-            src: '/pwa-icons/icon-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/pwa-icons/icon-512x512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
-        ]
-      },
-      workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/api\./i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'api-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 24 heures
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          }
-        ]
+// Plugin pour injecter la version dans le service worker (même approche que USV)
+const injectVersion = () => {
+  return {
+    name: 'inject-version',
+    buildStart() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const day = now.getDate().toString().padStart(2, '0');
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+
+      const version = `${year}.${month}.${day}.${hours}${minutes}.${seconds}`;
+
+      process.env.VITE_APP_VERSION = version;
+    },
+    writeBundle() {
+      const swPath = join(__dirname, 'dist/sw.js');
+      const publicSwPath = join(__dirname, 'public/sw.js');
+
+      try {
+        let swContent = readFileSync(publicSwPath, 'utf8');
+        swContent = swContent.replace(/__BUILD_VERSION__/g, process.env.VITE_APP_VERSION || 'unknown');
+        writeFileSync(swPath, swContent);
+        console.log(`✅ Service Worker version updated: ${process.env.VITE_APP_VERSION}`);
+      } catch (error) {
+        console.warn('⚠️ Could not update service worker version:', error);
       }
-    })
-  ]
-})
+    }
+  };
+};
+
+export default defineConfig({
+  plugins: [react(), injectVersion()],
+  base: "/",
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          icons: ['react-icons'],
+        }
+      }
+    },
+    copyPublicDir: true,
+    assetsDir: 'assets',
+  },
+  server: {
+    port: 5173,
+  },
+  define: {
+    __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),
+  },
+});

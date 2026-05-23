@@ -4,19 +4,33 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { ErrorBoundary } from "./views/components/errorBoundary/ErrorBoundary";
 
-// Enregistrement du Service Worker pour PWA
-import { registerSW } from 'virtual:pwa-register';
+// Enregistrement du Service Worker pour PWA (approche manuelle comme USV)
+if ('serviceWorker' in navigator && import.meta.env.MODE === 'production') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        console.log('SW registered: ', registration);
 
-const updateSW = registerSW({
-  onNeedRefresh() {
-    if (confirm('Une nouvelle version est disponible. Recharger maintenant ?')) {
-      updateSW(true);
-    }
-  },
-  onOfflineReady() {
-    console.log('Application prête pour usage hors-ligne');
-  },
-});
+        // Écouter les mises à jour du service worker
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Nouvelle version disponible
+                if (confirm('Une nouvelle version est disponible. Recharger maintenant ?')) {
+                  window.location.reload();
+                }
+              }
+            });
+          }
+        });
+      })
+      .catch((registrationError) => {
+        console.log('SW registration failed: ', registrationError);
+      });
+  });
+}
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({

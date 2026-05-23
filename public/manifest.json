@@ -1,7 +1,8 @@
 {
-  "name": "antl Script d'appel",
+  "name": "antl",
   "short_name": "antl",
-  "description": "Script d'appel pour télévendeurs ANTL",
+  "start_url": "/?utm_source=pwa",
+  "description": "Script d'appel pour commerciaux antl",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

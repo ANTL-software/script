@@ -4,6 +4,20 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { ErrorBoundary } from "./views/components/errorBoundary/ErrorBoundary";
 
+// Enregistrement du Service Worker pour PWA
+import { registerSW } from 'virtual:pwa-register';
+
+const updateSW = registerSW({
+  onNeedRefresh() {
+    if (confirm('Une nouvelle version est disponible. Recharger maintenant ?')) {
+      updateSW(true);
+    }
+  },
+  onOfflineReady() {
+    console.log('Application prête pour usage hors-ligne');
+  },
+});
+
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,

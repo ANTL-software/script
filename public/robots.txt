@@ -1,0 +1,7 @@
+# robots.txt pour antl Script - BLOQUÉ
+# Ce site ne doit pas être indexé
+
+User-agent: *
+Disallow: /
+
+# Pas d'indexation autorisée

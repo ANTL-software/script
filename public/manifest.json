@@ -1,6 +1,6 @@
 {
-  "name": "ANTL Script d'appel",
-  "short_name": "ANTL",
+  "name": "antl Script d'appel",
+  "short_name": "antl",
   "description": "Script d'appel pour télévendeurs ANTL",
   "start_url": "/",
   "display": "standalone",

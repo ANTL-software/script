@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { UserAgent, Registerer, Inviter, SessionState, UserAgentState } from 'sip.js';
-import type { Session, Invitation } from 'sip.js';
+import JsSIP from 'jssip';
+import type { UA } from 'jssip/lib/UA';
+import type { RTCSession } from 'jssip/lib/RTCSession';
 import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
@@ -14,6 +15,10 @@ import { useToast } from '../../hooks';
 interface DialerProviderProps {
   children: ReactNode;
 }
+
+// Types pour JsSIP
+type JsSIPSession = RTCSession;
+type JsSIPUA = UA;
 
 export const DialerProvider = ({ children }: DialerProviderProps) => {
   const userContext = useContext(UserContext);
@@ -35,10 +40,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [currentIdProspection, setCurrentIdProspection] = useState<number | null>(null);
   const [currentOrigineAppel, setCurrentOrigineAppel] = useState<OrigineAppel | null>(null);
 
-  const uaRef = useRef<UserAgent | null>(null);
-  const registererRef = useRef<Registerer | null>(null);
-  const sessionRef = useRef<Session | null>(null);
-  const incomingSessionRef = useRef<Invitation | null>(null);
+  const uaRef = useRef<JsSIPUA | null>(null);
+  const sessionRef = useRef<JsSIPSession | null>(null);
+  const incomingSessionRef = useRef<JsSIPSession | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const sipDomainRef = useRef<string>('');
   const isClosingRef = useRef<boolean>(false);
@@ -173,7 +177,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, [isAuthenticated]);
 
-  // Fonction de reconnexion SIP automatique avec backoff exponentiel
+  // ─── Fonction de reconnexion SIP automatique avec backoff exponentiel ───
   const reconnectSip = useCallback(async () => {
     const MAX_ATTEMPTS = 5;
     const BASE_DELAY = 1000;
@@ -182,28 +186,45 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       const delay = Math.min(BASE_DELAY * Math.pow(2, attempt - 1), 30000);
-      console.info(`[SIP] Tentative de reconnexion ${attempt}/${MAX_ATTEMPTS} dans ${delay}ms`);
+      console.info(`[JsSIP] Tentative de reconnexion ${attempt}/${MAX_ATTEMPTS} dans ${delay}ms`);
 
       await new Promise(resolve => setTimeout(resolve, delay));
 
       try {
         const ua = uaRef.current;
-        const registerer = registererRef.current;
-        if (ua && registerer) {
-          await ua.start();
-          await registerer.register();
+        if (ua && !ua.isConnected()) {
+          ua.start();
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('Timeout'));
+            }, 5000);
+            let resolved = false;
+            const onReg = () => {
+              if (!resolved) {
+                resolved = true;
+                clearTimeout(timeout);
+                resolve();
+              }
+            };
+            ua.on('registered', onReg);
+          });
           setSipConnected(true);
           setSipReconnecting(false);
           showToast('success', 'Connexion SIP rétablie');
-          console.info('[SIP] ✅ Reconnexion réussie');
+          console.info('[JsSIP] ✅ Reconnexion réussie');
+          return;
+        } else if (ua && ua.isConnected()) {
+          setSipConnected(true);
+          setSipReconnecting(false);
+          showToast('success', 'Connexion SIP rétablie');
           return;
         }
       } catch (err) {
-        console.error(`[SIP] ❌ Échec tentative ${attempt}:`, err);
+        console.error(`[JsSIP] ❌ Échec tentative ${attempt}:`, err);
       }
     }
 
-    console.error('[SIP] ❌ Reconnexion impossible après 5 tentatives');
+    console.error('[JsSIP] ❌ Reconnexion impossible après 5 tentatives');
     setSipReconnecting(false);
     showToast('error', 'Impossible de reconnecter SIP — Passage en pause technique');
     setStatut('pause');
@@ -211,14 +232,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     dialerService.changerStatut('pause', 'technique').catch(() => {});
   }, [showToast]);
 
-  // Initialisation SIP uniquement quand l'utilisateur est authentifié
+  // ─── Initialisation SIP uniquement quand l'utilisateur est authentifié ───
   useEffect(() => {
     if (!isAuthenticated) return;
 
     let cancelled = false;
 
     const initSip = async () => {
-      console.groupCollapsed('🔐 [SIP] Initialisation');
+      console.groupCollapsed('🔐 [JsSIP] Initialisation');
       try {
         const creds = await dialerService.getSipCredentials();
         if (cancelled) {
@@ -235,169 +256,193 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         sipDomainRef.current = creds.sip_domain;
 
         const username = creds.sip_uri.split('@')[0];
-        const uri = UserAgent.makeURI(`sip:${creds.sip_uri}`);
-        if (!uri) {
-          console.error('❌ URI invalide:', creds.sip_uri);
-          showToast('error', 'Configuration SIP invalide — Contactez le support technique', 8000);
-          console.groupEnd();
-          return;
-        }
+        const domain = creds.sip_domain;
 
+        // Configuration ICE avec STUN/TURN pour SignalWire
         const iceServers: RTCIceServer[] = [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
+          {
+            urls: [
+              'stun:stun.l.google.com:19302',
+              'stun:stun1.l.google.com:19302',
+              'stun:stun2.l.google.com:19302',
+              'stun:stun.signalwire.com:3478',
+            ],
+          },
         ];
+
+        // Ajouter TURN seulement si configuré
         const turnUrl = import.meta.env.VITE_TURN_URL;
-        if (turnUrl) {
+        const turnUsername = import.meta.env.VITE_TURN_USERNAME;
+        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL;
+
+        if (turnUrl && turnUsername && turnCredential) {
           iceServers.push({
-            urls: turnUrl,
-            username: import.meta.env.VITE_TURN_USERNAME,
-            credential: import.meta.env.VITE_TURN_CREDENTIAL,
+            urls: turnUrl.split(',').map((u: string) => u.trim()),
+            username: turnUsername,
+            credential: turnCredential,
           });
+          console.log('🧊 [ICE] TURN configuré');
+        } else {
+          console.warn('⚠️ [ICE] Pas de TURN configuré - Les appels pourraient échouer derrière NAT');
         }
 
-        const ua = new UserAgent({
-          uri,
-          transportOptions: { server: creds.ws_url },
-          authorizationPassword: creds.sip_password,
-          authorizationUsername: username,
-          logLevel: 'warn', // Augmenté à 'warn' pour voir plus de logs SIP.js
-          sessionDescriptionHandlerFactoryOptions: {
-            peerConnectionOptions: {
-              rtcConfiguration: { iceServers },
-            },
-          },
-          delegate: {
-            onInvite: (invitation: Invitation) => {
-              if (cancelled) return;
+        console.log('🧊 ICE Servers:', iceServers);
 
-              console.groupCollapsed('📞 [APPEL ENTRANT]');
-              const remoteId = invitation.remoteIdentity;
-              const from = remoteId.uri.user ?? remoteId.uri.toString();
-              const displayName = remoteId.displayName || remoteId.uri.user || 'Inconnu';
-              console.log(`De: ${displayName} (${from})`);
-              console.groupEnd();
-
-              setIncomingCall({
-                from,
-                displayName,
-              });
-              incomingSessionRef.current = invitation;
-
-              invitation.stateChange.addListener((state) => {
-                if (state === SessionState.Terminated) {
-                  console.groupCollapsed('📞 [APPEL ENTRANT] Terminé');
-                  setIncomingCall(null);
-                  incomingSessionRef.current = null;
-                  stopCallTimer();
-                  isCallActiveRef.current = false;
-                  setStatut('pause_apres_appel');
-                  setDepuisLe(new Date());
-                  dialerService.changerStatut('pause_apres_appel').then(() => {
-                    console.log('✅ Backend sync OK');
-                  }).catch(err => {
-                    console.error('❌ Backend sync échoué:', err);
-                  });
-                  sessionRef.current = null;
-                  if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
-                  dialerService.endSession().catch(() => {});
-                  console.groupEnd();
-                }
-              });
-            },
-          },
+        // Création du UserAgent JsSIP
+        const socket = new JsSIP.WebSocketInterface(creds.ws_url);
+        const ua = new JsSIP.UA({
+          uri: `sip:${username}@${domain}`,
+          password: creds.sip_password,
+          sockets: [socket],
+          register: true,
+          session_timers: false,
         });
 
-        // Listener UA state
-        ua.stateChange.addListener((state: UserAgentState) => {
+        // Stocker la config RTC pour l'utiliser dans les appels
+        (ua as any).rtcConfig = {
+          iceServers,
+          iceTransportPolicy: 'all' as RTCIceTransportPolicy,
+        };
+
+        // Gestionnaire d'appels entrants
+        ua.on('newRTCSession', (data: any) => {
           if (cancelled) return;
-          if (state === UserAgentState.Stopped) {
-            console.groupCollapsed('⚠️ [SIP] Déconnexion détectée');
-            console.warn('UserAgent arrêté — Tentative reconnexion...');
+
+          if (data.originator === 'remote' && data.session) {
+            const session = data.session;
+            const remoteId = session.remote_identity;
+            const from = remoteId.uri.user || remoteId.uri.toString();
+            const displayName = remoteId.display_name || remoteId.uri.user || 'Inconnu';
+
+            console.groupCollapsed('📞 [APPEL ENTRANT]');
+            console.log(`De: ${displayName} (${from})`);
             console.groupEnd();
-            setSipConnected(false);
-            setSipReconnecting(true);
-            showToast('warning', 'Connexion SIP perdue — Reconnexion...', 3000);
-            reconnectSip().catch(err => {
-              console.error('❌ Reconnexion échouée:', err);
+
+            setIncomingCall({
+              from,
+              displayName,
             });
-          } else if (state === UserAgentState.Started) {
-            if (!sipConnected) {
-              console.log('✅ SIP reconnecté');
-              setSipConnected(true);
-              setSipReconnecting(false);
-              showToast('success', 'SIP reconnecté');
-            }
+            incomingSessionRef.current = session;
+
+            // Gestion des événements de session entrante
+            session.on('ended', () => {
+              console.groupCollapsed('📞 [APPEL ENTRANT] Terminé');
+              setIncomingCall(null);
+              incomingSessionRef.current = null;
+              stopCallTimer();
+              isCallActiveRef.current = false;
+              setStatut('pause_apres_appel');
+              setDepuisLe(new Date());
+              dialerService.changerStatut('pause_apres_appel').then(() => {
+                console.log('✅ Backend sync OK');
+              }).catch(err => {
+                console.error('❌ Backend sync échoué:', err);
+              });
+              sessionRef.current = null;
+              if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
+              dialerService.endSession().catch(() => {});
+              console.groupEnd();
+            });
+
+            session.on('failed', (err: any) => {
+              console.error('❌ [APPEL ENTRANT] Échoué:', err);
+              setIncomingCall(null);
+              incomingSessionRef.current = null;
+            });
           }
         });
 
-        console.groupCollapsed('📋 [SIP] Registerer');
-        const registerer = new Registerer(ua);
-
-        let registrationTimeout: ReturnType<typeof setTimeout> | null = null;
-        let registrationResolved = false;
-
-        registerer.stateChange.addListener(async (state) => {
-          console.log(`État: ${state}`);
+        // Gestionnaire de connexion
+        ua.on('connected', () => {
           if (cancelled) return;
-          if (state === 'Registered' && !registrationResolved) {
-            registrationResolved = true;
-            if (registrationTimeout) clearTimeout(registrationTimeout);
-            console.log('✅ ENREGISTRÉ — Prêt à passer disponible');
-            console.groupEnd();
-            setSipConnected(true);
-          } else if (state === 'Unregistered' || state === 'Terminated') {
-            console.warn('⚠️ Unregistered/Terminated');
-            setSipConnected(false);
-            setStatut('hors_ligne');
-          }
+          console.log('✅ [JsSIP] WebSocket connecté');
         });
 
-        // Timeout de 10 secondes pour la connexion SIP
-        const registrationPromise = new Promise<void>((_resolve, reject) => {
-          registrationTimeout = setTimeout(() => {
-            if (!registrationResolved) {
+        ua.on('disconnected', () => {
+          if (cancelled) return;
+          console.warn('⚠️ [JsSIP] WebSocket déconnecté');
+          setSipConnected(false);
+          setSipReconnecting(true);
+          showToast('warning', 'Connexion SIP perdue — Reconnexion...', 3000);
+          reconnectSip().catch(err => {
+            console.error('❌ Reconnexion échouée:', err);
+          });
+        });
+
+        ua.on('registered', () => {
+          if (cancelled) return;
+          console.log('✅ [JsSIP] Enregistré');
+          setSipConnected(true);
+          setSipReconnecting(false);
+        });
+
+        ua.on('registrationFailed', (err: any) => {
+          if (cancelled) return;
+          console.error('❌ [JsSIP] Enregistrement échoué:', err);
+          setSipConnected(false);
+        });
+
+        ua.on('unregistered', () => {
+          if (cancelled) return;
+          console.warn('⚠️ [JsSIP] Non enregistré');
+          setSipConnected(false);
+        });
+
+        // Démarrage du UserAgent
+        console.groupCollapsed('🚀 [JsSIP] UserAgent');
+        ua.start();
+        console.log('✅ Démarrage en cours...');
+        console.groupEnd();
+
+        // Attendre l'enregistrement (avec timeout)
+        const registrationPromise = new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            if (!ua.isRegistered()) {
               reject(new Error('Connexion SIP timeout (10s)'));
             }
           }, 10000);
+
+          let resolved = false;
+          let rejected = false;
+
+          const onRegistered = () => {
+            if (!resolved && !rejected) {
+              resolved = true;
+              clearTimeout(timeout);
+              resolve();
+            }
+          };
+
+          const onRegistrationFailed = (err: any) => {
+            if (!resolved && !rejected) {
+              rejected = true;
+              clearTimeout(timeout);
+              reject(err);
+            }
+          };
+
+          ua.on('registered', onRegistered);
+          ua.on('registrationFailed', onRegistrationFailed);
         });
 
         try {
-          console.groupCollapsed('🚀 [SIP] UserAgent');
-          await ua.start();
-          console.log('✅ Démarré');
-
-          if (ua.transport) {
-            const wsState = ua.transport.isConnected() ? '🟢 CONNECTÉ' : '🔴 DÉCONNECTÉ';
-            console.log(`🔌 WebSocket: ${wsState}`);
-            console.log(`   URL: ${creds.ws_url}`);
-          }
-
-          await Promise.race([
-            registerer.register(),
-            registrationPromise
-          ]);
-          console.log('📤 REGISTER envoyé');
+          await registrationPromise;
+          console.log('✅ [JsSIP] Enregistré avec succès');
+          setSipConnected(true);
           console.groupEnd();
         } catch (error) {
-          if (registrationTimeout) clearTimeout(registrationTimeout);
           if (!cancelled) {
             const errorMsg = error instanceof Error && error.message.includes('timeout')
               ? 'Connexion SIP impossible — Vérifiez votre connexion internet'
               : 'Erreur lors de la connexion SIP';
             showToast('error', errorMsg, 7000);
             console.error('[DIALER] ❌ Erreur connexion SIP:', error);
-            if (error instanceof Error) {
-              console.error('[DIALER] → Message:', error.message);
-              console.error('[DIALER] → Stack:', error.stack);
-            }
             setSipConnected(false);
           }
           return;
         }
 
         uaRef.current = ua;
-        registererRef.current = registerer;
         console.log('✅ Initialisation terminée');
         console.groupEnd();
       } catch (error) {
@@ -420,11 +465,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         mediaStreamRef.current.getTracks().forEach(t => t.stop());
         mediaStreamRef.current = null;
       }
-      registererRef.current?.unregister().catch(() => {});
-      uaRef.current?.stop().catch(() => {});
+      const ua = uaRef.current;
+      if (ua) {
+        ua.unregister();
+        ua.stop();
+      }
     };
-  }, [isAuthenticated, stopCallTimer, showToast, reconnectSip, sipConnected]);
+  }, [isAuthenticated, stopCallTimer, showToast, reconnectSip]);
 
+  // ─── Appel sortant ───
   const call = useCallback(async (phoneNumber: string, campagneId?: number, prospectId?: number) => {
     console.groupCollapsed(`📞 [APPEL] ${phoneNumber}`);
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
@@ -443,25 +492,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
 
     try {
-      console.groupCollapsed('🎤 Microphone');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          channelCount: 1,
-          sampleRate: 48000,
-        },
-      });
-      console.log('✅ Obtenu');
-      mediaStreamRef.current = stream;
-      console.groupEnd();
-
       setCurrentCampagneId(campagneId ?? null);
       isClosingRef.current = false;
       isCallActiveRef.current = true;
 
-      // Créer l'appel en DB au ringing (AVANT le SIP invite)
+      // Créer l'appel en DB au ringing
       if (!currentAppelId && campagneId && prospectId) {
         setCurrentOrigineAppel('auto');
         console.groupCollapsed('📝 [DB] Création appel');
@@ -482,28 +517,40 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       }
 
       const e164 = formatPhoneE164(phoneNumber);
-      const targetURI = UserAgent.makeURI(`sip:${e164}@${sipDomainRef.current}`);
-      if (!targetURI) {
-        console.error(`❌ URI invalide: ${e164}`);
-        isCallActiveRef.current = false;
-        console.groupEnd();
-        return;
-      }
+      const targetURI = `sip:${e164}@${sipDomainRef.current}`;
 
-      console.groupCollapsed('📤 [SIP] INVITE');
-      console.log(`Vers: sip:${e164}@${sipDomainRef.current}`);
-      const inviter = new Inviter(uaRef.current, targetURI);
+      console.groupCollapsed('📤 [JsSIP] APPEL SORTANT');
+      console.log(`Vers: ${targetURI}`);
 
-      inviter.stateChange.addListener((state) => {
-        console.log(`🔄 État: ${state}`);
+      // Récupérer la config RTC stockée dans l'UA
+      const rtcConfig = (uaRef.current as any).rtcConfig || {
+        iceServers: [
+          {
+            urls: [
+              'stun:stun.l.google.com:19302',
+              'stun:stun1.l.google.com:19302',
+              'stun:stun2.l.google.com:19302',
+            ],
+          },
+        ],
+        iceTransportPolicy: 'all',
+      };
 
-        if (state === SessionState.Established) {
-          console.groupCollapsed('✅ [WebRTC] Appel établi');
-          const sdh = inviter.sessionDescriptionHandler;
-          if (sdh && 'peerConnection' in sdh) {
-            const pc = (sdh as { peerConnection: RTCPeerConnection }).peerConnection;
-            console.log('🔌 PeerConnection OK');
-            pc.getReceivers().forEach(receiver => {
+      // Gestionnaires d'événements pour l'appel sortant
+      const eventHandlers = {
+        progress: () => {
+          console.log('🔄 [APPEL] En cours...');
+        },
+
+        confirmed: (data: any) => {
+          console.groupCollapsed('✅ [APPEL] Établi');
+
+          const session = data.session;
+          if (session && session.connection) {
+            const pc = session.connection;
+
+            // Configuration de l'audio distant
+            pc.getReceivers().forEach((receiver: any) => {
               if (receiver.track) {
                 const stream = new MediaStream([receiver.track]);
                 if (remoteAudioRef.current) {
@@ -513,7 +560,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
               }
             });
 
-            // Notification d'appel établi (une seule fois)
+            // Surveillance ICE
+            pc.addEventListener('iceconnectionstatechange', () => {
+              const iceState = pc.iceConnectionState;
+              console.log(`🧊 [ICE] State: ${iceState}`);
+            });
+
+            // Notification et session backend
             if (!hasCalledEstablishedRef.current && prospectId && campagneId) {
               hasCalledEstablishedRef.current = true;
               showToast('success', 'Appel établi', 3000);
@@ -521,118 +574,17 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
                 console.error('[Session] Erreur startSession:', err);
               });
             }
-
-            // Surveillance ICE
-            let iceDisconnectedNotified = false;
-            pc.addEventListener('iceconnectionstatechange', () => {
-              const iceState = pc.iceConnectionState;
-              console.log(`🧊 ICE: ${iceState}`);
-
-              if (iceState === 'failed' || iceState === 'disconnected') {
-                if (!iceDisconnectedNotified) {
-                  iceDisconnectedNotified = true;
-                  console.warn('⚠️ Qualité audio compromise');
-                  showToast('warning', 'Problème de connexion audio détecté', 5000);
-                }
-              } else if (iceState === 'connected' || iceState === 'completed') {
-                iceDisconnectedNotified = false;
-              }
-            });
-
-            // Surveillance connexion
-            pc.addEventListener('connectionstatechange', () => {
-              const connState = pc.connectionState;
-              console.log(`🌐 Connexion: ${connState}`);
-
-              if (connState === 'failed') {
-                console.error('❌ Connexion perdue — Hangup auto dans 10s');
-                showToast('error', 'Connexion perdue — Raccrochage automatique', 5000);
-
-                setTimeout(() => {
-                  if (sessionRef.current === inviter && isCallActiveRef.current) {
-                    console.warn('⚠️ Hangup auto exécuté');
-                    inviter.bye().catch(() => {});
-                  }
-                }, 10000);
-              }
-            });
-
-            // Stats WebRTC
-            let highPacketLossCount = 0;
-            const statsInterval = setInterval(async () => {
-              if (!isCallActiveRef.current || sessionRef.current !== inviter) {
-                clearInterval(statsInterval);
-                console.groupEnd();
-                return;
-              }
-
-              try {
-                const stats = await pc.getStats();
-                let packetsLost = 0, packetsReceived = 0, currentRoundTripTime = 0, jitter = 0;
-
-                stats.forEach(report => {
-                  if (report.type === 'inbound-rtp' && report.mediaType === 'audio') {
-                    packetsLost = report.packetsLost || 0;
-                    packetsReceived = report.packetsReceived || 0;
-                    jitter = report.jitter || 0;
-                  }
-                  if (report.type === 'remote-candidate') {
-                    currentRoundTripTime = report.roundTripTime || 0;
-                  }
-                });
-
-                const totalPackets = packetsLost + packetsReceived;
-                const packetLossPercent = totalPackets > 0 ? (packetsLost / totalPackets) * 100 : 0;
-
-                if (packetsReceived > 0) {
-                  console.log(`📊 Perte: ${packetLossPercent.toFixed(1)}% | RTT: ${currentRoundTripTime}ms | Gigue: ${jitter}ms`);
-                }
-
-                if (packetLossPercent > 5 && totalPackets > 100) {
-                  highPacketLossCount++;
-                  if (highPacketLossCount >= 10) {
-                    console.warn(`⚠️ Perte élevée: ${packetLossPercent.toFixed(1)}%`);
-                    showToast('warning', 'Qualité audio dégradée', 4000);
-                  }
-                } else {
-                  highPacketLossCount = 0;
-                }
-
-                // Envoyer les stats au backend (via PATCH /api/dialer/session)
-                if (currentAppelId && totalPackets > 0) {
-                  dialerService.updateSession({
-                    duration_seconds: callDuration,
-                    packets_lost: packetsLost,
-                    packets_received: packetsReceived,
-                    packet_loss_percent: packetLossPercent,
-                    round_trip_time: currentRoundTripTime,
-                    jitter: jitter,
-                  }).catch(() => {
-                    // Silencieux — ne pas bloquer l'appel si l'update échoue
-                  });
-                }
-              } catch (error) {
-                console.error('❌ Erreur stats:', error);
-              }
-            }, 5000);
-
-            const cleanupStats = () => {
-              clearInterval(statsInterval);
-              console.groupEnd();
-            };
-
-            inviter.stateChange.addListener((state) => {
-              if (state === SessionState.Terminated) {
-                cleanupStats();
-              }
-            });
           }
+
           setStatut('en_appel');
           setDepuisLe(new Date());
           startCallTimer();
-        } else if (state === SessionState.Terminated) {
+          console.groupEnd();
+        },
+
+        ended: (data: any) => {
           console.groupCollapsed('📞 [APPEL] Terminé');
-          console.log('Cause:', inviter.message || 'Non spécifiée');
+          console.log('Cause:', data.cause || 'Normal');
           stopCallTimer();
           isCallActiveRef.current = false;
           setStatut('pause_apres_appel');
@@ -650,18 +602,46 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           if (remoteAudioRef.current) remoteAudioRef.current.srcObject = null;
           dialerService.endSession().catch(() => {});
           console.groupEnd();
-          console.groupEnd(); // Fermer le groupe principal de l'appel
-        }
-      });
+          console.groupEnd();
+        },
 
+        failed: (data: any) => {
+          console.groupCollapsed('❌ [APPEL] Échoué');
+          console.error('Cause:', data.cause || 'Inconnu');
+          stopCallTimer();
+          isCallActiveRef.current = false;
+          if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach(t => t.stop());
+            mediaStreamRef.current = null;
+          }
+          console.groupEnd();
+          console.groupEnd();
+
+          showToast('error', 'Échec de l\'appel — Vérifiez votre connexion', 5000);
+        },
+      };
+
+      // Lancer l'appel avec JsSIP
       try {
-        await inviter.invite();
-        console.log('✅ INVITE envoyé — En attente réponse...');
+        const session = uaRef.current!.call(targetURI, {
+          eventHandlers,
+          mediaConstraints: {
+            audio: true,
+            video: false,
+          },
+          pcConfig: rtcConfig,
+        });
+
+        if (session) {
+          sessionRef.current = session;
+          console.log('✅ [JsSIP] Appel lancé');
+        } else {
+          throw new Error('Session non créée');
+        }
       } catch (inviteError) {
-        console.error('❌ Erreur INVITE:', inviteError);
+        console.error('❌ [JsSIP] Erreur lancement appel:', inviteError);
         throw inviteError;
       }
-      sessionRef.current = inviter;
     } catch (err) {
       isCallActiveRef.current = false;
       if (mediaStreamRef.current) {
@@ -676,27 +656,26 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         console.error('Stack:', err.stack);
       }
       console.groupEnd();
-      console.groupEnd(); // Fermer le groupe principal
+      console.groupEnd();
 
       showToast('error', 'Échec de l\'appel — Vérifiez votre connexion', 5000);
     }
   }, [sipConnected, startCallTimer, stopCallTimer, prochainProspect, currentAppelId, callDuration, showToast]);
 
+  // ─── Hangup ───
   const hangup = useCallback(() => {
     if (sessionRef.current) {
       console.groupCollapsed('📞 [APPEL] Hangup manuel');
-      sessionRef.current.bye().catch(() => {
-        console.log('🔄 Tentative cancel (appel non établi)');
-        (sessionRef.current as Inviter | null)?.cancel().catch(() => {});
-      });
+      sessionRef.current.terminate();
       console.log('✅ BYE envoyé');
       console.groupEnd();
     }
   }, []);
 
+  // ─── Répondre à un appel entrant ───
   const answer = useCallback(async () => {
-    const invitation = incomingSessionRef.current;
-    if (!invitation) {
+    const session = incomingSessionRef.current;
+    if (!session) {
       console.warn('⚠️ Aucune invitation à répondre');
       return;
     }
@@ -715,29 +694,44 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.log('✅ Microphone OK');
       mediaStreamRef.current = stream;
       isCallActiveRef.current = true;
-      await invitation.accept();
+
+      // Répondre à l'appel
+      session.answer({
+        mediaConstraints: {
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+          },
+          video: false,
+        },
+      });
+
       console.log('✅ Invitation acceptée');
-      sessionRef.current = invitation;
+      sessionRef.current = session;
       setIncomingCall(null);
 
-      const sdh = invitation.sessionDescriptionHandler;
-      if (sdh && 'peerConnection' in sdh) {
-        const pc = (sdh as { peerConnection: RTCPeerConnection }).peerConnection;
-        pc.getReceivers().forEach(receiver => {
-          if (receiver.track) {
-            const stream = new MediaStream([receiver.track]);
-            if (remoteAudioRef.current) {
-              remoteAudioRef.current.srcObject = stream;
-              remoteAudioRef.current.play().catch(() => {});
+      // Attendre un peu que la session soit établie
+      setTimeout(() => {
+        if (session.connection) {
+          const pc = session.connection;
+          pc.getReceivers().forEach((receiver: any) => {
+            if (receiver.track) {
+              const stream = new MediaStream([receiver.track]);
+              if (remoteAudioRef.current) {
+                remoteAudioRef.current.srcObject = stream;
+                remoteAudioRef.current.play().catch(() => {});
+              }
             }
-          }
-        });
-      }
+          });
+        }
 
-      setStatut('en_appel');
-      setDepuisLe(new Date());
-      startCallTimer();
-      console.groupEnd();
+        setStatut('en_appel');
+        setDepuisLe(new Date());
+        startCallTimer();
+        console.groupEnd();
+      }, 500);
     } catch (err) {
       isCallActiveRef.current = false;
       if (mediaStreamRef.current) {
@@ -754,12 +748,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, [startCallTimer, showToast]);
 
+  // ─── Rejeter un appel entrant ───
   const reject = useCallback(() => {
-    incomingSessionRef.current?.reject().catch(() => {});
+    incomingSessionRef.current?.terminate();
     setIncomingCall(null);
     incomingSessionRef.current = null;
   }, []);
 
+  // ─── Nettoyer le prochain prospect ───
   const clearProchainProspect = useCallback(() => {
     setProchainProspect(null);
     setCurrentAppelId(null);
@@ -768,27 +764,26 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     isClosingRef.current = false;
   }, []);
 
+  // ─── Changer de statut ───
   const changerStatut = useCallback(async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
-    // Guard : ne pas passer disponible si un closing est en attente
+    // Guard clauses
     if (nouveauStatut === 'disponible' && closingService.hasPending()) {
       console.warn('[DIALER] Impossible de passer disponible : closing en attente');
       return;
     }
 
-    // Guard : ne pas passer disponible si un appel est en cours
     if (nouveauStatut === 'disponible' && isCallActiveRef.current) {
       console.warn('[DIALER] Impossible de passer disponible : appel en cours');
       return;
     }
 
-    // Guard : ne pas passer disponible si SIP n'est pas connecté
     if (nouveauStatut === 'disponible' && !sipConnected) {
       console.warn('[DIALER] Impossible de passer disponible : SIP non connecté');
       showToast('error', 'Connexion SIP non établie — Impossible de passer disponible', 5000);
       return;
     }
 
-    // Mise à jour immédiate du state local (optimiste)
+    // Mise à jour immédiate du state local
     setStatut(nouveauStatut);
     setRaisonPause(raison ?? null);
     setDepuisLe(new Date());
@@ -804,7 +799,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         for (let i = 0; i < MAX_SKIPS; i++) {
           try {
             const candidate = await dialerService.getNextProspect();
-            // Le backend filtre déjà selon autoriser_mobile, mais on garde une sécurité frontend
             if (candidate.telephone && isMobilePhone(candidate.telephone) && !candidate.autoriser_mobile) {
               console.warn(`[DIALER] Prospect #${candidate.id_prospect} skip (mobile ${candidate.telephone})`);
               if (candidate.id_prospection) dialerService.markMobile(candidate.id_prospection).catch(() => {});
@@ -824,9 +818,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, [sipConnected, showToast]);
 
+  // ─── Ouvrir un prospect manuellement ───
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
     try {
-      // 1. Récupérer la 1re campagne active de l'agent
       const campagnes = await dialerService.getCampagnesAgent();
       if (!campagnes || campagnes.length === 0) {
         console.warn('[DIALER] Aucune campagne active');
@@ -835,20 +829,17 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       const campagne = campagnes[0];
       const campagneId = campagne.id_campagne;
 
-      // 2. Vérifier si c'est un mobile et si la campagne l'autorise
       if (prospectPhone && isMobilePhone(prospectPhone) && !campagne.autoriser_mobile) {
         console.error('[DIALER] Appel bloqué : numéro mobile détecté', prospectPhone);
         throw new Error('Impossible d\'appeler un numéro mobile (campagne ne l\'autorise pas)');
       }
 
-      // 3. Status → appel_sortant (empêche auto-dequeue)
       setStatut('appel_sortant');
       setRaisonPause(null);
       setDepuisLe(new Date());
       setProchainProspect(null);
       await dialerService.changerStatut('appel_sortant');
 
-      // 4. Créer l'appel en BDD
       const appel = await appelService.createAppel({
         id_prospect: prospectId,
         id_campagne: campagneId,
@@ -861,7 +852,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentCampagneId(campagneId);
       setCurrentOrigineAppel(origin);
 
-      // 5. Lancer l'appel SIP (même flow que auto-dequeue mais agent-choisi)
       if (prospectPhone) {
         await call(prospectPhone, campagneId, prospectId);
       }

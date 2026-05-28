@@ -51,6 +51,18 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const hasCalledEstablishedRef = useRef<boolean>(false);
 
+  // 🎯 Vérification de l'élément audio au montage
+  useEffect(() => {
+    console.log('🎵 [AUDIO] Initialisation élément audio...');
+    if (!remoteAudioRef.current) {
+      console.warn('⚠️ [AUDIO] remoteAudioRef.current est null au montage');
+    } else {
+      console.log('✅ [AUDIO] Élément audio prêt:', remoteAudioRef.current.id);
+      // S'assurer que l'audio n'est pas muted (Firefox)
+      remoteAudioRef.current.muted = false;
+    }
+  }, []);
+
   // Formatage de la durée d'appel en MM:SS
   const callDurationFormatted = useMemo(() => {
     const minutes = Math.floor(callDuration / 60);
@@ -549,13 +561,20 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           if (session && session.connection) {
             const pc = session.connection;
 
-            // Configuration de l'audio distant
-            pc.getReceivers().forEach((receiver: any) => {
+            // Vérification finale : tenter de récupérer les tracks si aucun événement track n'a été reçu
+            const receivers = pc.getReceivers();
+            console.log(`🎵 [CONFIRMED] ${receivers.length} réceveurs à l'établissement`);
+            receivers.forEach((receiver: any) => {
               if (receiver.track) {
+                console.log('🎵 [RECEIVER] Track au confirmed:', receiver.track.kind, receiver.track.id);
                 const stream = new MediaStream([receiver.track]);
                 if (remoteAudioRef.current) {
                   remoteAudioRef.current.srcObject = stream;
-                  remoteAudioRef.current.play().catch(() => {});
+                  remoteAudioRef.current.play()
+                    .then(() => console.log('✅ [AUDIO] play() OK (confirmed)'))
+                    .catch((err) => {
+                      console.error('❌ [AUDIO] Erreur play():', err.name, err.message);
+                    });
                 }
               }
             });
@@ -635,6 +654,44 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         if (session) {
           sessionRef.current = session;
           console.log('✅ [JsSIP] Appel lancé');
+
+          // 🎯 Écouter l'événement 'track' dès la création de la session
+          // IMPORTANT : doit être fait AVANT que la connexion ne soit établie
+          if (session.connection) {
+            session.connection.addEventListener('track', (e: RTCTrackEvent) => {
+              console.log('🎵 [TRACK] Nouvelle piste reçue (early):', e.track.kind, e.track.id);
+              if (e.track.kind === 'audio' && remoteAudioRef.current) {
+                const stream = new MediaStream([e.track]);
+                remoteAudioRef.current.srcObject = stream;
+                remoteAudioRef.current.play()
+                  .then(() => console.log('✅ [AUDIO] play() OK (early)'))
+                  .catch((err) => {
+                    console.error('❌ [AUDIO] Erreur play():', err.name, err.message);
+                  });
+              }
+            });
+          }
+
+          // Attendre un peu que la connexion RTCPeerConnection soit créée
+          setTimeout(() => {
+            if (session.connection && remoteAudioRef.current) {
+              console.log('🎵 [TRACK] Vérification réceveurs après délai...');
+              const receivers = session.connection.getReceivers();
+              console.log(`🎵 [TRACK] ${receivers.length} réceveurs trouvés`);
+              receivers.forEach((receiver: any) => {
+                if (receiver.track) {
+                  console.log('🎵 [RECEIVER] Track:', receiver.track.kind, receiver.track.id);
+                  const stream = new MediaStream([receiver.track]);
+                  remoteAudioRef.current!.srcObject = stream;
+                  remoteAudioRef.current!.play()
+                    .then(() => console.log('✅ [AUDIO] play() OK (receiver delayed)'))
+                    .catch((err) => {
+                      console.error('❌ [AUDIO] Erreur play():', err.name, err.message);
+                    });
+                }
+              });
+            }
+          }, 100);
         } else {
           throw new Error('Session non créée');
         }
@@ -712,16 +769,41 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       sessionRef.current = session;
       setIncomingCall(null);
 
+      // 🎯 Écouter l'événement 'track' dès la réponse (AVANT l'établissement)
+      if (session.connection) {
+        session.connection.addEventListener('track', (e: RTCTrackEvent) => {
+          console.log('🎵 [TRACK ENTRANT] Nouvelle piste (early):', e.track.kind, e.track.id);
+          if (e.track.kind === 'audio' && remoteAudioRef.current) {
+            const stream = new MediaStream([e.track]);
+            remoteAudioRef.current.srcObject = stream;
+            remoteAudioRef.current.play()
+              .then(() => console.log('✅ [AUDIO ENTRANT] play() OK (early)'))
+              .catch((err) => {
+                console.error('❌ [AUDIO ENTRANT] Erreur play():', err.name, err.message);
+              });
+          }
+        });
+      }
+
       // Attendre un peu que la session soit établie
       setTimeout(() => {
         if (session.connection) {
           const pc = session.connection;
-          pc.getReceivers().forEach((receiver: any) => {
+
+          // Vérification des réceveurs avec logs
+          const receivers = pc.getReceivers();
+          console.log(`🎵 [TRACK ENTRANT] ${receivers.length} réceveurs trouvés`);
+          receivers.forEach((receiver: any) => {
             if (receiver.track) {
+              console.log('🎵 [RECEIVER ENTRANT] Track:', receiver.track.kind, receiver.track.id);
               const stream = new MediaStream([receiver.track]);
               if (remoteAudioRef.current) {
                 remoteAudioRef.current.srcObject = stream;
-                remoteAudioRef.current.play().catch(() => {});
+                remoteAudioRef.current.play()
+                  .then(() => console.log('✅ [AUDIO ENTRANT] play() OK (receiver)'))
+                  .catch((err) => {
+                    console.error('❌ [AUDIO ENTRANT] Erreur play():', err.name, err.message);
+                  });
               }
             }
           });
@@ -731,7 +813,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         setDepuisLe(new Date());
         startCallTimer();
         console.groupEnd();
-      }, 500);
+      }, 100);
     } catch (err) {
       isCallActiveRef.current = false;
       if (mediaStreamRef.current) {
@@ -887,7 +969,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       openProspectManual,
     }}>
       {children}
-      <audio ref={remoteAudioRef} id="remoteAudio" autoPlay playsInline />
+      <audio ref={remoteAudioRef} id="remoteAudio" autoPlay playsInline muted={false} />
     </DialerContext.Provider>
   );
 };

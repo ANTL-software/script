@@ -314,7 +314,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           sockets: [socket],
           register: true,
           session_timers: false,
-        });
+          authorization_user: username, // Force l'ID de connexion
+          realm: "api.antl.fr", // Force le realm attendu par Asterisk
+          use_tls: true, // Puisque tu es en wss://
+        } as any);
 
         // Stocker la config RTC pour l'utiliser dans les appels
         (ua as any).rtcConfig = {

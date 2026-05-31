@@ -300,6 +300,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
         console.log('🧊 ICE Servers:', iceServers);
 
+        console.log("DEBUG SIP CONFIG:", {
+          uri: "sip:ndecr001@api.antl.fr",
+          password: creds.sip_password, // <-- C'est ici qu'on va voir s'il est vide ou corrompu
+          ws_servers: creds.ws_url,
+        });
+
         // Création du UserAgent JsSIP
         const socket = new JsSIP.WebSocketInterface(creds.ws_url);
         const ua = new JsSIP.UA({

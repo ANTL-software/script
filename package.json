@@ -17,15 +17,19 @@
     "@sentry/react": "^10.47.0",
     "@twilio/voice-sdk": "^2.18.3",
     "axios": "^1.13.2",
-    "jssip": "^3.13.8",
     "date-fns": "^4.1.0",
+    "events": "^3.3.0",
+    "inherits": "^2.0.4",
+    "jssip": "^3.13.8",
     "react": "^19.2.0",
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.10.1",
     "react-select": "^5.10.2",
-    "sass-embedded": "^1.93.3"
+    "sass-embedded": "^1.93.3",
+    "util": "^0.12.5",
+    "vite-plugin-node-polyfills": "^0.28.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

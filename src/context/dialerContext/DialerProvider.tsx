@@ -147,10 +147,27 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       const existingScript = document.querySelector('script[src="/twilio.min.js"]') as HTMLScriptElement | null;
       
       if (existingScript) {
-        // Le script est dans le HTML, attendre qu'il soit chargé
+        // Le script est dans le HTML avec defer, attendre DOMContentLoaded
         console.log('⏳ [TWILIO] Attente du chargement du script existant...');
-        const MAX_WAIT_TIME = 10000;
+        const MAX_WAIT_TIME = 15000; // 15 secondes pour être sûr
         const startTime = Date.now();
+        
+        // Attendre que DOM soit prêt ET que Twilio soit disponible
+        const waitForDOMAndTwilio = () => {
+          if (document.readyState !== 'complete' && document.readyState !== 'interactive') {
+            // DOM pas encore prêt, attendre
+            const onReady = () => {
+              document.removeEventListener('DOMContentLoaded', onReady);
+              document.removeEventListener('readystatechange', onReady);
+              checkTwilio();
+            };
+            document.addEventListener('DOMContentLoaded', onReady);
+            document.addEventListener('readystatechange', onReady);
+            return;
+          }
+          // DOM est prêt, vérifier Twilio
+          checkTwilio();
+        };
         
         const checkTwilio = () => {
           const elapsed = Date.now() - startTime;
@@ -161,14 +178,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           }
           
           if (elapsed >= MAX_WAIT_TIME) {
-            reject(new Error(`Twilio SDK non chargé après ${MAX_WAIT_TIME}ms. Vérifiez que /twilio.min.js est accessible et que le serveur le sert correctement.`));
+            reject(new Error(`Twilio SDK non chargé après ${MAX_WAIT_TIME}ms. Vérifiez que /twilio.min.js est accessible.`));
             return;
           }
           
           setTimeout(checkTwilio, 100);
         };
         
-        setTimeout(checkTwilio, 500);
+        waitForDOMAndTwilio();
         return;
       }
       
@@ -184,7 +201,20 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           console.log('✅ [TWILIO] SDK chargé dynamiquement');
           resolve();
         } else {
-          reject(new Error('Twilio SDK chargé mais window.Twilio.Device.on non disponible'));
+          // Script chargé mais Twilio pas encore prêt, attendre un peu
+          const start = Date.now();
+          const wait = () => {
+            if (isTwilioReady()) {
+              resolve();
+              return;
+            }
+            if (Date.now() - start > 5000) {
+              reject(new Error('Script chargé mais Twilio.Device.on non disponible après 5s'));
+              return;
+            }
+            setTimeout(wait, 100);
+          };
+          wait();
         }
       };
       

@@ -38,13 +38,13 @@
     <meta name="format-detection" content="telephone=no" />
 
     <title>antl - Script d'appel</title>
+    <!-- Twilio Voice SDK - chargement anticipé avec defer -->
+    <script src="/twilio.min.js" defer></script>
   </head>
   <body>
     <div id="root"></div>
     <audio id="remoteAudio" autoplay style="display: none"></audio>
     <audio id="twilioRemoteAudio" autoplay playsinline style="display: none"></audio>
-    <!-- Twilio Voice SDK - Local (copié depuis node_modules par vite) -->
-    <script src="/twilio.min.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

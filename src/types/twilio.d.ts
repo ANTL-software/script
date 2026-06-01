@@ -5,7 +5,7 @@ declare module '@twilio/voice-sdk' {
   // ============================================
   // CONNECTION
   // ============================================
-  class Connection {
+  export class Connection {
     sid: string;
     status: ConnectionStatus;
     parameters: {
@@ -30,17 +30,16 @@ declare module '@twilio/voice-sdk' {
     off(event: ConnectionEvent, handler: (...args: any[]) => void): void;
   }
 
-  type ConnectionStatus = 'pending' | 'connecting' | 'connected' | 'disconnecting' | 'disconnected' | 'closed';
-  type ConnectionSource = 'inbound' | 'outbound';
-  type ConnectionEvent = 'accept' | 'disconnect' | 'error' | 'mute' | 'reject';
+  export type ConnectionStatus = 'pending' | 'connecting' | 'connected' | 'disconnecting' | 'disconnected' | 'closed';
+  export type ConnectionSource = 'inbound' | 'outbound';
+  export type ConnectionEvent = 'accept' | 'disconnect' | 'error' | 'mute' | 'reject';
 
   // ============================================
   // DEVICE SINGLETON
   // ============================================
-  // Device est un singleton, pas une classe à instancier
-  // On l'utilise directement : Device.setup(), Device.on(), etc.
-  interface DeviceSingleton {
-    // État (propriétés statiques)
+  // Device est exporté comme un objet singleton, pas une classe
+  export interface Device {
+    // État
     token: string;
     state: DeviceState;
     edges: Edge[];
@@ -64,10 +63,10 @@ declare module '@twilio/voice-sdk' {
     removeAllListeners(event?: DeviceEvent): void;
   }
 
-  type DeviceState = 'busy' | 'idle' | 'offline' | 'ready';
-  type Edge = 'ashburn' | 'dublin' | 'frankfurt' | 'sydney' | 'singapore' | 'sao-paulo' | 'tokyo' | 'roaming';
+  export type DeviceState = 'busy' | 'idle' | 'offline' | 'ready';
+  export type Edge = 'ashburn' | 'dublin' | 'frankfurt' | 'sydney' | 'singapore' | 'sao-paulo' | 'tokyo' | 'roaming';
 
-  type DeviceEvent =
+  export type DeviceEvent =
     | 'registered'
     | 'unregistered'
     | 'connecting'
@@ -86,8 +85,7 @@ declare module '@twilio/voice-sdk' {
   // ============================================
   // OPTIONS
   // ============================================
-  interface DeviceOptions {
-    // Configuration générale
+  export interface DeviceOptions {
     codecPreferences?: Codec[];
     debug?: boolean;
     logLevel?: 1 | 2 | 3 | 4 | 5 | 6;
@@ -96,42 +94,29 @@ declare module '@twilio/voice-sdk' {
     region?: string;
     edge?: Edge;
     iceServers?: RTCIceServer[];
-
-    // Audio
     allowIncomingWhileBusy?: boolean;
     audioConstraints?: MediaTrackConstraints;
     enableIceRestart?: boolean;
     enableImprovedSignalingErrorPrecision?: boolean;
     forceAggressiveIceRestart?: boolean;
-
-    // Insights (monitoring)
     insights?: boolean;
-
-    // Divers
     customCallParameters?: Record<string, string>;
     rtcConfiguration?: RTCConfiguration;
-
-    // Fonctions de rappel
     tokenRefresh?: (done: (newToken: string) => void) => void;
   }
 
-  interface ConnectOptions {
+  export interface ConnectOptions {
     params?: Record<string, string>;
     rtcConfiguration?: RTCConfiguration;
     rtcConstraints?: RTCOfferOptions;
-
-    // Pour les appels sortants
     phoneNumber?: string;
   }
 
-  type Codec = 'opus' | 'PCMU' | 'PCMA';
+  export type Codec = 'opus' | 'PCMU' | 'PCMA';
 
   // ============================================
-  // EXPORTS
+  // EXPORT PAR DÉFAUT
   // ============================================
-  // Device est exporté comme un singleton, pas comme une classe
-  const Device: DeviceSingleton;
-  export { Device, Connection };
-  export type { ConnectionStatus, ConnectionSource, ConnectionEvent, DeviceState, Edge, DeviceEvent, DeviceOptions, ConnectOptions, Codec, DeviceSingleton };
+  export const Device: Device;
   export default Device;
 }

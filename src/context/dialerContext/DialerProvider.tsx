@@ -1,10 +1,19 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
-// Déclaration de type pour window.Twilio (Voice SDK chargé via CDN)
+// Déclaration de type pour window.Twilio (Voice SDK chargé via npm import dans main.tsx)
 declare global {
   interface Window {
-    Twilio?: {
-      Device: any;
+    Twilio: {
+      Device: {
+        setup: (token: string, options?: any) => void;
+        connect: (options: { phoneNumber: string }) => any;
+        activeConnections: () => any[];
+        incomingConnections: () => any[];
+        status: () => string;
+        destroy: () => void;
+        on: (event: string, handler: (...args: any[]) => void) => void;
+        off: (event: string, handler: (...args: any[]) => void) => void;
+      };
     };
   }
 }

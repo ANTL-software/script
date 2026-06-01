@@ -97,8 +97,7 @@ const EXTERNAL_HOSTS = new Set([
   'fonts.googleapis.com',
   'fonts.gstatic.com',
   'unpkg.com',
-  'cdn.jsdelivr.net',
-  'script.antl.fr'
+  'cdn.jsdelivr.net'
 ]);
 
 // Stratégie de mise en cache
@@ -146,6 +145,9 @@ self.addEventListener('fetch', (event) => {
           if (request.destination === 'document') {
             return caches.match('/index.html');
           }
+          // Pour les scripts/styles/images, retourner undefined n'est pas valide
+          // On tente de retourner le cache comme fallback
+          return caches.match(request);
         });
       })
     );

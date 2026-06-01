@@ -44,7 +44,8 @@ export class TwilioService {
    */
   public async getAccessToken(): Promise<TwilioAccessTokenResponse> {
     console.groupCollapsed('🔐 [TWILIO] Récupération Access Token');
-    const response = await apiCalls.get<TwilioAccessTokenResponse>('/api/twilio/token');
+    // /twilio/token au lieu de /api/twilio/token car baseURL contient déjà /api
+    const response = await apiCalls.get<TwilioAccessTokenResponse>('/twilio/token');
     const tokenData = throwIfApiError(response, 'Erreur lors de la récupération du token Twilio');
     console.log('✅ Token reçu pour:', tokenData.identity);
     console.groupEnd();

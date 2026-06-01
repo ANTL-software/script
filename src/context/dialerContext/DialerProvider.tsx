@@ -285,10 +285,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         ];
 
         // Ajouter TURN seulement si configuré (via variables d'environnement)
-        // Pour Twilio, configurez VITE_TURN_URL=turn:votre-domain.sip.us1.twilio.com:3478
-        const turnUrl = import.meta.env.VITE_TURN_URL;
-        const turnUsername = import.meta.env.VITE_TURN_USERNAME || import.meta.env.VITE_TWILIO_SIP_USER;
-        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL || import.meta.env.VITE_TWILIO_SIP_PASSWORD;
+        // Pour Twilio Voice SDK, le TURN est géré automatiquement
+        const turnUrl = import.meta.env.VITE_TURN_URL || '';
+        const turnUsername = import.meta.env.VITE_TURN_USERNAME || '';
+        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL || '';
 
         if (turnUrl && turnUsername && turnCredential) {
           iceServers.push({
@@ -310,9 +310,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         });
 
         // Création du UserAgent JsSIP
-        // Pour Twilio, le realm doit correspondre au domaine SIP
-        // Pour SignalWire/Asterisk, utiliser le realm configuré
-        const sipRealm = import.meta.env.VITE_SIP_REALM || domain || "api.antl.fr";
+        // Realm dynamique (par défaut: domaine SIP ou api.antl.fr)
+        const sipRealm = domain || "api.antl.fr";
         
         const socket = new JsSIP.WebSocketInterface(creds.ws_url);
         const ua = new JsSIP.UA({

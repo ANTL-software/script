@@ -127,11 +127,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   // Initialiser Twilio.window.Twilio.Device (appelé depuis useEffect quand auth change)
   const initializeTwilioDevice = useCallback(async () => {
-    console.groupCollapsed('🚀 [TWILIO] Initialisation window.Twilio.Device');
+    console.groupCollapsed('🚀 [TWILIO] Initialisation Device');
     
     try {
-      console.log('✅ [TWILIO] window.Twilio.Device disponible (CDN)');
-      
       // Récupérer le Access Token depuis le backend
       const accessToken = await fetchTwilioToken();
       
@@ -139,10 +137,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         throw new Error('Impossible de récupérer le Access Token Twilio');
       }
 
-      // Vérifier que Twilio est chargé
-      if (typeof window === 'undefined' || !window.Twilio.Device) {
-        throw new Error('Twilio Voice SDK non chargé. CDN manquant.');
+      // Vérifier que Twilio est chargé et que Device est fonctionnel
+      if (typeof window === 'undefined' || !window.Twilio || !window.Twilio.Device || typeof window.Twilio.Device.on !== 'function') {
+        throw new Error('Twilio Voice SDK non chargé ou Device non valide. Vérifiez le chargement du script /twilio.min.js');
       }
+
+      console.log('✅ [TWILIO] Device disponible');
 
       // Stocker la référence
       deviceRef.current = window.Twilio.Device;

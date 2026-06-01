@@ -15,9 +15,9 @@
   },
   "dependencies": {
     "@sentry/react": "^10.47.0",
+    "@twilio/voice-sdk": "^21.0.0",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
-    "jssip": "^3.13.8",
     "react": "^19.2.0",
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.2.0",

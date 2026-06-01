@@ -109,25 +109,33 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
 
       deviceRef.current = device;
 
+      console.log('📱 [TWILIO] Device instance créée, état actuel:', device.state);
+      console.log('📱 [TWILIO] Device.listeners:', device.eventNames());
+
       // Enregistrer les event listeners
       device.on('registered', () => {
         console.log('✅ [TWILIO] Device registered (connecté au serveur Twilio)');
+        console.log('📱 [TWILIO] Device.state après registration:', device.state);
         setTwilioConnected(true);
         setIsTwilioReady(true);
       });
 
       device.on('unregistered', () => {
         console.warn('⚠️ [TWILIO] Device unregistered');
+        console.log('📱 [TWILIO] Device.state après unregister:', device.state);
         setTwilioConnected(false);
       });
 
       device.on('registering', () => {
         console.log('🔄 [TWILIO] Device registering...');
+        console.log('📱 [TWILIO] Device.state pendant registering:', device.state);
         setIsTwilioReady(false);
       });
 
       device.on('error', (error: any) => {
         console.error('❌ [TWILIO] Erreur Device:', error);
+        console.error('❌ [TWILIO] Error.code:', error.code);
+        console.error('❌ [TWILIO] Error.message:', error.message);
         setTwilioConnected(false);
         showToast('error', 'Erreur Twilio: ' + error.message, 5000);
       });
@@ -205,6 +213,17 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
         setIsTwilioReady(false);
         deviceRef.current = null;
       });
+
+      // Lancer manuellement la registration pour forcer la connexion
+      console.log('📞 [TWILIO] Tentative de registration manuelle...');
+      console.log('📱 [TWILIO] Device state AVANT register:', device.state);
+      try {
+        await device.register();
+        console.log('✅ [TWILIO] Register appelé avec succès');
+        console.log('📱 [TWILIO] Device state APRÈS register:', device.state);
+      } catch (err) {
+        console.error('❌ [TWILIO] Erreur lors de register():', err);
+      }
 
       console.log('✅ [TWILIO] Device v2.x créé avec succès, attente registration...');
       console.groupEnd();

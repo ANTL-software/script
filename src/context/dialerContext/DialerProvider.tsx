@@ -270,22 +270,25 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         const username = creds.sip_uri.split('@')[0];
         const domain = creds.sip_domain;
 
-        // Configuration ICE avec STUN/TURN pour SignalWire
+        // Configuration ICE avec STUN/TURN pour Twilio (prioritaire) puis SignalWire
+        // Utilise les STUN de Twilio et Google pour une meilleure compatibilité
         const iceServers: RTCIceServer[] = [
           {
             urls: [
+              'stun:global.stun.twilio.com:3478', // Twilio STUN (prioritaire)
               'stun:stun.l.google.com:19302',
               'stun:stun1.l.google.com:19302',
               'stun:stun2.l.google.com:19302',
-              'stun:stun.signalwire.com:3478',
+              'stun:stun.signalwire.com:3478', // SignalWire STUN (fallback)
             ],
           },
         ];
 
-        // Ajouter TURN seulement si configuré
+        // Ajouter TURN seulement si configuré (via variables d'environnement)
+        // Pour Twilio, configurez VITE_TURN_URL=turn:votre-domain.sip.us1.twilio.com:3478
         const turnUrl = import.meta.env.VITE_TURN_URL;
-        const turnUsername = import.meta.env.VITE_TURN_USERNAME;
-        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL;
+        const turnUsername = import.meta.env.VITE_TURN_USERNAME || import.meta.env.VITE_TWILIO_SIP_USER;
+        const turnCredential = import.meta.env.VITE_TURN_CREDENTIAL || import.meta.env.VITE_TWILIO_SIP_PASSWORD;
 
         if (turnUrl && turnUsername && turnCredential) {
           iceServers.push({
@@ -307,6 +310,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         });
 
         // Création du UserAgent JsSIP
+        // Pour Twilio, le realm doit correspondre au domaine SIP
+        // Pour SignalWire/Asterisk, utiliser le realm configuré
+        const sipRealm = import.meta.env.VITE_SIP_REALM || domain || "api.antl.fr";
+        
         const socket = new JsSIP.WebSocketInterface(creds.ws_url);
         const ua = new JsSIP.UA({
           uri: `sip:${username}@${domain}`,
@@ -315,7 +322,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           register: true,
           session_timers: false,
           authorization_user: username, // Force l'ID de connexion
-          realm: "api.antl.fr", // Force le realm attendu par Asterisk
+          realm: sipRealm, // Realm dynamique (Twilio: domaine SIP, Asterisk: api.antl.fr)
           use_tls: true, // Puisque tu es en wss://
         } as any);
 
@@ -548,9 +555,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         iceServers: [
           {
             urls: [
+              'stun:global.stun.twilio.com:3478', // Twilio STUN (prioritaire)
               'stun:stun.l.google.com:19302',
               'stun:stun1.l.google.com:19302',
               'stun:stun2.l.google.com:19302',
+              'stun:stun.signalwire.com:3478',
             ],
           },
         ],

@@ -96,7 +96,9 @@ const DEV_PATTERNS = [
 const EXTERNAL_HOSTS = new Set([
   'fonts.googleapis.com',
   'fonts.gstatic.com',
-  'unpkg.com'
+  'unpkg.com',
+  'cdn.jsdelivr.net',
+  'script.antl.fr'
 ]);
 
 // Stratégie de mise en cache

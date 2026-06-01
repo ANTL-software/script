@@ -37,10 +37,8 @@ const STATIC_FILES = [
   '/favicon.ico',
   '/pwa-icons/icon-192x192.png',
   '/pwa-icons/icon-512x512.png',
-  '/twilio.min.js',
   // Pages principales
   '/login',
-  '/',
   '/plan-appel',
   '/objections'
 ];
@@ -116,6 +114,11 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (DEV_PATTERNS.some(pattern => pattern.test(url.pathname + url.search))) {
+    return;
+  }
+
+  // Exclure les scripts Twilio du caching (doit être chargé fraîchement)
+  if (url.pathname === '/twilio.min.js') {
     return;
   }
 

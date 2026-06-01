@@ -27,7 +27,9 @@ export function useLoginForm() {
   const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
+    console.log('[useLoginForm] isAuthenticated:', isAuthenticated);
     if (isAuthenticated) {
+      console.log('[useLoginForm] Redirecting to /');
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);

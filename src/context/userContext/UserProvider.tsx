@@ -20,24 +20,30 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
+        console.log('[AUTH] Initializing auth...');
 
         const storedUser = userService.getStoredUser();
         const hasToken = userService.hasValidToken();
+        console.log('[AUTH] storedUser:', !!storedUser);
+        console.log('[AUTH] hasToken:', hasToken);
+        console.log('[AUTH] Cookies:', document.cookie);
 
         if (storedUser && hasToken) {
           try {
             const userModel = await userService.getCurrentUser();
             setUser(userModel.toJSON());
+            console.log('[AUTH] User validated and set');
           } catch (error) {
-            console.error('Failed to validate user session:', error);
+            console.error('[AUTH] Failed to validate user session:', error);
             setUser(null);
             userService.clearSession();
           }
         } else {
+          console.log('[AUTH] No stored user or token, setting user to null');
           setUser(null);
         }
       } catch (error) {
-        console.error('Error initializing auth:', error);
+        console.error('[AUTH] Error initializing auth:', error);
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -51,14 +57,20 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     try {
       setIsLoading(true);
       setError(null);
+      console.log('[LOGIN] Starting login for:', credentials.identifiant);
 
       const userModel = await userService.login(credentials);
+      console.log('[LOGIN] UserModel received:', userModel.toJSON());
       setUser(userModel.toJSON());
+      console.log('[LOGIN] User state set. Checking hasValidToken...');
+      console.log('[LOGIN] hasValidToken:', userService.hasValidToken());
+      console.log('[LOGIN] Cookies:', document.cookie);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error
         ? error.message
         : 'Une erreur est survenue lors de la connexion';
 
+      console.error('[LOGIN] Error:', error);
       setError(errorMessage);
       throw error;
     } finally {

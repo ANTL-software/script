@@ -125,11 +125,31 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
-  // Initialiser Twilio.window.Twilio.Device (appelé depuis useEffect quand auth change)
+  // Attendre que le SDK Twilio soit chargé
+  const waitForTwilio = useCallback((): Promise<void> => {
+    return new Promise((resolve) => {
+      const checkTwilio = () => {
+        if (typeof window !== 'undefined' && window.Twilio && window.Twilio.Device && typeof window.Twilio.Device.on === 'function') {
+          resolve();
+        } else {
+          setTimeout(checkTwilio, 100);
+        }
+      };
+      // Délai initial pour laisser le temps au script de charger
+      setTimeout(checkTwilio, 500);
+    });
+  }, []);
+
+  // Initialiser Twilio.Device (appelé depuis useEffect quand auth change)
   const initializeTwilioDevice = useCallback(async () => {
     console.groupCollapsed('🚀 [TWILIO] Initialisation Device');
     
     try {
+      // Attendre que le SDK soit chargé
+      console.log('⏳ Attente chargement Twilio SDK...');
+      await waitForTwilio();
+      console.log('✅ [TWILIO] Twilio SDK chargé');
+      
       // Récupérer le Access Token depuis le backend
       const accessToken = await fetchTwilioToken();
       
@@ -137,9 +157,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         throw new Error('Impossible de récupérer le Access Token Twilio');
       }
 
-      // Vérifier que Twilio est chargé et que Device est fonctionnel
+      // Vérifier que Device est toujours disponible
       if (typeof window === 'undefined' || !window.Twilio || !window.Twilio.Device || typeof window.Twilio.Device.on !== 'function') {
-        throw new Error('Twilio Voice SDK non chargé ou Device non valide. Vérifiez le chargement du script /twilio.min.js');
+        throw new Error('Twilio Voice SDK non disponible. Le script a été chargé mais Device est invalide.');
       }
 
       console.log('✅ [TWILIO] Device disponible');

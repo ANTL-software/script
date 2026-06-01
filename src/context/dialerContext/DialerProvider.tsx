@@ -8,6 +8,8 @@ import { dialerService, appelService, closingService, twilioService } from '../.
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { useToast } from '../../hooks';
+// Import Device from npm package (not CDN) - proper React way
+import Device from '@twilio/voice-sdk';
 
 interface DialerProviderProps {
   children: ReactNode;
@@ -107,38 +109,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
-  // Attendre que Twilio SDK soit chargé
-  const waitForTwilioSdk = useCallback(async (): Promise<any> => {
-    return new Promise((resolve, reject) => {
-      const checkInterval = setInterval(() => {
-        // @ts-ignore - Twilio est disponible globalement
-        if (window.Twilio?.Device) {
-          clearInterval(checkInterval);
-          // @ts-ignore
-          resolve(window.Twilio.Device);
-        }
-      }, 100);
-      
-      // Timeout après 10 secondes
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        reject(new Error('Twilio Voice SDK not loaded after 10 seconds. Check index.html script tag.'));
-      }, 10000);
-    });
-  }, []);
-
   // Initialiser Twilio.Device
   const initializeTwilioDevice = useCallback(async () => {
     console.groupCollapsed('🚀 [TWILIO] Initialisation Device');
     
     try {
-      // Attendre que le SDK Twilio soit chargé
-      // @ts-ignore
-      const Device = await waitForTwilioSdk();
-      
-      if (!Device) {
-        throw new Error('Twilio Voice SDK non chargé. Vérifiez que le script est importé dans index.html.');
-      }
+      // Device est importé directement depuis @twilio/voice-sdk (npm)
+      // Pas besoin d'attendre un CDN, le module est bundlé avec Vite
 
       // Récupérer le Access Token depuis le backend
       const accessToken = await fetchTwilioToken();

@@ -1,22 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-
-// Déclaration de type pour window.Twilio (Voice SDK chargé via npm import dans main.tsx)
-declare global {
-  interface Window {
-    Twilio: {
-      Device: {
-        setup: (token: string, options?: any) => void;
-        connect: (options: { phoneNumber: string }) => any;
-        activeConnections: () => any[];
-        incomingConnections: () => any[];
-        status: () => string;
-        destroy: () => void;
-        on: (event: string, handler: (...args: any[]) => void) => void;
-        off: (event: string, handler: (...args: any[]) => void) => void;
-      };
-    };
-  }
-}
+// Import Device directement depuis le package npm
+// @ts-ignore - Le package exporte Device mais TypeScript ne le voit pas toujours
+import { Device } from '@twilio/voice-sdk';
 import type { ReactNode } from 'react';
 import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
@@ -140,31 +125,31 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       }
 
       // Vérifier que Twilio est chargé
-      if (typeof window === 'undefined' || !window.Twilio?.Device) {
+      if (typeof window === 'undefined' || !Device) {
         throw new Error('Twilio Voice SDK non chargé. CDN manquant.');
       }
 
       // Stocker la référence
-      deviceRef.current = window.Twilio.Device;
+      deviceRef.current = Device;
 
       // Configurer les événements Twilio
-      window.Twilio.Device.on('ready', () => {
+      Device.on('ready', () => {
         console.log('✅ [TWILIO] Device prêt');
         setSipConnected(true);
       });
 
-      window.Twilio.Device.on('error', (error: any) => {
+      Device.on('error', (error: any) => {
         console.error('❌ [TWILIO] Erreur Device:', error);
         setSipConnected(false);
         showToast('error', 'Erreur Twilio: ' + error.message, 5000);
       });
 
-      window.Twilio.Device.on('offline', () => {
+      Device.on('offline', () => {
         console.warn('⚠️ [TWILIO] Device hors ligne');
         setSipConnected(false);
       });
 
-      window.Twilio.Device.on('incoming', (connection: TwilioConnection) => {
+      Device.on('incoming', (connection: TwilioConnection) => {
         console.groupCollapsed('📞 [TWILIO] Appel entrant');
         console.log('From:', connection.parameters.From);
         console.log('CallSid:', connection.parameters.CallSid);
@@ -177,7 +162,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         showToast('info', `Appel entrant de: ${connection.parameters.From}`, 10000);
       });
 
-      window.Twilio.Device.on('connect', (connection: TwilioConnection) => {
+      Device.on('connect', (connection: TwilioConnection) => {
         console.groupCollapsed('✅ [TWILIO] Appel connecté');
         console.log('CallSid:', connection.sid);
         isCallActiveRef.current = true;
@@ -188,7 +173,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         showToast('success', 'Appel établi', 3000);
       });
 
-      window.Twilio.Device.on('disconnect', (connection: TwilioConnection) => {
+      Device.on('disconnect', (connection: TwilioConnection) => {
         console.groupCollapsed('📞 [TWILIO] Appel terminé');
         console.log('CallSid:', connection.sid);
         stopCallTimer();
@@ -203,7 +188,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         showToast('info', 'Appel terminé', 3000);
       });
 
-      window.Twilio.Device.on('cancel', (connection: TwilioConnection) => {
+      Device.on('cancel', (connection: TwilioConnection) => {
         console.log('⚠️ [TWILIO] Appel annulé:', connection.sid);
         if (incomingConnectionRef.current?.sid === connection.sid) {
           setIncomingCall(null);
@@ -214,7 +199,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       // Configurer Device avec l'Access Token
       const isDev = import.meta.env.MODE === 'development';
-      window.Twilio.Device.setup(accessToken, {
+      Device.setup(accessToken, {
         debug: isDev,
         logLevel: isDev ? 3 : 1,
         region: import.meta.env.VITE_TWILIO_REGION || undefined,
@@ -319,8 +304,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       document.removeEventListener('visibilitychange', handleVisibility);
       
       // Nettoyer Twilio
-      if (window.Twilio?.Device) {
-        window.Twilio.Device.destroy();
+      if (Device) {
+        Device.destroy();
       }
     };
   }, [isAuthenticated, initializeTwilioDevice]);
@@ -334,7 +319,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     console.groupCollapsed(`📞 [APPEL] ${phoneNumber}`);
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
 
-    if (!window.Twilio?.Device || window.Twilio.Device.status() !== 'ready') {
+    if (!Device || Device.status() !== 'ready') {
       console.error('❌ Impossible d\'appeler — Twilio Device non prêt');
       console.groupEnd();
       showToast('error', 'Twilio non prêt - Veuillez réessayer', 5000);
@@ -374,7 +359,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.log('📤 [TWILIO] Appel vers:', formattedNumber);
 
       // Passer l'appel via Twilio
-      const connection = window.Twilio.Device.connect({
+      const connection = Device.connect({
         phoneNumber: formattedNumber
       });
 
@@ -407,9 +392,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   // Raccrocher
   const hangup = useCallback(() => {
-    if (!window.Twilio?.Device) return;
+    if (!Device) return;
 
-    const activeConnections = window.Twilio.Device.activeConnections();
+    const activeConnections = Device.activeConnections();
     if (activeConnections.length === 0) {
       console.warn('⚠️ Aucun appel actif');
       return;

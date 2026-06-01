@@ -3,8 +3,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { ErrorBoundary } from "./views/components/errorBoundary/ErrorBoundary";
-// Charger Twilio Voice SDK (définit window.Twilio.Device)
-import '@twilio/voice-sdk';
 
 // Enregistrement du Service Worker pour PWA (approche manuelle comme USV)
 if ('serviceWorker' in navigator && import.meta.env.MODE === 'production') {

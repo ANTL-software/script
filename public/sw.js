@@ -37,6 +37,7 @@ const STATIC_FILES = [
   '/favicon.ico',
   '/pwa-icons/icon-192x192.png',
   '/pwa-icons/icon-512x512.png',
+  '/twilio.min.js',
   // Pages principales
   '/login',
   '/',

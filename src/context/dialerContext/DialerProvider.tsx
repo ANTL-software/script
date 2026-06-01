@@ -125,20 +125,81 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
-  // Attendre que le SDK Twilio soit chargé
-  const waitForTwilio = useCallback((): Promise<void> => {
-    return new Promise((resolve) => {
-      const checkTwilio = () => {
-        if (typeof window !== 'undefined' && window.Twilio && window.Twilio.Device && typeof window.Twilio.Device.on === 'function') {
+  // Vérifier que Twilio Device est prêt (avec ses méthodes statiques)
+  const isTwilioReady = useCallback((): boolean => {
+    return typeof window !== 'undefined' && 
+           window.Twilio && 
+           window.Twilio.Device && 
+           typeof window.Twilio.Device.on === 'function';
+  }, []);
+  
+  // Charger le SDK Twilio dynamiquement si ce n'est pas déjà fait
+  const loadTwilioSDK = useCallback((): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // Si déjà chargé, résoudre immédiatement
+      if (isTwilioReady()) {
+        console.log('✅ [TWILIO] SDK déjà chargé');
+        resolve();
+        return;
+      }
+      
+      // Vérifier si un script est déjà en cours de chargement
+      const existingScript = document.querySelector('script[src="/twilio.min.js"]') as HTMLScriptElement | null;
+      
+      if (existingScript) {
+        // Le script est dans le HTML, attendre qu'il soit chargé
+        console.log('⏳ [TWILIO] Attente du chargement du script existant...');
+        const MAX_WAIT_TIME = 10000;
+        const startTime = Date.now();
+        
+        const checkTwilio = () => {
+          const elapsed = Date.now() - startTime;
+          
+          if (isTwilioReady()) {
+            resolve();
+            return;
+          }
+          
+          if (elapsed >= MAX_WAIT_TIME) {
+            reject(new Error(`Twilio SDK non chargé après ${MAX_WAIT_TIME}ms. Vérifiez que /twilio.min.js est accessible et que le serveur le sert correctement.`));
+            return;
+          }
+          
+          setTimeout(checkTwilio, 100);
+        };
+        
+        setTimeout(checkTwilio, 500);
+        return;
+      }
+      
+      // Charger le SDK dynamiquement
+      console.log('📥 [TWILIO] Chargement dynamique du SDK...');
+      const script = document.createElement('script');
+      script.src = '/twilio.min.js';
+      script.async = true;
+      
+      script.onload = () => {
+        console.log('✅ [TWILIO] Script SDK chargé');
+        if (isTwilioReady()) {
+          console.log('✅ [TWILIO] SDK chargé dynamiquement');
           resolve();
         } else {
-          setTimeout(checkTwilio, 100);
+          reject(new Error('Twilio SDK chargé mais window.Twilio.Device.on non disponible'));
         }
       };
-      // Délai initial pour laisser le temps au script de charger
-      setTimeout(checkTwilio, 500);
+      
+      script.onerror = () => {
+        reject(new Error('❌ [TWILIO] Échec du chargement du SDK depuis /twilio.min.js. Vérifiez que le fichier existe sur le serveur.'));
+      };
+      
+      document.head.appendChild(script);
     });
-  }, []);
+  }, [isTwilioReady]);
+  
+  // Attendre que le SDK Twilio soit chargé
+  const waitForTwilio = useCallback((): Promise<void> => {
+    return loadTwilioSDK();
+  }, [loadTwilioSDK]);
 
   // Initialiser Twilio.Device (appelé depuis useEffect quand auth change)
   const initializeTwilioDevice = useCallback(async () => {

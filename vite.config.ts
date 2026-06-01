@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
 // Plugin pour injecter la version dans le service worker (même approche que USV)
@@ -41,6 +41,19 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills(),
+    {
+      name: 'copy-twilio-sdk',
+      buildStart() {
+        const src = join(__dirname, 'node_modules/@twilio/voice-sdk/dist/twilio.min.js');
+        const dest = join(__dirname, 'public/twilio.min.js');
+        if (existsSync(src)) {
+          copyFileSync(src, dest);
+          console.log('✅ Copie de twilio.min.js vers public/');
+        } else {
+          console.warn('⚠️  Fichier twilio.min.js non trouvé dans node_modules');
+        }
+      }
+    },
     injectVersion(),
   ],
   base: "/",

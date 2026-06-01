@@ -207,7 +207,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     
     try {
       // Attendre que le SDK soit chargé
-      console.log('⏳ Attente chargement Twilio SDK...');
       await waitForTwilio();
       console.log('✅ [TWILIO] Twilio SDK chargé');
       

@@ -1,6 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
-// @ts-ignore - Device is exported as named from @twilio/voice-sdk
 import { Device } from '@twilio/voice-sdk';
 import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';

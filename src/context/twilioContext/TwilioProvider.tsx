@@ -7,6 +7,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo, createContext } from 'react';
 import type { ReactNode } from 'react';
+import { Device } from '@twilio/voice-sdk';
 import { twilioService } from '../../API/services/Twilio.service';
 import { useToast } from '../../hooks';
 import { formatPhoneE164 } from '../../utils/scripts/formatters';
@@ -109,13 +110,6 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
       // Récupérer le Access Token depuis le backend
       const { accessToken, identity } = await twilioService.getAccessToken();
       console.log(`✅ Token reçu pour: ${identity}`);
-
-      // @ts-ignore - Twilio.Device est disponible globalement après chargement du SDK
-      const Device = window.Twilio?.Device;
-      
-      if (!Device) {
-        throw new Error('Twilio Voice SDK non chargé. Vérifiez que @twilio/voice-sdk est importé.');
-      }
 
       // Stocker la référence
       deviceRef.current = Device;

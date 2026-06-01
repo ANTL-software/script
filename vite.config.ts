@@ -40,7 +40,9 @@ const injectVersion = () => {
 export default defineConfig({
   plugins: [
     react(),
-    nodePolyfills(),
+    nodePolyfills({
+      include: ['events', 'util']
+    }),
     injectVersion(),
   ],
   base: "/",
@@ -48,7 +50,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
+          vendor: ['react', 'react-dom', '@twilio/voice-sdk'],
           router: ['react-router-dom'],
           icons: ['react-icons'],
         }

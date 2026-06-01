@@ -117,11 +117,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Exclure les scripts Twilio du caching (doit être chargé fraîchement)
-  if (url.pathname === '/twilio.min.js') {
-    return;
-  }
-
   // Stratégie pour les fichiers statiques
   if (STATIC_FILES.includes(url.pathname) ||
       request.destination === 'style' ||

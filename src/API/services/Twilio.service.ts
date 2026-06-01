@@ -3,8 +3,10 @@
  * 
  * Service pour gérer les appels via le Twilio Voice JavaScript SDK
  * Remplace l'ancienne implémentation JsSIP
+ * Utilise le package npm @twilio/voice-sdk au lieu du CDN
  */
 
+import { Device } from '@twilio/voice-sdk';
 import { apiCalls } from '../APICalls';
 import { throwIfApiError } from '../apiHelpers';
 
@@ -59,15 +61,6 @@ export class TwilioService {
    * @returns Promise<void>
    */
   public async initializeDevice(token: string, options: TwilioDeviceOptions = {}): Promise<void> {
-    // Charger le SDK Twilio dynamiquement
-    // @ts-ignore - Twilio.Device est disponible globalement après chargement du SDK
-    if (typeof window !== 'undefined' && !window.Twilio) {
-      throw new Error('Twilio Voice SDK non chargé. Assurez-vous que @twilio/voice-sdk est importé.');
-    }
-
-    // @ts-ignore
-    const Device = window.Twilio.Device;
-
     console.groupCollapsed('📱 [TWILIO] Initialisation Device');
     console.log('Token:', token.substring(0, 20) + '...');
     console.log('Options:', options);
@@ -85,9 +78,6 @@ export class TwilioService {
    * @returns Promise<string> - Call SID
    */
   public async makeOutboundCall(phoneNumber: string): Promise<string> {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
-
     if (!Device || !Device.connect) {
       throw new Error('Twilio.Device non initialisé. Appelez initializeDevice() d\'abord.');
     }
@@ -115,9 +105,6 @@ export class TwilioService {
    * @returns Promise<void>
    */
   public async hangupCall(): Promise<void> {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
-
     if (!Device) {
       throw new Error('Twilio.Device non initialisé');
     }
@@ -141,9 +128,6 @@ export class TwilioService {
    * @returns Promise<void>
    */
   public async answerIncomingCall(): Promise<void> {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
-
     if (!Device) {
       throw new Error('Twilio.Device non initialisé');
     }
@@ -166,9 +150,6 @@ export class TwilioService {
    * @returns Promise<void>
    */
   public async rejectIncomingCall(): Promise<void> {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
-
     if (!Device) {
       throw new Error('Twilio.Device non initialisé');
     }
@@ -191,8 +172,6 @@ export class TwilioService {
    * @returns string
    */
   public getDeviceStatus(): string {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
     return Device ? Device.status() : 'uninitialized';
   }
 
@@ -201,8 +180,6 @@ export class TwilioService {
    * @returns boolean
    */
   public isDeviceReady(): boolean {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
     return Device && Device.status() === 'ready';
   }
 
@@ -211,8 +188,6 @@ export class TwilioService {
    * @returns boolean
    */
   public isCallActive(): boolean {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
     return Device && Device.activeConnections().length > 0;
   }
 
@@ -221,9 +196,6 @@ export class TwilioService {
    * @returns Promise<void>
    */
   public async cleanup(): Promise<void> {
-    // @ts-ignore
-    const Device = window.Twilio.Device;
-
     if (Device) {
       console.log('[TWILIO] Nettoyage Device');
       // Déconnecter tous les appels

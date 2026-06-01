@@ -27,15 +27,5 @@ declare module '@twilio/voice-sdk' {
     off(event: string, handler: (...args: any[]) => void): void;
   }
 
-  const Device: Device;
-  export default Device;
-}
-
-// Also declare for window.Twilio (CDN fallback)
-declare global {
-  interface Window {
-    Twilio?: {
-      Device?: any;
-    };
-  }
+  export const Device: Device;
 }

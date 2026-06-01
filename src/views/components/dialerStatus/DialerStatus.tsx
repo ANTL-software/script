@@ -24,7 +24,7 @@ const LABELS_PAUSE: Record<RaisonPause, string> = {
 const RAISONS_PAUSE: RaisonPause[] = ['repas', 'personnelle', 'legale', 'brief', 'technique'];
 
 export default function DialerStatus() {
-  const { statut, raisonPause, depuisLe, isLoading, changerStatut, sipReconnecting } = useDialer();
+  const { statut, raisonPause, depuisLe, isLoading, changerStatut } = useDialer();
   const [isOpen, setIsOpen] = useState(false);
   const [duree, setDuree] = useState('00:00');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -74,11 +74,6 @@ export default function DialerStatus() {
       >
         <span className="dialer-status__dot" />
         <span className="dialer-status__label">{labelActuel}</span>
-        {sipReconnecting && (
-          <span className="dialer-status__reconnecting" title="Reconnexion SIP en cours...">
-            🔄
-          </span>
-        )}
         {(statut === 'pause' || statut === 'pause_apres_appel' || statut === 'en_appel' || statut === 'appel_sortant') && (
           <span className="dialer-status__timer">{duree}</span>
         )}

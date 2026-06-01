@@ -12,7 +12,6 @@ export interface DialerContextType {
   depuisLe: Date;
   isLoading: boolean;
   sipConnected: boolean;
-  sipReconnecting: boolean;
   callDuration: number;
   callDurationFormatted: string;
   incomingCall: IncomingCall | null;
@@ -26,7 +25,7 @@ export interface DialerContextType {
   clearProchainProspect: () => void;
   call: (phoneNumber: string, campagneId?: number, prospectId?: number) => Promise<void>;
   hangup: () => void;
-  answer: () => Promise<void>;
+  answer: () => void;
   reject: () => void;
   openProspectManual: (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => Promise<void>;
 }

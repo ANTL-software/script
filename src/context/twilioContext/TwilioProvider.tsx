@@ -5,7 +5,7 @@
  * Remplace progressivement le DialerProvider basé sur JsSIP
  */
 
-import React, { useState, useCallback, useRef, useEffect, useMemo, createContext } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, createContext } from 'react';
 import type { ReactNode } from 'react';
 import { twilioService } from '../../API/services/Twilio.service';
 import { useToast } from '../../hooks';
@@ -40,7 +40,6 @@ export interface TwilioContextType {
   // État de connexion
   isTwilioReady: boolean;
   twilioConnected: boolean;
-  twilioReconnecting: boolean;
   
   // Appel
   callDuration: number;
@@ -70,7 +69,6 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
   
   const [isTwilioReady, setIsTwilioReady] = useState(false);
   const [twilioConnected, setTwilioConnected] = useState(false);
-  const [twilioReconnecting, setTwilioReconnecting] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [isCallActive, setIsCallActive] = useState(false);
   const [activeCallSid, setActiveCallSid] = useState<string | null>(null);
@@ -184,9 +182,10 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
       });
 
       // Initialiser le device avec le token
+      const isDev = import.meta.env.MODE === 'development';
       Device.setup(accessToken, {
-        debug: process.env.NODE_ENV === 'development',
-        logLevel: process.env.NODE_ENV === 'development' ? 3 : 1,
+        debug: isDev,
+        logLevel: isDev ? 3 : 1,
         region: import.meta.env.VITE_TWILIO_REGION || undefined,
         edge: import.meta.env.VITE_TWILIO_EDGE || undefined,
         insights: true
@@ -356,7 +355,6 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
   const contextValue: TwilioContextType = {
     isTwilioReady,
     twilioConnected,
-    twilioReconnecting,
     callDuration,
     callDurationFormatted,
     isCallActive,

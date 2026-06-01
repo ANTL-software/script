@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect, useMemo, createContext } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
@@ -48,7 +48,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [depuisLe, setDepuisLe] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [sipConnected, setSipConnected] = useState(false);
-  const [sipReconnecting, setSipReconnecting] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
 
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
@@ -62,7 +61,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const deviceRef = useRef<TwilioDevice | null>(null);
   const incomingConnectionRef = useRef<TwilioConnection | null>(null);
   const isClosingRef = useRef<boolean>(false);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
   const isCallActiveRef = useRef<boolean>(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const hasCalledEstablishedRef = useRef<boolean>(false);
@@ -561,7 +559,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       depuisLe,
       isLoading,
       sipConnected,
-      sipReconnecting,
       callDuration,
       callDurationFormatted,
       incomingCall,

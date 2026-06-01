@@ -1,32 +1,45 @@
 /**
  * Twilio Voice SDK Service
- * 
- * Service pour gérer les appels via le Twilio Voice JavaScript SDK
- * Remplace l'ancienne implémentation JsSIP
- * Utilise le package npm @twilio/voice-sdk au lieu du CDN
+ *
+ * Service pour interagir avec le backend Twilio
+ * La gestion du Device (Device.setup, Device.connect, etc.) se fait dans le TwilioProvider
+ * Ce service ne gère que la communication avec le backend (tokens, logs, etc.)
+ *
+ * Documentation: https://www.twilio.com/docs/voice/sdks/javascript
  */
 
-import { Device } from '@twilio/voice-sdk';
 import { apiCalls } from '../APICalls';
 import { throwIfApiError } from '../apiHelpers';
+
+// ============================================
+// TYPES
+// ============================================
 
 export interface TwilioAccessTokenResponse {
   accessToken: string;
   identity: string;
+  expiresIn?: number; // Durée de validité en secondes
 }
 
-export interface TwilioDeviceOptions {
-  // Options pour Twilio.Device.setup()
-  debug?: boolean;
-  logLevel?: number;
-  region?: string;
-  edge?: string;
-  insights?: boolean;
+export interface TwilioCallLogRequest {
+  callSid: string; // Twilio Call SID
+  from: string; // Numéro appelé (prospect)
+  to?: string; // Numéro Twilio (optionnel)
+  duration?: number; // Durée en secondes
+  status: 'completed' | 'failed' | 'busy' | 'no-answer' | 'canceled';
+  recordingUrl?: string; // URL de l'enregistrement (si activé)
+  metadata?: Record<string, unknown>; // Métadonnées additionnelles
 }
 
-export interface CallOptions {
-  phoneNumber: string; // Numéro à appeler (format E.164 ou identity)
+export interface TwilioCallLogResponse {
+  id: number;
+  callSid: string;
+  loggedAt: string;
 }
+
+// ============================================
+// SERVICE
+// ============================================
 
 export class TwilioService {
   private static instance: TwilioService;
@@ -42,170 +55,111 @@ export class TwilioService {
 
   /**
    * Récupère un Access Token depuis le backend
+   *
+   * Le backend génère un JWT token signé avec les credentials Twilio
+   * qui autorise ce client à utiliser le Twilio Voice SDK
+   *
    * @returns Promise<TwilioAccessTokenResponse>
    */
   public async getAccessToken(): Promise<TwilioAccessTokenResponse> {
     console.groupCollapsed('🔐 [TWILIO] Récupération Access Token');
-    // /twilio/token au lieu de /api/twilio/token car baseURL contient déjà /api
-    const response = await apiCalls.get<TwilioAccessTokenResponse>('/twilio/token');
-    const tokenData = throwIfApiError(response, 'Erreur lors de la récupération du token Twilio');
-    console.log('✅ Token reçu pour:', tokenData.identity);
-    console.groupEnd();
-    return tokenData;
-  }
 
-  /**
-   * Initialise Twilio.Device avec un Access Token
-   * @param {string} token - Access Token JWT
-   * @param {TwilioDeviceOptions} options - Options pour Device.setup()
-   * @returns Promise<void>
-   */
-  public async initializeDevice(token: string, options: TwilioDeviceOptions = {}): Promise<void> {
-    console.groupCollapsed('📱 [TWILIO] Initialisation Device');
-    console.log('Token:', token.substring(0, 20) + '...');
-    console.log('Options:', options);
+    try {
+      // /twilio/token au lieu de /api/twilio/token car baseURL contient déjà /api
+      const response = await apiCalls.get<TwilioAccessTokenResponse>('/twilio/token');
+      const tokenData = throwIfApiError(response, 'Erreur lors de la récupération du token Twilio');
 
-    // Configurer le device
-    Device.setup(token, options);
+      console.log('✅ Token reçu pour:', tokenData.identity);
+      console.log('⏰ Expire dans:', tokenData.expiresIn ? `${tokenData.expiresIn}s` : 'inconnu');
+      console.groupEnd();
 
-    console.log('✅ Device initialisé avec succès');
-    console.groupEnd();
-  }
-
-  /**
-   * Passe un appel sortant via Twilio
-   * @param {string} phoneNumber - Numéro à appeler (format E.164: +33123456789)
-   * @returns Promise<string> - Call SID
-   */
-  public async makeOutboundCall(phoneNumber: string): Promise<string> {
-    if (!Device || !Device.connect) {
-      throw new Error('Twilio.Device non initialisé. Appelez initializeDevice() d\'abord.');
+      return tokenData;
+    } catch (error) {
+      console.error('❌ [TWILIO] Erreur récupération token:', error);
+      console.groupEnd();
+      throw error;
     }
-
-    console.groupCollapsed(`📞 [TWILIO] Appel sortant vers ${phoneNumber}`);
-    console.log('Device status:', Device.status());
-
-    // Passer l'appel
-    const call = Device.connect({
-      phoneNumber: phoneNumber
-    });
-
-    if (!call) {
-      throw new Error('Impossible de démarrer l\'appel - Device.connect() a retourné null');
-    }
-
-    console.log('✅ Appel lancé, Call SID:', call.sid);
-    console.groupEnd();
-
-    return call.sid;
   }
 
   /**
-   * Met fin à l'appel en cours
-   * @returns Promise<void>
+   * Rafraîchit un Access Token expiré
+   *
+   * Le SDK Twilio émettra un événement 'tokenWillExpire' avant l'expiration
+   * Cette méthode permet de récupérer un nouveau token sans recharger la page
+   *
+   * @returns Promise<TwilioAccessTokenResponse>
    */
-  public async hangupCall(): Promise<void> {
-    if (!Device) {
-      throw new Error('Twilio.Device non initialisé');
-    }
-
-    const activeCalls = Device.activeConnections();
-    if (activeCalls.length === 0) {
-      console.warn('[TWILIO] Aucun appel actif à raccrocher');
-      return;
-    }
-
-    console.groupCollapsed('📞 [TWILIO] Fin d\'appel');
-    activeCalls.forEach((call: any) => {
-      console.log('Raccrocher:', call.sid);
-      call.disconnect();
-    });
-    console.groupEnd();
+  public async refreshAccessToken(): Promise<TwilioAccessTokenResponse> {
+    console.log('🔄 [TWILIO] Rafraîchissement Access Token');
+    return this.getAccessToken(); // Même endpoint pour le rafraîchissement
   }
 
   /**
-   * Répond à un appel entrant
-   * @returns Promise<void>
+   * Enregistre un log d'appel dans le backend
+   *
+   * Permet de synchroniser les informations Twilio (Call SID, durée, statut)
+   * avec notre base de données pour le traçage
+   *
+   * @param {TwilioCallLogRequest} data - Données de l'appel
+   * @returns Promise<TwilioCallLogResponse>
    */
-  public async answerIncomingCall(): Promise<void> {
-    if (!Device) {
-      throw new Error('Twilio.Device non initialisé');
+  public async logCall(data: TwilioCallLogRequest): Promise<TwilioCallLogResponse> {
+    console.groupCollapsed('📝 [TWILIO] Enregistrement appel');
+    console.log('Call SID:', data.callSid);
+    console.log('Status:', data.status);
+    console.log('Duration:', data.duration, 's');
+
+    try {
+      const response = await apiCalls.post<TwilioCallLogResponse>('/twilio/calls/log', data);
+      const result = throwIfApiError(response, 'Erreur lors de l\'enregistrement de l\'appel');
+
+      console.log('✅ Appel enregistré, ID:', result.id);
+      console.groupEnd();
+
+      return result;
+    } catch (error) {
+      console.error('❌ [TWILIO] Erreur enregistrement appel:', error);
+      console.groupEnd();
+      throw error;
     }
+  }
 
-    const incomingConnections = Device.incomingConnections();
-    if (incomingConnections.length === 0) {
-      throw new Error('Aucun appel entrant en attente');
+  /**
+   * Signale un problème technique avec Twilio au backend
+   *
+   * @param {string} type - Type d'erreur (connection_failed, no_audio, etc.)
+   * @param {Error} error - Erreur originale
+   */
+  public async reportError(type: string, error: Error): Promise<void> {
+    console.warn('⚠️ [TWILIO] Rapport d\'erreur:', type, error.message);
+
+    try {
+      await apiCalls.post('/twilio/errors', {
+        type,
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) {
+      console.error('❌ [TWILIO] Erreur rapport erreur:', err);
     }
-
-    console.groupCollapsed('📞 [TWILIO] Réponse à appel entrant');
-    incomingConnections.forEach((connection: any) => {
-      connection.accept();
-      console.log('✅ Appel accepté:', connection.parameters.CallSid);
-    });
-    console.groupEnd();
   }
 
   /**
-   * Rejette un appel entrant
-   * @returns Promise<void>
+   * Récupère la configuration Twilio depuis le backend
+   *
+   * @returns Promise<Record<string, unknown>>
    */
-  public async rejectIncomingCall(): Promise<void> {
-    if (!Device) {
-      throw new Error('Twilio.Device non initialisé');
-    }
-
-    const incomingConnections = Device.incomingConnections();
-    if (incomingConnections.length === 0) {
-      throw new Error('Aucun appel entrant à rejeter');
-    }
-
-    console.groupCollapsed('📞 [TWILIO] Rejet appel entrant');
-    incomingConnections.forEach((connection: any) => {
-      connection.reject();
-      console.log('❌ Appel rejeté:', connection.parameters.CallSid);
-    });
-    console.groupEnd();
-  }
-
-  /**
-   * Retourne le statut actuel de Twilio.Device
-   * @returns string
-   */
-  public getDeviceStatus(): string {
-    return Device ? Device.status() : 'uninitialized';
-  }
-
-  /**
-   * Retourne true si Twilio.Device est prêt
-   * @returns boolean
-   */
-  public isDeviceReady(): boolean {
-    return Device && Device.status() === 'ready';
-  }
-
-  /**
-   * Retourne true si un appel est en cours
-   * @returns boolean
-   */
-  public isCallActive(): boolean {
-    return Device && Device.activeConnections().length > 0;
-  }
-
-  /**
-   * Nettoie Twilio.Device
-   * @returns Promise<void>
-   */
-  public async cleanup(): Promise<void> {
-    if (Device) {
-      console.log('[TWILIO] Nettoyage Device');
-      // Déconnecter tous les appels
-      const activeCalls = Device.activeConnections();
-      activeCalls.forEach((call: any) => call.disconnect());
-
-      // Désinitialiser le device
-      Device.destroy();
+  public async getConfig(): Promise<Record<string, unknown>> {
+    try {
+      const response = await apiCalls.get<Record<string, unknown>>('/twilio/config');
+      return throwIfApiError(response, 'Erreur lors de la récupération de la configuration');
+    } catch (error) {
+      console.error('❌ [TWILIO] Erreur récupération config:', error);
+      return {}; // Retourne un objet vide en cas d'erreur
     }
   }
 }
 
+// Instance singleton
 export const twilioService = TwilioService.getInstance();

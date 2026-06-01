@@ -11,6 +11,6 @@ export { ClosingService, closingService } from './Closing.service';
 export type { PendingClosing } from './Closing.service';
 export { DialerService, dialerService } from './Dialer.service';
 export { TwilioService, twilioService } from './Twilio.service';
-export type { TwilioAccessTokenResponse, TwilioDeviceOptions } from './Twilio.service';
+export type { TwilioAccessTokenResponse, TwilioCallLogRequest, TwilioCallLogResponse } from './Twilio.service';
 export { NotificationService, notificationService } from './Notification.service';
 export { StatsService, statsService } from './Stats.service';

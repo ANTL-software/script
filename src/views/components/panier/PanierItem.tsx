@@ -2,7 +2,7 @@ import './panierItem.scss';
 import type { CartItem } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 
 interface PanierItemProps {
@@ -14,6 +14,11 @@ interface PanierItemProps {
 export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierItemProps) {
   const subtotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
   const [inputValue, setInputValue] = useState(item.quantite.toString());
+
+  // Synchroniser l'input avec la quantité quand elle change de l'extérieur
+  useEffect(() => {
+    setInputValue(item.quantite.toString());
+  }, [item.quantite]);
 
   const handleIncrement = () => {
     const newQuantite = item.quantite + 1;

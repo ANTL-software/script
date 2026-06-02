@@ -226,6 +226,17 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
+
+      {/* Bouton Utilisateur TEST en bas à gauche */}
+      <button
+        className="dashboard__test-btn"
+        onClick={() => {
+          // Naviguer vers le prospect ID 1 avec le paramètre test
+          navigate('/prospect/1?test=true');
+        }}
+      >
+        Utilisateur TEST
+      </button>
     </main>
   );
 }

@@ -75,7 +75,7 @@ export default function VenteCard({ vente }: VenteCardProps) {
             )}
           </div>
 
-          {vente.DetailsVentes && vente.DetailsVentes.length > 0 ? (
+          {vente.details && vente.details.length > 0 ? (
             <div className="vente-card__products">
               <table className="products-table">
                 <thead>
@@ -88,10 +88,19 @@ export default function VenteCard({ vente }: VenteCardProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {vente.DetailsVentes.map((detail, index) => (
+                  {vente.details.map((detail, index) => (
                     <tr key={index}>
                       <td className="product-name">
-                        {detail.Produit?.nom_produit || `Produit #${detail.id_produit}`}
+                        {detail.produit ? (
+                          <>
+                            {detail.produit.nom_produit} #{detail.produit.id_produit}
+                            {detail.produit.code_produit && (
+                              <span className="product-code"> ({detail.produit.code_produit})</span>
+                            )}
+                          </>
+                        ) : (
+                          `Produit #${detail.id_produit}`
+                        )}
                       </td>
                       <td>{formatCurrency(detail.prix_unitaire)}</td>
                       <td>{detail.quantite}</td>

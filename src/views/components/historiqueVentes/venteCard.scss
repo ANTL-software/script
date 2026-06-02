@@ -180,6 +180,15 @@
         &.product-name {
           font-weight: vars.$fontWeight-medium;
           color: vars.$colorBlack;
+          display: flex;
+          flex-direction: column;
+          gap: 0.125rem;
+
+          .product-code {
+            font-size: vars.$fontSize-xs;
+            color: vars.$colorGray500;
+            font-weight: vars.$fontWeight-normal;
+          }
         }
 
         &.product-total {

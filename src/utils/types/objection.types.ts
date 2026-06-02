@@ -4,6 +4,8 @@ export interface Objection {
   categorie: string | null;
   titre: string;
   texte_objection: string | null;
+  reformulation: string | null;    // NOUVEAU
+  adaptation: string | null;       // NOUVEAU
   texte_reponse: string;
   ordre_affichage: number;
   actif: boolean;

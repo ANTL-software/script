@@ -5,15 +5,19 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  width: 100%;
   background: vars.$colorWhite;
   border-left: 1px solid vars.$colorGray200;
+  box-sizing: border-box;
 
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: vars.$spacing-lg;
+    padding: vars.$spacing-xs;
     border-bottom: 1px solid vars.$colorGray200;
+    width: 100%;
+    box-sizing: border-box;
 
     h3 {
       display: flex;
@@ -65,41 +69,49 @@
   &__items {
     flex: 1;
     overflow-y: auto;
-    padding: vars.$spacing-md;
+    padding: 0;
     display: flex;
     flex-direction: column;
-    gap: vars.$spacing-md;
+    gap: vars.$spacing-xs;
   }
 
   &__footer {
-    padding: vars.$spacing-lg;
+    padding: vars.$spacing-xs;
     border-top: 1px solid vars.$colorGray200;
     background: vars.$colorGray100;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   &__total {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: vars.$spacing-md 0;
-    margin-bottom: vars.$spacing-md;
+    padding: vars.$spacing-xs 0;
+    margin-bottom: vars.$spacing-xs;
   }
 
   &__total-label {
-    font-size: vars.$fontSize-lg;
+    font-size: vars.$fontSize-base;
     font-weight: vars.$fontWeight-semibold;
     color: vars.$colorBlack;
   }
 
   &__total-amount {
-    font-size: vars.$fontSize-2xl;
+    font-size: vars.$fontSize-lg;
     font-weight: vars.$fontWeight-bold;
     color: vars.$colorPrimary;
   }
 
   &__actions {
     display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
+    flex-direction: row;
+    gap: vars.$spacing-xs;
+
+    .btn {
+      padding: vars.$spacing-xs vars.$spacing-sm;
+      font-size: vars.$fontSize-xs;
+      gap: vars.$spacing-xs;
+    }
   }
 }

@@ -134,8 +134,20 @@ export default function ObjectionsPage() {
                           <p>{objection.texte_objection}</p>
                         </div>
                       )}
+                      {objection.reformulation && (
+                        <div className="objections-page__objection-reformulation">
+                          <span className="objections-page__label">Reformulation :</span>
+                          <p>{objection.reformulation}</p>
+                        </div>
+                      )}
+                      {objection.adaptation && (
+                        <div className="objections-page__objection-adaptation">
+                          <span className="objections-page__label">Adaptation :</span>
+                          <p>{objection.adaptation}</p>
+                        </div>
+                      )}
                       <div className="objections-page__objection-response">
-                        <span className="objections-page__label">Reponse :</span>
+                        <span className="objections-page__label">Contrepartie :</span>
                         <p>{objection.texte_reponse}</p>
                       </div>
                     </div>

@@ -10,7 +10,7 @@ export interface DetailVente {
   prix_unitaire: number;
   remise: number;
   montant_ligne?: number;
-  Produit?: Produit; // Relation optionnelle avec le produit
+  produit?: Produit; // Relation optionnelle avec le produit (minuscule = Sequelize)
 }
 
 export interface Vente {
@@ -25,8 +25,7 @@ export interface Vente {
   statut: StatutVente;
   created_at: string;
   updated_at: string;
-  details?: DetailVente[];
-  DetailsVentes?: DetailVente[]; // Alias Sequelize pour les détails
+  details?: DetailVente[]; // Alias Sequelize pour les détails de vente
 }
 
 export interface CreateVenteData {

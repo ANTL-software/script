@@ -357,3 +357,29 @@
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.3); }
 }
+
+// Bouton Utilisateur TEST
+.dashboard__test-btn {
+  align-self: flex-start;
+  padding: vars.$spacing-sm vars.$spacing-md;
+  background: vars.$colorWarning;
+  color: vars.$colorGray900;
+  border: none;
+  border-radius: vars.$radius-md;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  cursor: pointer;
+  transition: all vars.$transition-fast;
+  margin-top: vars.$spacing-lg;
+  box-shadow: vars.$shadow-sm;
+
+  &:hover {
+    background: lighten(vars.$colorWarning, 5%);
+    transform: translateY(-1px);
+    box-shadow: vars.$shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}

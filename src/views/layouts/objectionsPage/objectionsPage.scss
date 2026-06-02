@@ -291,6 +291,34 @@
     }
   }
 
+  &__objection-reformulation {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: #fffbeb;
+    border-left: 3px solid #f59e0b;
+    border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: vars.$colorGray700;
+    }
+  }
+
+  &__objection-adaptation {
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: #eff6ff;
+    border-left: 3px solid #3b82f6;
+    border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
+
+    p {
+      margin: 0;
+      font-size: 0.875rem;
+      color: vars.$colorGray700;
+    }
+  }
+
   &__objection-response {
     padding: 0.75rem;
     background: #f0fdf4;

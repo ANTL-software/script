@@ -18,7 +18,8 @@ export interface Prospect {
   raison_sociale?: string;
   email?: string;
   telephone: string;
-  adresse?: string;
+  adresse_facturation?: string;   // Renommé depuis 'adresse' (2026-06-02)
+  adresse_livraison?: string;     // NOUVEAU (2026-06-02)
   code_postal?: string;
   ville?: string;
   pays?: string;
@@ -48,13 +49,12 @@ export interface UpdateProspectData {
   nom?: string;
   prenom?: string;
   email?: string;
-  telephone?: string;
-  adresse?: string;
+  adresse_facturation?: string;    // Renommé depuis 'adresse' (2026-06-02)
+  adresse_livraison?: string;       // NOUVEAU (2026-06-02)
   code_postal?: string;
   ville?: string;
   pays?: string;
   notes?: string;
-  raison_sociale?: string;
   siret?: string;
   code_naf?: string;
   activite?: string;

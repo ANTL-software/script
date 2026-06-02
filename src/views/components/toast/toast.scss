@@ -1,12 +1,13 @@
 .toast-container {
   position: fixed;
-  top: 1rem;
+  top: 10dvh; // Juste en dessous du header (hauteur header = 10dvh)
   right: 1rem;
   z-index: 9999;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   max-width: 400px;
+  margin-top: 0.5rem; // Petit espace visuel entre header et toasts
 }
 
 .toast {

@@ -251,6 +251,39 @@
   }
 }
 
+.confirm-order-modal__checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+  margin-bottom: vars.$spacing-md;
+  padding: vars.$spacing-sm;
+  background: vars.$colorGray100;
+  border-radius: vars.$radius-md;
+
+  input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  label {
+    font-weight: 500;
+    color: vars.$colorBlack;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin: 0;
+  }
+}
+
+.confirm-order-modal__delivery-section {
+  transition: all vars.$transition-base;
+
+  &--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
 .confirm-order-modal__payment-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

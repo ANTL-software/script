@@ -1,5 +1,5 @@
 import './landingPage.scss';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useLandingPage } from '../../../hooks/useLandingPage';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
@@ -15,9 +15,15 @@ import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import ClosingModal from '../../components/closingModal/ClosingModal';
 import ConfirmModal from '../../components/confirmModal/ConfirmModal';
+import { useState, useEffect } from 'react';
 
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+
+  // Mode test : détecter le paramètre ?test=true
+  const isTestMode = searchParams.get('test') === 'true';
+
   const {
     currentProspect, currentView, isLoading, error, clearError,
     isModalOpen, setIsModalOpen, pendingClosing,
@@ -25,8 +31,28 @@ export default function LandingPage() {
     handlePlanAppels, handleObjections, handleCommande,
     handleDoublon, handleRss, handleConfirmAction,
     handleOrderSuccess, handleClosingComplete,
-    setView,
-  } = useLandingPage(id);
+    setView, currentCampaign,
+  } = useLandingPage(id, isTestMode);
+
+  // DEBUG : Permettre de tester la closing modal via URL ?test=closing
+  const [testClosing, setTestClosing] = useState<typeof pendingClosing | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('test') === 'closing' && currentProspect && currentCampaign && !pendingClosing) {
+      const testData = {
+        prospectId: currentProspect.id_prospect,
+        prospectName: `${currentProspect.nom} ${currentProspect.prenom || ''}`.trim(),
+        campagneId: currentCampaign.id_campagne,
+        dureeAppel: 45,
+        timestamp: Date.now(),
+      };
+      setTestClosing(testData as unknown as typeof pendingClosing);
+      console.log('[DEBUG] Closing modal test activé via URL');
+    }
+  }, [searchParams, currentProspect, currentCampaign, pendingClosing]);
+
+  // Utiliser le test closing si présent, sinon utiliser le pendingClosing normal
+  const effectiveClosing = testClosing || pendingClosing;
 
   if (isLoading) {
     return (
@@ -67,6 +93,7 @@ export default function LandingPage() {
         onPlanAppels={handlePlanAppels}
         onObjections={handleObjections}
         onQuiSommesNous={() => setView('qui-sommes-nous')}
+        isTestMode={isTestMode}
       />
 
       <ActionButtons
@@ -79,7 +106,7 @@ export default function LandingPage() {
         onRss={handleRss}
       />
 
-      <div className="landing-page__content">
+      <div className={`landing-page__content ${currentView === 'commande' ? 'view-commande' : ''}`}>
         {currentView === 'qui-est-ce' && <QuiEstCe />}
         {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
         {currentView === 'historique-appels' && <HistoriqueAppels />}
@@ -103,14 +130,20 @@ export default function LandingPage() {
         onSuccess={handleOrderSuccess}
       />
 
-      {pendingClosing && (
+      {effectiveClosing && (
         <ClosingModal
           isOpen={true}
-          prospectId={pendingClosing.prospectId}
-          prospectName={pendingClosing.prospectName}
-          campagneId={pendingClosing.campagneId}
-          dureeAppel={pendingClosing.dureeAppel}
-          onComplete={handleClosingComplete}
+          prospectId={effectiveClosing.prospectId}
+          prospectName={effectiveClosing.prospectName}
+          campagneId={effectiveClosing.campagneId}
+          dureeAppel={effectiveClosing.dureeAppel}
+          onComplete={() => {
+            handleClosingComplete();
+            if (testClosing) {
+              setTestClosing(null); // Nettoyer le test closing après completion
+              window.history.replaceState({}, '', window.location.pathname); // Retirer le paramètre URL
+            }
+          }}
         />
       )}
 

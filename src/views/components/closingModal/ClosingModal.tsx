@@ -1,5 +1,6 @@
 import './closingModal.scss';
-import { FaPhoneAlt, FaCheck, FaSpinner, FaClock, FaStickyNote, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPhoneAlt, FaCheck, FaSpinner, FaClock, FaStickyNote, FaExclamationTriangle, FaMinus } from 'react-icons/fa';
+import { useState } from 'react';
 import { useCallClosing } from '../../../hooks/useCallClosing';
 import { STATUT_APPEL_OPTIONS } from '../../../utils/constants';
 import { formatDuration } from '../../../utils/scripts/formatters';
@@ -23,6 +24,8 @@ export default function ClosingModal({
   dureeAppel,
   onComplete,
 }: ClosingModalProps) {
+  const [isMinimized, setIsMinimized] = useState(false);
+
   const {
     selectedStatut, setSelectedStatut,
     notes, setNotes,
@@ -30,13 +33,32 @@ export default function ClosingModal({
     handleSubmit,
   } = useCallClosing({ prospectId, campagneId, onComplete });
 
+  const handleMinimize = () => {
+    setIsMinimized(true);
+  };
+
+  const handleRestore = () => {
+    setIsMinimized(false);
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="closing-modal-overlay">
-      <div className="closing-modal">
+    <>
+      {/* Modale complète ou minimisée */}
+      {!isMinimized ? (
+        <div className="closing-modal-overlay" onClick={handleMinimize}>
+          <div className="closing-modal" onClick={(e) => e.stopPropagation()}>
 
         <div className="closing-modal__header">
+          <button
+            className="closing-modal__minimize-btn"
+            onClick={handleMinimize}
+            title="Réduire la modale"
+            disabled={isSubmitting}
+          >
+            <FaMinus />
+          </button>
           <div className="closing-modal__header-icon">
             <FaPhoneAlt />
           </div>
@@ -117,5 +139,15 @@ export default function ClosingModal({
         </div>
       </div>
     </div>
+      ) : (
+        <button
+          className="closing-modal__restore-btn"
+          onClick={handleRestore}
+          title="Réafficher la fiche client"
+        >
+          Fermer la fiche client
+        </button>
+      )}
+    </>
   );
 }

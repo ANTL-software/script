@@ -1,9 +1,10 @@
 import './prospectInfoHeader.scss';
 import { useProspect } from '../../../hooks/useProspect';
+import { useDialer } from '../../../hooks/useDialer';
 import TypeFicheBadge from '../typeFicheBadge/TypeFicheBadge';
 import Button from '../button/Button';
 import Clock from '../clock/Clock';
-import { FaBuilding, FaListOl, FaCommentDots, FaUser } from 'react-icons/fa';
+import { FaBuilding, FaListOl, FaCommentDots, FaUser, FaPhoneSlash } from 'react-icons/fa';
 
 interface ProspectInfoHeaderProps {
   currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
@@ -11,10 +12,24 @@ interface ProspectInfoHeaderProps {
   onPlanAppels?: () => void;
   onObjections?: () => void;
   onQuiSommesNous?: () => void;
+  isTestMode?: boolean;
 }
 
-export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous }: ProspectInfoHeaderProps) {
+export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous, isTestMode = false }: ProspectInfoHeaderProps) {
   const { currentProspect, fullName, typeFiche } = useProspect();
+  const { statut, hangup } = useDialer();
+
+  const handleHangup = async () => {
+    try {
+      await hangup();
+    } catch (error) {
+      console.error('Erreur lors du raccrochage:', error);
+    }
+  };
+
+  // Toujours afficher le bouton de raccrochage (activé uniquement si en appel)
+  const showHangupButton = true;
+  const canHangup = statut === 'en_appel' || statut === 'appel_sortant';
 
   if (!currentProspect) {
     return null;
@@ -26,6 +41,9 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
         <div className="prospect-info-header__title">
           <h1>{fullName}</h1>
           <TypeFicheBadge typeFiche={typeFiche} />
+          {isTestMode && (
+            <span className="test-mode-badge">MODE TEST</span>
+          )}
         </div>
         <div className="prospect-info-header__actions">
           <Button
@@ -53,6 +71,18 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
             <FaBuilding /> Qui sommes-nous ?
           </Button>
           <Clock />
+          {showHangupButton && (
+            <Button
+              variant="danger"
+              size="small"
+              onClick={handleHangup}
+              className="hangup-button"
+              title="Raccrocher"
+              disabled={!canHangup}
+            >
+              <FaPhoneSlash />
+            </Button>
+          )}
         </div>
       </div>
 

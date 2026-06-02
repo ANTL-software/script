@@ -4,13 +4,18 @@ import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
 import { closingService, prospectService, type PendingClosing } from '../API/services';
 import { formatProspectName } from '../utils/scripts/formatters';
 
-export function useLandingPage(id: string | undefined) {
+export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const navigate = useNavigate();
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
   const { clearCart } = useCart();
   const { statut, callDuration, currentCampagneId } = useDialer();
+
+  // Log le mode test pour débogage (sera utilisé pour désactiver le dialer si nécessaire)
+  if (isTestMode) {
+    console.log('[LANDING] Mode test activé - Dialer sera désactivé');
+  }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pendingClosing, setPendingClosing] = useState<PendingClosing | null>(

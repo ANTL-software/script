@@ -4,11 +4,14 @@
 .panier-item {
   display: flex;
   flex-direction: column;
-  gap: vars.$spacing-sm;
-  padding: vars.$spacing-md;
+  gap: vars.$spacing-xs;
+  padding: vars.$spacing-xs;
   background: vars.$colorWhite;
-  border: 1px solid vars.$colorGray200;
-  border-radius: vars.$radius-md;
+  border: none;
+  border-bottom: 1px solid vars.$colorGray200;
+  border-radius: 0;
+  width: 100%;
+  box-sizing: border-box;
 
   &__header {
     display: flex;

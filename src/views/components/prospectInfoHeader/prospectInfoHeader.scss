@@ -29,7 +29,13 @@
   &__actions {
     display: flex;
     gap: 0.75rem;
+    align-items: center;
   }
+}
+
+.hangup-button {
+  min-width: 32px;
+  padding: 0.5rem;
 }
 
 .prospect-info-table {
@@ -55,5 +61,28 @@
 
   tr:hover {
     background-color: #fafafa;
+  }
+}
+
+// Badge MODE TEST
+.test-mode-badge {
+  padding: 0.25rem 0.75rem;
+  background: vars.$colorWarning;
+  color: vars.$colorGray900;
+  border-radius: vars.$radius-full;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: vars.$shadow-sm;
+  animation: pulse-warning 2s infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }

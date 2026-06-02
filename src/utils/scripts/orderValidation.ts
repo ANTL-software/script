@@ -1,10 +1,15 @@
 import type { ModePaiement } from '../types';
 
 interface OrderFormData {
-  adresse: string;
-  code_postal: string;
-  ville: string;
-  pays: string;
+  adresse_facturation: string;
+  adresse_livraison: string;
+  code_postal_facturation: string;
+  code_postal_livraison: string;
+  ville_facturation: string;
+  ville_livraison: string;
+  pays_facturation: string;
+  pays_livraison: string;
+  meme_adresse: boolean;
   mode_paiement: string;
   notes: string;
 }
@@ -20,14 +25,27 @@ export interface OrderValidationErrors {
 export function validateOrderForm(formData: OrderFormData): OrderValidationErrors {
   const errors: OrderValidationErrors = {};
 
-  if (!formData.adresse.trim()) errors.adresse = "L'adresse est obligatoire";
-  if (!formData.code_postal.trim()) {
-    errors.code_postal = 'Le code postal est obligatoire';
-  } else if (!/^\d{5}$/.test(formData.code_postal)) {
-    errors.code_postal = 'Le code postal doit contenir 5 chiffres';
+  // Validation de l'adresse de facturation (toujours obligatoire)
+  if (!formData.adresse_facturation.trim()) errors.adresse_facturation = "L'adresse de facturation est obligatoire";
+  if (!formData.code_postal_facturation.trim()) {
+    errors.code_postal_facturation = 'Le code postal de facturation est obligatoire';
+  } else if (!/^\d{5}$/.test(formData.code_postal_facturation)) {
+    errors.code_postal_facturation = 'Le code postal doit contenir 5 chiffres';
   }
-  if (!formData.ville.trim()) errors.ville = 'La ville est obligatoire';
-  if (!formData.pays.trim()) errors.pays = 'Le pays est obligatoire';
+  if (!formData.ville_facturation.trim()) errors.ville_facturation = 'La ville de facturation est obligatoire';
+  if (!formData.pays_facturation.trim()) errors.pays_facturation = 'Le pays de facturation est obligatoire';
+
+  // Validation de l'adresse de livraison (seulement si différente de l'adresse de facturation)
+  if (!formData.meme_adresse) {
+    if (!formData.adresse_livraison.trim()) errors.adresse_livraison = "L'adresse de livraison est obligatoire";
+    if (!formData.code_postal_livraison.trim()) {
+      errors.code_postal_livraison = 'Le code postal de livraison est obligatoire';
+    } else if (!/^\d{5}$/.test(formData.code_postal_livraison)) {
+      errors.code_postal_livraison = 'Le code postal doit contenir 5 chiffres';
+    }
+    if (!formData.ville_livraison.trim()) errors.ville_livraison = 'La ville de livraison est obligatoire';
+    if (!formData.pays_livraison.trim()) errors.pays_livraison = 'Le pays de livraison est obligatoire';
+  }
 
   return errors;
 }
@@ -42,11 +60,34 @@ export function buildVentePayload(params: {
   items: Array<{ produit: { id_produit: number }; quantite: number; prix_unitaire: number; remise: number }>;
 }) {
   const { prospectId, campagneId, formData, items } = params;
+
+  // Déterminer l'adresse de livraison à utiliser
+  const adresseLivraison = formData.meme_adresse
+    ? formData.adresse_facturation
+    : formData.adresse_livraison;
+  const codePostalLivraison = formData.meme_adresse
+    ? formData.code_postal_facturation
+    : formData.code_postal_livraison;
+  const villeLivraison = formData.meme_adresse
+    ? formData.ville_facturation
+    : formData.ville_livraison;
+  const paysLivraison = formData.meme_adresse
+    ? formData.pays_facturation
+    : formData.pays_livraison;
+
   return {
     id_prospect: prospectId,
     id_campagne: campagneId,
     mode_paiement: formData.mode_paiement as ModePaiement,
     notes: formData.notes.trim() || undefined,
+    adresse_facturation: formData.adresse_facturation.trim(),
+    adresse_livraison: adresseLivraison.trim(),
+    code_postal_facturation: formData.code_postal_facturation.trim(),
+    code_postal_livraison: codePostalLivraison.trim(),
+    ville_facturation: formData.ville_facturation.trim(),
+    ville_livraison: villeLivraison.trim(),
+    pays_facturation: formData.pays_facturation.trim(),
+    pays_livraison: paysLivraison.trim(),
     details: items.map(item => ({
       id_produit: item.produit.id_produit,
       quantite: item.quantite,

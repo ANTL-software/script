@@ -595,6 +595,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
+      // IMPORTANT: Réinitialiser le statut en cas d'erreur pour éviter d'être coincé
+      setStatut('disponible');
+      setRaisonPause(null);
+      setDepuisLe(new Date());
+      await dialerService.changerStatut('disponible').catch(() => {});
       throw err;
     }
   }, [call]);

@@ -2,7 +2,8 @@ import './panierItem.scss';
 import type { CartItem } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 
 interface PanierItemProps {
   item: CartItem;

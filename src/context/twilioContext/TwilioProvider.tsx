@@ -100,12 +100,8 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
       }
 
       // Créer une NOUVELLE instance de Device (SDK v2.x API)
-      const device = new Device(accessToken, {
-        codecPreferences: ['opus', 'PCMU'] as any,
-        edge: import.meta.env.VITE_TWILIO_EDGE || undefined,
-        enableImprovedSignalingErrorPrecision: true,
-        maxAverageBitrate: 16000,
-      });
+      // SANS options pour éviter les problèmes de compatibilité
+      const device = new Device(accessToken);
 
       deviceRef.current = device;
 
@@ -214,18 +210,8 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
         deviceRef.current = null;
       });
 
-      // Lancer manuellement la registration pour forcer la connexion
-      console.log('📞 [TWILIO] Tentative de registration manuelle...');
-      console.log('📱 [TWILIO] Device state AVANT register:', device.state);
-      try {
-        await device.register();
-        console.log('✅ [TWILIO] Register appelé avec succès');
-        console.log('📱 [TWILIO] Device state APRÈS register:', device.state);
-      } catch (err) {
-        console.error('❌ [TWILIO] Erreur lors de register():', err);
-      }
-
-      console.log('✅ [TWILIO] Device v2.x créé avec succès, attente registration...');
+      // Le Device s'enregistre automatiquement avec le token fourni
+      console.log('✅ [TWILIO] Device v2.x créé avec succès, registration automatique en cours...');
       console.groupEnd();
 
     } catch (error) {

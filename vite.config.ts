@@ -41,7 +41,12 @@ export default defineConfig({
   plugins: [
     react(),
     nodePolyfills({
-      include: ['events', 'util']
+      include: ['events', 'util'],
+      globals: {
+        process: false,
+        global: false,
+        Buffer: false,
+      },
     }),
     injectVersion(),
   ],

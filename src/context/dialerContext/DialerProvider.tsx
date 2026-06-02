@@ -40,6 +40,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const isCallActiveRef = useRef<boolean>(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const hasCalledEstablishedRef = useRef<boolean>(false);
+  const isInitializingRef = useRef<boolean>(false);
 
   // Formatage de la durée d'appel en MM:SS
   const callDurationFormatted = useMemo(() => {
@@ -69,46 +70,55 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   // Récupérer l'Access Token Twilio depuis le backend
   const fetchTwilioToken = useCallback(async () => {
-    console.groupCollapsed('🔐 [TWILIO] Récupération Access Token');
+    console.log('[TWILIO] 📍 STEP 2.1: Entrée fetchTwilioToken');
     try {
+      console.log('[TWILIO] 📍 STEP 2.2: Appel twilioService.getAccessToken()...');
       const tokenData = await twilioService.getAccessToken();
-      console.log('✅ Token reçu pour:', tokenData.identity);
-      console.groupEnd();
+      console.log('[TWILIO] 📍 STEP 2.3: Token reçu pour:', tokenData.identity);
+      console.log('✅ [TWILIO] Token reçu pour:', tokenData.identity);
       return tokenData.accessToken;
     } catch (error) {
-      console.error('[TWILIO] Erreur récupération token:', error);
-      console.groupEnd();
+      console.error('[TWILIO] ❌ Erreur récupération token:', error);
       return null;
     }
   }, []);
 
   // Initialiser Twilio Device (SDK v2.x - new Device())
   const initializeTwilioDevice = useCallback(async () => {
-    console.groupCollapsed('🚀 [TWILIO] Initialisation Device v2.x (new Device())');
+    console.log('[TWILIO] 📍 STEP 1: Entrée initializeTwilioDevice');
+    console.log('[TWILIO] 📍 STEP 1: isInitializingRef.current =', isInitializingRef.current);
+    console.log('[TWILIO] 📍 STEP 1: deviceRef.current =', deviceRef.current);
+
+    // Guard : ne pas réinitialiser si déjà en cours ou déjà existant
+    if (isInitializingRef.current) {
+      console.log('[TWILIO] ⚠️ Initialisation déjà en cours, skip');
+      return;
+    }
+
+    if (deviceRef.current) {
+      console.log('[TWILIO] ⚠️ Device déjà existant, skip réinitialisation');
+      return;
+    }
+
+    isInitializingRef.current = true;
+    console.log('[TWILIO] 📍 STEP 2: Guards passés, appel fetchTwilioToken...');
 
     try {
       // Récupérer le Access Token depuis le backend
       const accessToken = await fetchTwilioToken();
+      console.log('[TWILIO] 📍 STEP 3: Token reçu =', accessToken ? 'OUI' : 'NON');
 
       if (!accessToken) {
         throw new Error('Impossible de récupérer le Access Token Twilio');
       }
 
-      // Détruire l'ancien device s'il existe
-      if (deviceRef.current) {
-        console.log('[TWILIO] Destruction de l\'ancien Device');
-        deviceRef.current.removeAllListeners();
-        deviceRef.current.destroy();
-        deviceRef.current = null;
-      }
+      console.groupCollapsed('🚀 [TWILIO] Initialisation Device v2.x (new Device())');
 
       // Créer une NOUVELLE instance de Device (SDK v2.x API)
-      const device = new Device(accessToken, {
-        codecPreferences: ['opus', 'PCMU'] as any,
-        edge: import.meta.env.VITE_TWILIO_EDGE || undefined,
-        enableImprovedSignalingErrorPrecision: true,
-        maxAverageBitrate: 16000,
-      });
+      // SANS options pour éviter les problèmes de compatibilité
+      console.log('[TWILIO] 📍 STEP 3.5: Création Device avec token (longueur:', accessToken.length, ')');
+      const device = new Device(accessToken);
+      console.log('[TWILIO] 📍 STEP 3.6: Device créé, type:', typeof device, 'état:', device.state);
 
       deviceRef.current = device;
 
@@ -125,6 +135,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       device.on('registering', () => {
         console.log('🔄 [TWILIO] Device registering...');
+      });
+
+      // Tracer TOUS les changements d'état pour le debug
+      device.on('stateChanged', (state: any) => {
+        console.log('🔄 [TWILIO] État Device changé:', state);
       });
 
       device.on('error', (error: any) => {
@@ -180,31 +195,65 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       });
 
       device.on('destroyed', () => {
-        console.log('💥 [TWILIO] Device destroyed');
+        console.error('💥 [TWILIO] Device destroyed - STACK TRACE:');
+        console.error('💥 [TWILIO] isInitializingRef.current:', isInitializingRef.current);
+        console.trace('[TWILIO] Appelé depuis:');
         setSipConnected(false);
         deviceRef.current = null;
+        isInitializingRef.current = false;
       });
 
-      console.log('✅ [TWILIO] Device v2.x créé avec succès, attente registration...');
+      // IMPORTANT: Enregistrer manuellement le Device APRÈS avoir configuré tous les event handlers
+      console.log('📞 [TWILIO] Appel manuel à device.register()...');
+      try {
+        await device.register();
+        console.log('✅ [TWILIO] Register appelé avec succès, attente événement registered...');
+      } catch (err) {
+        console.error('❌ [TWILIO] Erreur lors de register():', err);
+      }
+
+      console.log('✅ [TWILIO] Device v2.x créé avec succès, registration en cours...');
       console.groupEnd();
+      isInitializingRef.current = false;
 
     } catch (error) {
       console.error('❌ [TWILIO] Erreur initialisation:', error);
       console.groupEnd();
       showToast('error', 'Impossible d\'initialiser Twilio: ' + (error as Error).message, 8000);
       setSipConnected(false);
+      isInitializingRef.current = false;
     }
-  }, [showToast, startCallTimer, stopCallTimer, fetchTwilioToken, incomingCall]);
+  }, [showToast, startCallTimer, stopCallTimer, fetchTwilioToken]);
 
   // ============================================================
-  // INITIALISATION AU MONTAGE
+  // INITIALISATION TWILIO (useEffect séparé pour éviter les re-créations)
+  // ============================================================
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Nettoyer Twilio si déconnexion
+      const device = deviceRef.current;
+      if (device) {
+        console.log('[TWILIO] Déconnexion - destruction Device');
+        device.removeAllListeners();
+        device.destroy();
+        deviceRef.current = null;
+        setSipConnected(false);
+      }
+      return;
+    }
+
+    // Initialiser Twilio SEULEMENT si pas déjà initialisé
+    console.log('[TWILIO] useEffect - isAuthenticated:', isAuthenticated, ', deviceRef.current:', deviceRef.current);
+    initializeTwilioDevice();
+  }, [isAuthenticated, initializeTwilioDevice]);
+
+  // ============================================================
+  // INITIALISATION AU MONTAGE (sans Twilio)
   // ============================================================
 
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    // Initialiser Twilio
-    initializeTwilioDevice();
 
     // Récupérer le statut backend
     const recoverStatus = async () => {
@@ -280,16 +329,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       clearInterval(heartbeatInterval);
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibility);
-
-      // Nettoyer Twilio
-      const device = deviceRef.current;
-      if (device) {
-        device.removeAllListeners();
-        device.destroy();
-        deviceRef.current = null;
-      }
     };
-  }, [isAuthenticated, initializeTwilioDevice]);
+  }, [isAuthenticated]);
 
   // ============================================================
   // FONCTIONS D'APPEL

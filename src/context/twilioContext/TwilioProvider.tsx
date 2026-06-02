@@ -12,7 +12,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo, createContext } from 'react';
 import type { ReactNode } from 'react';
 import { Device, Call } from '@twilio/voice-sdk';
-import { twilioService } from '../../API/services/Twilio.service';
+import { twilioService } from '../../API/services';
 import { useToast } from '../../hooks';
 import { formatPhoneE164 } from '../../utils/scripts/formatters';
 

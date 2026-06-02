@@ -404,6 +404,34 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setDepuisLe(new Date());
       startCallTimer();
 
+      // IMPORTANT: Écouter les événements de fin d'appel sur le call lui-même
+      // L'événement 'disconnect' se déclenche quand l'interlocuteur raccroche
+      call.on('disconnect', () => {
+        console.groupCollapsed('📞 [TWILIO] Appel terminé (disconnect)');
+        console.log('Call SID:', call.parameters.CallSid);
+        stopCallTimer();
+        isCallActiveRef.current = false;
+        setStatut('pause_apres_appel');
+        setDepuisLe(new Date());
+
+        // Synchro backend
+        dialerService.changerStatut('pause_apres_appel').catch((err) => {
+          console.error('❌ [TWILIO] Erreur changement statut:', err);
+        });
+
+        console.groupEnd();
+        showToast('info', 'Appel terminé', 3000);
+      });
+
+      // Écouter aussi les autres événements du call pour robustesse
+      call.on('reject', () => {
+        console.log('⚠️ [TWILIO] Appel rejeté');
+      });
+
+      call.on('cancel', () => {
+        console.log('⚠️ [TWILIO] Appel annulé');
+      });
+
       // Mettre à jour la session backend
       if (prospectId && campagneId) {
         dialerService.startSession(prospectId, campagneId).catch(err => {

@@ -205,14 +205,25 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       // IMPORTANT: Enregistrer manuellement le Device APRÈS avoir configuré tous les event handlers
       console.log('📞 [TWILIO] Appel manuel à device.register()...');
+      console.log('📞 [TWILIO] Device state AVANT register:', device.state);
+
       try {
-        await device.register();
+        // Timeout de 10 secondes pour l'enregistrement
+        const registerPromise = device.register();
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Register timeout après 10s')), 10000)
+        );
+
+        await Promise.race([registerPromise, timeoutPromise]);
         console.log('✅ [TWILIO] Register appelé avec succès, attente événement registered...');
       } catch (err) {
         console.error('❌ [TWILIO] Erreur lors de register():', err);
+        console.error('❌ [TWILIO] Device state APRÈS échec register:', device.state);
+        // Ne pas détruire le Device - continuer à attendre l'événement registered
       }
 
       console.log('✅ [TWILIO] Device v2.x créé avec succès, registration en cours...');
+      console.log('✅ [TWILIO] Device state FINAL:', device.state);
       console.groupEnd();
       isInitializingRef.current = false;
 

@@ -2,6 +2,7 @@ import './panierItem.scss';
 import type { CartItem } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
+import { useState, FormEvent } from 'react';
 
 interface PanierItemProps {
   item: CartItem;
@@ -11,19 +12,48 @@ interface PanierItemProps {
 
 export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierItemProps) {
   const subtotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
+  const [inputValue, setInputValue] = useState(item.quantite.toString());
 
   const handleIncrement = () => {
-    onUpdateQuantity(item.produit.id_produit, item.quantite + 1);
+    const newQuantite = item.quantite + 1;
+    onUpdateQuantity(item.produit.id_produit, newQuantite);
+    setInputValue(newQuantite.toString());
   };
 
   const handleDecrement = () => {
     if (item.quantite > 1) {
-      onUpdateQuantity(item.produit.id_produit, item.quantite - 1);
+      const newQuantite = item.quantite - 1;
+      onUpdateQuantity(item.produit.id_produit, newQuantite);
+      setInputValue(newQuantite.toString());
     }
   };
 
   const handleRemove = () => {
     onRemove(item.produit.id_produit);
+  };
+
+  const handleInputChange = (e: FormEvent<HTMLInputElement>) => {
+    const value = e.currentTarget.value;
+    setInputValue(value);
+
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue >= 1 && numValue <= 9999) {
+      onUpdateQuantity(item.produit.id_produit, numValue);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Reset to current quantity if invalid
+    const numValue = parseInt(inputValue, 10);
+    if (isNaN(numValue) || numValue < 1) {
+      setInputValue(item.quantite.toString());
+    } else if (numValue > 9999) {
+      const capped = 9999;
+      setInputValue(capped.toString());
+      onUpdateQuantity(item.produit.id_produit, capped);
+    } else {
+      setInputValue(numValue.toString());
+    }
   };
 
   return (
@@ -52,7 +82,16 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
           >
             <FaMinus />
           </button>
-          <span className="quantity-value">{item.quantite}</span>
+          <input
+            type="number"
+            className="quantity-input"
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            min="1"
+            max="9999"
+            aria-label="Quantité"
+          />
           <button
             className="quantity-btn"
             onClick={handleIncrement}

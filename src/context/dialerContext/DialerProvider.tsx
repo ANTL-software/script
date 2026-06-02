@@ -407,6 +407,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       // IMPORTANT: Écouter les événements de fin d'appel sur le call lui-même
       // L'événement 'disconnect' se déclenche quand l'interlocuteur raccroche
       call.on('disconnect', () => {
+        // Vérifier qu'il y a vraiment un appel en cours pour éviter les faux positifs
+        if (!isCallActiveRef.current) {
+          console.warn('⚠️ [TWILIO] disconnect reçu mais aucun appel actif - ignoré');
+          return;
+        }
+
         console.groupCollapsed('📞 [TWILIO] Appel terminé (disconnect)');
         console.log('Call SID:', call.parameters.CallSid);
         stopCallTimer();

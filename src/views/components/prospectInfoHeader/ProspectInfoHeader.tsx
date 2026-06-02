@@ -56,28 +56,31 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
         </div>
       </div>
 
-      <table className="prospect-info-table">
-        <tbody>
-          <tr>
-            <td className="label">Nom</td>
-            <td className="value">{currentProspect.nom}</td>
-            <td className="label">Prenom</td>
-            <td className="value">{currentProspect.prenom || '-'}</td>
-          </tr>
-          <tr>
-            <td className="label">Telephone</td>
-            <td className="value">{currentProspect.telephone}</td>
-            <td className="label">Email</td>
-            <td className="value">{currentProspect.email || '-'}</td>
-          </tr>
-          <tr>
-            <td className="label">Ville</td>
-            <td className="value">{currentProspect.ville || '-'}</td>
-            <td className="label">Type</td>
-            <td className="value">{currentProspect.type_prospect}</td>
-          </tr>
-        </tbody>
-      </table>
+      {/* Cacher l'encart client dans la view commande pour gagner de la place */}
+      {currentView !== 'commande' && (
+        <table className="prospect-info-table">
+          <tbody>
+            <tr>
+              <td className="label">Nom</td>
+              <td className="value">{currentProspect.nom}</td>
+              <td className="label">Prenom</td>
+              <td className="value">{currentProspect.prenom || '-'}</td>
+            </tr>
+            <tr>
+              <td className="label">Telephone</td>
+              <td className="value">{currentProspect.telephone}</td>
+              <td className="label">Email</td>
+              <td className="value">{currentProspect.email || '-'}</td>
+            </tr>
+            <tr>
+              <td className="label">Ville</td>
+              <td className="value">{currentProspect.ville || '-'}</td>
+              <td className="label">Type</td>
+              <td className="value">{currentProspect.type_prospect}</td>
+            </tr>
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

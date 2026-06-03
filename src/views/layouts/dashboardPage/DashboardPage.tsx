@@ -18,7 +18,7 @@ function prospectLabel(rdv: RendezVous): string {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { prochainProspect, clearProchainProspect, call, openProspectManual } = useDialer();
+  const { prochainProspect, clearProchainProspect, call } = useDialer();
   const { showToast } = useToast();
   const networkWarningShown = useRef(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
@@ -131,13 +131,6 @@ export default function DashboardPage() {
                     )}
                     {rdv.motif && <span className="dashboard__rdv-motif">{rdv.motif}</span>}
                   </div>
-                  <button
-                    className="dashboard__rdv-btn"
-                    onClick={() => rdv.prospect && openProspectManual(rdv.prospect.id_prospect, 'rappel', rdv.prospect.telephone)}
-                    disabled={!rdv.prospect}
-                  >
-                    Ouvrir
-                  </button>
                 </li>
               ))}
             </ul>

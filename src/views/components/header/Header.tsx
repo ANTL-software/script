@@ -3,10 +3,12 @@ import "./header.scss";
 import { useNavigate, useLocation } from "react-router-dom";
 import antlLogo from "../../../assets/antlLogo.png";
 import { LuLogOut } from "react-icons/lu";
+import { FaArrowLeft } from "react-icons/fa";
 import { useUser } from "../../../hooks/useUser";
 import { useToast } from "../../../hooks/useToast";
 import { useClosing } from "../../../hooks/useClosing";
 import DialerStatus from "../dialerStatus/DialerStatus";
+import Button from "../button/Button";
 
 export interface HeaderProps {
   props: {
@@ -24,13 +26,16 @@ export default function Header({ props }: HeaderProps) {
 
   // Masquer le bouton de déconnexion sur la vue prospect pour éviter la déconnexion pendant un appel
   // SAUF en mode test (paramètre ?test=true)
+  // Mais afficher un bouton "Retour" si c'est une recherche manuelle
   const isProspectView = location.pathname.match(/^\/prospect\/\d+$/);
   const searchParams = new URLSearchParams(location.search);
   const isTestMode = searchParams.get('test') === 'true';
+  const isManualSearch = searchParams.get('source') === 'manual';
   const shouldShowLogout = !isProspectView || isTestMode;
+  const shouldShowBack = isProspectView && isManualSearch;
 
   const handleLogout = async () => {
-    // Bloquer la deconnexion si un closing est en attente
+    // Bloquer la déconnexion si un closing est en attente
     if (hasPending()) {
       showToast('error', 'Veuillez d\'abord enregistrer le resultat de l\'appel');
       return;
@@ -44,6 +49,10 @@ export default function Header({ props }: HeaderProps) {
     }
   };
 
+  const handleBack = () => {
+    navigate("/");
+  };
+
   return (
     <header>
       <figure>
@@ -52,7 +61,17 @@ export default function Header({ props }: HeaderProps) {
       <h1>{pageTitle ? pageTitle : ""}</h1>
       <div className="header-actions">
         <DialerStatus />
-        {shouldShowLogout && (
+        {shouldShowBack ? (
+          <Button
+            variant="secondary"
+            size="small"
+            onClick={handleBack}
+            className="header-back-btn"
+            title="Retour à l'accueil"
+          >
+            <FaArrowLeft /> Retour
+          </Button>
+        ) : shouldShowLogout && (
           <button
             className={`logout-btn${isLoading ? " logout-btn--loading" : ""}`}
             onClick={handleLogout}

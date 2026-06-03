@@ -459,22 +459,40 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   // Raccrocher
   const hangup = useCallback(() => {
     const device = deviceRef.current;
-    if (!device) return;
-
-    const activeCalls = device.calls;
-    if (activeCalls.length === 0) {
-      console.warn('⚠️ Aucun appel actif');
+    if (!device) {
+      console.warn('⚠️ [HANGUP] Aucun device disponible');
       return;
     }
 
-    console.groupCollapsed('📞 [APPEL] Hangup manuel');
-    activeCalls.forEach((call) => call.disconnect());
+    // Vérifier si un appel est en cours
+    if (!isCallActiveRef.current) {
+      console.warn('⚠️ [HANGUP] Aucun appel actif à raccrocher');
+      return;
+    }
+
+    console.groupCollapsed('📞 [HANGUP] Hangup manuel');
+    console.log('[HANGUP] Device state:', device.state);
+    console.log('[HANGUP] Appels actifs:', device.calls.length);
+
+    // Utiliser device.disconnectAll() pour couper tous les appels
+    // Cette méthode est plus fiable que d'itérer sur device.calls
+    device.disconnectAll();
+
+    // Nettoyer l'état local
     stopCallTimer();
     isCallActiveRef.current = false;
     setStatut('pause_apres_appel');
     setDepuisLe(new Date());
-    dialerService.changerStatut('pause_apres_appel').catch(() => {});
-    dialerService.endSession().catch(() => {});
+
+    // Synchroniser avec le backend
+    dialerService.changerStatut('pause_apres_appel').catch((err) => {
+      console.error('[HANGUP] Erreur synchro backend statut:', err);
+    });
+    dialerService.endSession().catch((err) => {
+      console.error('[HANGUP] Erreur endSession:', err);
+    });
+
+    console.log('✅ [HANGUP] Hangup terminé');
     console.groupEnd();
   }, [stopCallTimer]);
 

@@ -1,0 +1,201 @@
+@use '../../../utils/styles/variables' as vars;
+
+.calendar-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.calendar-modal {
+  background: vars.$colorWhite;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-xl;
+  width: 100%;
+  max-width: 1200px;
+  height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid vars.$colorGray200;
+    background: vars.$colorWhite;
+
+    h2 {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: vars.$colorGray900;
+    }
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__icon {
+    color: vars.$colorPrimary;
+    font-size: 1.5rem;
+  }
+
+  &__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    background: transparent;
+    color: vars.$colorGray500;
+    border-radius: vars.$radius-md;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: vars.$colorGray100;
+      color: vars.$colorGray700;
+    }
+  }
+
+  &__legend {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid vars.$colorGray200;
+    background: vars.$colorGray100;
+    flex-wrap: wrap;
+  }
+
+  &__legend-item {
+    padding: 0.25rem 0.75rem;
+    border-radius: vars.$radius-md;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    &--planifie {
+      background: #3b82f6;
+    }
+
+    &--effectue {
+      background: #10b981;
+    }
+
+    &--reporte {
+      background: #f59e0b;
+    }
+
+    &--annule {
+      background: #ef4444;
+      opacity: 0.6;
+    }
+  }
+
+  &__legend-hint {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: vars.$colorGray500;
+    font-style: italic;
+  }
+
+  &__loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: vars.$colorGray500;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__calendar-wrapper {
+    flex: 1;
+    padding: 1rem 1.5rem 1.5rem;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: vars.$colorWhite;
+  }
+}
+
+// Event styles
+.cal-event-content {
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.event {
+  transition: transform 0.2s, box-shadow 0.2s;
+  border-radius: vars.$radius-md;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &--planifie {
+    font-weight: 600;
+  }
+
+  &--annule {
+    opacity: 0.4;
+    text-decoration: line-through;
+  }
+}
+
+// Responsive
+@media (max-width: vars.$breakpoint-lg) {
+  .calendar-modal {
+    max-width: 95vw;
+    height: 90vh;
+  }
+
+  .calendar-modal__header {
+    padding: 1rem 1.25rem;
+  }
+
+  .calendar-modal__legend {
+    padding: 0.5rem 1.25rem;
+  }
+
+  .calendar-modal__calendar-wrapper {
+    padding: 0.75rem 1.25rem 1rem;
+  }
+}
+
+@media (max-width: vars.$breakpoint-md) {
+  .calendar-modal__legend {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .calendar-modal__legend-hint {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}

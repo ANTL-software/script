@@ -28,6 +28,7 @@ export interface DialerContextType {
   answer: () => void;
   reject: () => void;
   openProspectManual: (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => Promise<void>;
+  callFromManual: (phoneNumber: string, prospectId: number, campagneId?: number) => Promise<void>;
 }
 
 export const DialerContext = createContext<DialerContextType | undefined>(undefined);

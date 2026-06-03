@@ -8,6 +8,7 @@ export { useToast } from './useToast';
 export { useDialer } from './useDialer';
 export { useRendezVous, toCalendarEvent } from './useRendezVous';
 export { useDashboardData } from './useDashboardData';
+export { useDashboardCalendar } from './useDashboardCalendar';
 export { useLoginForm } from './useLoginForm';
 export { useCallClosing } from './useCallClosing';
 export { useOrderConfirmation } from './useOrderConfirmation';

@@ -1,12 +1,14 @@
 import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
-import { useDialer } from '../../../hooks';
+import { useDialer, useDashboardCalendar } from '../../../hooks';
 import { useToast } from '../../../hooks';
 import { formatEur, formatHeure, formatProspectName } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
 import SalesGauge from '../../components/salesGauge/SalesGauge';
+import CalendarModal from '../../components/calendarModal/CalendarModal';
+import { FaCalendarAlt } from 'react-icons/fa';
 
 function prospectLabel(rdv: RendezVous): string {
   const p = rdv.prospect;
@@ -19,6 +21,14 @@ export default function DashboardPage() {
   const { prochainProspect, clearProchainProspect, call, openProspectManual } = useDialer();
   const { showToast } = useToast();
   const networkWarningShown = useRef(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+
+  const {
+    today,
+    events,
+    isLoading: calendarLoading,
+    handleSelectEvent,
+  } = useDashboardCalendar();
 
   // Vérification de la qualité de connexion réseau
   useEffect(() => {
@@ -58,11 +68,13 @@ export default function DashboardPage() {
     }
   }, [showToast]);
 
-  // Quand le contexte dialer reçoit un prospect assigné, on ouvre sa fiche et on lance l'appel
+  // Quand le contexte dialer reçoit un prospect assigné (de la queue), on ouvre sa fiche et on lance l'appel
+  // IMPORTANT: Cet effet ne se déclenche que pour les appels automatiques (queue), PAS pour les recherches manuelles
   useEffect(() => {
     if (!prochainProspect) return;
     const { id_prospect, telephone, id_campagne_assignee } = prochainProspect;
     clearProchainProspect();
+    // PAS de paramètre ?source=manual ici, c'est un appel automatique de la queue
     navigate(`/prospect/${id_prospect}`);
     call(telephone, id_campagne_assignee ?? undefined, id_prospect);
   }, [prochainProspect, clearProchainProspect, navigate, call]);
@@ -72,8 +84,7 @@ export default function DashboardPage() {
     isSearching, searchError,
     rdvDuJour, rdvLoading,
     stats, statsLoading,
-    notifications, nonLues, notifsLoading,
-    handleSearch, handleMarquerLue, handleMarquerToutLu,
+    handleSearch,
   } = useDashboardData();
 
   return (
@@ -134,43 +145,18 @@ export default function DashboardPage() {
           )}
         </section>
 
-        <section className="dashboard__card dashboard__notifications">
-          <div className="dashboard__notifications-header">
-            <h2 className="dashboard__section-title">
-              Notifications
-              {nonLues > 0 && <span className="dashboard__badge dashboard__badge--alert">{nonLues}</span>}
-            </h2>
-            {notifications.length > 0 && (
-              <button className="dashboard__link-btn" onClick={handleMarquerToutLu}>
-                Tout marquer lu
-              </button>
-            )}
+        <section className="dashboard__card dashboard__calendar-trigger">
+          <div className="dashboard__calendar-trigger-content">
+            <FaCalendarAlt className="dashboard__calendar-icon" />
+            <h2 className="dashboard__section-title">Mon calendrier</h2>
+            <p className="dashboard__calendar-subtitle">Consulter mes rendez-vous à venir</p>
           </div>
-
-          {notifsLoading ? (
-            <p className="dashboard__loading">Chargement...</p>
-          ) : notifications.length === 0 ? (
-            <div className="dashboard__empty-state">
-              <p>Aucune notification.</p>
-            </div>
-          ) : (
-            <ul className="dashboard__notif-list">
-              {notifications.map(notif => (
-                <li key={notif.id_notification} className="dashboard__notif-item">
-                  <div className="dashboard__notif-content">
-                    <span className={`dashboard__notif-dot dashboard__notif-dot--${notif.type ?? 'info'}`} />
-                    <p className="dashboard__notif-message">{notif.message}</p>
-                  </div>
-                  <button
-                    className="dashboard__link-btn"
-                    onClick={() => handleMarquerLue(notif.id_notification)}
-                  >
-                    ✕
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          <button
+            className="dashboard__calendar-btn"
+            onClick={() => setIsCalendarModalOpen(true)}
+          >
+            Afficher le calendrier
+          </button>
         </section>
       </div>
 
@@ -237,6 +223,15 @@ export default function DashboardPage() {
       >
         Utilisateur TEST
       </button>
+
+      <CalendarModal
+        isOpen={isCalendarModalOpen}
+        onClose={() => setIsCalendarModalOpen(false)}
+        today={today}
+        events={events}
+        isLoading={calendarLoading}
+        onSelectEvent={handleSelectEvent}
+      />
     </main>
   );
 }

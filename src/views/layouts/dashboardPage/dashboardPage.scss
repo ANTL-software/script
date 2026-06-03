@@ -351,6 +351,55 @@
     margin: 0;
     line-height: vars.$lineHeight-normal;
   }
+
+  // Calendrier trigger
+  .dashboard__calendar-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: vars.$spacing-md;
+  }
+
+  .dashboard__calendar-trigger-content {
+    display: flex;
+    flex-direction: column;
+    gap: vars.$spacing-xs;
+  }
+
+  .dashboard__calendar-icon {
+    font-size: 1.5rem;
+    color: vars.$colorPrimary;
+    margin-bottom: vars.$spacing-xs;
+  }
+
+  .dashboard__calendar-subtitle {
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray500;
+    margin: 0;
+  }
+
+  .dashboard__calendar-btn {
+    padding: vars.$spacing-sm vars.$spacing-lg;
+    background: vars.$colorPrimary;
+    color: vars.$colorWhite;
+    border: none;
+    border-radius: vars.$radius-md;
+    font-size: vars.$fontSize-sm;
+    font-weight: vars.$fontWeight-medium;
+    cursor: pointer;
+    transition: background vars.$transition-fast;
+    white-space: nowrap;
+
+    &:hover {
+      background: vars.$colorPrimaryHover;
+      transform: translateY(-1px);
+      box-shadow: vars.$shadow-md;
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
 }
 
 @keyframes pulse-blue {

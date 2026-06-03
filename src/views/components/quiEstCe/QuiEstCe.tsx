@@ -1,9 +1,12 @@
 import './quiEstCe.scss';
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useProspect } from '../../../hooks/useProspect';
+import { useDialer } from '../../../hooks/useDialer';
 import { useToast } from '../../../hooks/useToast';
 import Button from '../button/Button';
 import Input from '../input/Input';
+import PhoneNumberWithCallButton from '../phoneNumberWithCallButton/PhoneNumberWithCallButton';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types';
 import { formatDateLong, getStatutProspectLabel } from '../../../utils/scripts/formatters';
@@ -28,7 +31,28 @@ interface EditableFields {
 
 export default function QuiEstCe() {
   const { currentProspect, updateProspect, isLoading } = useProspect();
+  const { callFromManual, statut } = useDialer();
   const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
+
+  // Vérifier si on provient d'une recherche manuelle
+  const isManualSearch = searchParams.get('source') === 'manual';
+
+  // Vérifier si un appel est en cours
+  const isCalling = statut === 'en_appel' || statut === 'appel_sortant';
+
+  // Fonction pour gérer l'appel depuis un bouton
+  const handleCallFromManual = async (phoneNumber: string) => {
+    if (!currentProspect) return;
+
+    try {
+      await callFromManual(phoneNumber, currentProspect.id_prospect);
+      showToast('info', 'Appel en cours...', 3000);
+    } catch (error) {
+      console.error('[QUIESTCE] Erreur appel manuel:', error);
+      showToast('error', 'Erreur lors du lancement de l\'appel', 5000);
+    }
+  };
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -367,12 +391,18 @@ export default function QuiEstCe() {
                 </div>
               )
             )}
-            <div className="qui-est-ce__field">
+            <div className="qui-est-ce__field qui-est-ce__field--with-call-button">
               <span className="qui-est-ce__label">Telephone</span>
-              <span className="qui-est-ce__value">{currentProspect.telephone}</span>
+              <PhoneNumberWithCallButton
+                phoneNumber={currentProspect.telephone}
+                type="principal"
+                onCall={handleCallFromManual}
+                showCallButton={isManualSearch}
+                isCalling={isCalling}
+              />
               <span className="qui-est-ce__hint">(Non modifiable - ID fiche)</span>
             </div>
-            <div className="qui-est-ce__field">
+            <div className="qui-est-ce__field qui-est-ce__field--with-call-button">
               <span className="qui-est-ce__label">Tel. contact</span>
               {isEditing ? (
                 <Input
@@ -382,7 +412,14 @@ export default function QuiEstCe() {
                   placeholder="Ligne directe / portable"
                 />
               ) : (
-                <span className="qui-est-ce__value">{currentProspect.telephone_contact || '-'}</span>
+                <PhoneNumberWithCallButton
+                  phoneNumber={currentProspect.telephone_contact || ''}
+                  type="contact"
+                  onCall={handleCallFromManual}
+                  showCallButton={isManualSearch}
+                  disabled={!currentProspect.telephone_contact}
+                  isCalling={isCalling}
+                />
               )}
             </div>
             <div className="qui-est-ce__field">

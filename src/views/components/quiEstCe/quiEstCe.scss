@@ -68,6 +68,13 @@
       grid-column: 1 / -1;
     }
 
+    &--with-call-button {
+      .qui-est-ce__value,
+      .phone-number-with-call-button {
+        width: 100%;
+      }
+    }
+
     .input-container {
       margin: 0;
     }

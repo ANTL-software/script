@@ -628,6 +628,69 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, [call]);
 
+  // Appel manuel depuis la fiche prospect (boutons d'appel)
+  const callFromManual = useCallback(async (
+    phoneNumber: string,
+    prospectId: number,
+    campagneId?: number
+  ) => {
+    console.groupCollapsed(`📞 [APPEL MANUEL] ${phoneNumber}`);
+
+    // Récupérer la campagne active si non fournie
+    let targetCampagneId = campagneId;
+    if (!targetCampagneId) {
+      try {
+        const campagnes = await dialerService.getCampagnesAgent();
+        if (!campagnes || campagnes.length === 0) {
+          throw new Error('Aucune campagne active');
+        }
+        targetCampagneId = campagnes[0].id_campagne;
+      } catch (err) {
+        console.error('[APPEL MANUEL] Erreur récupération campagnes:', err);
+        showToast('error', 'Impossible de récupérer les campagnes actives', 5000);
+        console.groupEnd();
+        throw err;
+      }
+    }
+
+    try {
+      // Passer en statut "appel sortant"
+      setStatut('appel_sortant');
+      setRaisonPause(null);
+      setDepuisLe(new Date());
+      setProchainProspect(null);
+      await dialerService.changerStatut('appel_sortant');
+
+      // Créer l'appel en DB avec origine='manuel'
+      const appel = await appelService.createAppel({
+        id_prospect: prospectId,
+        id_campagne: targetCampagneId,
+        statut_appel: 'en_cours',
+        origine_appel: 'manuel',
+        numero_telephone: phoneNumber,
+      });
+
+      setCurrentAppelId(appel.id_appel);
+      setCurrentCampagneId(targetCampagneId);
+      setCurrentOrigineAppel('manuel');
+
+      // Lancer l'appel Twilio
+      await call(phoneNumber, targetCampagneId, prospectId);
+
+      console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
+    } catch (err) {
+      console.error('[APPEL MANUEL] Erreur:', err);
+      // IMPORTANT: Réinitialiser le statut en cas d'erreur pour éviter d'être coincé
+      setStatut('disponible');
+      setRaisonPause(null);
+      setDepuisLe(new Date());
+      await dialerService.changerStatut('disponible').catch(() => {});
+      throw err;
+    } finally {
+      console.groupEnd();
+    }
+  }, [call, showToast]);
+
   // Clear prochain prospect
   const clearProchainProspect = useCallback(() => {
     setProchainProspect(null);
@@ -661,6 +724,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       answer,
       reject,
       openProspectManual,
+      callFromManual,
     }}>
       {children}
       <audio ref={remoteAudioRef} id="remoteAudio" autoPlay playsInline muted={false} />

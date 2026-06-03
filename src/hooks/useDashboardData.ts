@@ -86,12 +86,19 @@ export function useDashboardData() {
       const isPhone = /^[+\d]{6,}$/.test(cleaned);
       if (isPhone) {
         const prospectModel = await prospectService.getProspectByPhone(cleaned);
-        navigate(`/prospect/${prospectModel.toJSON().id_prospect}`);
+        // Ajouter le paramètre ?source=manual pour distinguer les recherches manuelles
+        navigate(`/prospect/${prospectModel.toJSON().id_prospect}?source=manual`);
       } else {
         setSearchError('Recherche par nom non disponible pour le moment. Saisissez un numéro de téléphone.');
       }
-    } catch {
-      setSearchError('Aucun prospect trouvé pour ce numéro.');
+    } catch (error: any) {
+      // Gestion améliorée des erreurs avec message plus explicite
+      const errorMessage = error?.message || 'Erreur lors de la recherche';
+      if (errorMessage.includes('Aucun prospect trouvé') || errorMessage.includes('not found')) {
+        setSearchError('Aucune fiche trouvée pour ce numéro.');
+      } else {
+        setSearchError('Aucune fiche trouvée pour ce numéro.');
+      }
     } finally {
       setIsSearching(false);
     }

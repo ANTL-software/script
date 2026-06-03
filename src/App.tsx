@@ -17,7 +17,7 @@ import LoginPage from './views/layouts/loginPage/LoginPage'
 import PlanAppelPage from './views/layouts/planAppelPage/PlanAppelPage'
 import ObjectionsPage from './views/layouts/objectionsPage/ObjectionsPage'
 
-function App() {
+function AppRouter() {
   const { user } = useUser();
   const { currentView } = useApp();
   const { pendingClosing, forceMode } = useForceClosing();
@@ -29,7 +29,7 @@ function App() {
   const showHeader = currentView !== 'commande' && currentView !== 'rendez-vous';
 
   return (
-    <Router>
+    <>
       <audio id="remoteAudio" autoPlay />
       <IncomingCallBanner />
 
@@ -89,8 +89,16 @@ function App() {
           }
         />
       </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppRouter />
     </Router>
-  )
+  );
 }
 
 export default App

@@ -602,20 +602,22 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setProchainProspect(null);
       await dialerService.changerStatut('appel_sortant');
 
+      // Formater le numéro pour l'appel Twilio
+      const formattedNumber = prospectPhone ? formatPhoneE164(prospectPhone) : '';
       const appel = await appelService.createAppel({
         id_prospect: prospectId,
         id_campagne: campagneId,
         statut_appel: 'en_cours',
         origine_appel: origin,
-        numero_telephone: prospectPhone,
+        numero_telephone: formattedNumber,
       });
 
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(campagneId);
       setCurrentOrigineAppel(origin);
 
-      if (prospectPhone) {
-        await call(prospectPhone, campagneId, prospectId);
+      if (formattedNumber) {
+        await call(formattedNumber, campagneId, prospectId);
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
@@ -661,21 +663,22 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setProchainProspect(null);
       await dialerService.changerStatut('appel_sortant');
 
-      // Créer l'appel en DB avec origine='manuel'
+      // Créer l'appel en DB avec origine='manuel' et numéro formaté
+      const formattedNumber = formatPhoneE164(phoneNumber);
       const appel = await appelService.createAppel({
         id_prospect: prospectId,
         id_campagne: targetCampagneId,
         statut_appel: 'en_cours',
         origine_appel: 'manuel',
-        numero_telephone: phoneNumber,
+        numero_telephone: formattedNumber,
       });
 
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(targetCampagneId);
       setCurrentOrigineAppel('manuel');
 
-      // Lancer l'appel Twilio
-      await call(phoneNumber, targetCampagneId, prospectId);
+      // Lancer l'appel Twilio avec le numéro formaté
+      await call(formattedNumber, targetCampagneId, prospectId);
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
     } catch (err) {

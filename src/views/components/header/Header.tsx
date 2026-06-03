@@ -25,14 +25,14 @@ export default function Header({ props }: HeaderProps) {
   const location = useLocation();
 
   // Masquer le bouton de déconnexion sur la vue prospect pour éviter la déconnexion pendant un appel
-  // SAUF en mode test (paramètre ?test=true)
+  // SAUF en mode test (paramètre ?test=true) où on affiche un bouton "Retour" à la place
   // Mais afficher un bouton "Retour" si c'est une recherche manuelle
   const isProspectView = location.pathname.match(/^\/prospect\/\d+$/);
   const searchParams = new URLSearchParams(location.search);
   const isTestMode = searchParams.get('test') === 'true';
   const isManualSearch = searchParams.get('source') === 'manual';
-  const shouldShowLogout = !isProspectView || isTestMode;
-  const shouldShowBack = isProspectView && isManualSearch;
+  const shouldShowLogout = !isProspectView || (!isTestMode && !isManualSearch);
+  const shouldShowBack = isProspectView && (isManualSearch || isTestMode);
 
   const handleLogout = async () => {
     // Bloquer la déconnexion si un closing est en attente

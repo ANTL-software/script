@@ -10,6 +10,7 @@ import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
 import Loader from '../loader/Loader';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
+import RendezVousDetailsModal from '../rendezVousDetailsModal/RendezVousDetailsModal';
 import { createPortal } from 'react-dom';
 
 const locales = { 'fr': fr };
@@ -46,7 +47,6 @@ interface CalendarModalProps {
   today: Date;
   events: CalendarEvent[];
   isLoading: boolean;
-  onSelectEvent: (event: CalendarEvent) => void;
 }
 
 export default function CalendarModal({
@@ -55,13 +55,14 @@ export default function CalendarModal({
   today,
   events,
   isLoading,
-  onSelectEvent,
 }: CalendarModalProps) {
   const [currentDate, setCurrentDate] = useState(today);
   const [currentView, setCurrentView] = useState<View>('month');
   const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; event: CalendarEvent | null }>({
     visible: false, x: 0, y: 0, event: null,
   });
+  const [selectedRendezVous, setSelectedRendezVous] = useState<CalendarEvent['resource'] | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   const handleNavigate = useCallback((newDate: Date, _view: View, action: NavigateAction) => {
     if (action === 'PREV' && isBefore(startOfDay(newDate), today)) return;
@@ -69,6 +70,16 @@ export default function CalendarModal({
   }, [today]);
 
   const handleViewChange = useCallback((view: View) => setCurrentView(view), []);
+
+  const handleSelectEvent = useCallback((event: CalendarEvent) => {
+    setSelectedRendezVous(event.resource);
+    setIsDetailsModalOpen(true);
+  }, []);
+
+  const handleCloseDetailsModal = useCallback(() => {
+    setIsDetailsModalOpen(false);
+    setSelectedRendezVous(null);
+  }, []);
 
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
@@ -105,7 +116,7 @@ export default function CalendarModal({
           <span className="calendar-modal__legend-item calendar-modal__legend-item--effectue">Effectué</span>
           <span className="calendar-modal__legend-item calendar-modal__legend-item--reporte">Reporté</span>
           <span className="calendar-modal__legend-item calendar-modal__legend-item--annule">Annulé</span>
-          <span className="calendar-modal__legend-hint">Cliquez sur un rendez-vous pour ouvrir la fiche prospect</span>
+          <span className="calendar-modal__legend-hint">Cliquez sur un rendez-vous pour voir les détails</span>
         </div>
 
         {isLoading ? (
@@ -131,7 +142,7 @@ export default function CalendarModal({
               min={new Date(1970, 0, 1, 8, 0)}
               max={new Date(1970, 0, 1, 19, 0)}
               selectable={false}
-              onSelectEvent={onSelectEvent}
+              onSelectEvent={handleSelectEvent}
               eventPropGetter={eventStyleGetter}
               components={{ event: CustomEventComponent }}
             />
@@ -143,6 +154,12 @@ export default function CalendarModal({
         <CalendarTooltip event={tooltip.event} x={tooltip.x} y={tooltip.y} />,
         document.body
       )}
+
+      <RendezVousDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        rendezVous={selectedRendezVous}
+      />
     </div>
   );
 }

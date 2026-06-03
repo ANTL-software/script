@@ -27,7 +27,6 @@ export default function DashboardPage() {
     today,
     events,
     isLoading: calendarLoading,
-    handleSelectEvent,
   } = useDashboardCalendar();
 
   // Vérification de la qualité de connexion réseau
@@ -230,7 +229,6 @@ export default function DashboardPage() {
         today={today}
         events={events}
         isLoading={calendarLoading}
-        onSelectEvent={handleSelectEvent}
       />
     </main>
   );

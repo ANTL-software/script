@@ -38,10 +38,12 @@ export function useDashboardCalendar() {
   }, [loadRendezVous]);
 
   const events: CalendarEvent[] = useMemo(() => {
-    return agentRdvList.map(rdv => {
-      // Tous les événements sont "mine-other" car on est pas sur une fiche prospect
-      return toCalendarEvent(rdv, 'mine-other');
-    });
+    return agentRdvList
+      .filter(rdv => rdv.statut !== 'annule')  // Exclure les RDV annulés
+      .map(rdv => {
+        // Tous les événements sont "mine-other" car on est pas sur une fiche prospect
+        return toCalendarEvent(rdv, 'mine-other');
+      });
   }, [agentRdvList]);
 
   const handleSelectEvent = useCallback((event: CalendarEvent) => {

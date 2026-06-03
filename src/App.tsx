@@ -3,7 +3,9 @@ import './utils/styles/global.scss'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import { getSalutation } from "./utils/scripts/utils";
-import { useUser, useApp } from './hooks';
+import { useUser, useApp, useForceClosing } from './hooks';
+import { closingService } from './API/services';
+import ClosingModal from './views/components/closingModal/ClosingModal';
 
 import Header from './views/components/header/Header'
 import ProtectedRoute from './views/components/protectedRoute/ProtectedRoute'
@@ -18,6 +20,7 @@ import ObjectionsPage from './views/layouts/objectionsPage/ObjectionsPage'
 function App() {
   const { user } = useUser();
   const { currentView } = useApp();
+  const { pendingClosing, forceMode } = useForceClosing();
 
   const props = {
     pageTitle: getSalutation(user?.prenom),
@@ -29,6 +32,26 @@ function App() {
     <Router>
       <audio id="remoteAudio" autoPlay />
       <IncomingCallBanner />
+
+      {/* ClosingModal global (mode force si nécessaire) */}
+      {pendingClosing && (
+        <ClosingModal
+          isOpen={true}
+          prospectId={pendingClosing.prospectId}
+          prospectName={pendingClosing.prospectName}
+          campagneId={pendingClosing.campagneId}
+          dureeAppel={pendingClosing.dureeAppel}
+          forceMode={forceMode}
+          onComplete={() => {
+            closingService.clearPending();
+            // Rediriger vers "/" si en mode force, sinon rester sur la page
+            if (forceMode) {
+              window.location.href = '/';
+            }
+          }}
+        />
+      )}
+
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route

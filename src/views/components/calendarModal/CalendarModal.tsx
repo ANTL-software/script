@@ -8,10 +8,15 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTimes, FaCalendarAlt } from 'react-icons/fa';
 import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
+import { rendezVousService } from '../../../API/services';
+import type { UpdateRendezVousData } from '../../../utils/types/rendezVous.types';
+import { getErrorMessage } from '../../../utils/scripts/formatters';
 import Loader from '../loader/Loader';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
 import RendezVousDetailsModal from '../rendezVousDetailsModal/RendezVousDetailsModal';
+import RendezVousModal from '../rendezVousModal/RendezVousModal';
 import { createPortal } from 'react-dom';
+import { useToast } from '../../../hooks/useToast';
 
 const locales = { 'fr': fr };
 
@@ -47,6 +52,7 @@ interface CalendarModalProps {
   today: Date;
   events: CalendarEvent[];
   isLoading: boolean;
+  loadRendezVous: () => Promise<void>;
 }
 
 export default function CalendarModal({
@@ -55,7 +61,9 @@ export default function CalendarModal({
   today,
   events,
   isLoading,
+  loadRendezVous,
 }: CalendarModalProps) {
+  const { showToast } = useToast();
   const [currentDate, setCurrentDate] = useState(today);
   const [currentView, setCurrentView] = useState<View>('month');
   const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; event: CalendarEvent | null }>({
@@ -63,6 +71,7 @@ export default function CalendarModal({
   });
   const [selectedRendezVous, setSelectedRendezVous] = useState<CalendarEvent['resource'] | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isRdvModalOpen, setIsRdvModalOpen] = useState(false);
 
   const handleNavigate = useCallback((newDate: Date, _view: View, action: NavigateAction) => {
     if (action === 'PREV' && isBefore(startOfDay(newDate), today)) return;
@@ -80,6 +89,46 @@ export default function CalendarModal({
     setIsDetailsModalOpen(false);
     setSelectedRendezVous(null);
   }, []);
+
+  const handleEditRendezVous = useCallback(() => {
+    setIsDetailsModalOpen(false);
+    setIsRdvModalOpen(true);
+  }, []);
+
+  const handleDeleteRendezVous = useCallback(async () => {
+    if (!selectedRendezVous) return;
+    try {
+      await rendezVousService.deleteRendezVous(selectedRendezVous.id_rendez_vous);
+      showToast('success', 'Rendez-vous supprimé');
+      setIsDetailsModalOpen(false);
+      setSelectedRendezVous(null);
+      await loadRendezVous();
+    } catch (err) {
+      showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
+    }
+  }, [selectedRendezVous, showToast, loadRendezVous]);
+
+  const handleUpdateRendezVous = useCallback(async (data: { date: Date; motif: string; notes: string; statut: string }) => {
+    if (!selectedRendezVous) return;
+    try {
+      // Convertir les données au format attendu par le service
+      const updateData: UpdateRendezVousData = {
+        date_rdv: format(data.date, 'yyyy-MM-dd'),
+        heure_rdv: format(data.date, 'HH:mm:ss'),
+        motif: data.motif || undefined,
+        notes: data.notes || undefined,
+        statut: data.statut as any,
+      };
+      await rendezVousService.updateRendezVous(selectedRendezVous.id_rendez_vous, updateData);
+      showToast('success', 'Rendez-vous modifié');
+      setIsRdvModalOpen(false);
+      setIsDetailsModalOpen(false);
+      setSelectedRendezVous(null);
+      await loadRendezVous();
+    } catch (err) {
+      showToast('error', getErrorMessage(err, 'Erreur lors de la modification'));
+    }
+  }, [selectedRendezVous, showToast, loadRendezVous]);
 
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
@@ -159,7 +208,20 @@ export default function CalendarModal({
         isOpen={isDetailsModalOpen}
         onClose={handleCloseDetailsModal}
         rendezVous={selectedRendezVous}
+        onEdit={handleEditRendezVous}
+        onDelete={handleDeleteRendezVous}
       />
+
+      {selectedRendezVous && (
+        <RendezVousModal
+          isOpen={isRdvModalOpen}
+          onClose={() => setIsRdvModalOpen(false)}
+          rendezVous={selectedRendezVous}
+          onCreate={async () => {}}
+          onUpdate={handleUpdateRendezVous}
+          onDelete={handleDeleteRendezVous}
+        />
+      )}
     </div>
   );
 }

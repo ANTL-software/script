@@ -1,5 +1,5 @@
 import './rendezVousDetailsModal.scss';
-import { FaTimes, FaCalendarAlt, FaClock, FaUser, FaPhone } from 'react-icons/fa';
+import { FaTimes, FaCalendarAlt, FaClock, FaUser, FaPhone, FaEdit, FaTrash } from 'react-icons/fa';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { RendezVous } from '../../../utils/types';
@@ -10,6 +10,8 @@ interface RendezVousDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
   rendezVous: RendezVous | null;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
 const STATUT_LABELS: Record<string, string> = {
@@ -30,6 +32,8 @@ export default function RendezVousDetailsModal({
   isOpen,
   onClose,
   rendezVous,
+  onEdit,
+  onDelete,
 }: RendezVousDetailsModalProps) {
   if (!isOpen || !rendezVous) return null;
 
@@ -115,6 +119,12 @@ export default function RendezVousDetailsModal({
         </div>
 
         <div className="rdv-details-modal__actions">
+          <Button variant="danger" onClick={onDelete}>
+            <FaTrash /> Supprimer
+          </Button>
+          <Button variant="primary" onClick={onEdit}>
+            <FaEdit /> Modifier
+          </Button>
           <Button variant="secondary" onClick={onClose}>
             Fermer
           </Button>

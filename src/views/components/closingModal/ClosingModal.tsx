@@ -14,6 +14,7 @@ interface ClosingModalProps {
   campagneId: number;
   dureeAppel?: number;
   onComplete: () => void;
+  forceMode?: boolean;
 }
 
 export default function ClosingModal({
@@ -23,6 +24,7 @@ export default function ClosingModal({
   campagneId,
   dureeAppel,
   onComplete,
+  forceMode = false,
 }: ClosingModalProps) {
   const [isMinimized, setIsMinimized] = useState(false);
 
@@ -34,6 +36,7 @@ export default function ClosingModal({
   } = useCallClosing({ prospectId, campagneId, onComplete });
 
   const handleMinimize = () => {
+    if (forceMode) return;
     setIsMinimized(true);
   };
 
@@ -47,7 +50,7 @@ export default function ClosingModal({
     <>
       {/* Modale complète ou minimisée */}
       {!isMinimized ? (
-        <div className="closing-modal-overlay" onClick={handleMinimize}>
+        <div className="closing-modal-overlay" onClick={forceMode ? undefined : handleMinimize}>
           <div className="closing-modal" onClick={(e) => e.stopPropagation()}>
 
         <div className="closing-modal__header">
@@ -55,7 +58,7 @@ export default function ClosingModal({
             className="closing-modal__minimize-btn"
             onClick={handleMinimize}
             title="Réduire la modale"
-            disabled={isSubmitting}
+            disabled={isSubmitting || forceMode}
           >
             <FaMinus />
           </button>

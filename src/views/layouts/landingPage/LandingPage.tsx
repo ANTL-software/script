@@ -1,6 +1,6 @@
 import './landingPage.scss';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useLandingPage } from '../../../hooks/useLandingPage';
+import { useLandingPage, useForceClosing } from '../../../hooks';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
@@ -20,6 +20,7 @@ import { useState, useEffect } from 'react';
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const { forceMode } = useForceClosing();
 
   // Mode test : détecter le paramètre ?test=true
   const isTestMode = searchParams.get('test') === 'true';
@@ -130,7 +131,7 @@ export default function LandingPage() {
         onSuccess={handleOrderSuccess}
       />
 
-      {effectiveClosing && (
+      {effectiveClosing && !forceMode && (
         <ClosingModal
           isOpen={true}
           prospectId={effectiveClosing.prospectId}

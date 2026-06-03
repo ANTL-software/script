@@ -1,10 +1,11 @@
 import './prospectInfoHeader.scss';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useProspect } from '../../../hooks/useProspect';
 import { useDialer } from '../../../hooks/useDialer';
 import TypeFicheBadge from '../typeFicheBadge/TypeFicheBadge';
 import Button from '../button/Button';
 import Clock from '../clock/Clock';
-import { FaBuilding, FaListOl, FaCommentDots, FaUser, FaPhoneSlash } from 'react-icons/fa';
+import { FaBuilding, FaListOl, FaCommentDots, FaUser, FaPhoneSlash, FaArrowLeft } from 'react-icons/fa';
 
 interface ProspectInfoHeaderProps {
   currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
@@ -18,6 +19,10 @@ interface ProspectInfoHeaderProps {
 export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous, isTestMode = false }: ProspectInfoHeaderProps) {
   const { currentProspect, fullName, typeFiche } = useProspect();
   const { statut, hangup } = useDialer();
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  const isManualSearch = searchParams.get('source') === 'manual';
 
   const handleHangup = async () => {
     try {
@@ -25,6 +30,10 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
     } catch (error) {
       console.error('Erreur lors du raccrochage:', error);
     }
+  };
+
+  const handleBack = () => {
+    navigate('/');
   };
 
   // Toujours afficher le bouton de raccrochage (activé uniquement si en appel)
@@ -71,17 +80,29 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
             <FaBuilding /> Qui sommes-nous ?
           </Button>
           <Clock />
-          {showHangupButton && (
+          {isManualSearch ? (
             <Button
-              variant="danger"
+              variant="secondary"
               size="small"
-              onClick={handleHangup}
-              className="hangup-button"
-              title="Raccrocher"
-              disabled={!canHangup}
+              onClick={handleBack}
+              className="back-button"
+              title="Retour à l'accueil"
             >
-              <FaPhoneSlash />
+              <FaArrowLeft /> Retour
             </Button>
+          ) : (
+            showHangupButton && (
+              <Button
+                variant="danger"
+                size="small"
+                onClick={handleHangup}
+                className="hangup-button"
+                title="Raccrocher"
+                disabled={!canHangup}
+              >
+                <FaPhoneSlash />
+              </Button>
+            )
           )}
         </div>
       </div>

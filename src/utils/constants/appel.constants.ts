@@ -68,6 +68,41 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     icon: '❌',
     color: '#dc2626',
   },
+  {
+    value: 'siege',
+    label: 'Siège',
+    description: 'Le prospect est au siege',
+    icon: '🏢',
+    color: '#64748b',
+  },
+  {
+    value: 'faillite',
+    label: 'Faillite',
+    description: 'Le prospect est en faillite',
+    icon: '💼',
+    color: '#991b1b',
+  },
+  {
+    value: 'pas_attribue',
+    label: 'Pas attribué',
+    description: 'Le prospect ne peut pas être attribué',
+    icon: '🚷',
+    color: '#0891b2',
+  },
+  {
+    value: 'particulier',
+    label: 'Particulier',
+    description: 'BtoC - Prospect particulier',
+    icon: '👤',
+    color: '#8b5cf6',
+  },
+  {
+    value: 'pas_disponible',
+    label: 'Pas disponible',
+    description: 'Le prospect n\'est pas disponible',
+    icon: '📅',
+    color: '#be185d',
+  },
 ];
 
 /**
@@ -83,6 +118,11 @@ export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
   messagerie: '#6b7280',
   occupe: '#f97316',
   non_abouti: '#dc2626',
+  siege: '#64748b',
+  faillite: '#991b1b',
+  pas_attribue: '#0891b2',
+  particulier: '#8b5cf6',
+  pas_disponible: '#be185d',
 };
 
 /**

@@ -9,7 +9,12 @@ export type StatutAppel =
   | 'messagerie'
   | 'rdv_pris'
   | 'vente_conclue'
-  | 'refus_definitif';
+  | 'refus_definitif'
+  | 'siege'
+  | 'faillite'
+  | 'pas_attribue'
+  | 'particulier'
+  | 'pas_disponible';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
 

@@ -133,15 +133,23 @@ export function useRendezVous() {
   }, []);
 
   const handleCreateRendezVous = async (data: { date: Date; motif: string; notes: string }) => {
-    if (!user?.id_employe || !currentProspect || !currentCampaign) {
+    if (!user?.id_employe || !currentProspect) {
       showToast('error', 'Données manquantes pour créer le rendez-vous');
+      return;
+    }
+
+    // Utiliser currentCampaign si disponible, sinon utiliser la campagne du prospect
+    const campaignId = currentCampaign?.id_campagne || currentProspect.id_campagne;
+
+    if (!campaignId) {
+      showToast('error', 'Aucune campagne associée à ce prospect');
       return;
     }
 
     const createData: CreateRendezVousData = {
       id_agent: user.id_employe,
       id_prospect: currentProspect.id_prospect,
-      id_campagne: currentCampaign.id_campagne,
+      id_campagne: campaignId,
       date_rdv: format(data.date, 'yyyy-MM-dd'),
       heure_rdv: format(data.date, 'HH:mm:ss'),
       motif: data.motif || undefined,

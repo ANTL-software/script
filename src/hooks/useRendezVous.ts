@@ -138,11 +138,25 @@ export function useRendezVous() {
       return;
     }
 
-    // Utiliser currentCampaign si disponible, sinon utiliser la campagne du prospect
-    const campaignId = currentCampaign?.id_campagne || currentProspect.id_campagne;
+    // Utiliser currentCampaign si disponible, sinon récupérer les campagnes de l'agent
+    let campaignId = currentCampaign?.id_campagne;
 
     if (!campaignId) {
-      showToast('error', 'Aucune campagne associée à ce prospect');
+      try {
+        // Récupérer les campagnes de l'agent et utiliser la première active
+        const { dialerService } = await import('../API/services');
+        const campagnes = await dialerService.getCampagnesAgent();
+        const campagneActive = campagnes.find(c => c.statut === 'active');
+        if (campagneActive) {
+          campaignId = campagneActive.id_campagne;
+        }
+      } catch (err) {
+        console.error('Erreur lors de la récupération des campagnes:', err);
+      }
+    }
+
+    if (!campaignId) {
+      showToast('error', 'Aucune campagne active trouvée. Veuillez contacter votre administrateur.');
       return;
     }
 

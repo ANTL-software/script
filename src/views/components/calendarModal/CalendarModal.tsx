@@ -10,11 +10,12 @@ import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
 import { rendezVousService } from '../../../API/services';
 import type { UpdateRendezVousData } from '../../../utils/types/rendezVous.types';
-import { getErrorMessage } from '../../../utils/scripts/formatters';
+import { getErrorMessage, formatProspectName } from '../../../utils/scripts/formatters';
 import Loader from '../loader/Loader';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
 import RendezVousDetailsModal from '../rendezVousDetailsModal/RendezVousDetailsModal';
 import RendezVousModal from '../rendezVousModal/RendezVousModal';
+import ConfirmModal from '../confirmModal/ConfirmModal';
 import { createPortal } from 'react-dom';
 import { useToast } from '../../../hooks/useToast';
 
@@ -73,6 +74,7 @@ export default function CalendarModal({
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRdvModalOpen, setIsRdvModalOpen] = useState(false);
   const [calendarKey, setCalendarKey] = useState(0);
+  const [confirmDelete, setConfirmDelete] = useState<{ event: CalendarEvent | null }>({ event: null });
 
   const handleNavigate = useCallback((newDate: Date, _view: View, action: NavigateAction) => {
     if (action === 'PREV' && isBefore(startOfDay(newDate), today)) return;
@@ -134,17 +136,27 @@ export default function CalendarModal({
     }
   }, [selectedRendezVous, showToast, loadRendezVous]);
 
-  const handleQuickDelete = useCallback(async (event: CalendarEvent, e: React.MouseEvent) => {
+  const handleQuickDelete = useCallback((event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche l'ouverture du modal de détails
+    setConfirmDelete({ event });
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!confirmDelete.event) return;
     try {
-      await rendezVousService.deleteRendezVous(event.resource.id_rendez_vous);
+      await rendezVousService.deleteRendezVous(confirmDelete.event.resource.id_rendez_vous);
       showToast('success', 'Rendez-vous supprimé');
+      setConfirmDelete({ event: null });
       await loadRendezVous();
       setCalendarKey(prev => prev + 1);
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
     }
-  }, [showToast, loadRendezVous]);
+  }, [confirmDelete, showToast, loadRendezVous]);
+
+  const handleCancelDelete = useCallback(() => {
+    setConfirmDelete({ event: null });
+  }, []);
 
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
@@ -248,6 +260,32 @@ export default function CalendarModal({
           onCreate={async () => {}}
           onUpdate={handleUpdateRendezVous}
           onDelete={handleDeleteRendezVous}
+          onRequestDelete={() => {
+            // Créer un événement temporaire pour la confirmation
+            const tempEvent: CalendarEvent = {
+              id: selectedRendezVous.id_rendez_vous,
+              title: `${selectedRendezVous.prospect ? formatProspectName(selectedRendezVous.prospect) : 'Prospect'} — ${selectedRendezVous.motif || 'Rendez-vous'}`,
+              start: new Date(),
+              end: new Date(),
+              resource: selectedRendezVous,
+              eventType: 'mine-other',
+            };
+            setConfirmDelete({ event: tempEvent });
+            setIsRdvModalOpen(false);
+          }}
+        />
+      )}
+
+      {confirmDelete.event && (
+        <ConfirmModal
+          isOpen={!!confirmDelete.event}
+          title="Supprimer le rendez-vous"
+          message={`Êtes-vous sûr de vouloir supprimer le rendez-vous « ${confirmDelete.event.title }» ?`}
+          type="danger"
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
         />
       )}
     </div>

@@ -419,4 +419,53 @@
       color: #1d4ed8;
     }
   }
+
+  // Event wrapper for delete button
+  .cal-event-wrapper {
+    position: relative;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+    width: 100% !important;
+    height: 100% !important;
+    padding: 0.15rem 0.25rem;
+  }
+
+  .cal-event-delete-btn {
+    display: none !important;
+    align-items: center;
+    justify-content: center;
+    width: 1.1rem;
+    height: 1.1rem;
+    min-width: 1.1rem;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(220, 38, 38, 0.95);
+    color: white;
+    border-radius: 0.2rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    flex-shrink: 0;
+    pointer-events: auto;
+
+    &:hover {
+      background: rgb(185, 28, 28);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    svg {
+      font-size: 0.6rem;
+      width: 0.6rem;
+      height: 0.6rem;
+    }
+  }
+
+  // Afficher le bouton uniquement dans la vue journalière
+  .rbc-day-view .cal-event-delete-btn {
+    display: flex !important;
+  }
 }

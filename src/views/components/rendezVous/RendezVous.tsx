@@ -6,7 +6,7 @@ import type { View, NavigateAction } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, startOfDay, isBefore, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FaPlus, FaCalendarAlt, FaUser, FaExclamationTriangle } from 'react-icons/fa';
+import { FaPlus, FaCalendarAlt, FaUser, FaExclamationTriangle, FaTrash } from 'react-icons/fa';
 import { useProspect } from '../../../hooks';
 import { useRendezVous } from '../../../hooks/useRendezVous';
 import type { CalendarEvent } from '../../../utils/types';
@@ -16,6 +16,8 @@ import Button from '../button/Button';
 import Loader from '../loader/Loader';
 import RendezVousModal from '../rendezVousModal/RendezVousModal';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
+import ConfirmModal from '../confirmModal/ConfirmModal';
+import { useToast } from '../../../hooks/useToast';
 
 const locales = { 'fr': fr };
 
@@ -75,6 +77,8 @@ function eventStyleGetter(event: CalendarEvent) {
 
 export default function RendezVous() {
   const { fullName: prospectFullName, currentProspect } = useProspect();
+  const { showToast } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState<{ fromDetails: boolean; event: CalendarEvent | null }>({ fromDetails: false, event: null });
   const {
     today,
     events,
@@ -108,20 +112,64 @@ export default function RendezVous() {
 
   const handleViewChange = useCallback((view: View) => setCurrentView(view), []);
 
+  const handleQuickDelete = useCallback((event: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setConfirmDelete({ fromDetails: false, event });
+  }, []);
+
+  const handleDeleteFromDetails = useCallback(() => {
+    if (!selectedRendezVous) return;
+    // Créer un événement temporaire pour la confirmation
+    const tempEvent: CalendarEvent = {
+      id: selectedRendezVous.id_rendez_vous,
+      title: `${prospectFullName} — ${selectedRendezVous.motif || 'Rendez-vous'}`,
+      start: new Date(), // Pas important pour la confirmation
+      end: new Date(),
+      resource: selectedRendezVous,
+      eventType: 'mine-prospect',
+    };
+    setConfirmDelete({ fromDetails: true, event: tempEvent });
+    setIsDetailsModalOpen(false); // Fermer la modale de détails
+  }, [selectedRendezVous, prospectFullName]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!confirmDelete.event) return;
+    try {
+      await handleDeleteRendezVous();
+      setConfirmDelete({ fromDetails: false, event: null });
+    } catch (err) {
+      showToast('error', 'Erreur lors de la suppression');
+    }
+  }, [confirmDelete, handleDeleteRendezVous, showToast]);
+
+  const handleCancelDelete = useCallback(() => {
+    setConfirmDelete({ fromDetails: false, event: null });
+    // Si la suppression venait de la modale de détails, ne pas la réouvrir
+  }, []);
+
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
       return (
-        <div
-          className="cal-event-content"
-          onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, event })}
-          onMouseMove={(e) => setTooltip((prev) => ({ ...prev, x: e.clientX, y: e.clientY }))}
-          onMouseLeave={() => setTooltip((prev) => ({ ...prev, visible: false }))}
-        >
-          {event.title}
+        <div className="cal-event-wrapper">
+          <div
+            className="cal-event-content"
+            onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, event })}
+            onMouseMove={(e) => setTooltip((prev) => ({ ...prev, x: e.clientX, y: e.clientY }))}
+            onMouseLeave={() => setTooltip((prev) => ({ ...prev, visible: false }))}
+          >
+            {event.title}
+          </div>
+          <button
+            className="cal-event-delete-btn"
+            onClick={(e) => handleQuickDelete(event, e)}
+            title="Supprimer ce rendez-vous"
+          >
+            <FaTrash />
+          </button>
         </div>
       );
     };
-  }, []);
+  }, [handleQuickDelete]);
 
   if (isLoading) {
     return (
@@ -221,7 +269,21 @@ export default function RendezVous() {
         onCreate={handleCreateRendezVous}
         onUpdate={handleUpdateRendezVous}
         onDelete={handleDeleteRendezVous}
+        onRequestDelete={handleDeleteFromDetails}
       />
+
+      {confirmDelete.event && (
+        <ConfirmModal
+          isOpen={!!confirmDelete.event}
+          title="Supprimer le rendez-vous"
+          message={`Êtes-vous sûr de vouloir supprimer le rendez-vous « ${confirmDelete.event.title} » ?`}
+          type="danger"
+          confirmText="Supprimer"
+          cancelText="Annuler"
+          onConfirm={handleConfirmDelete}
+          onCancel={handleCancelDelete}
+        />
+      )}
     </div>
   );
 }

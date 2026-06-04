@@ -18,6 +18,7 @@ interface RendezVousModalProps {
   onCreate: (data: { date: Date; motif: string; notes: string }) => Promise<void>;
   onUpdate: (data: { date: Date; motif: string; notes: string; statut: string }) => Promise<void>;
   onDelete: () => Promise<void>;
+  onRequestDelete?: () => void;
 }
 
 export default function RendezVousModal({
@@ -30,6 +31,7 @@ export default function RendezVousModal({
   onCreate,
   onUpdate,
   onDelete,
+  onRequestDelete,
 }: RendezVousModalProps) {
   const isEditMode = !!rendezVous;
 
@@ -39,7 +41,6 @@ export default function RendezVousModal({
   const [notes, setNotes] = useState('');
   const [statut, setStatut] = useState<RendezVousStatut>('planifie');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -56,7 +57,6 @@ export default function RendezVousModal({
         setNotes('');
         setStatut('planifie');
       }
-      setShowDeleteConfirm(false);
     }
   }, [isOpen, rendezVous, initialDate]);
 
@@ -79,16 +79,6 @@ export default function RendezVousModal({
       }
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setIsSubmitting(true);
-    try {
-      await onDelete();
-    } finally {
-      setIsSubmitting(false);
-      setShowDeleteConfirm(false);
     }
   };
 
@@ -201,28 +191,16 @@ export default function RendezVousModal({
             </div>
           ) : (
             <div className="rdv-modal__actions">
-              {isEditMode && !showDeleteConfirm && (
+              {isEditMode && onRequestDelete && (
                 <Button
                   type="button"
                   variant="danger"
                   size="small"
-                  onClick={() => setShowDeleteConfirm(true)}
+                  onClick={onRequestDelete}
                   disabled={isSubmitting}
                 >
                   <FaTrash /> Supprimer
                 </Button>
-              )}
-
-              {showDeleteConfirm && (
-                <div className="rdv-modal__delete-confirm">
-                  <span>Confirmer la suppression ?</span>
-                  <Button type="button" variant="danger" size="small" onClick={handleDelete} disabled={isSubmitting}>
-                    Oui, supprimer
-                  </Button>
-                  <Button type="button" variant="ghost" size="small" onClick={() => setShowDeleteConfirm(false)} disabled={isSubmitting}>
-                    Annuler
-                  </Button>
-                </div>
               )}
 
               <div className="rdv-modal__actions-right">

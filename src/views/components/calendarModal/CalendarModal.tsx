@@ -123,18 +123,40 @@ export default function CalendarModal({
         notes: data.notes || undefined,
         statut: data.statut as any,
       };
+
+      // DEBUG: Log la mise à jour
+      console.log('[CalendarModal] Mise à jour rendez-vous:', {
+        id: selectedRendezVous.id_rendez_vous,
+        ancienne_date: selectedRendezVous.date_rdv,
+        ancienne_heure: selectedRendezVous.heure_rdv,
+        nouvelles_donnees: updateData,
+        data_date_brute: data.date,
+        data_date_string: data.date.toString(),
+      });
+
       await rendezVousService.updateRendezVous(selectedRendezVous.id_rendez_vous, updateData);
       showToast('success', 'Rendez-vous modifié');
       setIsRdvModalOpen(false);
       setIsDetailsModalOpen(false);
       setSelectedRendezVous(null);
+
+      // DEBUG: Log avant rechargement
+      console.log('[CalendarModal] Avant rechargement events:', events.map(e => ({ id: e.id, title: e.title, start: e.start, end: e.end })));
+
       // Force le rechargement du calendrier
       await loadRendezVous();
+
+      // DEBUG: Log après rechargement (sera visible au prochain cycle)
+      setTimeout(() => {
+        console.log('[CalendarModal] Après rechargement - check events in next render');
+      }, 100);
+
       setCalendarKey(prev => prev + 1);
     } catch (err) {
+      console.error('[CalendarModal] Erreur mise à jour:', err);
       showToast('error', getErrorMessage(err, 'Erreur lors de la modification'));
     }
-  }, [selectedRendezVous, showToast, loadRendezVous]);
+  }, [selectedRendezVous, showToast, loadRendezVous, events]);
 
   const handleQuickDelete = useCallback((event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche l'ouverture du modal de détails
@@ -259,7 +281,6 @@ export default function CalendarModal({
           rendezVous={selectedRendezVous}
           onCreate={async () => {}}
           onUpdate={handleUpdateRendezVous}
-          onDelete={handleDeleteRendezVous}
           onRequestDelete={() => {
             // Créer un événement temporaire pour la confirmation
             const tempEvent: CalendarEvent = {

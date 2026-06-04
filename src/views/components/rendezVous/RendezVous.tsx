@@ -129,7 +129,6 @@ export default function RendezVous() {
       eventType: 'mine-prospect',
     };
     setConfirmDelete({ fromDetails: true, event: tempEvent });
-    setIsDetailsModalOpen(false); // Fermer la modale de détails
   }, [selectedRendezVous, prospectFullName]);
 
   const handleConfirmDelete = useCallback(async () => {
@@ -268,8 +267,8 @@ export default function RendezVous() {
         isReadOnly={isReadOnly}
         onCreate={handleCreateRendezVous}
         onUpdate={handleUpdateRendezVous}
-        onDelete={handleDeleteRendezVous}
         onRequestDelete={handleDeleteFromDetails}
+        showToast={showToast}
       />
 
       {confirmDelete.event && (

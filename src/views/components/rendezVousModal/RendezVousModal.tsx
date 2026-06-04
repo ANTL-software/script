@@ -17,8 +17,8 @@ interface RendezVousModalProps {
   isReadOnly?: boolean;
   onCreate: (data: { date: Date; motif: string; notes: string }) => Promise<void>;
   onUpdate: (data: { date: Date; motif: string; notes: string; statut: string }) => Promise<void>;
-  onDelete: () => Promise<void>;
   onRequestDelete?: () => void;
+  showToast?: (type: 'success' | 'error', message: string) => void;
 }
 
 export default function RendezVousModal({
@@ -30,8 +30,8 @@ export default function RendezVousModal({
   isReadOnly = false,
   onCreate,
   onUpdate,
-  onDelete,
   onRequestDelete,
+  showToast,
 }: RendezVousModalProps) {
   const isEditMode = !!rendezVous;
 
@@ -63,9 +63,20 @@ export default function RendezVousModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!date || !time) {
+      showToast?.('error', 'Veuillez sélectionner une date et une heure');
+      return;
+    }
+
     const dateTime = new Date(`${date}T${time}:00`);
+    
+    if (isNaN(dateTime.getTime())) {
+      showToast?.('error', 'Date ou heure invalide');
+      return;
+    }
 
     if (!isEditMode && isBefore(dateTime, new Date())) {
+      showToast?.('error', 'Impossible de créer un rendez-vous dans le passé');
       return;
     }
 

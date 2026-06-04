@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
 import { useCart, useProspect, useCampaign, useUser } from './index';
-import type { ModePaiement } from '../utils/types';
+import type { ModePaiement, DelaisLivraison } from '../utils/types';
 import { closingService } from '../API/services';
 import { validateOrderForm, buildVentePayload } from '../utils/scripts/orderValidation';
 
@@ -17,6 +17,10 @@ interface FormData {
   meme_adresse: boolean;
   mode_paiement: ModePaiement;
   notes: string;
+  siret: string;
+  email: string;
+  raison_sociale: string;
+  delais_livraison: DelaisLivraison;
 }
 
 interface UseOrderConfirmationOptions {
@@ -26,7 +30,7 @@ interface UseOrderConfirmationOptions {
 
 export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmationOptions) {
   const { items, total, clearCart } = useCart();
-  const { currentProspect, createVente } = useProspect();
+  const { currentProspect, createVente, updateProspect } = useProspect();
   const { currentCampaign } = useCampaign();
   const { user } = useUser();
 
@@ -42,13 +46,37 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     meme_adresse: !currentProspect?.adresse_livraison || currentProspect?.adresse_livraison === currentProspect?.adresse_facturation,
     mode_paiement: 'Prelevement',
     notes: '',
+    siret: currentProspect?.siret || '',
+    email: currentProspect?.email || '',
+    raison_sociale: currentProspect?.raison_sociale || '',
+    delais_livraison: 2,
   });
+
+  // Met à jour le formData quand le prospect change
+  useEffect(() => {
+    if (currentProspect) {
+      setFormData(prev => ({
+        ...prev,
+        adresse_facturation: currentProspect.adresse_facturation || '',
+        adresse_livraison: currentProspect.adresse_livraison || '',
+        code_postal_facturation: currentProspect.code_postal || '',
+        code_postal_livraison: currentProspect.code_postal || '',
+        ville_facturation: currentProspect.ville || '',
+        ville_livraison: currentProspect.ville || '',
+        pays_facturation: currentProspect.pays || 'France',
+        pays_livraison: currentProspect.pays || 'France',
+        siret: currentProspect.siret || '',
+        email: currentProspect.email || '',
+        raison_sociale: currentProspect.raison_sociale || '',
+      }));
+    }
+  }, [currentProspect]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean | number) => {
     const updatedValue = value;
 
     // Si la checkbox "meme_adresse" est cochée, copier l'adresse de facturation vers l'adresse de livraison
@@ -79,12 +107,48 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
 
     setFormData(prev => ({ ...prev, [field]: updatedValue }));
 
-    if (validationErrors[field]) {
+    if (validationErrors[field as string]) {
       setValidationErrors(prev => {
         const next = { ...prev };
-        delete next[field];
+        delete next[field as string];
         return next;
       });
+    }
+  };
+
+  const handleProspectInfoUpdate = async (updatedFields: Partial<typeof formData>) => {
+    if (!currentProspect) return;
+
+    const prospectUpdates: {
+      siret?: string;
+      email?: string;
+      raison_sociale?: string;
+      adresse_facturation?: string;
+      adresse_livraison?: string;
+      code_postal?: string;
+      ville?: string;
+      pays?: string;
+    } = {};
+
+    // Mapper les champs du form vers les champs du prospect
+    if (updatedFields.siret !== undefined) prospectUpdates.siret = updatedFields.siret;
+    if (updatedFields.email !== undefined) prospectUpdates.email = updatedFields.email;
+    if (updatedFields.raison_sociale !== undefined) prospectUpdates.raison_sociale = updatedFields.raison_sociale;
+    if (updatedFields.adresse_facturation !== undefined) prospectUpdates.adresse_facturation = updatedFields.adresse_facturation;
+    if (updatedFields.adresse_livraison !== undefined) prospectUpdates.adresse_livraison = updatedFields.adresse_livraison;
+    if (updatedFields.code_postal_facturation !== undefined) prospectUpdates.code_postal = updatedFields.code_postal_facturation;
+    if (updatedFields.ville_facturation !== undefined) prospectUpdates.ville = updatedFields.ville_facturation;
+    if (updatedFields.pays_facturation !== undefined) prospectUpdates.pays = updatedFields.pays_facturation;
+
+    // Ne mettre à jour que si il y a des changements
+    const hasChanges = Object.keys(prospectUpdates).length > 0;
+    if (!hasChanges) return;
+
+    try {
+      await updateProspect(prospectUpdates);
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du prospect:', err);
+      // Ne pas bloquer le formulaire, juste logger l'erreur
     }
   };
 
@@ -111,6 +175,9 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     setIsSubmitting(true);
 
     try {
+      // Mettre à jour les infos du prospect avec les champs SAISIS (siret, email, raison_sociale, adresses)
+      await handleProspectInfoUpdate(formData);
+
       const venteData = buildVentePayload({
         prospectId: currentProspect.id_prospect,
         campagneId: currentCampaign.id_campagne,
@@ -150,5 +217,6 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     validationErrors,
     handleInputChange,
     handleSubmit,
+    handleProspectInfoUpdate,
   };
 }

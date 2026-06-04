@@ -25,8 +25,27 @@ export function useDashboardCalendar() {
     try {
       setIsLoading(true);
       const agentData = await rendezVousService.getRendezVousByAgent(agentId);
+
+      // DEBUG: Log les données reçues
+      console.log('[useDashboardCalendar] Données reçues du backend:', {
+        count: agentData.length,
+        rdv: agentData.map(rdv => ({
+          id: rdv.id_rendez_vous,
+          date: rdv.date_rdv,
+          heure: rdv.heure_rdv,
+          statut: rdv.statut,
+          prospect: rdv.prospect?.nom + ' ' + (rdv.prospect?.prenom || ''),
+        })),
+      });
+
       setAgentRdvList(agentData);
+
+      // DEBUG: Log après setState
+      setTimeout(() => {
+        console.log('[useDashboardCalendar] agentRdvList mis à jour, events seront recalculés');
+      }, 50);
     } catch (err) {
+      console.error('[useDashboardCalendar] Erreur chargement:', err);
       showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
     } finally {
       setIsLoading(false);

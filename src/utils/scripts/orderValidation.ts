@@ -1,4 +1,4 @@
-import type { ModePaiement } from '../types';
+import type { ModePaiement, DelaisLivraison } from '../types';
 
 interface OrderFormData {
   adresse_facturation: string;
@@ -12,6 +12,10 @@ interface OrderFormData {
   meme_adresse: boolean;
   mode_paiement: string;
   notes: string;
+  siret?: string;
+  email?: string;
+  raison_sociale?: string;
+  delais_livraison: DelaisLivraison;
 }
 
 export interface OrderValidationErrors {
@@ -79,6 +83,7 @@ export function buildVentePayload(params: {
     id_prospect: prospectId,
     id_campagne: campagneId,
     mode_paiement: formData.mode_paiement as ModePaiement,
+    delais_livraison: formData.delais_livraison,
     notes: formData.notes.trim() || undefined,
     adresse_facturation: formData.adresse_facturation.trim(),
     adresse_livraison: adresseLivraison.trim(),

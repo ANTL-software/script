@@ -251,6 +251,90 @@
   }
 }
 
+// Styles pour react-select
+.confirm-order-modal__select {
+  &__control {
+    min-height: 44px;
+    background-color: vars.$colorWhite;
+    border: 1px solid vars.$colorGray300;
+    border-radius: vars.$radius-md;
+    box-shadow: none;
+    transition: all vars.$transition-base;
+
+    &:hover {
+      border-color: vars.$colorGray500;
+    }
+
+    &:focus-within {
+      border-color: vars.$colorPrimary;
+      box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
+    }
+  }
+
+  &__value-container {
+    padding: vars.$spacing-xs vars.$spacing-sm;
+  }
+
+  &__placeholder {
+    color: vars.$colorGray500;
+    font-style: italic;
+  }
+
+  &__single-value {
+    color: vars.$colorBlack;
+  }
+
+  &__indicator-separator {
+    display: none;
+  }
+
+  &__indicator {
+    color: vars.$colorGray500;
+    padding: vars.$spacing-xs;
+
+    &:hover {
+      color: vars.$colorBlack;
+    }
+  }
+
+  &__menu {
+    border: 1px solid vars.$colorGray300;
+    border-radius: vars.$radius-md;
+    box-shadow: vars.$shadow-md;
+    margin-top: 4px;
+    z-index: 2;
+  }
+
+  &__option {
+    padding: vars.$spacing-sm vars.$spacing-md;
+    cursor: pointer;
+    background-color: vars.$colorWhite;
+    color: vars.$colorBlack;
+
+    &:hover {
+      background-color: vars.$colorGray100;
+    }
+
+    &--is-selected {
+      background-color: vars.$colorPrimary;
+      color: vars.$colorWhite;
+
+      &:hover {
+        background-color: vars.$colorPrimary;
+      }
+    }
+
+    &--is-focused {
+      background-color: vars.$colorGray100;
+    }
+  }
+
+  &__input-container {
+    margin: 0;
+    padding: 0;
+  }
+}
+
 .confirm-order-modal__checkbox-group {
   display: flex;
   align-items: center;

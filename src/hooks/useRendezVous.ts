@@ -12,9 +12,10 @@ import type {
 import { getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
 
 export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): CalendarEvent {
-  const [hours, minutes] = rdv.heure_rdv.split(':').map(Number);
-  const startDate = parseISO(rdv.date_rdv);
-  startDate.setHours(hours, minutes, 0, 0);
+  // Construire la date correctement en combinant date et heure pour éviter les problèmes de timezone
+  // parseISO utilise le timezone local, donc on combine la date et l'heure en un seul format ISO
+  const dateTimeString = `${rdv.date_rdv}T${rdv.heure_rdv}`;
+  const startDate = parseISO(dateTimeString);
   const endDate = addMinutes(startDate, 15);
 
   const prospectName = rdv.prospect ? formatProspectName({
@@ -102,9 +103,9 @@ export function useRendezVous() {
     const now = new Date();
     return myProspectRdvs
       .filter(rdv => {
-        const [h, m] = rdv.heure_rdv.split(':').map(Number);
-        const d = parseISO(rdv.date_rdv);
-        d.setHours(h, m, 0, 0);
+        // Construire la date correctement en combinant date et heure pour éviter les problèmes de timezone
+        const dateTimeString = `${rdv.date_rdv}T${rdv.heure_rdv}`;
+        const d = parseISO(dateTimeString);
         return d > now && rdv.statut === 'planifie';
       })
       .sort((a, b) => a.date_rdv.localeCompare(b.date_rdv))[0] ?? null;

@@ -1,9 +1,15 @@
 import './confirmOrderModal.scss';
-import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCard, FaStickyNote } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCard, FaStickyNote, FaBuilding, FaClock } from 'react-icons/fa';
 import type { ModePaiement } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import { useOrderConfirmation } from '../../../hooks/useOrderConfirmation';
 import Button from '../button/Button';
+import Select from 'react-select';
+
+const delaisOptions = [
+  { value: 2, label: '2 semaines' },
+  { value: 4, label: '4 semaines' },
+];
 
 interface ConfirmOrderModalProps {
   isOpen: boolean;
@@ -16,9 +22,26 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
     items, total,
     formData, isSubmitting, error, validationErrors,
     handleInputChange, handleSubmit,
+    handleProspectInfoUpdate,
   } = useOrderConfirmation({ onClose, onSuccess });
 
   if (!isOpen) return null;
+
+  const handleBlur = async (field: keyof typeof formData) => {
+    // Mettre à jour le prospect quand on quitte un champ d'info prospect
+    if (['siret', 'email', 'raison_sociale', 'adresse_facturation', 'code_postal_facturation', 'ville_facturation', 'pays_facturation'].includes(field)) {
+      await handleProspectInfoUpdate({ [field]: formData[field] });
+    }
+    // Pour l'adresse de livraison, si meme_adresse est coché, on met à jour avec l'adresse de facturation
+    if (field === 'adresse_facturation' && formData.meme_adresse) {
+      await handleProspectInfoUpdate({
+        adresse_livraison: formData.adresse_facturation,
+        code_postal_livraison: formData.code_postal_facturation,
+        ville_livraison: formData.ville_facturation,
+        pays_livraison: formData.pays_facturation,
+      });
+    }
+  };
 
   return (
     <div className="confirm-order-modal__overlay" onClick={onClose}>
@@ -66,6 +89,61 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
           </div>
 
           <div className="confirm-order-modal__section">
+            <h3><FaBuilding /> Informations du prospect</h3>
+            <div className="confirm-order-modal__form-grid">
+              <div className="confirm-order-modal__form-group">
+                <label htmlFor="raison_sociale">Raison sociale</label>
+                <input
+                  type="text"
+                  id="raison_sociale"
+                  value={formData.raison_sociale}
+                  onChange={(e) => handleInputChange('raison_sociale', e.target.value)}
+                  onBlur={() => handleBlur('raison_sociale')}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="confirm-order-modal__form-group">
+                <label htmlFor="siret">SIRET</label>
+                <input
+                  type="text"
+                  id="siret"
+                  value={formData.siret}
+                  onChange={(e) => handleInputChange('siret', e.target.value)}
+                  onBlur={() => handleBlur('siret')}
+                  disabled={isSubmitting}
+                  maxLength={14}
+                />
+              </div>
+
+              <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                <label htmlFor="email">Mail</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  onBlur={() => handleBlur('email')}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                <label htmlFor="delais_livraison"><FaClock /> Délai de livraison</label>
+                <Select
+                  id="delais_livraison"
+                  value={delaisOptions.find(opt => opt.value === formData.delais_livraison)}
+                  onChange={(selected) => selected && handleInputChange('delais_livraison', selected.value)}
+                  options={delaisOptions}
+                  isDisabled={isSubmitting}
+                  className="confirm-order-modal__select"
+                  classNamePrefix="react-select"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="confirm-order-modal__section">
             <h3><FaMapMarkerAlt /> Adresse de facturation</h3>
             <div className="confirm-order-modal__form-grid">
               <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
@@ -75,6 +153,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   id="adresse_facturation"
                   value={formData.adresse_facturation}
                   onChange={(e) => handleInputChange('adresse_facturation', e.target.value)}
+                  onBlur={() => handleBlur('adresse_facturation')}
                   disabled={isSubmitting}
                   className={validationErrors.adresse_facturation ? 'input-error' : ''}
                 />
@@ -88,6 +167,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   id="code_postal_facturation"
                   value={formData.code_postal_facturation}
                   onChange={(e) => handleInputChange('code_postal_facturation', e.target.value)}
+                  onBlur={() => handleBlur('code_postal_facturation')}
                   disabled={isSubmitting}
                   maxLength={5}
                   className={validationErrors.code_postal_facturation ? 'input-error' : ''}
@@ -102,6 +182,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   id="ville_facturation"
                   value={formData.ville_facturation}
                   onChange={(e) => handleInputChange('ville_facturation', e.target.value)}
+                  onBlur={() => handleBlur('ville_facturation')}
                   disabled={isSubmitting}
                   className={validationErrors.ville_facturation ? 'input-error' : ''}
                 />
@@ -115,6 +196,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   id="pays_facturation"
                   value={formData.pays_facturation}
                   onChange={(e) => handleInputChange('pays_facturation', e.target.value)}
+                  onBlur={() => handleBlur('pays_facturation')}
                   disabled={isSubmitting}
                   className={validationErrors.pays_facturation ? 'input-error' : ''}
                 />
@@ -143,8 +225,9 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   <input
                     type="text"
                     id="adresse_livraison"
-                    value={formData.adresse_livraison}
+                    value={formData.meme_adresse ? formData.adresse_facturation : formData.adresse_livraison}
                     onChange={(e) => handleInputChange('adresse_livraison', e.target.value)}
+                    onBlur={() => !formData.meme_adresse && handleBlur('adresse_livraison')}
                     disabled={isSubmitting || formData.meme_adresse}
                     className={validationErrors.adresse_livraison && !formData.meme_adresse ? 'input-error' : ''}
                   />
@@ -156,8 +239,9 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   <input
                     type="text"
                     id="code_postal_livraison"
-                    value={formData.code_postal_livraison}
+                    value={formData.meme_adresse ? formData.code_postal_facturation : formData.code_postal_livraison}
                     onChange={(e) => handleInputChange('code_postal_livraison', e.target.value)}
+                    onBlur={() => !formData.meme_adresse && handleBlur('code_postal_livraison')}
                     disabled={isSubmitting || formData.meme_adresse}
                     maxLength={5}
                     className={validationErrors.code_postal_livraison && !formData.meme_adresse ? 'input-error' : ''}
@@ -170,8 +254,9 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   <input
                     type="text"
                     id="ville_livraison"
-                    value={formData.ville_livraison}
+                    value={formData.meme_adresse ? formData.ville_facturation : formData.ville_livraison}
                     onChange={(e) => handleInputChange('ville_livraison', e.target.value)}
+                    onBlur={() => !formData.meme_adresse && handleBlur('ville_livraison')}
                     disabled={isSubmitting || formData.meme_adresse}
                     className={validationErrors.ville_livraison && !formData.meme_adresse ? 'input-error' : ''}
                   />
@@ -183,8 +268,9 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                   <input
                     type="text"
                     id="pays_livraison"
-                    value={formData.pays_livraison}
+                    value={formData.meme_adresse ? formData.pays_facturation : formData.pays_livraison}
                     onChange={(e) => handleInputChange('pays_livraison', e.target.value)}
+                    onBlur={() => !formData.meme_adresse && handleBlur('pays_livraison')}
                     disabled={isSubmitting || formData.meme_adresse}
                     className={validationErrors.pays_livraison && !formData.meme_adresse ? 'input-error' : ''}
                   />

@@ -28,10 +28,13 @@ export interface Vente {
   details?: DetailVente[]; // Alias Sequelize pour les détails de vente
 }
 
+export type DelaisLivraison = 2 | 4;
+
 export interface CreateVenteData {
   id_prospect: number;
   id_campagne: number;
   id_appel?: number;
   mode_paiement?: ModePaiement;
+  delais_livraison?: DelaisLivraison;
   details: Omit<DetailVente, 'id_detail' | 'montant_ligne'>[];
 }

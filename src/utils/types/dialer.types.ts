@@ -24,13 +24,6 @@ export interface StatutDialerResponse {
   debut_statut: string;
 }
 
-export interface SipCredentials {
-  sip_uri: string;
-  sip_password: string;
-  ws_url: string;
-  sip_domain: string;
-}
-
 // Prospect retourné par /agents/me/next-prospect
 // Étend Prospect avec la campagne à utiliser pour l'appel
 export interface ProspectAssigne {

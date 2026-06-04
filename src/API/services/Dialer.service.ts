@@ -1,6 +1,6 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError } from '../apiHelpers';
-import type { StatutDialer, RaisonPause, StatutDialerResponse, SipCredentials, Prospect, ProspectAssigne } from '../../utils/types';
+import type { StatutDialer, RaisonPause, StatutDialerResponse, Prospect, ProspectAssigne } from '../../utils/types';
 
 export class DialerService {
   private static instance: DialerService;
@@ -17,15 +17,6 @@ export class DialerService {
   public async getStatut(): Promise<StatutDialerResponse> {
     const response = await apiCalls.get<StatutDialerResponse>('/agents/me/statut');
     return throwIfApiError(response, 'Erreur lors de la récupération du statut');
-  }
-
-  public async getSipCredentials(): Promise<SipCredentials> {
-    console.groupCollapsed('🔑 [API] Credentials SIP');
-    const response = await apiCalls.get<SipCredentials>('/auth/sip-credentials');
-    const creds = throwIfApiError(response, 'Erreur lors de la récupération des credentials SIP');
-    console.log('✅ Reçus');
-    console.groupEnd();
-    return creds;
   }
 
   public async changerStatut(statut: StatutDialer, raison_pause?: RaisonPause): Promise<StatutDialerResponse> {

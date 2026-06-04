@@ -197,6 +197,8 @@ export default function RendezVous() {
         onNavigate={handleNavigate}
         min={new Date(1970, 0, 1, 8, 0)}
         max={new Date(1970, 0, 1, 19, 0)}
+        step={15}
+        timeslots={4}
         selectable
         onSelectSlot={handleSelectSlot}
         onSelectEvent={handleSelectEvent}

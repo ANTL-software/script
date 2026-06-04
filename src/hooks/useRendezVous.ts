@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { format, addHours, parseISO, isBefore, startOfDay } from 'date-fns';
+import { format, addMinutes, parseISO, isBefore, startOfDay } from 'date-fns';
 import type { SlotInfo } from 'react-big-calendar';
 import { useUser, useProspect, useCampaign, useToast } from './index';
 import { rendezVousService } from '../API/services';
@@ -15,7 +15,7 @@ export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): 
   const [hours, minutes] = rdv.heure_rdv.split(':').map(Number);
   const startDate = parseISO(rdv.date_rdv);
   startDate.setHours(hours, minutes, 0, 0);
-  const endDate = addHours(startDate, 1);
+  const endDate = addMinutes(startDate, 15);
 
   const prospectName = rdv.prospect ? formatProspectName({
     nom: rdv.prospect.nom,
@@ -200,7 +200,7 @@ export function useRendezVous() {
       showToast('error', 'Veuillez sélectionner un prospect');
       return;
     }
-    setSelectedSlot({ start: new Date(), end: addHours(new Date(), 1) });
+    setSelectedSlot({ start: new Date(), end: addMinutes(new Date(), 15) });
     setSelectedRendezVous(null);
     setIsReadOnly(false);
     setIsModalOpen(true);

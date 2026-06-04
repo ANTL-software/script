@@ -5,7 +5,7 @@ import type { View, NavigateAction } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, startOfDay, isBefore } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { FaTimes, FaCalendarAlt } from 'react-icons/fa';
+import { FaTimes, FaCalendarAlt, FaTrash } from 'react-icons/fa';
 import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
 import { rendezVousService } from '../../../API/services';
@@ -72,6 +72,7 @@ export default function CalendarModal({
   const [selectedRendezVous, setSelectedRendezVous] = useState<CalendarEvent['resource'] | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRdvModalOpen, setIsRdvModalOpen] = useState(false);
+  const [calendarKey, setCalendarKey] = useState(0);
 
   const handleNavigate = useCallback((newDate: Date, _view: View, action: NavigateAction) => {
     if (action === 'PREV' && isBefore(startOfDay(newDate), today)) return;
@@ -103,6 +104,7 @@ export default function CalendarModal({
       setIsDetailsModalOpen(false);
       setSelectedRendezVous(null);
       await loadRendezVous();
+      setCalendarKey(prev => prev + 1);
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
     }
@@ -124,26 +126,49 @@ export default function CalendarModal({
       setIsRdvModalOpen(false);
       setIsDetailsModalOpen(false);
       setSelectedRendezVous(null);
+      // Force le rechargement du calendrier
       await loadRendezVous();
+      setCalendarKey(prev => prev + 1);
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors de la modification'));
     }
   }, [selectedRendezVous, showToast, loadRendezVous]);
 
+  const handleQuickDelete = useCallback(async (event: CalendarEvent, e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêche l'ouverture du modal de détails
+    try {
+      await rendezVousService.deleteRendezVous(event.resource.id_rendez_vous);
+      showToast('success', 'Rendez-vous supprimé');
+      await loadRendezVous();
+      setCalendarKey(prev => prev + 1);
+    } catch (err) {
+      showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
+    }
+  }, [showToast, loadRendezVous]);
+
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
       return (
-        <div
-          className="cal-event-content"
-          onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, event })}
-          onMouseMove={(e) => setTooltip((prev) => ({ ...prev, x: e.clientX, y: e.clientY }))}
-          onMouseLeave={() => setTooltip((prev) => ({ ...prev, visible: false }))}
-        >
-          {event.title}
+        <div className="cal-event-wrapper">
+          <div
+            className="cal-event-content"
+            onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, event })}
+            onMouseMove={(e) => setTooltip((prev) => ({ ...prev, x: e.clientX, y: e.clientY }))}
+            onMouseLeave={() => setTooltip((prev) => ({ ...prev, visible: false }))}
+          >
+            {event.title}
+          </div>
+          <button
+            className="cal-event-delete-btn"
+            onClick={(e) => handleQuickDelete(event, e)}
+            title="Supprimer ce rendez-vous"
+          >
+            <FaTrash />
+          </button>
         </div>
       );
     };
-  }, []);
+  }, [handleQuickDelete]);
 
   if (!isOpen) return null;
 
@@ -176,6 +201,7 @@ export default function CalendarModal({
         ) : (
           <div className="calendar-modal__calendar-wrapper">
             <Calendar
+              key={calendarKey}
               localizer={localizer}
               events={events}
               startAccessor="start"
@@ -190,6 +216,8 @@ export default function CalendarModal({
               onNavigate={handleNavigate}
               min={new Date(1970, 0, 1, 8, 0)}
               max={new Date(1970, 0, 1, 19, 0)}
+              step={15}
+              timeslots={4}
               selectable={false}
               onSelectEvent={handleSelectEvent}
               eventPropGetter={eventStyleGetter}

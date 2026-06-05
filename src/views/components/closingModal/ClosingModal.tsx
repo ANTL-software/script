@@ -5,7 +5,7 @@ import { useCallClosing } from '../../../hooks/useCallClosing';
 import { STATUT_APPEL_OPTIONS } from '../../../utils/constants';
 import { formatDuration } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
-import RendezVous from '../rendezVous/RendezVous';
+import AgentCalendar from '../agentCalendar/AgentCalendar';
 
 interface ClosingModalProps {
   isOpen: boolean;
@@ -136,7 +136,10 @@ export default function ClosingModal({
           </form>
 
           <div className="closing-modal__right">
-            <RendezVous />
+            <AgentCalendar
+              prospectId={prospectId}
+              prospectName={prospectName}
+            />
           </div>
 
         </div>

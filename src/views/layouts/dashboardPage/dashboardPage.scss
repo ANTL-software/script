@@ -1,4 +1,5 @@
 @use '../../../utils/styles/variables' as vars;
+@use 'sass:color';
 
 #dashboardPage {
   flex: 1;
@@ -239,6 +240,25 @@
     display: flex;
     flex-direction: column;
     gap: vars.$spacing-sm;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: vars.$spacing-xs;
+
+    /* Custom thin scrollbar */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background-color: vars.$colorGray300;
+      border-radius: vars.$radius-full;
+      
+      &:hover {
+        background-color: vars.$colorGray500;
+      }
+    }
   }
 
   .dashboard__rdv-item {
@@ -424,7 +444,7 @@
   box-shadow: vars.$shadow-sm;
 
   &:hover {
-    background: lighten(vars.$colorWarning, 5%);
+    background: color.adjust(vars.$colorWarning, $lightness: 5%);
     transform: translateY(-1px);
     box-shadow: vars.$shadow-md;
   }

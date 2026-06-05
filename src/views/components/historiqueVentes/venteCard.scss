@@ -127,6 +127,46 @@
     border-radius: vars.$radius-md;
   }
 
+  &__details-actions {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-md;
+  }
+
+  &__send-to-cart {
+    @include mix.button-base;
+    display: inline-flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    padding: vars.$spacing-xs vars.$spacing-md;
+    font-size: vars.$fontSize-sm;
+    font-weight: vars.$fontWeight-medium;
+    background: vars.$colorPrimaryLight;
+    border: 1px solid vars.$colorPrimary;
+    color: vars.$colorPrimary;
+    border-radius: vars.$radius-md;
+    transition: all vars.$transition-base;
+    white-space: nowrap;
+
+    svg {
+      flex-shrink: 0;
+      transition: transform vars.$transition-base;
+    }
+
+    &:hover {
+      background: vars.$colorPrimary;
+      color: vars.$colorWhite;
+
+      svg {
+        transform: scale(1.1);
+      }
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+
   &__products {
     overflow-x: auto;
   }

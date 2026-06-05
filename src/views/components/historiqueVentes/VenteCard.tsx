@@ -3,6 +3,9 @@ import './venteCard.scss';
 import { useState } from 'react';
 import type { Vente } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
+import { useCart } from '../../../hooks/useCart';
+import { useToast } from '../../../hooks/useToast';
+import { useCampaign } from '../../../hooks/useCampaign';
 
 interface VenteCardProps {
   vente: Vente;
@@ -10,6 +13,41 @@ interface VenteCardProps {
 
 export default function VenteCard({ vente }: VenteCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const { addItem } = useCart();
+  const { showToast } = useToast();
+  const { produits } = useCampaign();
+
+  const handleSendToCart = () => {
+    let added = 0;
+    let skipped = 0;
+
+    (vente.details ?? []).forEach((detail) => {
+      // 1. On cherche le produit dans le catalogue courant (avec tarifs campagne)
+      const catalogueProduit = produits.find((p) => p.id_produit === detail.id_produit);
+
+      // 2. Fallback : le produit embarqué dans le détail de la vente
+      const resolvedProduit = catalogueProduit ?? detail.produit ?? null;
+
+      if (!resolvedProduit) {
+        skipped++;
+        return;
+      }
+
+      addItem(resolvedProduit, detail.quantite, detail.remise);
+      added++;
+    });
+
+    if (added === 0) {
+      showToast('warning', 'Aucun produit identifiable dans cette commande — rien n\'a été ajouté au panier.');
+      return;
+    }
+
+    const msg = skipped > 0
+      ? `${added} produit(s) ajouté(s) au panier (${skipped} ligne(s) sans référence ignorée(s)).`
+      : `${added} produit(s) ajouté(s) au panier.`;
+
+    showToast('success', msg);
+  };
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -70,9 +108,23 @@ export default function VenteCard({ vente }: VenteCardProps) {
         <div className="vente-card__details">
           <div className="vente-card__details-header">
             <h4>Détails de la commande</h4>
-            {vente.mode_paiement && (
-              <span className="vente-card__paiement">Paiement : {vente.mode_paiement}</span>
-            )}
+            <div className="vente-card__details-actions">
+              {vente.mode_paiement && (
+                <span className="vente-card__paiement">Paiement : {vente.mode_paiement}</span>
+              )}
+              <button
+                className="vente-card__send-to-cart"
+                onClick={handleSendToCart}
+                title="Reprendre le contenu de cette commande dans le panier"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+                Envoyer vers le panier
+              </button>
+            </div>
           </div>
 
           {vente.details && vente.details.length > 0 ? (

@@ -1,0 +1,141 @@
+@use '../../../utils/styles/variables' as vars;
+
+.agent-calendar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+
+  &__loading {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: vars.$colorGray500;
+    height: 100%;
+
+    p {
+      margin: 0;
+    }
+  }
+
+  &__prospect-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background-color: rgba(#007aff, 0.1);
+    border-left: 4px solid #007aff;
+    border-radius: vars.$radius-md;
+    font-size: 0.875rem;
+    color: #004085;
+    margin-bottom: 0.75rem;
+
+    &-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    &-next {
+      color: vars.$colorGray700;
+      font-size: 0.8125rem;
+    }
+
+    &--warning {
+      background-color: rgba(vars.$colorWarning, 0.1);
+      border-left-color: vars.$colorWarning;
+      color: #856404;
+    }
+  }
+
+  &__calendar-wrapper {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: vars.$colorWhite;
+    min-height: 0;
+
+    // Customisation des créneaux de 15 minutes
+    .rbc-time-view-resources .rbc-time-gutter,
+    .rbc-time-view .rbc-time-gutter {
+      width: 60px;
+    }
+
+    .rbc-day-slot {
+      overflow-y: auto;
+    }
+
+    // Amélioration de l'affichage des créneaux horaires
+    .rbc-time-slot {
+      min-height: 20px;
+    }
+
+    // Légende plus visible pour les créneaux
+    .rbc-label {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    // Cacher le bouton de suppression par défaut
+    .cal-event-delete-btn {
+      display: none !important;
+    }
+
+    // Afficher le bouton uniquement dans la vue journalière
+    .rbc-day-view .cal-event-delete-btn {
+      display: flex !important;
+    }
+  }
+}
+
+// Event styles
+.cal-event-wrapper {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0.15rem 0.25rem;
+}
+
+.cal-event-content {
+  flex: 1;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  pointer-events: auto;
+}
+
+.cal-event-delete-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: vars.$radius-sm;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 0;
+  font-size: 0.75rem;
+  z-index: 10;
+  pointer-events: auto;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+}

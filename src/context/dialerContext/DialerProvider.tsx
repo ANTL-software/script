@@ -348,7 +348,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   // ============================================================
 
   // Appel sortant
-  const call = useCallback(async (phoneNumber: string, campagneId?: number, prospectId?: number) => {
+  const call = useCallback(async (
+    phoneNumber: string,
+    campagneId?: number,
+    prospectId?: number,
+    options?: { skipCreateAppel?: boolean }
+  ) => {
     console.groupCollapsed(`📞 [APPEL] ${phoneNumber}`);
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
 
@@ -372,7 +377,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       isCallActiveRef.current = true;
 
       // Créer l'appel en DB
-      if (campagneId && prospectId) {
+      if (campagneId && prospectId && !options?.skipCreateAppel) {
         setCurrentOrigineAppel('auto');
         try {
           const appel = await appelService.createAppel({
@@ -617,7 +622,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentOrigineAppel(origin);
 
       if (formattedNumber) {
-        await call(formattedNumber, campagneId, prospectId);
+        await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true });
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
@@ -678,7 +683,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentOrigineAppel('manuel');
 
       // Lancer l'appel Twilio avec le numéro formaté
-      await call(formattedNumber, targetCampagneId, prospectId);
+      await call(formattedNumber, targetCampagneId, prospectId, { skipCreateAppel: true });
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
     } catch (err) {

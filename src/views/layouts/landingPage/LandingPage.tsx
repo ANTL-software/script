@@ -1,6 +1,6 @@
 import './landingPage.scss';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useLandingPage, useForceClosing } from '../../../hooks';
+import { useLandingPage, useForceClosing, useProspect } from '../../../hooks';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
@@ -9,7 +9,7 @@ import QuiEstCe from '../../components/quiEstCe/QuiEstCe';
 import QuiSommesNous from '../../components/quiSommesNous/QuiSommesNous';
 import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
-import RendezVous from '../../components/rendezVous/RendezVous';
+import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
@@ -21,6 +21,7 @@ export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { forceMode } = useForceClosing();
+  const { fullName: prospectFullName } = useProspect();
 
   // Mode test : détecter le paramètre ?test=true
   const isTestMode = searchParams.get('test') === 'true';
@@ -112,7 +113,12 @@ export default function LandingPage() {
         {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
         {currentView === 'historique-appels' && <HistoriqueAppels />}
         {currentView === 'historique-offres' && <HistoriqueVentes />}
-        {currentView === 'rendez-vous' && <RendezVous />}
+        {currentView === 'rendez-vous' && (
+          <AgentCalendar
+            prospectId={currentProspect.id_prospect}
+            prospectName={prospectFullName}
+          />
+        )}
         {currentView === 'commande' && (
           <div className="landing-page__commande">
             <div className="landing-page__catalogue">

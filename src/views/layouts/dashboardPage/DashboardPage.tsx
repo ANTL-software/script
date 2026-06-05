@@ -2,7 +2,7 @@ import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
-import { useDialer, useDashboardCalendar } from '../../../hooks';
+import { useDialer } from '../../../hooks';
 import { useToast } from '../../../hooks';
 import { formatEur, formatHeure, formatProspectName } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
@@ -22,13 +22,6 @@ export default function DashboardPage() {
   const { showToast } = useToast();
   const networkWarningShown = useRef(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
-
-  const {
-    today,
-    events,
-    isLoading: calendarLoading,
-    loadRendezVous,
-  } = useDashboardCalendar();
 
   // Vérification de la qualité de connexion réseau
   useEffect(() => {
@@ -220,10 +213,6 @@ export default function DashboardPage() {
       <CalendarModal
         isOpen={isCalendarModalOpen}
         onClose={() => setIsCalendarModalOpen(false)}
-        today={today}
-        events={events}
-        isLoading={calendarLoading}
-        loadRendezVous={loadRendezVous}
       />
     </main>
   );

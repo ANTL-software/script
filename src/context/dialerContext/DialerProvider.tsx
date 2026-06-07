@@ -563,6 +563,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       if (nouveauStatut === 'disponible') {
         const MAX_SKIPS = 10;
+        let found = false;
         for (let i = 0; i < MAX_SKIPS; i++) {
           try {
             const candidate = await dialerService.getNextProspect();
@@ -572,9 +573,24 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
               continue;
             }
             setProchainProspect(candidate);
+            found = true;
             break;
-          } catch {
+          } catch (err) {
+            console.warn('[DIALER] Erreur lors de la récupération du prospect ou file vide', err);
             break;
+          }
+        }
+
+        if (!found) {
+          showToast('error', 'Plus de prospect disponible', 5000);
+          setStatut('pause');
+          setRaisonPause('technique');
+          setDepuisLe(new Date());
+          setProchainProspect(null);
+          try {
+            await dialerService.changerStatut('pause', 'technique');
+          } catch (e) {
+            console.error('[DIALER] Erreur transition automatique vers pause technique:', e);
           }
         }
       }

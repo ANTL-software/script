@@ -603,6 +603,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   // Ouvrir un prospect manuellement
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
+    if (closingService.hasPending()) {
+      showToast('error', "Veuillez d'abord enregistrer le résultat de l'appel en cours.", 5000);
+      return;
+    }
     try {
       const campagnes = await dialerService.getCampagnesAgent();
       if (!campagnes || campagnes.length === 0) {
@@ -649,7 +653,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await dialerService.changerStatut('disponible').catch(() => {});
       throw err;
     }
-  }, [call]);
+  }, [call, showToast]);
 
   // Appel manuel depuis la fiche prospect (boutons d'appel)
   const callFromManual = useCallback(async (
@@ -657,6 +661,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     prospectId: number,
     campagneId?: number
   ) => {
+    if (closingService.hasPending()) {
+      showToast('error', "Veuillez d'abord enregistrer le résultat de l'appel en cours.", 5000);
+      return;
+    }
     console.groupCollapsed(`📞 [APPEL MANUEL] ${phoneNumber}`);
 
     // Récupérer la campagne active si non fournie

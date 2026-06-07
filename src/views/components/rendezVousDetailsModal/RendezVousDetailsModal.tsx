@@ -13,6 +13,7 @@ interface RendezVousDetailsModalProps {
   rendezVous: RendezVous | null;
   onEdit: () => void;
   onDelete: () => void;
+  showMonterFiche?: boolean;
 }
 
 const STATUT_LABELS: Record<string, string> = {
@@ -35,12 +36,20 @@ export default function RendezVousDetailsModal({
   rendezVous,
   onEdit,
   onDelete,
+  showMonterFiche = false,
 }: RendezVousDetailsModalProps) {
   const navigate = useNavigate();
 
   if (!isOpen || !rendezVous) return null;
 
   const prospect = rendezVous.prospect;
+
+  const handleMonterFiche = () => {
+    if (prospect) {
+      onClose();
+      navigate(`/prospect/${prospect.id_prospect}?source=manual`);
+    }
+  };
   const statut = rendezVous.statut;
   const statutLabel = STATUT_LABELS[statut] ?? statut;
   const statutColor = STATUT_COLORS[statut] ?? '#6b7280';
@@ -49,18 +58,23 @@ export default function RendezVousDetailsModal({
   const formattedDate = format(rdvDate, 'EEEE d MMMM yyyy', { locale: fr });
   const formattedTime = formatHeure(rendezVous.heure_rdv);
 
-  const handleOuvrirFiche = () => {
-    if (prospect) {
-      onClose();
-      navigate(`/prospect/${prospect.id_prospect}?source=rappel`);
-    }
-  };
-
   return (
     <div className="rdv-details-modal-overlay" onClick={onClose}>
       <div className="rdv-details-modal" onClick={(e) => e.stopPropagation()}>
         <div className="rdv-details-modal__header">
-          <h2>Détails du rendez-vous</h2>
+          <div className="rdv-details-modal__header-left">
+            <h2>Détails du rendez-vous</h2>
+            {showMonterFiche && prospect && (
+              <Button
+                variant="primary"
+                size="small"
+                onClick={handleMonterFiche}
+                className="rdv-details-modal__monter-btn"
+              >
+                Monter la fiche
+              </Button>
+            )}
+          </div>
           <button className="rdv-details-modal__close" onClick={onClose}>
             <FaTimes />
           </button>
@@ -129,19 +143,11 @@ export default function RendezVousDetailsModal({
         </div>
 
         <div className="rdv-details-modal__actions">
-          {prospect && (
-            <Button variant="primary" onClick={handleOuvrirFiche}>
-              <FaUser /> Ouvrir la fiche
-            </Button>
-          )}
           <Button variant="danger" onClick={onDelete}>
             <FaTrash /> Supprimer
           </Button>
           <Button variant="secondary" onClick={onEdit}>
             <FaEdit /> Modifier
-          </Button>
-          <Button variant="secondary" onClick={onClose}>
-            Fermer
           </Button>
         </div>
       </div>

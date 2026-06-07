@@ -18,9 +18,6 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pendingClosing, setPendingClosing] = useState<PendingClosing | null>(
-    () => closingService.getPending()
-  );
   const [confirmModal, setConfirmModal] = useState<{ type: 'doublon' | 'optout' | null; isLoading: boolean }>({
     type: null,
     isLoading: false,
@@ -75,8 +72,6 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     };
 
     closingService.savePending(pending);
-    // Async pour éviter le cascading render (React Compiler)
-    queueMicrotask(() => setPendingClosing({ ...pending, timestamp: Date.now() }));
   }, [statut, currentProspect, currentCampaign, currentCampagneId, callDuration]);
 
   const handlePlanAppels = () => {
@@ -116,15 +111,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   };
 
   const handleOrderSuccess = () => {
-    const stored = closingService.getPending();
-    if (stored) setPendingClosing(stored);
-  };
-
-  const handleClosingComplete = () => {
-    setPendingClosing(null);
-    // Retour au dashboard — le statut dialer est déjà 'pause_apres_appel'
-    // (positionné par SessionState.Terminated + backend terminerAppel)
-    navigate('/');
+    // Le closing est sauvegardé globalement lors de la confirmation de la commande.
   };
 
   return {
@@ -136,7 +123,6 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     clearError,
     isModalOpen,
     setIsModalOpen,
-    pendingClosing,
     confirmModal,
     setConfirmModal,
     setView,
@@ -147,6 +133,5 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     handleRss,
     handleConfirmAction,
     handleOrderSuccess,
-    handleClosingComplete,
   };
 }

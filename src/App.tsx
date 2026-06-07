@@ -1,6 +1,6 @@
 import './utils/styles/global.scss'
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
 
 import { getSalutation } from "./utils/scripts/utils";
 import { useUser, useApp, useForceClosing } from './hooks';
@@ -21,6 +21,7 @@ function AppRouter() {
   const { user } = useUser();
   const { currentView } = useApp();
   const { pendingClosing, forceMode } = useForceClosing();
+  const navigate = useNavigate();
 
   const props = {
     pageTitle: getSalutation(user?.prenom),
@@ -44,10 +45,7 @@ function AppRouter() {
           forceMode={forceMode}
           onComplete={() => {
             closingService.clearPending();
-            // Rediriger vers "/" si en mode force, sinon rester sur la page
-            if (forceMode) {
-              window.location.href = '/';
-            }
+            navigate('/');
           }}
         />
       )}

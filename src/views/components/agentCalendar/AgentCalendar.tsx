@@ -335,6 +335,7 @@ export default function AgentCalendar({
         rendezVous={selectedRendezVous}
         onEdit={handleEditRendezVous}
         onDelete={handleDeleteRendezVous}
+        showMonterFiche={!prospectId}
       />
 
       {isRdvModalOpen && (

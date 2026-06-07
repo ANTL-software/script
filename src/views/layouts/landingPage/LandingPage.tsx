@@ -1,6 +1,7 @@
 import './landingPage.scss';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useLandingPage, useForceClosing, useProspect } from '../../../hooks';
+import { useLandingPage, useProspect } from '../../../hooks';
+import { closingService } from '../../../API/services';
 import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
 import ActionButtons from '../../components/actionButtons/ActionButtons';
 import Loader from '../../components/loader/Loader';
@@ -13,14 +14,12 @@ import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
-import ClosingModal from '../../components/closingModal/ClosingModal';
 import ConfirmModal from '../../components/confirmModal/ConfirmModal';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { forceMode } = useForceClosing();
   const { fullName: prospectFullName } = useProspect();
 
   // Mode test : détecter le paramètre ?test=true
@@ -28,33 +27,29 @@ export default function LandingPage() {
 
   const {
     currentProspect, currentView, isLoading, error, clearError,
-    isModalOpen, setIsModalOpen, pendingClosing,
+    isModalOpen, setIsModalOpen,
     confirmModal, setConfirmModal,
     handlePlanAppels, handleObjections, handleCommande,
     handleDoublon, handleRss, handleConfirmAction,
-    handleOrderSuccess, handleClosingComplete,
+    handleOrderSuccess,
     setView, currentCampaign,
   } = useLandingPage(id, isTestMode);
 
   // DEBUG : Permettre de tester la closing modal via URL ?test=closing
-  const [testClosing, setTestClosing] = useState<typeof pendingClosing | null>(null);
-
   useEffect(() => {
-    if (searchParams.get('test') === 'closing' && currentProspect && currentCampaign && !pendingClosing) {
+    if (searchParams.get('test') === 'closing' && currentProspect && currentCampaign && !closingService.hasPending()) {
       const testData = {
         prospectId: currentProspect.id_prospect,
         prospectName: `${currentProspect.nom} ${currentProspect.prenom || ''}`.trim(),
         campagneId: currentCampaign.id_campagne,
         dureeAppel: 45,
-        timestamp: Date.now(),
       };
-      setTestClosing(testData as unknown as typeof pendingClosing);
+      closingService.savePending(testData);
       console.log('[DEBUG] Closing modal test activé via URL');
+      // Nettoyer le paramètre URL pour éviter les déclenchements répétés
+      window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [searchParams, currentProspect, currentCampaign, pendingClosing]);
-
-  // Utiliser le test closing si présent, sinon utiliser le pendingClosing normal
-  const effectiveClosing = testClosing || pendingClosing;
+  }, [searchParams, currentProspect, currentCampaign]);
 
   if (isLoading) {
     return (
@@ -136,23 +131,6 @@ export default function LandingPage() {
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleOrderSuccess}
       />
-
-      {effectiveClosing && !forceMode && (
-        <ClosingModal
-          isOpen={true}
-          prospectId={effectiveClosing.prospectId}
-          prospectName={effectiveClosing.prospectName}
-          campagneId={effectiveClosing.campagneId}
-          dureeAppel={effectiveClosing.dureeAppel}
-          onComplete={() => {
-            handleClosingComplete();
-            if (testClosing) {
-              setTestClosing(null); // Nettoyer le test closing après completion
-              window.history.replaceState({}, '', window.location.pathname); // Retirer le paramètre URL
-            }
-          }}
-        />
-      )}
 
       <ConfirmModal
         isOpen={confirmModal.type !== null}

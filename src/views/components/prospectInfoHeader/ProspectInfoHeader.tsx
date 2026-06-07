@@ -1,9 +1,12 @@
 import './prospectInfoHeader.scss';
+import { useSearchParams } from 'react-router-dom';
 import { useProspect } from '../../../hooks/useProspect';
 import { useDialer } from '../../../hooks/useDialer';
+import { useToast } from '../../../hooks/useToast';
 import TypeFicheBadge from '../typeFicheBadge/TypeFicheBadge';
 import Button from '../button/Button';
 import Clock from '../clock/Clock';
+import PhoneNumberWithCallButton from '../phoneNumberWithCallButton/PhoneNumberWithCallButton';
 import { FaBuilding, FaListOl, FaCommentDots, FaUser, FaPhoneSlash } from 'react-icons/fa';
 
 interface ProspectInfoHeaderProps {
@@ -17,13 +20,30 @@ interface ProspectInfoHeaderProps {
 
 export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous, isTestMode = false }: ProspectInfoHeaderProps) {
   const { currentProspect, fullName, typeFiche } = useProspect();
-  const { statut, hangup } = useDialer();
+  const { statut, hangup, callFromManual } = useDialer();
+  const { showToast } = useToast();
+  const [searchParams] = useSearchParams();
 
   const handleHangup = async () => {
     try {
       await hangup();
     } catch (error) {
       console.error('Erreur lors du raccrochage:', error);
+    }
+  };
+
+  const isManualSearch = searchParams.get('source') === 'manual';
+  const isCalling = statut === 'en_appel' || statut === 'appel_sortant';
+
+  const handleCallFromManual = async (phoneNumber: string) => {
+    if (!currentProspect) return;
+
+    try {
+      await callFromManual(phoneNumber, currentProspect.id_prospect);
+      showToast('info', 'Appel en cours...', 3000);
+    } catch (error) {
+      console.error('[PROSPECT_INFO_HEADER] Erreur appel manuel:', error);
+      showToast('error', 'Erreur lors du lancement de l\'appel', 5000);
     }
   };
 
@@ -91,16 +111,33 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
         <table className="prospect-info-table">
           <tbody>
             <tr>
+              <td className="label">Civilite</td>
+              <td className="value">{currentProspect.civilite || '-'}</td>
               <td className="label">Nom</td>
               <td className="value">{currentProspect.nom}</td>
-              <td className="label">Prenom</td>
-              <td className="value">{currentProspect.prenom || '-'}</td>
             </tr>
             <tr>
               <td className="label">Telephone</td>
-              <td className="value">{currentProspect.telephone}</td>
-              <td className="label">Email</td>
-              <td className="value">{currentProspect.email || '-'}</td>
+              <td className="value">
+                <PhoneNumberWithCallButton
+                  phoneNumber={currentProspect.telephone}
+                  type="principal"
+                  onCall={handleCallFromManual}
+                  showCallButton={isManualSearch}
+                  isCalling={isCalling}
+                />
+              </td>
+              <td className="label">Tel. contact</td>
+              <td className="value">
+                <PhoneNumberWithCallButton
+                  phoneNumber={currentProspect.telephone_contact || ''}
+                  type="contact"
+                  onCall={handleCallFromManual}
+                  showCallButton={isManualSearch}
+                  disabled={!currentProspect.telephone_contact}
+                  isCalling={isCalling}
+                />
+              </td>
             </tr>
             <tr>
               <td className="label">Ville</td>

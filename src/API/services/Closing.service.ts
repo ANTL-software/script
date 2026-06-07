@@ -36,6 +36,7 @@ export class ClosingService {
       timestamp: Date.now(),
     };
     localStorage.setItem(CLOSING_STORAGE_KEY, JSON.stringify(pendingClosing));
+    window.dispatchEvent(new CustomEvent('antl_closing_changed', { detail: pendingClosing }));
   }
 
   /**
@@ -65,6 +66,7 @@ export class ClosingService {
    */
   public clearPending(): void {
     localStorage.removeItem(CLOSING_STORAGE_KEY);
+    window.dispatchEvent(new CustomEvent('antl_closing_changed', { detail: null }));
   }
 }
 

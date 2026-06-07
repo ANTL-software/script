@@ -5,6 +5,7 @@ import { fr } from 'date-fns/locale';
 import type { RendezVous } from '../../../utils/types';
 import { formatProspectName, formatHeure } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
+import { useNavigate } from 'react-router-dom';
 
 interface RendezVousDetailsModalProps {
   isOpen: boolean;
@@ -35,6 +36,8 @@ export default function RendezVousDetailsModal({
   onEdit,
   onDelete,
 }: RendezVousDetailsModalProps) {
+  const navigate = useNavigate();
+
   if (!isOpen || !rendezVous) return null;
 
   const prospect = rendezVous.prospect;
@@ -45,6 +48,13 @@ export default function RendezVousDetailsModal({
   const rdvDate = parseISO(rendezVous.date_rdv);
   const formattedDate = format(rdvDate, 'EEEE d MMMM yyyy', { locale: fr });
   const formattedTime = formatHeure(rendezVous.heure_rdv);
+
+  const handleOuvrirFiche = () => {
+    if (prospect) {
+      onClose();
+      navigate(`/prospect/${prospect.id_prospect}?source=rappel`);
+    }
+  };
 
   return (
     <div className="rdv-details-modal-overlay" onClick={onClose}>
@@ -119,10 +129,15 @@ export default function RendezVousDetailsModal({
         </div>
 
         <div className="rdv-details-modal__actions">
+          {prospect && (
+            <Button variant="primary" onClick={handleOuvrirFiche}>
+              <FaUser /> Ouvrir la fiche
+            </Button>
+          )}
           <Button variant="danger" onClick={onDelete}>
             <FaTrash /> Supprimer
           </Button>
-          <Button variant="primary" onClick={onEdit}>
+          <Button variant="secondary" onClick={onEdit}>
             <FaEdit /> Modifier
           </Button>
           <Button variant="secondary" onClick={onClose}>

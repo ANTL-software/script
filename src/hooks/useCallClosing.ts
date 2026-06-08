@@ -15,7 +15,7 @@ interface UseCallClosingOptions {
 export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
-  const { currentAppelId, currentIdProspection, callDuration } = useDialer();
+  const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
   const [notes, setNotes] = useState('');
@@ -58,6 +58,7 @@ export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel 
           id_campagne: campagneId,
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,
+          origine_appel: currentOrigineAppel ?? 'manuel',
         });
         // Garde : s'assurer que le backend est bien en pause_apres_appel
         await dialerService.changerStatut('pause_apres_appel');

@@ -425,6 +425,21 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setDepuisLe(new Date());
       startCallTimer();
 
+      // Associer le CallSid dès qu'il est disponible (sur l'événement ringing ou accept du call)
+      const associerCallSid = () => {
+        const callSid = call.parameters.CallSid;
+        const activeAppelId = currentAppelIdRef.current;
+        if (activeAppelId && callSid) {
+          console.log(`[TWILIO] Association du CallSid ${callSid} à l'appel #${activeAppelId}`);
+          appelService.updateCallSid(activeAppelId, callSid).catch((err) => {
+            console.error('❌ [TWILIO] Échec de l\'association du CallSid:', err);
+          });
+        }
+      };
+
+      call.on('ringing', associerCallSid);
+      call.on('accept', associerCallSid);
+
       // IMPORTANT: Écouter les événements de fin d'appel sur le call lui-même
       // L'événement 'disconnect' se déclenche quand l'interlocuteur raccroche
       call.on('disconnect', () => {

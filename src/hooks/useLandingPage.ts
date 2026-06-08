@@ -24,6 +24,12 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   });
 
   const previousProspectIdRef = useRef<number | null>(null);
+  const wasCallActiveRef = useRef<boolean>(false);
+
+  // Détecter si un appel a été actif (sortant ou en cours) pendant la visite de cette fiche
+  if (statut === 'en_appel' || statut === 'appel_sortant') {
+    wasCallActiveRef.current = true;
+  }
 
   // Réinitialise la vue et le panier à chaque changement de prospect
   useEffect(() => {
@@ -36,6 +42,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       setView('qui-est-ce');
     }
     previousProspectIdRef.current = currentProspect.id_prospect;
+    wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel pour la nouvelle fiche
   }, [currentProspect, clearCart, setView]);
 
   // Charge le prospect et la campagne associée à l'appel en cours
@@ -58,8 +65,15 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   // sans passer par une vente — garantit que chaque appel est enregistré en DB
   useEffect(() => {
     if (statut !== 'pause_apres_appel') return;
+    if (!wasCallActiveRef.current) return;
     if (!currentProspect) return;
-    if (closingService.hasPending()) return;
+
+    // Si un closing a déjà été créé (par exemple suite à une commande validée),
+    // on a simplement à réinitialiser le marqueur d'appel.
+    if (closingService.hasPending()) {
+      wasCallActiveRef.current = false;
+      return;
+    }
 
     const campagneId = currentCampagneId ?? currentCampaign?.id_campagne ?? 0;
     if (!campagneId) return;
@@ -72,6 +86,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     };
 
     closingService.savePending(pending);
+    wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel
   }, [statut, currentProspect, currentCampaign, currentCampagneId, callDuration]);
 
   const handlePlanAppels = () => {

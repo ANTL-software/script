@@ -190,9 +190,8 @@ export function getStatutAppelClass(statut: string): string {
     case 'rdv_pris':
       return 'appel-card__statut--success';
     case 'non_abouti':
-    case 'pas_de_reponse':
-    case 'occupe':
     case 'messagerie':
+    case 'fax':
       return 'appel-card__statut--warning';
     case 'refus_definitif':
       return 'appel-card__statut--danger';
@@ -205,13 +204,17 @@ export function getStatutAppelClass(statut: string): string {
 const STATUT_APPEL_LABELS: Record<string, string> = {
   abouti: 'Abouti',
   non_abouti: 'Non abouti',
-  occupe: 'Occupé',
-  pas_de_reponse: 'Pas de réponse',
   messagerie: 'Messagerie',
-  rdv_pris: 'RDV pris',
+  rdv_pris: 'Commande à établir',
   vente_conclue: 'Vente conclue',
   refus_definitif: 'Refus définitif',
   en_cours: 'En cours',
+  fax: 'Fax',
+  siege: 'Siège',
+  faillite: 'Faillite',
+  pas_attribue: 'Pas attribué',
+  particulier: 'Particulier',
+  pas_disponible: 'Pas disponible',
 };
 
 /**

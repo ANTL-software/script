@@ -21,7 +21,7 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
   },
   {
     value: 'rdv_pris',
-    label: 'Rendez-vous pris',
+    label: 'Commande à établir',
     description: 'Un rappel a ete planifie',
     icon: '📅',
     color: '#3b82f6',
@@ -41,13 +41,6 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     color: '#ef4444',
   },
   {
-    value: 'pas_de_reponse',
-    label: 'Pas de reponse',
-    description: 'Aucune reponse au telephone',
-    icon: '📵',
-    color: '#f59e0b',
-  },
-  {
     value: 'messagerie',
     label: 'Messagerie',
     description: 'Message laisse sur repondeur',
@@ -55,16 +48,9 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     color: '#6b7280',
   },
   {
-    value: 'occupe',
-    label: 'Occupe',
-    description: 'Ligne occupee',
-    icon: '📞',
-    color: '#f97316',
-  },
-  {
     value: 'non_abouti',
     label: 'Non abouti',
-    description: 'Appel non abouti (autre raison)',
+    description: 'Barrage secrétaire',
     icon: '❌',
     color: '#dc2626',
   },
@@ -103,6 +89,13 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     icon: '📅',
     color: '#be185d',
   },
+  {
+    value: 'fax',
+    label: 'Fax',
+    description: 'Numéro de fax détecté',
+    icon: '📠',
+    color: '#64748b',
+  },
 ];
 
 /**
@@ -114,15 +107,14 @@ export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
   rdv_pris: '#3b82f6',
   abouti: '#8b5cf6',
   refus_definitif: '#ef4444',
-  pas_de_reponse: '#f59e0b',
   messagerie: '#6b7280',
-  occupe: '#f97316',
   non_abouti: '#dc2626',
   siege: '#64748b',
   faillite: '#991b1b',
   pas_attribue: '#0891b2',
   particulier: '#8b5cf6',
   pas_disponible: '#be185d',
+  fax: '#64748b',
 };
 
 /**

@@ -4,8 +4,6 @@ export type StatutAppel =
   | 'en_cours'
   | 'abouti'
   | 'non_abouti'
-  | 'occupe'
-  | 'pas_de_reponse'
   | 'messagerie'
   | 'rdv_pris'
   | 'vente_conclue'
@@ -14,7 +12,8 @@ export type StatutAppel =
   | 'faillite'
   | 'pas_attribue'
   | 'particulier'
-  | 'pas_disponible';
+  | 'pas_disponible'
+  | 'fax';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
 

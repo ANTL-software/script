@@ -1,6 +1,6 @@
 import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
 import { useDialer } from '../../../hooks';
 import { useToast } from '../../../hooks';
@@ -14,6 +14,14 @@ function prospectLabel(rdv: RendezVous): string {
   const p = rdv.prospect;
   if (!p) return 'Prospect inconnu';
   return formatProspectName({ nom: p.nom, prenom: p.prenom });
+}
+
+function getMinutesFromTimeStr(timeStr: string): number {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':');
+  const hours = parseInt(parts[0], 10) || 0;
+  const minutes = parseInt(parts[1], 10) || 0;
+  return hours * 60 + minutes;
 }
 
 export default function DashboardPage() {
@@ -80,6 +88,39 @@ export default function DashboardPage() {
     handleSearch,
   } = useDashboardData();
 
+  // Identifier le prochain rendez-vous de la journée pour l'auto-scroll
+  const nextRdv = useMemo(() => {
+    if (!rdvDuJour || rdvDuJour.length === 0) return null;
+
+    const now = new Date();
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+    const rdvWithMinutes = rdvDuJour.map(rdv => ({
+      rdv,
+      minutes: getMinutesFromTimeStr(rdv.heure_rdv)
+    }));
+
+    // Trier les rendez-vous par heure pour s'assurer du bon ordre
+    rdvWithMinutes.sort((a, b) => a.minutes - b.minutes);
+
+    // Trouver le premier rendez-vous dont l'heure est supérieure ou égale à l'heure actuelle
+    const upcoming = rdvWithMinutes.find(item => item.minutes >= currentMinutes);
+
+    return upcoming ? upcoming.rdv : null;
+  }, [rdvDuJour]);
+
+  const nextRdvRef = useRef<HTMLLIElement>(null);
+
+  // Auto-scroll vers le prochain rendez-vous
+  useEffect(() => {
+    if (nextRdvRef.current) {
+      nextRdvRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    }
+  }, [nextRdv]);
+
   return (
     <main id="dashboardPage">
       <section className="dashboard__search">
@@ -115,18 +156,25 @@ export default function DashboardPage() {
             </div>
           ) : (
             <ul className="dashboard__rdv-list">
-              {rdvDuJour.map(rdv => (
-                <li key={rdv.id_rendez_vous} className="dashboard__rdv-item">
-                  <div className="dashboard__rdv-heure">{formatHeure(rdv.heure_rdv)}</div>
-                  <div className="dashboard__rdv-info">
-                    <span className="dashboard__rdv-nom">{prospectLabel(rdv)}</span>
-                    {rdv.prospect?.telephone && (
-                      <span className="dashboard__rdv-tel">{rdv.prospect.telephone}</span>
-                    )}
-                    {rdv.motif && <span className="dashboard__rdv-motif">{rdv.motif}</span>}
-                  </div>
-                </li>
-              ))}
+              {rdvDuJour.map(rdv => {
+                const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
+                return (
+                  <li
+                    key={rdv.id_rendez_vous}
+                    ref={isNext ? nextRdvRef : null}
+                    className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''}`}
+                  >
+                    <div className="dashboard__rdv-heure">{formatHeure(rdv.heure_rdv)}</div>
+                    <div className="dashboard__rdv-info">
+                      <span className="dashboard__rdv-nom">{prospectLabel(rdv)}</span>
+                      {rdv.prospect?.telephone && (
+                        <span className="dashboard__rdv-tel">{rdv.prospect.telephone}</span>
+                      )}
+                      {rdv.motif && <span className="dashboard__rdv-motif">{rdv.motif}</span>}
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </section>
@@ -170,7 +218,7 @@ export default function DashboardPage() {
             </div>
             <div className="dashboard__stat">
               <span className="dashboard__stat-value">{stats.rdv_pris}</span>
-              <span className="dashboard__stat-label">RDV pris</span>
+              <span className="dashboard__stat-label">Cmd à établir</span>
             </div>
             <div className="dashboard__stat">
               <span className="dashboard__stat-value">{stats.taux_conversion}%</span>

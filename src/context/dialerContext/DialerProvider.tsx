@@ -368,7 +368,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     phoneNumber: string,
     campagneId?: number,
     prospectId?: number,
-    options?: { skipCreateAppel?: boolean }
+    options?: { skipCreateAppel?: boolean; dbAppelId?: number }
   ) => {
     console.groupCollapsed(`📞 [APPEL] ${phoneNumber}`);
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
@@ -392,6 +392,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       isClosingRef.current = false;
       isCallActiveRef.current = true;
 
+      let resolvedAppelId = options?.dbAppelId || null;
+
       // Créer l'appel en DB
       if (campagneId && prospectId && !options?.skipCreateAppel) {
         setCurrentOrigineAppel('auto');
@@ -404,6 +406,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             id_prospection: prochainProspect?.id_prospection,
           });
           setCurrentAppelId(appel.id_appel);
+          resolvedAppelId = appel.id_appel;
         } catch (err) {
           console.error('❌ Erreur création appel:', err);
         }
@@ -427,13 +430,18 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       // Associer le CallSid dès qu'il est disponible (sur l'événement ringing ou accept du call)
       const associerCallSid = () => {
-        const callSid = call.parameters.CallSid;
-        const activeAppelId = currentAppelIdRef.current;
+        const callSid = call.parameters.CallSid || (call as any).sid;
+        const activeAppelId = resolvedAppelId || currentAppelIdRef.current;
+        console.log(`[TWILIO] Evénement de connexion reçu. CallSid: ${callSid}, activeAppelId: ${activeAppelId}`);
         if (activeAppelId && callSid) {
           console.log(`[TWILIO] Association du CallSid ${callSid} à l'appel #${activeAppelId}`);
-          appelService.updateCallSid(activeAppelId, callSid).catch((err) => {
+          appelService.updateCallSid(activeAppelId, callSid).then(() => {
+            console.log(`[TWILIO] ✅ Association réussie du CallSid ${callSid}`);
+          }).catch((err) => {
             console.error('❌ [TWILIO] Échec de l\'association du CallSid:', err);
           });
+        } else {
+          console.warn(`[TWILIO] Impossible d'associer: activeAppelId=${activeAppelId}, callSid=${callSid}`);
         }
       };
 
@@ -673,7 +681,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentOrigineAppel(origin);
 
       if (formattedNumber) {
-        await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true });
+        await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel });
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
@@ -738,7 +746,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentOrigineAppel('manuel');
 
       // Lancer l'appel Twilio avec le numéro formaté
-      await call(formattedNumber, targetCampagneId, prospectId, { skipCreateAppel: true });
+      await call(formattedNumber, targetCampagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel });
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
     } catch (err) {

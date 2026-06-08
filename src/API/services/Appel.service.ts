@@ -50,6 +50,11 @@ export class AppelService {
     const response = await apiCalls.patch<Appel>(`/appels/${id}/terminer`, data);
     return throwIfApiError(response, 'Erreur lors de la terminaison de l\'appel');
   }
+
+  public async updateCallSid(id: number, callSid: string): Promise<Appel> {
+    const response = await apiCalls.post<Appel>(`/appels/${id}/call-sid`, { call_sid: callSid });
+    return throwIfApiError(response, 'Erreur lors de la mise à jour du CallSid');
+  }
 }
 
 export const appelService = AppelService.getInstance();

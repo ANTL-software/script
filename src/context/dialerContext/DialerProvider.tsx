@@ -42,6 +42,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const hasCalledEstablishedRef = useRef<boolean>(false);
   const isInitializingRef = useRef<boolean>(false);
 
+  const currentAppelIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    currentAppelIdRef.current = currentAppelId;
+  }, [currentAppelId]);
+
   // Formatage de la durée d'appel en MM:SS
   const callDurationFormatted = useMemo(() => {
     const minutes = Math.floor(callDuration / 60);
@@ -163,6 +168,17 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       device.on('callConnected', (call: Call) => {
         console.groupCollapsed('✅ [TWILIO] Appel connecté');
         console.log('Call SID:', call.parameters.CallSid);
+        
+        const callSid = call.parameters.CallSid;
+        const activeAppelId = currentAppelIdRef.current;
+        
+        if (activeAppelId && callSid) {
+          console.log(`[TWILIO] Association du CallSid ${callSid} à l'appel #${activeAppelId}`);
+          appelService.updateCallSid(activeAppelId, callSid).catch((err) => {
+            console.error('❌ [TWILIO] Échec de l\'association du CallSid:', err);
+          });
+        }
+
         isCallActiveRef.current = true;
         startCallTimer();
         setStatut('en_appel');

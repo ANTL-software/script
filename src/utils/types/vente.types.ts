@@ -26,6 +26,17 @@ export interface Vente {
   created_at: string;
   updated_at: string;
   details?: DetailVente[]; // Alias Sequelize pour les détails de vente
+  adresse_facturation?: string;
+  adresse_livraison?: string;
+  code_postal_facturation?: string;
+  code_postal_livraison?: string;
+  ville_facturation?: string;
+  ville_livraison?: string;
+  pays_facturation?: string;
+  pays_livraison?: string;
+  notes?: string;
+  livraison_offerte?: boolean;
+  plage_horaire_livraison?: string;
 }
 
 export type DelaisLivraison = 2 | 4;
@@ -36,5 +47,16 @@ export interface CreateVenteData {
   id_appel?: number;
   mode_paiement?: ModePaiement;
   delais_livraison?: DelaisLivraison;
+  adresse_facturation?: string;
+  adresse_livraison?: string;
+  code_postal_facturation?: string;
+  code_postal_livraison?: string;
+  ville_facturation?: string;
+  ville_livraison?: string;
+  pays_facturation?: string;
+  pays_livraison?: string;
+  notes?: string;
+  livraison_offerte?: boolean;
+  plage_horaire_livraison?: string;
   details: Omit<DetailVente, 'id_detail' | 'montant_ligne'>[];
 }

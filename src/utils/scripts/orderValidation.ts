@@ -16,6 +16,10 @@ interface OrderFormData {
   email?: string;
   raison_sociale?: string;
   delais_livraison: DelaisLivraison;
+  civilite: string;
+  nom_contact: string;
+  plage_horaire_livraison: string;
+  livraison_offerte: boolean;
 }
 
 export interface OrderValidationErrors {
@@ -49,6 +53,14 @@ export function validateOrderForm(formData: OrderFormData): OrderValidationError
     }
     if (!formData.ville_livraison.trim()) errors.ville_livraison = 'La ville de livraison est obligatoire';
     if (!formData.pays_livraison.trim()) errors.pays_livraison = 'Le pays de livraison est obligatoire';
+  }
+
+  // Validation du contact (toujours obligatoire)
+  if (!formData.civilite.trim()) {
+    errors.civilite = "La civilité du contact est obligatoire";
+  }
+  if (!formData.nom_contact.trim()) {
+    errors.nom_contact = "Le nom du contact est obligatoire";
   }
 
   return errors;
@@ -93,6 +105,8 @@ export function buildVentePayload(params: {
     ville_livraison: villeLivraison.trim(),
     pays_facturation: formData.pays_facturation.trim(),
     pays_livraison: paysLivraison.trim(),
+    livraison_offerte: formData.livraison_offerte,
+    plage_horaire_livraison: formData.plage_horaire_livraison.trim() || undefined,
     details: items.map(item => ({
       id_produit: item.produit.id_produit,
       quantite: item.quantite,

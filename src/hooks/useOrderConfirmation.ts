@@ -21,6 +21,10 @@ interface FormData {
   email: string;
   raison_sociale: string;
   delais_livraison: DelaisLivraison;
+  civilite: string;
+  nom_contact: string;
+  plage_horaire_livraison: string;
+  livraison_offerte: boolean;
 }
 
 interface UseOrderConfirmationOptions {
@@ -50,6 +54,10 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     email: currentProspect?.email || '',
     raison_sociale: currentProspect?.raison_sociale || '',
     delais_livraison: 2,
+    civilite: currentProspect?.civilite || '',
+    nom_contact: `${currentProspect?.prenom || ''} ${currentProspect?.nom || ''}`.trim(),
+    plage_horaire_livraison: '',
+    livraison_offerte: false,
   });
 
   // Met à jour le formData quand le prospect change
@@ -68,6 +76,8 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         siret: currentProspect.siret || '',
         email: currentProspect.email || '',
         raison_sociale: currentProspect.raison_sociale || '',
+        civilite: prev.civilite || currentProspect.civilite || '',
+        nom_contact: prev.nom_contact || `${currentProspect.prenom || ''} ${currentProspect.nom || ''}`.trim(),
       }));
     }
   }, [currentProspect]);
@@ -128,6 +138,9 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       code_postal?: string;
       ville?: string;
       pays?: string;
+      civilite?: string;
+      nom?: string;
+      prenom?: string | null;
     } = {};
 
     // Mapper les champs du form vers les champs du prospect
@@ -139,6 +152,14 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     if (updatedFields.code_postal_facturation !== undefined) prospectUpdates.code_postal = updatedFields.code_postal_facturation;
     if (updatedFields.ville_facturation !== undefined) prospectUpdates.ville = updatedFields.ville_facturation;
     if (updatedFields.pays_facturation !== undefined) prospectUpdates.pays = updatedFields.pays_facturation;
+    if (updatedFields.civilite !== undefined) prospectUpdates.civilite = updatedFields.civilite;
+    if (updatedFields.nom_contact !== undefined) {
+      const nameParts = updatedFields.nom_contact.trim().split(/\s+/);
+      const prenom = nameParts.length > 1 ? nameParts[0] : '';
+      const nom = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0];
+      prospectUpdates.nom = nom;
+      prospectUpdates.prenom = prenom || null;
+    }
 
     // Ne mettre à jour que si il y a des changements
     const hasChanges = Object.keys(prospectUpdates).length > 0;

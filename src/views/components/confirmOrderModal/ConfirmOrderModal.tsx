@@ -1,5 +1,5 @@
 import './confirmOrderModal.scss';
-import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCard, FaStickyNote, FaBuilding, FaClock } from 'react-icons/fa';
+import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCard, FaStickyNote, FaBuilding, FaClock, FaUser } from 'react-icons/fa';
 import type { ModePaiement } from '../../../utils/types';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
 import { useOrderConfirmation } from '../../../hooks/useOrderConfirmation';
@@ -29,7 +29,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
 
   const handleBlur = async (field: keyof typeof formData) => {
     // Mettre à jour le prospect quand on quitte un champ d'info prospect
-    if (['siret', 'email', 'raison_sociale', 'adresse_facturation', 'code_postal_facturation', 'ville_facturation', 'pays_facturation'].includes(field)) {
+    if (['siret', 'email', 'raison_sociale', 'adresse_facturation', 'code_postal_facturation', 'ville_facturation', 'pays_facturation', 'civilite', 'nom_contact'].includes(field)) {
       await handleProspectInfoUpdate({ [field]: formData[field] });
     }
     // Pour l'adresse de livraison, si meme_adresse est coché, on met à jour avec l'adresse de facturation
@@ -61,253 +61,320 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
         <form onSubmit={handleSubmit} className="confirm-order-modal__form">
           {error && <div className="confirm-order-modal__error">{error}</div>}
 
-          <div className="confirm-order-modal__section">
-            <h3><FaShoppingCart /> Récapitulatif du panier</h3>
-            <div className="confirm-order-modal__cart-items">
-              {items.map((item) => {
-                const sousTotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
-                return (
-                  <div key={item.produit.id_produit} className="confirm-order-modal__cart-item">
-                    <div className="confirm-order-modal__cart-item-info">
-                      <span className="confirm-order-modal__cart-item-name">{item.produit.nom_produit}</span>
-                      <span className="confirm-order-modal__cart-item-quantity">x{item.quantite}</span>
-                    </div>
-                    <div className="confirm-order-modal__cart-item-price">
-                      {item.remise > 0 && (
-                        <span className="confirm-order-modal__cart-item-remise">-{formatCurrency(item.remise)}</span>
-                      )}
-                      <span className="confirm-order-modal__cart-item-total">{formatCurrency(sousTotal)}</span>
-                    </div>
+          <div className="confirm-order-modal__two-columns">
+            <div className="confirm-order-modal__left-col">
+              <div className="confirm-order-modal__section">
+                <h3><FaUser /> Contact de la commande</h3>
+                <div className="confirm-order-modal__form-grid">
+                  <div className="confirm-order-modal__form-group">
+                    <label htmlFor="civilite">Civilité *</label>
+                    <select
+                      id="civilite"
+                      value={formData.civilite}
+                      onChange={(e) => handleInputChange('civilite', e.target.value)}
+                      onBlur={() => handleBlur('civilite')}
+                      disabled={isSubmitting}
+                      className={`confirm-order-modal__select-standard ${validationErrors.civilite ? 'input-error' : ''}`}
+                    >
+                      <option value="">Sélectionner...</option>
+                      <option value="M.">M.</option>
+                      <option value="Mme">Mme</option>
+                    </select>
+                    {validationErrors.civilite && <span className="error-message">{validationErrors.civilite}</span>}
                   </div>
-                );
-              })}
-            </div>
-            <div className="confirm-order-modal__cart-total">
-              <span>Total</span>
-              <strong>{formatCurrency(total)}</strong>
-            </div>
-          </div>
 
-          <div className="confirm-order-modal__section">
-            <h3><FaBuilding /> Informations du prospect</h3>
-            <div className="confirm-order-modal__form-grid">
-              <div className="confirm-order-modal__form-group">
-                <label htmlFor="raison_sociale">Raison sociale</label>
-                <input
-                  type="text"
-                  id="raison_sociale"
-                  value={formData.raison_sociale}
-                  onChange={(e) => handleInputChange('raison_sociale', e.target.value)}
-                  onBlur={() => handleBlur('raison_sociale')}
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              <div className="confirm-order-modal__form-group">
-                <label htmlFor="siret">SIRET</label>
-                <input
-                  type="text"
-                  id="siret"
-                  value={formData.siret}
-                  onChange={(e) => handleInputChange('siret', e.target.value)}
-                  onBlur={() => handleBlur('siret')}
-                  disabled={isSubmitting}
-                  maxLength={14}
-                />
-              </div>
-
-              <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                <label htmlFor="email">Mail</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  onBlur={() => handleBlur('email')}
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                <label htmlFor="delais_livraison"><FaClock /> Délai de livraison</label>
-                <Select
-                  id="delais_livraison"
-                  value={delaisOptions.find(opt => opt.value === formData.delais_livraison)}
-                  onChange={(selected) => selected && handleInputChange('delais_livraison', selected.value)}
-                  options={delaisOptions}
-                  isDisabled={isSubmitting}
-                  className="confirm-order-modal__select"
-                  classNamePrefix="react-select"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="confirm-order-modal__section">
-            <h3><FaMapMarkerAlt /> Adresse de facturation</h3>
-            <div className="confirm-order-modal__form-grid">
-              <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                <label htmlFor="adresse_facturation">Adresse *</label>
-                <input
-                  type="text"
-                  id="adresse_facturation"
-                  value={formData.adresse_facturation}
-                  onChange={(e) => handleInputChange('adresse_facturation', e.target.value)}
-                  onBlur={() => handleBlur('adresse_facturation')}
-                  disabled={isSubmitting}
-                  className={validationErrors.adresse_facturation ? 'input-error' : ''}
-                />
-                {validationErrors.adresse_facturation && <span className="error-message">{validationErrors.adresse_facturation}</span>}
-              </div>
-
-              <div className="confirm-order-modal__form-group">
-                <label htmlFor="code_postal_facturation">Code postal *</label>
-                <input
-                  type="text"
-                  id="code_postal_facturation"
-                  value={formData.code_postal_facturation}
-                  onChange={(e) => handleInputChange('code_postal_facturation', e.target.value)}
-                  onBlur={() => handleBlur('code_postal_facturation')}
-                  disabled={isSubmitting}
-                  maxLength={5}
-                  className={validationErrors.code_postal_facturation ? 'input-error' : ''}
-                />
-                {validationErrors.code_postal_facturation && <span className="error-message">{validationErrors.code_postal_facturation}</span>}
-              </div>
-
-              <div className="confirm-order-modal__form-group">
-                <label htmlFor="ville_facturation">Ville *</label>
-                <input
-                  type="text"
-                  id="ville_facturation"
-                  value={formData.ville_facturation}
-                  onChange={(e) => handleInputChange('ville_facturation', e.target.value)}
-                  onBlur={() => handleBlur('ville_facturation')}
-                  disabled={isSubmitting}
-                  className={validationErrors.ville_facturation ? 'input-error' : ''}
-                />
-                {validationErrors.ville_facturation && <span className="error-message">{validationErrors.ville_facturation}</span>}
-              </div>
-
-              <div className="confirm-order-modal__form-group">
-                <label htmlFor="pays_facturation">Pays *</label>
-                <input
-                  type="text"
-                  id="pays_facturation"
-                  value={formData.pays_facturation}
-                  onChange={(e) => handleInputChange('pays_facturation', e.target.value)}
-                  onBlur={() => handleBlur('pays_facturation')}
-                  disabled={isSubmitting}
-                  className={validationErrors.pays_facturation ? 'input-error' : ''}
-                />
-                {validationErrors.pays_facturation && <span className="error-message">{validationErrors.pays_facturation}</span>}
-              </div>
-            </div>
-          </div>
-
-          <div className="confirm-order-modal__section">
-            <div className="confirm-order-modal__checkbox-group">
-              <input
-                type="checkbox"
-                id="meme_adresse"
-                checked={formData.meme_adresse}
-                onChange={(e) => handleInputChange('meme_adresse', e.target.checked)}
-                disabled={isSubmitting}
-              />
-              <label htmlFor="meme_adresse">L'adresse de livraison est la même que l'adresse de facturation</label>
-            </div>
-
-            <h3><FaMapMarkerAlt /> Adresse de livraison</h3>
-            <div className={`confirm-order-modal__delivery-section ${formData.meme_adresse ? 'confirm-order-modal__delivery-section--disabled' : ''}`}>
-              <div className="confirm-order-modal__form-grid">
-                <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                  <label htmlFor="adresse_livraison">Adresse {formData.meme_adresse ? '(identique)' : '*'}</label>
-                  <input
-                    type="text"
-                    id="adresse_livraison"
-                    value={formData.meme_adresse ? formData.adresse_facturation : formData.adresse_livraison}
-                    onChange={(e) => handleInputChange('adresse_livraison', e.target.value)}
-                    onBlur={() => !formData.meme_adresse && handleBlur('adresse_livraison')}
-                    disabled={isSubmitting || formData.meme_adresse}
-                    className={validationErrors.adresse_livraison && !formData.meme_adresse ? 'input-error' : ''}
-                  />
-                  {validationErrors.adresse_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.adresse_livraison}</span>}
-                </div>
-
-                <div className="confirm-order-modal__form-group">
-                  <label htmlFor="code_postal_livraison">Code postal {formData.meme_adresse ? '(identique)' : '*'}</label>
-                  <input
-                    type="text"
-                    id="code_postal_livraison"
-                    value={formData.meme_adresse ? formData.code_postal_facturation : formData.code_postal_livraison}
-                    onChange={(e) => handleInputChange('code_postal_livraison', e.target.value)}
-                    onBlur={() => !formData.meme_adresse && handleBlur('code_postal_livraison')}
-                    disabled={isSubmitting || formData.meme_adresse}
-                    maxLength={5}
-                    className={validationErrors.code_postal_livraison && !formData.meme_adresse ? 'input-error' : ''}
-                  />
-                  {validationErrors.code_postal_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.code_postal_livraison}</span>}
-                </div>
-
-                <div className="confirm-order-modal__form-group">
-                  <label htmlFor="ville_livraison">Ville {formData.meme_adresse ? '(identique)' : '*'}</label>
-                  <input
-                    type="text"
-                    id="ville_livraison"
-                    value={formData.meme_adresse ? formData.ville_facturation : formData.ville_livraison}
-                    onChange={(e) => handleInputChange('ville_livraison', e.target.value)}
-                    onBlur={() => !formData.meme_adresse && handleBlur('ville_livraison')}
-                    disabled={isSubmitting || formData.meme_adresse}
-                    className={validationErrors.ville_livraison && !formData.meme_adresse ? 'input-error' : ''}
-                  />
-                  {validationErrors.ville_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.ville_livraison}</span>}
-                </div>
-
-                <div className="confirm-order-modal__form-group">
-                  <label htmlFor="pays_livraison">Pays {formData.meme_adresse ? '(identique)' : '*'}</label>
-                  <input
-                    type="text"
-                    id="pays_livraison"
-                    value={formData.meme_adresse ? formData.pays_facturation : formData.pays_livraison}
-                    onChange={(e) => handleInputChange('pays_livraison', e.target.value)}
-                    onBlur={() => !formData.meme_adresse && handleBlur('pays_livraison')}
-                    disabled={isSubmitting || formData.meme_adresse}
-                    className={validationErrors.pays_livraison && !formData.meme_adresse ? 'input-error' : ''}
-                  />
-                  {validationErrors.pays_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.pays_livraison}</span>}
+                  <div className="confirm-order-modal__form-group">
+                    <label htmlFor="nom_contact">Nom *</label>
+                    <input
+                      type="text"
+                      id="nom_contact"
+                      value={formData.nom_contact}
+                      onChange={(e) => handleInputChange('nom_contact', e.target.value)}
+                      onBlur={() => handleBlur('nom_contact')}
+                      disabled={isSubmitting}
+                      className={validationErrors.nom_contact ? 'input-error' : ''}
+                    />
+                    {validationErrors.nom_contact && <span className="error-message">{validationErrors.nom_contact}</span>}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="confirm-order-modal__section">
-            <h3><FaCreditCard /> Mode de paiement</h3>
-            <div className="confirm-order-modal__payment-options">
-              {(['Prelevement', 'Cheque', 'Virement'] as ModePaiement[]).map((mode) => (
-                <label key={mode} className="confirm-order-modal__payment-option">
+              <div className="confirm-order-modal__section">
+                <h3><FaBuilding /> Informations du prospect</h3>
+                <div className="confirm-order-modal__form-grid">
+                  <div className="confirm-order-modal__form-group">
+                    <label htmlFor="raison_sociale">Raison sociale</label>
+                    <input
+                      type="text"
+                      id="raison_sociale"
+                      value={formData.raison_sociale}
+                      onChange={(e) => handleInputChange('raison_sociale', e.target.value)}
+                      onBlur={() => handleBlur('raison_sociale')}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="confirm-order-modal__form-group">
+                    <label htmlFor="siret">SIRET</label>
+                    <input
+                      type="text"
+                      id="siret"
+                      value={formData.siret}
+                      onChange={(e) => handleInputChange('siret', e.target.value)}
+                      onBlur={() => handleBlur('siret')}
+                      disabled={isSubmitting}
+                      maxLength={14}
+                    />
+                  </div>
+
+                  <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                    <label htmlFor="email">Mail</label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onBlur={() => handleBlur('email')}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                    <label htmlFor="delais_livraison"><FaClock /> Délai de livraison</label>
+                    <Select
+                      id="delais_livraison"
+                      value={delaisOptions.find(opt => opt.value === formData.delais_livraison)}
+                      onChange={(selected) => selected && handleInputChange('delais_livraison', selected.value)}
+                      options={delaisOptions}
+                      isDisabled={isSubmitting}
+                      className="confirm-order-modal__select"
+                      classNamePrefix="react-select"
+                    />
+                  </div>
+
+                  <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                    <label htmlFor="plage_horaire_livraison">Plages horaires de livraison (champ libre)</label>
+                    <input
+                      type="text"
+                      id="plage_horaire_livraison"
+                      placeholder="Ex: Pas de livraison le vendredi après-midi, jamais le matin..."
+                      value={formData.plage_horaire_livraison}
+                      onChange={(e) => handleInputChange('plage_horaire_livraison', e.target.value)}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="confirm-order-modal__section">
+                <h3><FaMapMarkerAlt /> Adresse de facturation</h3>
+                <div className="confirm-order-modal__form-grid">
+                  <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                    <label htmlFor="adresse_facturation">Adresse *</label>
+                    <input
+                      type="text"
+                      id="adresse_facturation"
+                      value={formData.adresse_facturation}
+                      onChange={(e) => handleInputChange('adresse_facturation', e.target.value)}
+                      onBlur={() => handleBlur('adresse_facturation')}
+                      disabled={isSubmitting}
+                      className={validationErrors.adresse_facturation ? 'input-error' : ''}
+                    />
+                    {validationErrors.adresse_facturation && <span className="error-message">{validationErrors.adresse_facturation}</span>}
+                  </div>
+
+                  <div className="confirm-order-modal__form-group">
+                    <label htmlFor="code_postal_facturation">Code postal *</label>
+                    <input
+                      type="text"
+                      id="code_postal_facturation"
+                      value={formData.code_postal_facturation}
+                      onChange={(e) => handleInputChange('code_postal_facturation', e.target.value)}
+                      onBlur={() => handleBlur('code_postal_facturation')}
+                      disabled={isSubmitting}
+                      maxLength={5}
+                      className={validationErrors.code_postal_facturation ? 'input-error' : ''}
+                    />
+                    {validationErrors.code_postal_facturation && <span className="error-message">{validationErrors.code_postal_facturation}</span>}
+                  </div>
+
+                  <div className="confirm-order-modal__form-group">
+                    <label htmlFor="ville_facturation">Ville *</label>
+                    <input
+                      type="text"
+                      id="ville_facturation"
+                      value={formData.ville_facturation}
+                      onChange={(e) => handleInputChange('ville_facturation', e.target.value)}
+                      onBlur={() => handleBlur('ville_facturation')}
+                      disabled={isSubmitting}
+                      className={validationErrors.ville_facturation ? 'input-error' : ''}
+                    />
+                    {validationErrors.ville_facturation && <span className="error-message">{validationErrors.ville_facturation}</span>}
+                  </div>
+
+                  <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                    <label htmlFor="pays_facturation">Pays *</label>
+                    <input
+                      type="text"
+                      id="pays_facturation"
+                      value={formData.pays_facturation}
+                      onChange={(e) => handleInputChange('pays_facturation', e.target.value)}
+                      onBlur={() => handleBlur('pays_facturation')}
+                      disabled={isSubmitting}
+                      className={validationErrors.pays_facturation ? 'input-error' : ''}
+                    />
+                    {validationErrors.pays_facturation && <span className="error-message">{validationErrors.pays_facturation}</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="confirm-order-modal__section">
+                <h3><FaMapMarkerAlt /> Informations de livraison</h3>
+                <div className="confirm-order-modal__checkbox-group">
                   <input
-                    type="radio"
-                    name="mode_paiement"
-                    value={mode}
-                    checked={formData.mode_paiement === mode}
-                    onChange={(e) => handleInputChange('mode_paiement', e.target.value as ModePaiement)}
+                    type="checkbox"
+                    id="meme_adresse"
+                    checked={formData.meme_adresse}
+                    onChange={(e) => handleInputChange('meme_adresse', e.target.checked)}
                     disabled={isSubmitting}
                   />
-                  <span>{mode}</span>
-                </label>
-              ))}
-            </div>
-          </div>
+                  <label htmlFor="meme_adresse">L'adresse de livraison est la même que l'adresse de facturation</label>
+                </div>
 
-          <div className="confirm-order-modal__section">
-            <h3><FaStickyNote /> Notes complémentaires</h3>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              placeholder="Ajouter des notes ou commentaires sur cette commande..."
-              rows={4}
-              disabled={isSubmitting}
-            />
+
+
+                <div className={`confirm-order-modal__delivery-section ${formData.meme_adresse ? 'confirm-order-modal__delivery-section--disabled' : ''}`}>
+                  <div className="confirm-order-modal__form-grid">
+                    <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                      <label htmlFor="adresse_livraison">Adresse {formData.meme_adresse ? '(identique)' : '*'}</label>
+                      <input
+                        type="text"
+                        id="adresse_livraison"
+                        value={formData.meme_adresse ? formData.adresse_facturation : formData.adresse_livraison}
+                        onChange={(e) => handleInputChange('adresse_livraison', e.target.value)}
+                        onBlur={() => !formData.meme_adresse && handleBlur('adresse_livraison')}
+                        disabled={isSubmitting || formData.meme_adresse}
+                        className={validationErrors.adresse_livraison && !formData.meme_adresse ? 'input-error' : ''}
+                      />
+                      {validationErrors.adresse_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.adresse_livraison}</span>}
+                    </div>
+
+                    <div className="confirm-order-modal__form-group">
+                      <label htmlFor="code_postal_livraison">Code postal {formData.meme_adresse ? '(identique)' : '*'}</label>
+                      <input
+                        type="text"
+                        id="code_postal_livraison"
+                        value={formData.meme_adresse ? formData.code_postal_facturation : formData.code_postal_livraison}
+                        onChange={(e) => handleInputChange('code_postal_livraison', e.target.value)}
+                        onBlur={() => !formData.meme_adresse && handleBlur('code_postal_livraison')}
+                        disabled={isSubmitting || formData.meme_adresse}
+                        maxLength={5}
+                        className={validationErrors.code_postal_livraison && !formData.meme_adresse ? 'input-error' : ''}
+                      />
+                      {validationErrors.code_postal_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.code_postal_livraison}</span>}
+                    </div>
+
+                    <div className="confirm-order-modal__form-group">
+                      <label htmlFor="ville_livraison">Ville {formData.meme_adresse ? '(identique)' : '*'}</label>
+                      <input
+                        type="text"
+                        id="ville_livraison"
+                        value={formData.meme_adresse ? formData.ville_facturation : formData.ville_livraison}
+                        onChange={(e) => handleInputChange('ville_livraison', e.target.value)}
+                        onBlur={() => !formData.meme_adresse && handleBlur('ville_livraison')}
+                        disabled={isSubmitting || formData.meme_adresse}
+                        className={validationErrors.ville_livraison && !formData.meme_adresse ? 'input-error' : ''}
+                      />
+                      {validationErrors.ville_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.ville_livraison}</span>}
+                    </div>
+
+                    <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                      <label htmlFor="pays_livraison">Pays {formData.meme_adresse ? '(identique)' : '*'}</label>
+                      <input
+                        type="text"
+                        id="pays_livraison"
+                        value={formData.meme_adresse ? formData.pays_facturation : formData.pays_livraison}
+                        onChange={(e) => handleInputChange('pays_livraison', e.target.value)}
+                        onBlur={() => !formData.meme_adresse && handleBlur('pays_livraison')}
+                        disabled={isSubmitting || formData.meme_adresse}
+                        className={validationErrors.pays_livraison && !formData.meme_adresse ? 'input-error' : ''}
+                      />
+                      {validationErrors.pays_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.pays_livraison}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="confirm-order-modal__right-col">
+              <div className="confirm-order-modal__section">
+                <h3><FaShoppingCart /> Récapitulatif du panier</h3>
+                <div className="confirm-order-modal__cart-items">
+                  {items.map((item) => {
+                    const sousTotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
+                    return (
+                      <div key={item.produit.id_produit} className="confirm-order-modal__cart-item">
+                        <div className="confirm-order-modal__cart-item-info">
+                          <span className="confirm-order-modal__cart-item-name">{item.produit.nom_produit}</span>
+                          <span className="confirm-order-modal__cart-item-quantity">x{item.quantite}</span>
+                        </div>
+                        <div className="confirm-order-modal__cart-item-price">
+                          {item.remise > 0 && (
+                            <span className="confirm-order-modal__cart-item-remise">-{formatCurrency(item.remise)}</span>
+                          )}
+                          <span className="confirm-order-modal__cart-item-total">{formatCurrency(sousTotal)}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                 <div className="confirm-order-modal__cart-total">
+                  <span>Total</span>
+                  <strong>{formatCurrency(total)}</strong>
+                </div>
+
+                <div className="confirm-order-modal__checkbox-group" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed #e5e7eb' }}>
+                  <input
+                    type="checkbox"
+                    id="livraison_offerte"
+                    checked={formData.livraison_offerte}
+                    onChange={(e) => handleInputChange('livraison_offerte', e.target.checked)}
+                    disabled={isSubmitting}
+                  />
+                  <label htmlFor="livraison_offerte">Offrir la livraison (geste commercial)</label>
+                </div>
+              </div>
+
+              <div className="confirm-order-modal__section">
+                <h3><FaCreditCard /> Mode de paiement</h3>
+                <div className="confirm-order-modal__payment-options">
+                  {(['Prelevement', 'Cheque', 'Virement'] as ModePaiement[]).map((mode) => (
+                    <label key={mode} className="confirm-order-modal__payment-option">
+                      <input
+                        type="radio"
+                        name="mode_paiement"
+                        value={mode}
+                        checked={formData.mode_paiement === mode}
+                        onChange={(e) => handleInputChange('mode_paiement', e.target.value as ModePaiement)}
+                        disabled={isSubmitting}
+                      />
+                      <span>{mode}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="confirm-order-modal__section">
+                <h3><FaStickyNote /> Notes complémentaires</h3>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => handleInputChange('notes', e.target.value)}
+                  placeholder="Ajouter des notes ou commentaires sur cette commande..."
+                  rows={4}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
           </div>
 
           <div className="confirm-order-modal__footer">

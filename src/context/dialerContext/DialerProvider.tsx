@@ -417,7 +417,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.log('📤 [TWILIO] Appel vers:', formattedNumber);
 
       // Passer l'appel via Twilio (SDK v2.x - Promise)
-      const call = await device.connect({ params: { To: formattedNumber } });
+      const connectParams: Record<string, string> = { To: formattedNumber };
+      if (resolvedAppelId) {
+        connectParams.appelId = String(resolvedAppelId);
+      }
+      const call = await device.connect({ params: connectParams });
 
       if (!call) {
         throw new Error('device.connect() a retourné null');

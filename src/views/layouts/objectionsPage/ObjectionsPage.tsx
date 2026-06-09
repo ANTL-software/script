@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Button from '../../components/button/Button';
 import Input from '../../components/input/Input';
 import Loader from '../../components/loader/Loader';
-import { FaPrint, FaCommentDots, FaChevronDown, FaChevronUp, FaSearch } from 'react-icons/fa';
+import { FaCommentDots, FaChevronDown, FaChevronUp, FaSearch } from 'react-icons/fa';
 import { useObjections } from '../../../hooks/useObjections';
 import { pluralize } from '../../../utils/scripts/formatters';
 
@@ -27,10 +27,6 @@ export default function ObjectionsPage() {
 
   const closeCategory = () => {
     setLocalOpenCategory(null);
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   if (isLoading) {
@@ -68,9 +64,6 @@ export default function ObjectionsPage() {
         </div>
         <div className="objections-page__header-actions">
           <span className="objections-page__count">{pluralize(filteredObjections.length, 'objection')}</span>
-          <Button variant="ghost" size="small" onClick={handlePrint} className="print-button">
-            <FaPrint /> Imprimer
-          </Button>
         </div>
       </header>
 

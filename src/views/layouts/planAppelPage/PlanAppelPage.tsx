@@ -33,9 +33,7 @@ const CIGALES_PLAN_APPEL: PlanAppelEtape[] = [
 
 L’ESAT Les Cigales à Salon-de-Provence, ça vous dit quelque chose ?
 
-En quelques mots, nous sommes une structure médico-sociale qui accueille plus de 120 usagers ; un public qui se heurte à une difficulté d’embauche de la part des entreprises. Il faut dire que toutes les entreprises ne sont pas organisées pour mettre en place un accompagnement comme nous le faisons.
-
-Concrètement, la préparation de commandes pour des clients tels que vous permet de favoriser l’apprentissage d’un métier, de valoriser les personnes et de garantir une inclusion sociale et économique.`,
+En quelques mots, nous sommes une structure médico-sociale qui accueille plus de 120 usagers ; un public qui se heurte à une difficulté d’embauche de la part des entreprises. Il faut dire que toutes les entreprises ne sont pas organisées pour mettre en place un accompagnement comme nous le faisons.`,
     ordre_affichage: 20,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -64,6 +62,8 @@ Et c’est là que nous intervenons : les achats que vous effectuez auprès de n
     etape: 4,
     titre: 'PROPOSITION - Obtenir un accord de principe',
     contenu: `Sachez que depuis plus de 40 ans, nous développons notre distribution de fournitures de bureau sur l’ensemble du territoire, et avec notre gamme développement durable et locale, nous mettons en avant notre ambition environnementale pour faire émerger des solutions écoresponsables.
+
+Concrètement, la préparation de commandes pour des clients tels que vous permet de favoriser l’apprentissage d’un métier, de valoriser les personnes et de garantir une inclusion sociale et économique.
 
 Je viens vers vous aujourd’hui pour vous offrir l’opportunité de vous compter parmi nos partenaires privilégiés et de contribuer à notre cause par le biais d’une commande de fournitures de bureau. Qu’est-ce qui vous est le plus utile, plutôt de la papeterie ou des produits d’hygiène ?`,
     ordre_affichage: 40,

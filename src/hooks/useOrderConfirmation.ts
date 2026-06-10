@@ -115,7 +115,17 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       return;
     }
 
-    setFormData(prev => ({ ...prev, [field]: updatedValue }));
+    setFormData(prev => {
+      const next = { ...prev, [field]: updatedValue };
+      // Si on modifie un champ de facturation et que meme_adresse est coché, copier vers livraison
+      if (prev.meme_adresse) {
+        if (field === 'adresse_facturation') next.adresse_livraison = updatedValue as string;
+        if (field === 'code_postal_facturation') next.code_postal_livraison = updatedValue as string;
+        if (field === 'ville_facturation') next.ville_livraison = updatedValue as string;
+        if (field === 'pays_facturation') next.pays_livraison = updatedValue as string;
+      }
+      return next;
+    });
 
     if (validationErrors[field as string]) {
       setValidationErrors(prev => {

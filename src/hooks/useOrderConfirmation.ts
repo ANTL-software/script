@@ -140,7 +140,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       pays?: string;
       civilite?: string;
       nom?: string;
-      prenom?: string | null;
+      prenom?: string;
     } = {};
 
     // Mapper les champs du form vers les champs du prospect
@@ -158,7 +158,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       const prenom = nameParts.length > 1 ? nameParts[0] : '';
       const nom = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0];
       prospectUpdates.nom = nom;
-      prospectUpdates.prenom = prenom || null;
+      prospectUpdates.prenom = prenom || undefined;
     }
 
     // Ne mettre à jour que si il y a des changements

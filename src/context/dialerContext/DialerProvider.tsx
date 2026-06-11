@@ -17,6 +17,7 @@ interface DialerProviderProps {
 export const DialerProvider = ({ children }: DialerProviderProps) => {
   const userContext = useContext(UserContext);
   const isAuthenticated = userContext?.isAuthenticated ?? false;
+  const logout = userContext?.logout;
   const { showToast } = useToast();
 
   // État Dialer (compatible avec l'existant)
@@ -48,6 +49,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const hasCalledEstablishedRef = useRef<boolean>(false);
   const isInitializingRef = useRef<boolean>(false);
+  const tokenRefreshPromiseRef = useRef<Promise<boolean> | null>(null);
+  const recoveryPromiseRef = useRef<Promise<boolean> | null>(null);
+  const isForceLogoutInProgressRef = useRef<boolean>(false);
 
   const currentAppelIdRef = useRef<number | null>(null);
   useEffect(() => {
@@ -149,6 +153,84 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
+  const forceLogoutForTwilioFailure = useCallback(async (reason: string) => {
+    if (isForceLogoutInProgressRef.current) {
+      return;
+    }
+
+    isForceLogoutInProgressRef.current = true;
+    console.error(`[TWILIO] Session irrécupérable (${reason}) - déconnexion forcée`);
+
+    try {
+      await dialerService.changerStatut('hors_ligne').catch(() => {});
+      showToast('error', 'La connexion téléphonique a expiré. Merci de vous reconnecter.', 8000);
+      await logout?.();
+    } catch (error) {
+      console.error('[TWILIO] Erreur lors de la déconnexion forcée:', error);
+    } finally {
+      isForceLogoutInProgressRef.current = false;
+    }
+  }, [logout, showToast]);
+
+  const refreshDeviceToken = useCallback(async (device: Device, source: string): Promise<boolean> => {
+    if (tokenRefreshPromiseRef.current) {
+      return tokenRefreshPromiseRef.current;
+    }
+
+    tokenRefreshPromiseRef.current = (async () => {
+      try {
+        console.log(`[TWILIO] Rafraîchissement du token (${source})...`);
+        const tokenData = await twilioService.refreshAccessToken();
+
+        if (!tokenData.accessToken) {
+          throw new Error('Token Twilio vide');
+        }
+
+        await device.updateToken(tokenData.accessToken);
+        console.log(`[TWILIO] Token rafraîchi (${source})`);
+        return true;
+      } catch (error) {
+        console.error(`[TWILIO] Échec du rafraîchissement du token (${source}):`, error);
+        return false;
+      } finally {
+        tokenRefreshPromiseRef.current = null;
+      }
+    })();
+
+    return tokenRefreshPromiseRef.current;
+  }, []);
+
+  const recoverDeviceRegistration = useCallback(async (device: Device, source: string): Promise<boolean> => {
+    if (recoveryPromiseRef.current) {
+      return recoveryPromiseRef.current;
+    }
+
+    recoveryPromiseRef.current = (async () => {
+      const refreshed = await refreshDeviceToken(device, source);
+      if (!refreshed) {
+        await forceLogoutForTwilioFailure(`${source}:token-refresh-failed`);
+        return false;
+      }
+
+      try {
+        if (device.state !== 'registered' && device.state !== 'registering') {
+          console.log(`[TWILIO] Tentative de reconnexion (${source})...`);
+          await device.register();
+        }
+
+        return true;
+      } catch (error) {
+        console.error(`[TWILIO] Échec de reconnexion (${source}):`, error);
+        await forceLogoutForTwilioFailure(`${source}:register-failed`);
+        return false;
+      } finally {
+        recoveryPromiseRef.current = null;
+      }
+    })();
+
+    return recoveryPromiseRef.current;
+  }, [forceLogoutForTwilioFailure, refreshDeviceToken]);
+
   // Initialiser Twilio Device (SDK v2.x - new Device())
   const initializeTwilioDevice = useCallback(async () => {
     console.log('[TWILIO] 📍 STEP 1: Entrée initializeTwilioDevice');
@@ -197,6 +279,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       device.on('unregistered', () => {
         console.warn('⚠️ [TWILIO] Device unregistered');
         setSipConnected(false);
+        void recoverDeviceRegistration(device, 'unregistered');
       });
 
       device.on('registering', () => {
@@ -212,6 +295,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         console.error('❌ [TWILIO] Erreur Device:', error);
         setSipConnected(false);
         showToast('error', 'Erreur Twilio: ' + error.message, 5000);
+      });
+
+      device.on('tokenWillExpire', () => {
+        console.warn('⚠️ [TWILIO] Token va expirer');
+        void refreshDeviceToken(device, 'tokenWillExpire').then((refreshed) => {
+          if (!refreshed) {
+            void forceLogoutForTwilioFailure('tokenWillExpire');
+          }
+        });
       });
 
       device.on('incoming', (call: Call) => {
@@ -284,6 +376,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         clearActiveCall();
         deviceRef.current = null;
         isInitializingRef.current = false;
+        tokenRefreshPromiseRef.current = null;
+        recoveryPromiseRef.current = null;
       });
 
       // IMPORTANT: Enregistrer manuellement le Device APRÈS avoir configuré tous les event handlers

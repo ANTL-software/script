@@ -199,13 +199,39 @@
 }
 
 .confirm-order-modal__cart-total {
-  @include mix.flex-between;
   padding: vars.$spacing-md;
   background-color: vars.$colorPrimary;
   color: vars.$colorWhite;
   border-radius: vars.$radius-md;
-  font-size: 1.1rem;
-  font-weight: 600;
+  display: grid;
+  gap: vars.$spacing-xs;
+}
+
+.confirm-order-modal__cart-total-row {
+  @include mix.flex-between;
+  align-items: baseline;
+  gap: vars.$spacing-md;
+  font-size: 1rem;
+
+  strong {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  &--muted {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  &--ttc {
+    padding-top: vars.$spacing-xs;
+    margin-top: vars.$spacing-xs;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+
+    strong {
+      font-size: 1.25rem;
+    }
+  }
 }
 
 .confirm-order-modal__form-grid {

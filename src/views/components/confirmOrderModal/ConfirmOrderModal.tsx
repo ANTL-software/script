@@ -26,6 +26,14 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
 
   if (!isOpen) return null;
 
+  const fraisLivraisonHT = total >= 300 || formData.livraison_offerte ? 0 : 30;
+  const totalHTAvecLivraison = total + fraisLivraisonHT;
+  const totalTTCAvecLivraison = totalHTAvecLivraison * 1.2;
+  const libelleLivraison = fraisLivraisonHT === 0
+    ? formData.livraison_offerte && total < 300
+      ? 'Offerts (geste commercial)'
+      : 'Offerts'
+    : formatCurrency(fraisLivraisonHT);
 
 
   return (
@@ -300,9 +308,19 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                     );
                   })}
                 </div>
-                 <div className="confirm-order-modal__cart-total">
-                  <span>Total</span>
-                  <strong>{formatCurrency(total)}</strong>
+                <div className="confirm-order-modal__cart-total">
+                  <div className="confirm-order-modal__cart-total-row">
+                    <span>Total HT</span>
+                    <strong>{formatCurrency(totalHTAvecLivraison)}</strong>
+                  </div>
+                  <div className="confirm-order-modal__cart-total-row confirm-order-modal__cart-total-row--muted">
+                    <span>dont livraison</span>
+                    <span>{libelleLivraison}</span>
+                  </div>
+                  <div className="confirm-order-modal__cart-total-row confirm-order-modal__cart-total-row--ttc">
+                    <span>Total TTC</span>
+                    <strong>{formatCurrency(totalTTCAvecLivraison)}</strong>
+                  </div>
                 </div>
 
                 <div className="confirm-order-modal__checkbox-group" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed #e5e7eb' }}>

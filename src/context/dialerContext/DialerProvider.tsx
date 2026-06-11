@@ -26,6 +26,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sipConnected, setSipConnected] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
+  const [lastSentDigits, setLastSentDigits] = useState('');
+  const [hasActiveTwilioCall, setHasActiveTwilioCall] = useState(false);
+  const [isCallConnected, setIsCallConnected] = useState(false);
 
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
   const [prochainProspect, setProchainProspect] = useState<(Prospect & ProspectAssigne) | null>(null);
@@ -36,7 +39,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [currentRendezVousSourceId, setCurrentRendezVousSourceId] = useState<number | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const dtmfResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const deviceRef = useRef<Device | null>(null);
+  const activeCallRef = useRef<Call | null>(null);
+  const incomingCallRef = useRef<Call | null>(null);
   const isClosingRef = useRef<boolean>(false);
   const isCallActiveRef = useRef<boolean>(false);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
@@ -69,6 +75,60 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       timerRef.current = null;
     }
   }, []);
+
+  const scheduleDtmfReset = useCallback(() => {
+    if (dtmfResetTimeoutRef.current) {
+      clearTimeout(dtmfResetTimeoutRef.current);
+    }
+
+    dtmfResetTimeoutRef.current = setTimeout(() => {
+      setLastSentDigits('');
+      dtmfResetTimeoutRef.current = null;
+    }, 4000);
+  }, []);
+
+  const clearActiveCall = useCallback(() => {
+    activeCallRef.current = null;
+    incomingCallRef.current = null;
+    setHasActiveTwilioCall(false);
+    setIsCallConnected(false);
+    setLastSentDigits('');
+
+    if (dtmfResetTimeoutRef.current) {
+      clearTimeout(dtmfResetTimeoutRef.current);
+      dtmfResetTimeoutRef.current = null;
+    }
+  }, []);
+
+  const registerActiveCall = useCallback((call: Call) => {
+    activeCallRef.current = call;
+    setHasActiveTwilioCall(true);
+  }, []);
+
+  const sendDigits = useCallback((digits: string) => {
+    if (!digits || !/^[0-9*#w]+$/i.test(digits)) {
+      return false;
+    }
+
+    const activeCall = activeCallRef.current;
+    if (!activeCall || !isCallActiveRef.current) {
+      return false;
+    }
+
+    try {
+      activeCall.sendDigits(digits);
+      setLastSentDigits((prev) => {
+        const next = `${prev}${digits}`.slice(-24);
+        return next;
+      });
+      scheduleDtmfReset();
+      return true;
+    } catch (error) {
+      console.error('[DTMF] Erreur envoi tonalites:', error);
+      showToast('error', 'Impossible d’envoyer la tonalité', 3000);
+      return false;
+    }
+  }, [scheduleDtmfReset, showToast]);
 
   // ============================================================
   // INITIALISATION TWILIO
@@ -158,6 +218,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         console.groupCollapsed('📞 [TWILIO] Appel entrant');
         console.log('From:', call.parameters.From);
         console.log('Call SID:', call.parameters.CallSid);
+        incomingCallRef.current = call;
         setIncomingCall({
           from: call.parameters.From,
           displayName: call.parameters.From
@@ -169,6 +230,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       device.on('callConnected', (call: Call) => {
         console.groupCollapsed('✅ [TWILIO] Appel connecté');
         console.log('Call SID:', call.parameters.CallSid);
+        registerActiveCall(call);
         
         const callSid = call.parameters.CallSid;
         const activeAppelId = currentAppelIdRef.current;
@@ -181,6 +243,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         }
 
         isCallActiveRef.current = true;
+        setIsCallConnected(true);
         startCallTimer();
         setStatut('en_appel');
         setDepuisLe(new Date());
@@ -196,6 +259,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         setStatut('pause_apres_appel');
         setDepuisLe(new Date());
         setIncomingCall(null);
+        clearActiveCall();
 
         // Synchro backend
         dialerService.changerStatut('pause_apres_appel').catch(() => {});
@@ -205,8 +269,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       device.on('cancel', (call: Call) => {
         console.log('⚠️ [TWILIO] Appel annulé:', call.parameters.CallSid);
-        if (incomingCall?.from === call.parameters.From) {
-          setIncomingCall(null);
+        setIncomingCall((prev) => (prev?.from === call.parameters.From ? null : prev));
+        if (incomingCallRef.current?.parameters.CallSid === call.parameters.CallSid) {
+          incomingCallRef.current = null;
         }
         showToast('warning', 'Appel annulé', 3000);
       });
@@ -216,6 +281,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         console.error('💥 [TWILIO] isInitializingRef.current:', isInitializingRef.current);
         console.trace('[TWILIO] Appelé depuis:');
         setSipConnected(false);
+        clearActiveCall();
         deviceRef.current = null;
         isInitializingRef.current = false;
       });
@@ -251,7 +317,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setSipConnected(false);
       isInitializingRef.current = false;
     }
-  }, [showToast, startCallTimer, stopCallTimer, fetchTwilioToken]);
+  }, [clearActiveCall, fetchTwilioToken, registerActiveCall, showToast, startCallTimer, stopCallTimer]);
 
   // ============================================================
   // INITIALISATION TWILIO (useEffect séparé pour éviter les re-créations)
@@ -268,13 +334,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         deviceRef.current = null;
         setSipConnected(false);
       }
+      clearActiveCall();
       return;
     }
 
     // Initialiser Twilio SEULEMENT si pas déjà initialisé
     console.log('[TWILIO] useEffect - isAuthenticated:', isAuthenticated, ', deviceRef.current:', deviceRef.current);
     initializeTwilioDevice();
-  }, [isAuthenticated, initializeTwilioDevice]);
+  }, [clearActiveCall, initializeTwilioDevice, isAuthenticated]);
 
   // ============================================================
   // INITIALISATION AU MONTAGE (sans Twilio)
@@ -429,7 +496,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         throw new Error('device.connect() a retourné null');
       }
 
+      registerActiveCall(call);
       isCallActiveRef.current = true;
+      setIsCallConnected(false);
       setStatut('en_appel');
       setDepuisLe(new Date());
       startCallTimer();
@@ -469,6 +538,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         isCallActiveRef.current = false;
         setStatut('pause_apres_appel');
         setDepuisLe(new Date());
+        clearActiveCall();
 
         // Synchro backend
         dialerService.changerStatut('pause_apres_appel').catch((err) => {
@@ -482,10 +552,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       // Écouter aussi les autres événements du call pour robustesse
       call.on('reject', () => {
         console.log('⚠️ [TWILIO] Appel rejeté');
+        clearActiveCall();
       });
 
       call.on('cancel', () => {
         console.log('⚠️ [TWILIO] Appel annulé');
+        clearActiveCall();
       });
 
       // Mettre à jour la session backend
@@ -500,11 +572,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     } catch (err) {
       isCallActiveRef.current = false;
+      clearActiveCall();
       console.error('❌ [ERREUR] Appel:', err);
       console.groupEnd();
       showToast('error', 'Échec de l\'appel — Vérifiez votre connexion', 5000);
     }
-  }, [startCallTimer, prochainProspect]);
+  }, [clearActiveCall, prochainProspect, registerActiveCall, showToast, startCallTimer]);
 
   // Raccrocher
   const hangup = useCallback(() => {
@@ -533,6 +606,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     isCallActiveRef.current = false;
     setStatut('pause_apres_appel');
     setDepuisLe(new Date());
+    clearActiveCall();
 
     // Synchroniser avec le backend
     dialerService.changerStatut('pause_apres_appel').catch((err) => {
@@ -544,39 +618,42 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     console.log('✅ [HANGUP] Hangup terminé');
     console.groupEnd();
-  }, [stopCallTimer]);
+  }, [clearActiveCall, stopCallTimer]);
 
   // Répondre
   const answer = useCallback(() => {
-    const call = incomingCall as any;
+    const call = incomingCallRef.current;
     if (!call) {
       console.warn('⚠️ Aucune connexion à répondre');
       return;
     }
 
     console.groupCollapsed('📞 [APPEL ENTRANT] Réponse');
-    call.accept?.();
+    registerActiveCall(call);
+    call.accept();
     setIncomingCall(null);
     isCallActiveRef.current = true;
+    setIsCallConnected(true);
     startCallTimer();
     setStatut('en_appel');
     setDepuisLe(new Date());
     console.log('✅ Appel accepté');
     console.groupEnd();
-  }, [incomingCall, startCallTimer]);
+  }, [registerActiveCall, startCallTimer]);
 
   // Rejeter
   const reject = useCallback(() => {
-    const call = incomingCall as any;
+    const call = incomingCallRef.current;
     if (!call) {
       console.warn('⚠️ Aucune connexion à rejeter');
       return;
     }
 
-    call.reject?.();
+    call.reject();
+    incomingCallRef.current = null;
     setIncomingCall(null);
     console.log('❌ Appel rejeté');
-  }, [incomingCall]);
+  }, []);
 
   // Changer de statut
   const changerStatut = useCallback(async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
@@ -791,6 +868,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       depuisLe,
       isLoading,
       sipConnected,
+      canSendDigits: hasActiveTwilioCall && isCallConnected && statut === 'en_appel',
       callDuration,
       callDurationFormatted,
       incomingCall,
@@ -800,10 +878,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       currentIdProspection,
       currentOrigineAppel,
       currentRendezVousSourceId,
+      lastSentDigits,
       remoteAudioRef,
       changerStatut,
       clearProchainProspect,
       call,
+      sendDigits,
       hangup,
       answer,
       reject,

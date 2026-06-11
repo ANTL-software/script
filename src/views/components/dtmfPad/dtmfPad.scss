@@ -1,0 +1,125 @@
+@use '../../../utils/styles/variables' as vars;
+
+.dtmf-pad {
+  position: relative;
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: vars.$spacing-xs;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid rgba(vars.$colorPrimary, 0.18);
+    border-radius: vars.$radius-full;
+    background: linear-gradient(135deg, #ffffff 0%, #f7f4ff 100%);
+    color: vars.$colorPrimaryDark;
+    cursor: pointer;
+    font-size: vars.$fontSize-sm;
+    font-weight: vars.$fontWeight-semibold;
+    transition: transform vars.$transition-fast, box-shadow vars.$transition-fast, border-color vars.$transition-fast;
+
+    &:hover {
+      transform: translateY(-1px);
+      border-color: rgba(vars.$colorPrimary, 0.4);
+      box-shadow: 0 10px 24px rgba(vars.$colorPrimaryDark, 0.12);
+    }
+  }
+
+  &__panel {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    width: min(19rem, calc(100vw - 2rem));
+    padding: 1rem;
+    border: 1px solid rgba(vars.$colorPrimary, 0.18);
+    border-radius: vars.$radius-xl;
+    background:
+      radial-gradient(circle at top right, rgba(vars.$colorPrimaryMuted, 0.35), transparent 35%),
+      linear-gradient(180deg, #ffffff 0%, #fbfaff 100%);
+    box-shadow: 0 18px 42px rgba(vars.$colorPrimaryDark, 0.16);
+    z-index: vars.$z-popover;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    margin-bottom: vars.$spacing-md;
+  }
+
+  &__title,
+  &__hint,
+  &__digits-label,
+  &__digits-value {
+    margin: 0;
+  }
+
+  &__title {
+    font-size: vars.$fontSize-base;
+    font-weight: vars.$fontWeight-semibold;
+    color: vars.$colorGray900;
+  }
+
+  &__hint {
+    font-size: vars.$fontSize-xs;
+    color: vars.$colorGray500;
+  }
+
+  &__digits {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: vars.$spacing-md;
+    padding: 0.75rem;
+    border-radius: vars.$radius-lg;
+    background: rgba(vars.$colorWhite, 0.9);
+    border: 1px solid vars.$colorGray200;
+  }
+
+  &__digits-label {
+    font-size: vars.$fontSize-xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: vars.$colorGray500;
+  }
+
+  &__digits-value {
+    min-height: 1.25rem;
+    font-family: vars.$fontFamilyMono;
+    font-size: vars.$fontSize-sm;
+    color: vars.$colorGray900;
+    word-break: break-all;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.625rem;
+  }
+
+  &__key {
+    min-height: 3rem;
+    border: 1px solid rgba(vars.$colorPrimary, 0.14);
+    border-radius: vars.$radius-lg;
+    background: rgba(vars.$colorWhite, 0.96);
+    color: vars.$colorGray900;
+    font-family: vars.$fontFamilyMono;
+    font-size: vars.$fontSize-lg;
+    font-weight: vars.$fontWeight-semibold;
+    cursor: pointer;
+    transition: transform vars.$transition-fast, background vars.$transition-fast, border-color vars.$transition-fast, box-shadow vars.$transition-fast;
+
+    &:hover {
+      transform: translateY(-1px);
+      background: vars.$colorPrimaryLight;
+      border-color: rgba(vars.$colorPrimary, 0.32);
+      box-shadow: vars.$shadow-md;
+    }
+
+    &--active {
+      background: linear-gradient(180deg, vars.$colorPrimary 0%, vars.$colorPrimaryDark 100%);
+      border-color: vars.$colorPrimaryDark;
+      color: vars.$colorWhite;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    }
+  }
+}

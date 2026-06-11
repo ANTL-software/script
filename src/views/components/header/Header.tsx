@@ -8,6 +8,7 @@ import { useUser } from "../../../hooks/useUser";
 import { useToast } from "../../../hooks/useToast";
 import { useClosing } from "../../../hooks/useClosing";
 import DialerStatus from "../dialerStatus/DialerStatus";
+import DtmfPad from "../dtmfPad/DtmfPad";
 import Button from "../button/Button";
 
 export interface HeaderProps {
@@ -61,6 +62,7 @@ export default function Header({ props }: HeaderProps) {
       <h1>{pageTitle ? pageTitle : ""}</h1>
       <div className="header-actions">
         <DialerStatus />
+        <DtmfPad />
         {shouldShowBack ? (
           <Button
             variant="secondary"

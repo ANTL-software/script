@@ -12,6 +12,7 @@ export interface DialerContextType {
   depuisLe: Date;
   isLoading: boolean;
   sipConnected: boolean;
+  canSendDigits: boolean;
   callDuration: number;
   callDurationFormatted: string;
   incomingCall: IncomingCall | null;
@@ -21,10 +22,12 @@ export interface DialerContextType {
   currentIdProspection: number | null;
   currentOrigineAppel: OrigineAppel | null;
   currentRendezVousSourceId: number | null;
+  lastSentDigits: string;
   remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;
   clearProchainProspect: () => void;
   call: (phoneNumber: string, campagneId?: number, prospectId?: number) => Promise<void>;
+  sendDigits: (digits: string) => boolean;
   hangup: () => void;
   answer: () => void;
   reject: () => void;

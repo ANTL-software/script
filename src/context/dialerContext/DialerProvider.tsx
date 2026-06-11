@@ -521,7 +521,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       };
 
       call.on('ringing', associerCallSid);
-      call.on('accept', associerCallSid);
+      call.on('accept', () => {
+        associerCallSid();
+        setIsCallConnected(true);
+      });
 
       // IMPORTANT: Écouter les événements de fin d'appel sur le call lui-même
       // L'événement 'disconnect' se déclenche quand l'interlocuteur raccroche

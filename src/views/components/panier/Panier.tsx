@@ -12,6 +12,7 @@ interface PanierProps {
 export default function Panier({ onValidateOrder }: PanierProps) {
   const { items, total, itemCount, clearCart, updateQuantity, removeItem } = useCart();
   const { confirm, showToast } = useToast();
+  const totalTTC = total * 1.2;
 
   const handleClearCart = async () => {
     const confirmed = await confirm({
@@ -69,8 +70,14 @@ export default function Panier({ onValidateOrder }: PanierProps) {
 
           <div className="panier__footer">
             <div className="panier__total">
-              <span className="panier__total-label">Total</span>
-              <span className="panier__total-amount">{formatCurrency(total)}</span>
+              <div className="panier__total-block">
+                <span className="panier__total-label">Total HT</span>
+                <span className="panier__total-amount">{formatCurrency(total)}</span>
+              </div>
+              <div className="panier__total-block">
+                <span className="panier__total-label">Total TTC</span>
+                <span className="panier__total-amount">{formatCurrency(totalTTC)}</span>
+              </div>
             </div>
 
             <div className="panier__actions">

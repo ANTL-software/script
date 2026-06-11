@@ -87,8 +87,15 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: vars.$spacing-md;
     padding: vars.$spacing-xs 0;
     margin-bottom: vars.$spacing-xs;
+  }
+
+  &__total-block {
+    display: flex;
+    align-items: baseline;
+    gap: vars.$spacing-sm;
   }
 
   &__total-label {
@@ -112,6 +119,12 @@
       padding: vars.$spacing-xs vars.$spacing-sm;
       font-size: vars.$fontSize-xs;
       gap: vars.$spacing-xs;
+    }
+  }
+
+  @media (max-width: vars.$breakpoint-sm) {
+    &__total {
+      flex-wrap: wrap;
     }
   }
 }

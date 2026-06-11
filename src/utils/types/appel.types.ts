@@ -22,6 +22,7 @@ export interface Appel {
   id_prospect: number;
   id_agent: number;
   id_campagne: number;
+  id_rendez_vous_source?: number | null;
   date_appel: string;
   duree_secondes?: number | null;
   statut_appel: StatutAppel;
@@ -40,6 +41,7 @@ export interface CreateAppelData {
   id_prospection?: number;
   origine_appel?: OrigineAppel;
   numero_telephone?: string;
+  id_rendez_vous_source?: number;
 }
 
 export interface TerminerAppelData {

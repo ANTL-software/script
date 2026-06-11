@@ -20,6 +20,7 @@ export interface DialerContextType {
   currentAppelId: number | null;
   currentIdProspection: number | null;
   currentOrigineAppel: OrigineAppel | null;
+  currentRendezVousSourceId: number | null;
   remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;
   clearProchainProspect: () => void;
@@ -27,8 +28,8 @@ export interface DialerContextType {
   hangup: () => void;
   answer: () => void;
   reject: () => void;
-  openProspectManual: (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => Promise<void>;
-  callFromManual: (phoneNumber: string, prospectId: number, campagneId?: number) => Promise<void>;
+  openProspectManual: (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string, rendezVousSourceId?: number) => Promise<void>;
+  callFromManual: (phoneNumber: string, prospectId: number, campagneId?: number, rendezVousSourceId?: number) => Promise<void>;
 }
 
 export const DialerContext = createContext<DialerContextType | undefined>(undefined);

@@ -24,6 +24,11 @@ function getMinutesFromTimeStr(timeStr: string): number {
   return hours * 60 + minutes;
 }
 
+function buildRappelUrl(rdv: RendezVous): string | null {
+  if (!rdv.prospect?.id_prospect) return null;
+  return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}`;
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { prochainProspect, clearProchainProspect, call } = useDialer();
@@ -163,6 +168,10 @@ export default function DashboardPage() {
                     key={rdv.id_rendez_vous}
                     ref={isNext ? nextRdvRef : null}
                     className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''}`}
+                    onClick={() => {
+                      const url = buildRappelUrl(rdv);
+                      if (url) navigate(url);
+                    }}
                   >
                     <div className="dashboard__rdv-heure">{formatHeure(rdv.heure_rdv)}</div>
                     <div className="dashboard__rdv-info">

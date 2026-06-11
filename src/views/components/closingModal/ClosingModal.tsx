@@ -12,6 +12,9 @@ interface ClosingModalProps {
   prospectId: number;
   prospectName: string;
   campagneId: number;
+  appelId?: number;
+  origineAppel?: 'auto' | 'manuel' | 'rappel';
+  rendezVousSourceId?: number;
   dureeAppel?: number;
   onComplete: () => void;
   forceMode?: boolean;
@@ -22,6 +25,9 @@ export default function ClosingModal({
   prospectId,
   prospectName,
   campagneId,
+  appelId,
+  origineAppel,
+  rendezVousSourceId,
   dureeAppel,
   onComplete,
   forceMode = false,
@@ -33,7 +39,7 @@ export default function ClosingModal({
     notes, setNotes,
     isSubmitting, error,
     handleSubmit,
-  } = useCallClosing({ prospectId, campagneId, onComplete });
+  } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete });
 
   // Forcer la maximisation de la modale si on passe en mode forcé (navigation hors de la fiche)
   useEffect(() => {

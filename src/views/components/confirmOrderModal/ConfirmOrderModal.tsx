@@ -22,7 +22,6 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
     items, total,
     formData, isSubmitting, error, validationErrors,
     handleInputChange, handleSubmit,
-    handleProspectInfoUpdate,
   } = useOrderConfirmation({ onClose, onSuccess });
 
   if (!isOpen) return null;

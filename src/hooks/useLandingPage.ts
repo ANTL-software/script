@@ -10,7 +10,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
   const { clearCart } = useCart();
-  const { statut, callDuration, currentCampagneId } = useDialer();
+  const { statut, callDuration, currentCampagneId, currentAppelId, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
   // Log le mode test pour débogage (sera utilisé pour désactiver le dialer si nécessaire)
   if (isTestMode) {
@@ -82,12 +82,15 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       prospectId: currentProspect.id_prospect,
       prospectName: formatProspectName({ nom: currentProspect.nom, prenom: currentProspect.prenom }),
       campagneId,
+      appelId: currentAppelId,
+      origineAppel: currentOrigineAppel,
+      rendezVousSourceId: currentRendezVousSourceId,
       dureeAppel: callDuration,
     };
 
     closingService.savePending(pending);
     wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel
-  }, [statut, currentProspect, currentCampaign, currentCampagneId, callDuration]);
+  }, [statut, currentProspect, currentCampaign, currentCampagneId, currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration]);
 
   const handlePlanAppels = () => {
     const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;

@@ -8,14 +8,17 @@ import { getErrorMessage } from '../utils/scripts/formatters';
 interface UseCallClosingOptions {
   prospectId: number;
   campagneId: number;
+  appelId?: number;
+  origineAppel?: 'auto' | 'manuel' | 'rappel';
+  rendezVousSourceId?: number;
   onComplete: () => void;
   dureeAppel?: number;
 }
 
-export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel }: UseCallClosingOptions) {
+export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete, dureeAppel }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
-  const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel } = useDialer();
+  const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
   const [notes, setNotes] = useState('');
@@ -39,11 +42,15 @@ export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel 
     setIsSubmitting(true);
 
     try {
-      if (currentAppelId) {
+      const resolvedAppelId = currentAppelId ?? appelId ?? null;
+      const resolvedOrigineAppel = currentOrigineAppel ?? origineAppel ?? 'manuel';
+      const resolvedRendezVousSourceId = currentRendezVousSourceId ?? rendezVousSourceId ?? undefined;
+
+      if (resolvedAppelId) {
         // Appel SIP : terminer l'appel existant avec le statut final
         const finalDuration = dureeAppel ?? callDuration;
         const abouti = ['vente_conclue', 'rdv_pris', 'abouti', 'refus_definitif'].includes(selectedStatut);
-        await appelService.terminerAppel(currentAppelId, {
+        await appelService.terminerAppel(resolvedAppelId, {
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,
           abouti,
@@ -58,7 +65,8 @@ export function useCallClosing({ prospectId, campagneId, onComplete, dureeAppel 
           id_campagne: campagneId,
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,
-          origine_appel: currentOrigineAppel ?? 'manuel',
+          origine_appel: resolvedOrigineAppel,
+          id_rendez_vous_source: resolvedRendezVousSourceId,
         });
         // Garde : s'assurer que le backend est bien en pause_apres_appel
         await dialerService.changerStatut('pause_apres_appel');

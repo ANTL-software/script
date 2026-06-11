@@ -41,6 +41,9 @@ function AppRouter() {
           prospectId={pendingClosing.prospectId}
           prospectName={pendingClosing.prospectName}
           campagneId={pendingClosing.campagneId}
+          appelId={pendingClosing.appelId ?? undefined}
+          origineAppel={pendingClosing.origineAppel ?? undefined}
+          rendezVousSourceId={pendingClosing.rendezVousSourceId ?? undefined}
           dureeAppel={pendingClosing.dureeAppel}
           forceMode={forceMode}
           onComplete={() => {

@@ -33,13 +33,20 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
   };
 
   const isManualSearch = searchParams.get('source') === 'manual';
+  const isRappelSource = searchParams.get('source') === 'rappel';
+  const rendezVousSourceId = (() => {
+    const raw = searchParams.get('rdvId');
+    if (!raw) return undefined;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  })();
   const isCalling = statut === 'en_appel' || statut === 'appel_sortant';
 
   const handleCallFromManual = async (phoneNumber: string) => {
     if (!currentProspect) return;
 
     try {
-      await callFromManual(phoneNumber, currentProspect.id_prospect);
+      await callFromManual(phoneNumber, currentProspect.id_prospect, undefined, isRappelSource ? rendezVousSourceId : undefined);
       showToast('info', 'Appel en cours...', 3000);
     } catch (error) {
       console.error('[PROSPECT_INFO_HEADER] Erreur appel manuel:', error);
@@ -123,7 +130,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
                   phoneNumber={currentProspect.telephone}
                   type="principal"
                   onCall={handleCallFromManual}
-                  showCallButton={isManualSearch}
+                  showCallButton={isManualSearch || isRappelSource}
                   isCalling={isCalling}
                 />
               </td>
@@ -133,7 +140,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
                   phoneNumber={currentProspect.telephone_contact || ''}
                   type="contact"
                   onCall={handleCallFromManual}
-                  showCallButton={isManualSearch}
+                  showCallButton={isManualSearch || isRappelSource}
                   disabled={!currentProspect.telephone_contact}
                   isCalling={isCalling}
                 />

@@ -47,7 +47,7 @@ export default function RendezVousDetailsModal({
   const handleMonterFiche = () => {
     if (prospect) {
       onClose();
-      navigate(`/prospect/${prospect.id_prospect}?source=manual`);
+      navigate(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}`);
     }
   };
   const statut = rendezVous.statut;

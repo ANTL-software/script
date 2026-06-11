@@ -33,6 +33,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [currentAppelId, setCurrentAppelId] = useState<number | null>(null);
   const [currentIdProspection, setCurrentIdProspection] = useState<number | null>(null);
   const [currentOrigineAppel, setCurrentOrigineAppel] = useState<OrigineAppel | null>(null);
+  const [currentRendezVousSourceId, setCurrentRendezVousSourceId] = useState<number | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deviceRef = useRef<Device | null>(null);
@@ -406,6 +407,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             id_prospection: prochainProspect?.id_prospection,
           });
           setCurrentAppelId(appel.id_appel);
+          setCurrentRendezVousSourceId(null);
           resolvedAppelId = appel.id_appel;
         } catch (err) {
           console.error('❌ Erreur création appel:', err);
@@ -645,7 +647,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, [sipConnected, showToast]);
 
   // Ouvrir un prospect manuellement
-  const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string) => {
+  const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string, rendezVousSourceId?: number) => {
     if (closingService.hasPending()) {
       showToast('error', "Veuillez d'abord enregistrer le résultat de l'appel en cours.", 5000);
       return;
@@ -678,11 +680,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         statut_appel: 'en_cours',
         origine_appel: origin,
         numero_telephone: formattedNumber,
+        id_rendez_vous_source: rendezVousSourceId,
       });
 
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(campagneId);
       setCurrentOrigineAppel(origin);
+      setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       if (formattedNumber) {
         await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel });
@@ -702,7 +706,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const callFromManual = useCallback(async (
     phoneNumber: string,
     prospectId: number,
-    campagneId?: number
+    campagneId?: number,
+    rendezVousSourceId?: number
   ) => {
     if (closingService.hasPending()) {
       showToast('error', "Veuillez d'abord enregistrer le résultat de l'appel en cours.", 5000);
@@ -741,13 +746,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         id_prospect: prospectId,
         id_campagne: targetCampagneId,
         statut_appel: 'en_cours',
-        origine_appel: 'manuel',
+        origine_appel: rendezVousSourceId ? 'rappel' : 'manuel',
         numero_telephone: formattedNumber,
+        id_rendez_vous_source: rendezVousSourceId,
       });
 
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(targetCampagneId);
-      setCurrentOrigineAppel('manuel');
+      setCurrentOrigineAppel(rendezVousSourceId ? 'rappel' : 'manuel');
+      setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       // Lancer l'appel Twilio avec le numéro formaté
       await call(formattedNumber, targetCampagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel });
@@ -772,6 +779,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setCurrentAppelId(null);
     setCurrentIdProspection(null);
     setCurrentOrigineAppel(null);
+    setCurrentRendezVousSourceId(null);
     isClosingRef.current = false;
   }, []);
 
@@ -791,6 +799,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       currentAppelId,
       currentIdProspection,
       currentOrigineAppel,
+      currentRendezVousSourceId,
       remoteAudioRef,
       changerStatut,
       clearProchainProspect,

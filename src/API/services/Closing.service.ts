@@ -7,6 +7,9 @@ export interface PendingClosing {
   prospectId: number;
   prospectName: string;
   campagneId: number;
+  appelId?: number | null;
+  origineAppel?: 'auto' | 'manuel' | 'rappel' | null;
+  rendezVousSourceId?: number | null;
   dureeAppel?: number;
   timestamp: number;
 }

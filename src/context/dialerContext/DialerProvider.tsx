@@ -792,6 +792,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
               continue;
             }
             setProchainProspect(candidate);
+            setCurrentIdProspection(candidate.id_prospection ?? null);
             found = true;
             break;
           } catch (err) {
@@ -859,6 +860,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(campagneId);
+      setCurrentIdProspection(null);
       setCurrentOrigineAppel(origin);
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
@@ -927,6 +929,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(targetCampagneId);
+      setCurrentIdProspection(null);
       setCurrentOrigineAppel(rendezVousSourceId ? 'rappel' : 'manuel');
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 

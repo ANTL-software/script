@@ -5,6 +5,7 @@ import { prospectService, rendezVousService, statsService, notificationService }
 import type { RendezVous, StatsDuJour, Notification } from '../utils/types';
 
 const NOTIFS_POLL_INTERVAL = 60_000;
+const DASHBOARD_POLL_INTERVAL = 60_000;
 
 export function useDashboardData() {
   const { user } = useUser();
@@ -67,11 +68,20 @@ export function useDashboardData() {
 
   useEffect(() => {
     if (!user) return;
-    pollRef.current = setInterval(fetchNotifications, NOTIFS_POLL_INTERVAL);
+    pollRef.current = setInterval(fetchData, DASHBOARD_POLL_INTERVAL);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        fetchData().catch(() => {});
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibility);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [user, fetchNotifications]);
+  }, [user, fetchData]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +146,7 @@ export function useDashboardData() {
     notifications,
     nonLues,
     notifsLoading,
+    refreshDashboardData: fetchData,
     handleSearch,
     handleMarquerLue,
     handleMarquerToutLu,

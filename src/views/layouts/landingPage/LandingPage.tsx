@@ -14,7 +14,6 @@ import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
-import ConfirmModal from '../../components/confirmModal/ConfirmModal';
 import { useEffect } from 'react';
 
 export default function LandingPage() {
@@ -28,9 +27,7 @@ export default function LandingPage() {
   const {
     currentProspect, currentView, isLoading, error, clearError,
     isModalOpen, setIsModalOpen,
-    confirmModal, setConfirmModal,
     handlePlanAppels, handleObjections, handleCommande,
-    handleDoublon, handleRss, handleConfirmAction,
     handleOrderSuccess,
     setView, currentCampaign,
   } = useLandingPage(id, isTestMode);
@@ -99,8 +96,6 @@ export default function LandingPage() {
         onHistoriqueOffres={() => setView('historique-offres')}
         onRendezVous={() => setView('rendez-vous')}
         onCommande={handleCommande}
-        onDoublon={handleDoublon}
-        onRss={handleRss}
       />
 
       <div className={`landing-page__content ${currentView === 'commande' ? 'view-commande' : ''}`}>
@@ -130,21 +125,6 @@ export default function LandingPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSuccess={handleOrderSuccess}
-      />
-
-      <ConfirmModal
-        isOpen={confirmModal.type !== null}
-        type={confirmModal.type === 'optout' ? 'danger' : 'warning'}
-        title={confirmModal.type === 'doublon' ? 'Signaler un doublon' : 'Opt-out — Ne plus contacter'}
-        message={
-          confirmModal.type === 'doublon'
-            ? 'Ce prospect sera marqué comme doublon. Cette action est définitive. Continuer ?'
-            : 'Ce prospect ne sera plus jamais contacté. Cette action est définitive et irréversible. Continuer ?'
-        }
-        confirmText={confirmModal.type === 'doublon' ? 'Signaler doublon' : 'Confirmer opt-out'}
-        isLoading={confirmModal.isLoading}
-        onConfirm={handleConfirmAction}
-        onCancel={() => setConfirmModal({ type: null, isLoading: false })}
       />
     </main>
   );

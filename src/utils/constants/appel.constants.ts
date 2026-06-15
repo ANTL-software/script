@@ -96,6 +96,20 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     icon: '📠',
     color: '#64748b',
   },
+  {
+    value: 'doublon',
+    label: 'Doublon',
+    description: 'Ce prospect est un doublon',
+    icon: '👯',
+    color: '#64748b',
+  },
+  {
+    value: 'optout',
+    label: 'Opt-out',
+    description: 'Ne plus jamais contacter',
+    icon: '⛔',
+    color: '#ef4444',
+  },
 ];
 
 /**
@@ -115,6 +129,8 @@ export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
   particulier: '#8b5cf6',
   pas_disponible: '#be185d',
   fax: '#64748b',
+  doublon: '#64748b',
+  optout: '#ef4444',
 };
 
 /**

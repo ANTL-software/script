@@ -13,7 +13,9 @@ export type StatutAppel =
   | 'pas_attribue'
   | 'particulier'
   | 'pas_disponible'
-  | 'fax';
+  | 'fax'
+  | 'doublon'
+  | 'optout';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
 

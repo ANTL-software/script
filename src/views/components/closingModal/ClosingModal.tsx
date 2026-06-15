@@ -6,6 +6,7 @@ import { STATUT_APPEL_OPTIONS } from '../../../utils/constants';
 import { formatDuration } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
 import AgentCalendar from '../agentCalendar/AgentCalendar';
+import ConfirmModal from '../confirmModal/ConfirmModal';
 
 interface ClosingModalProps {
   isOpen: boolean;
@@ -40,6 +41,22 @@ export default function ClosingModal({
     isSubmitting, error,
     handleSubmit,
   } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete });
+
+  const [showConfirm, setShowConfirm] = useState<'doublon' | 'optout' | null>(null);
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedStatut === 'doublon' || selectedStatut === 'optout') {
+      setShowConfirm(selectedStatut);
+    } else {
+      handleSubmit(e);
+    }
+  };
+
+  const handleConfirmAction = () => {
+    setShowConfirm(null);
+    handleSubmit();
+  };
 
   // Forcer la maximisation de la modale si on passe en mode forcé (navigation hors de la fiche)
   useEffect(() => {
@@ -97,7 +114,7 @@ export default function ClosingModal({
 
             <div className="closing-modal__body">
 
-              <form className="closing-modal__left" onSubmit={handleSubmit}>
+              <form className="closing-modal__left" onSubmit={handleFormSubmit}>
                 {error && <div className="closing-modal__error">{error}</div>}
 
                 <div className="closing-modal__section">
@@ -167,6 +184,21 @@ export default function ClosingModal({
           Saisir le résultat d'appel
         </button>
       )}
+
+      <ConfirmModal
+        isOpen={showConfirm !== null}
+        type={showConfirm === 'optout' ? 'danger' : 'warning'}
+        title={showConfirm === 'doublon' ? 'Signaler un doublon' : 'Opt-out — Ne plus contacter'}
+        message={
+          showConfirm === 'doublon'
+            ? 'Ce prospect sera marqué comme doublon. Cette action est définitive. Continuer ?'
+            : 'Ce prospect ne sera plus jamais contacté. Cette action est définitive et irréversible. Continuer ?'
+        }
+        confirmText={showConfirm === 'doublon' ? 'Signaler doublon' : 'Confirmer opt-out'}
+        isLoading={isSubmitting}
+        onConfirm={handleConfirmAction}
+        onCancel={() => setShowConfirm(null)}
+      />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
-import { closingService, prospectService, type PendingClosing } from '../API/services';
+import { closingService, type PendingClosing } from '../API/services';
 import { formatProspectName } from '../utils/scripts/formatters';
 
 export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
@@ -18,10 +18,6 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [confirmModal, setConfirmModal] = useState<{ type: 'doublon' | 'optout' | null; isLoading: boolean }>({
-    type: null,
-    isLoading: false,
-  });
 
   const previousProspectIdRef = useRef<number | null>(null);
   const wasCallActiveRef = useRef<boolean>(false);
@@ -109,25 +105,6 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     loadProduits();
   };
 
-  const handleDoublon = () => setConfirmModal({ type: 'doublon', isLoading: false });
-  const handleRss = () => setConfirmModal({ type: 'optout', isLoading: false });
-
-  const handleConfirmAction = async () => {
-    if (!currentProspect || !confirmModal.type) return;
-    setConfirmModal(prev => ({ ...prev, isLoading: true }));
-    try {
-      if (confirmModal.type === 'doublon') {
-        await prospectService.markDoublon(currentProspect.id_prospect);
-      } else {
-        await prospectService.markOptout(currentProspect.id_prospect);
-      }
-      setConfirmModal({ type: null, isLoading: false });
-      navigate('/');
-    } catch {
-      setConfirmModal(prev => ({ ...prev, isLoading: false }));
-    }
-  };
-
   const handleOrderSuccess = () => {
     // Le closing est sauvegardé globalement lors de la confirmation de la commande.
   };
@@ -141,15 +118,10 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     clearError,
     isModalOpen,
     setIsModalOpen,
-    confirmModal,
-    setConfirmModal,
     setView,
     handlePlanAppels,
     handleObjections,
     handleCommande,
-    handleDoublon,
-    handleRss,
-    handleConfirmAction,
     handleOrderSuccess,
   };
 }

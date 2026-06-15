@@ -25,8 +25,8 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: FormEvent) => {
+    if (e) e.preventDefault();
     setError(null);
 
     if (!selectedStatut) {
@@ -49,7 +49,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
       if (resolvedAppelId) {
         // Appel SIP : terminer l'appel existant avec le statut final
         const finalDuration = dureeAppel ?? callDuration;
-        const abouti = ['vente_conclue', 'rdv_pris', 'abouti', 'refus_definitif'].includes(selectedStatut);
+        const abouti = ['vente_conclue', 'rdv_pris', 'abouti', 'refus_definitif', 'doublon', 'optout'].includes(selectedStatut);
         await appelService.terminerAppel(resolvedAppelId, {
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,

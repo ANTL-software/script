@@ -1,6 +1,6 @@
 import './actionButtons.scss';
 import Button from '../button/Button';
-import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt, FaClone, FaBan } from 'react-icons/fa';
+import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
 
 interface ActionButtonsProps {
   currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
@@ -8,8 +8,6 @@ interface ActionButtonsProps {
   onHistoriqueOffres?: () => void;
   onRendezVous?: () => void;
   onCommande?: () => void;
-  onDoublon?: () => void;
-  onRss?: () => void;
 }
 
 export default function ActionButtons({
@@ -18,20 +16,9 @@ export default function ActionButtons({
   onHistoriqueOffres,
   onRendezVous,
   onCommande,
-  onDoublon,
-  onRss,
 }: ActionButtonsProps) {
   return (
     <div className="action-buttons">
-      <div className="action-buttons__group action-buttons__group--left">
-        <Button variant="ghost" size="small" onClick={onDoublon}>
-          <FaClone /> Doublon
-        </Button>
-        <Button variant="secondary" size="small" onClick={onRss}>
-          <FaBan /> Opt-out
-        </Button>
-      </div>
-
       <div className="action-buttons__group action-buttons__group--right">
         <Button
           variant="primary"

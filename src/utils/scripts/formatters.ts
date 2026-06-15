@@ -194,6 +194,8 @@ export function getStatutAppelClass(statut: string): string {
     case 'fax':
       return 'appel-card__statut--warning';
     case 'refus_definitif':
+    case 'doublon':
+    case 'optout':
       return 'appel-card__statut--danger';
     default:
       return '';
@@ -215,6 +217,8 @@ const STATUT_APPEL_LABELS: Record<string, string> = {
   pas_attribue: 'Pas attribué',
   particulier: 'Particulier',
   pas_disponible: 'Pas disponible',
+  doublon: 'Doublon',
+  optout: 'Opt-out',
 };
 
 /**

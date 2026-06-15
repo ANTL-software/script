@@ -4,7 +4,6 @@ import { useUser } from './useUser';
 import { prospectService, rendezVousService, statsService, notificationService } from '../API/services';
 import type { RendezVous, StatsDuJour, Notification } from '../utils/types';
 
-const NOTIFS_POLL_INTERVAL = 60_000;
 const DASHBOARD_POLL_INTERVAL = 60_000;
 
 export function useDashboardData() {
@@ -26,15 +25,7 @@ export function useDashboardData() {
   const [nonLues, setNonLues] = useState(0);
   const [notifsLoading, setNotifsLoading] = useState(true);
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const result = await notificationService.getMyNotifications(false);
-      setNotifications(result.notifications);
-      setNonLues(result.non_lues);
-    } catch {
-      // silencieux — on réessaie au prochain tick
-    }
-  }, []);
+
 
   const fetchData = useCallback(async () => {
     if (!user) return;

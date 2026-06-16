@@ -17,6 +17,7 @@ export interface RendezVous {
     nom: string;
     prenom: string | null;
     telephone: string;
+    statut?: string;
   };
 }
 

@@ -196,7 +196,7 @@ export default function DashboardPage() {
             <ul className="dashboard__rdv-list">
               {rdvDuJour.map(rdv => {
                 const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
-                const isCommande = rdv.motif && rdv.motif.trim() === 'Commande à établir';
+                const isCommande = (rdv.motif && rdv.motif.trim() === 'Commande à établir') || (rdv.prospect?.statut === 'rappel');
                 return (
                   <li
                     key={rdv.id_rendez_vous}

@@ -48,7 +48,7 @@ function eventStyleGetter(event: CalendarEvent) {
     };
   }
 
-  const isCommande = motif && motif.trim() === 'Commande à établir';
+  const isCommande = (motif && motif.trim() === 'Commande à établir') || (event.resource.prospect?.statut === 'rappel');
   const color = isCommande ? '#E95420' : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie);
 
   if (eventType === 'mine-prospect') {

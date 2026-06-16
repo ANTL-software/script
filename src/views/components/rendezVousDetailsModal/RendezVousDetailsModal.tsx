@@ -50,7 +50,7 @@ export default function RendezVousDetailsModal({
       navigate(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}`);
     }
   };
-  const isCommande = rendezVous.motif && rendezVous.motif.trim() === 'Commande à établir';
+  const isCommande = (rendezVous.motif && rendezVous.motif.trim() === 'Commande à établir') || (rendezVous.prospect?.statut === 'rappel');
   const statut = rendezVous.statut;
   const statutLabel = isCommande ? 'Commande à établir' : (STATUT_LABELS[statut] ?? statut);
   const statutColor = isCommande ? '#E95420' : (STATUT_COLORS[statut] ?? '#6b7280');

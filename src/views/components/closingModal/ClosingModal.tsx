@@ -125,7 +125,14 @@ export default function ClosingModal({
                         key={option.value}
                         type="button"
                         className={`closing-modal__statut-option${selectedStatut === option.value ? ' closing-modal__statut-option--selected' : ''}`}
-                        onClick={() => setSelectedStatut(option.value)}
+                        onClick={() => {
+                          if (option.value === 'doublon') {
+                            setSelectedStatut('doublon');
+                            setShowConfirm('doublon');
+                          } else {
+                            setSelectedStatut(option.value);
+                          }
+                        }}
                         disabled={isSubmitting}
                         style={{ '--option-color': option.color } as React.CSSProperties}
                       >
@@ -194,7 +201,10 @@ export default function ClosingModal({
         confirmText="Signaler doublon"
         isLoading={isSubmitting}
         onConfirm={handleConfirmAction}
-        onCancel={() => setShowConfirm(null)}
+        onCancel={() => {
+          setShowConfirm(null);
+          setSelectedStatut(null);
+        }}
       />
     </>
   );

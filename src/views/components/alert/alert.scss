@@ -15,7 +15,7 @@
 }
 
 .alert {
-  background: vars.$whiteBackground;
+  background: vars.$colorWhite;
   border-radius: 12px;
   box-shadow: 0 18px 48px rgba(15, 23, 42, 0.22);
   max-width: 90dvw;
@@ -25,28 +25,28 @@
   position: relative;
   animation: alert-slide-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  @media (min-width: vars.$tabletWidth) {
+  @media (min-width: vars.$breakpoint-md) {
     max-width: 28rem;
   }
 
   &--info {
-    border-top: 4px solid vars.$utilsPrimary;
+    border-top: 4px solid vars.$colorPrimary;
   }
 
   &--success {
-    border-top: 4px solid vars.$successColor;
+    border-top: 4px solid vars.$colorSuccess;
   }
 
   &--warning {
-    border-top: 4px solid vars.$warningColor;
+    border-top: 4px solid vars.$colorWarning;
   }
 
   &--error {
-    border-top: 4px solid vars.$errorColor;
+    border-top: 4px solid vars.$colorDanger;
   }
 
   &--confirm {
-    border-top: 4px solid vars.$warningColor;
+    border-top: 4px solid vars.$colorWarning;
   }
 }
 
@@ -71,23 +71,23 @@
   margin-top: 0.125rem;
 
   &--info {
-    color: vars.$utilsPrimary;
+    color: vars.$colorPrimary;
   }
 
   &--success {
-    color: vars.$successColor;
+    color: vars.$colorSuccess;
   }
 
   &--warning {
-    color: vars.$warningColor;
+    color: vars.$colorWarning;
   }
 
   &--error {
-    color: vars.$errorColor;
+    color: vars.$colorDanger;
   }
 
   &--confirm {
-    color: vars.$warningColor;
+    color: vars.$colorWarning;
   }
 }
 
@@ -95,7 +95,7 @@
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: vars.$fontColorPrimary;
+  color: vars.$fontPrimaryColor;
   line-height: 1.4;
 }
 
@@ -104,15 +104,15 @@
   border: none;
   padding: 0.25rem;
   cursor: pointer;
-  color: vars.$fontColorSecondary;
+  color: vars.$colorGray700;
   font-size: 1.25rem;
   border-radius: 4px;
   transition: all 120ms ease;
   flex-shrink: 0;
 
   &:hover {
-    background-color: vars.$greyBackground;
-    color: vars.$fontColorPrimary;
+    background-color: vars.$colorGray100;
+    color: vars.$fontPrimaryColor;
   }
 }
 
@@ -122,7 +122,7 @@
 
 .alert__message {
   margin: 0;
-  color: vars.$fontColorSecondary;
+  color: vars.$colorGray700;
   line-height: 1.55;
   font-size: 0.95rem;
   white-space: pre-wrap;
@@ -134,7 +134,7 @@
   padding: 0 1.5rem 1.5rem;
   justify-content: flex-end;
 
-  @media (max-width: calc(vars.$mobileWidth - 1px)) {
+  @media (max-width: calc(vars.$breakpoint-sm - 1px)) {
     flex-direction: column-reverse;
   }
 }
@@ -149,27 +149,27 @@
   border: 1px solid transparent;
   min-width: 6rem;
 
-  @media (max-width: calc(vars.$mobileWidth - 1px)) {
+  @media (max-width: calc(vars.$breakpoint-sm - 1px)) {
     width: 100%;
   }
 
   &--cancel {
-    background: vars.$greyBackground;
-    color: vars.$fontColorPrimary;
-    border-color: vars.$borderColor;
+    background: vars.$colorGray100;
+    color: vars.$fontPrimaryColor;
+    border-color: vars.$colorGray300;
 
     &:hover {
-      background: rgba(vars.$fontColorSecondary, 0.1);
-      border-color: vars.$fontColorSecondary;
+      background: rgba(vars.$colorGray700, 0.1);
+      border-color: vars.$colorGray700;
     }
   }
 
   &--confirm {
-    background: vars.$warningColor;
-    color: vars.$whiteBackground;
+    background: vars.$colorWarning;
+    color: vars.$colorWhite;
 
     &:hover {
-      background: color.adjust(vars.$warningColor, $lightness: -10%);
+      background: color.adjust(vars.$colorWarning, $lightness: -10%);
     }
   }
 }

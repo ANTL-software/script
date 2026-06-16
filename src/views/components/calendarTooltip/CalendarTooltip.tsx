@@ -35,14 +35,22 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   const left = x + 228 > window.innerWidth ? x - 228 - 8 : x + 12;
   const top  = y + 8;
 
+  const isCommande = resource.motif && resource.motif.trim() === 'Commande à établir';
+  const headerColor = isOtherAgent
+    ? '#d97706'
+    : (isCommande ? '#E95420' : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie));
+  const headerLabel = isOtherAgent
+    ? 'Autre agent'
+    : (isCommande ? 'Commande à établir' : (STATUT_LABELS[resource.statut] ?? resource.statut));
+
   return (
     <div className="cal-tooltip" style={{ left, top }}>
       <div className="cal-tooltip__header">
         <span
           className="cal-tooltip__statut"
-          style={{ backgroundColor: isOtherAgent ? '#d97706' : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie) }}
+          style={{ backgroundColor: headerColor }}
         >
-          {isOtherAgent ? 'Autre agent' : (STATUT_LABELS[resource.statut] ?? resource.statut)}
+          {headerLabel}
         </span>
         {isOtherAgent && prospectName && (
           <span className="cal-tooltip__prospect">{prospectName}</span>

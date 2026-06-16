@@ -34,12 +34,12 @@ function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: numbe
     return `/prospect/${idProspect}`;
   }
 
-  return `/prospect/${idProspect}?source=rappel&rdvId=${rendezVousSourceId}`;
+  return `/prospect/${idProspect}?source=rappel&rdvId=${rendezVousSourceId}&autoReminder=1`;
 }
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { prochainProspect, clearProchainProspect, call } = useDialer();
+  const { statut, prochainProspect, clearProchainProspect, call, requestNextProspect } = useDialer();
   const { showToast } = useToast();
   const networkWarningShown = useRef(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
@@ -101,6 +101,22 @@ export default function DashboardPage() {
     }
     call(telephone, id_campagne_assignee ?? undefined, id_prospect);
   }, [prochainProspect, clearProchainProspect, navigate, call]);
+
+  useEffect(() => {
+    if (statut !== 'disponible' || prochainProspect) {
+      return;
+    }
+
+    requestNextProspect({ showEmptyToast: false }).catch(() => {});
+
+    const intervalId = setInterval(() => {
+      requestNextProspect({ showEmptyToast: false }).catch(() => {});
+    }, 15000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [prochainProspect, requestNextProspect, statut]);
 
   const {
     searchQuery, setSearchQuery,
@@ -180,11 +196,12 @@ export default function DashboardPage() {
             <ul className="dashboard__rdv-list">
               {rdvDuJour.map(rdv => {
                 const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
+                const isCommande = rdv.motif && rdv.motif.trim() === 'Commande à établir';
                 return (
                   <li
                     key={rdv.id_rendez_vous}
                     ref={isNext ? nextRdvRef : null}
-                    className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''}`}
+                    className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''} ${isCommande ? 'dashboard__rdv-item--commande' : ''}`}
                     onClick={() => {
                       const url = buildRappelUrl(rdv);
                       if (url) navigate(url);
@@ -192,7 +209,12 @@ export default function DashboardPage() {
                   >
                     <div className="dashboard__rdv-heure">{formatHeure(rdv.heure_rdv)}</div>
                     <div className="dashboard__rdv-info">
-                      <span className="dashboard__rdv-nom">{prospectLabel(rdv)}</span>
+                      <span className="dashboard__rdv-nom">
+                        {prospectLabel(rdv)}
+                        {isCommande && (
+                          <span className="dashboard__rdv-badge-commande">Commande à établir</span>
+                        )}
+                      </span>
                       {rdv.prospect?.telephone && (
                         <span className="dashboard__rdv-tel">{rdv.prospect.telephone}</span>
                       )}

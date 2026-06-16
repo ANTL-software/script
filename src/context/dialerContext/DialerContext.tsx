@@ -25,6 +25,7 @@ export interface DialerContextType {
   lastSentDigits: string;
   remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;
+  requestNextProspect: (options?: { showEmptyToast?: boolean }) => Promise<boolean>;
   clearProchainProspect: () => void;
   call: (phoneNumber: string, campagneId?: number, prospectId?: number) => Promise<void>;
   sendDigits: (digits: string) => boolean;

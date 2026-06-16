@@ -19,6 +19,7 @@ interface RendezVousModalProps {
   onUpdate: (data: { date: Date; motif: string; notes: string; statut: string }) => Promise<void>;
   onRequestDelete?: () => void;
   showToast?: (type: 'success' | 'error', message: string) => void;
+  defaultMotif?: string;
 }
 
 export default function RendezVousModal({
@@ -32,6 +33,7 @@ export default function RendezVousModal({
   onUpdate,
   onRequestDelete,
   showToast,
+  defaultMotif,
 }: RendezVousModalProps) {
   const isEditMode = !!rendezVous;
 
@@ -53,12 +55,12 @@ export default function RendezVousModal({
       } else if (initialDate) {
         setDate(format(initialDate, 'yyyy-MM-dd'));
         setTime(format(initialDate, 'HH:mm'));
-        setMotif('');
+        setMotif(defaultMotif || '');
         setNotes('');
         setStatut('planifie');
       }
     }
-  }, [isOpen, rendezVous, initialDate]);
+  }, [isOpen, rendezVous, initialDate, defaultMotif]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

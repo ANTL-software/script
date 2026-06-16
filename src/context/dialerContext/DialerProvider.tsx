@@ -49,6 +49,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const hasCalledEstablishedRef = useRef<boolean>(false);
   const isInitializingRef = useRef<boolean>(false);
+  const isFetchingNextProspectRef = useRef<boolean>(false);
   const tokenRefreshPromiseRef = useRef<Promise<boolean> | null>(null);
   const recoveryPromiseRef = useRef<Promise<boolean> | null>(null);
   const isForceLogoutInProgressRef = useRef<boolean>(false);
@@ -752,6 +753,47 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     console.log('❌ Appel rejeté');
   }, []);
 
+  const requestNextProspect = useCallback(async (options?: { showEmptyToast?: boolean }) => {
+    if (isFetchingNextProspectRef.current || isCallActiveRef.current || prochainProspect) {
+      return false;
+    }
+
+    isFetchingNextProspectRef.current = true;
+    try {
+      const MAX_SKIPS = 10;
+
+      for (let i = 0; i < MAX_SKIPS; i++) {
+        try {
+          const candidate = await dialerService.getNextProspect();
+          if (candidate.telephone && isMobilePhone(candidate.telephone) && !candidate.autoriser_mobile) {
+            console.warn(`[DIALER] Prospect #${candidate.id_prospect} skip (mobile ${candidate.telephone})`);
+            if (candidate.id_prospection) {
+              dialerService.markMobile(candidate.id_prospection).catch(() => {});
+            }
+            continue;
+          }
+
+          setProchainProspect(candidate);
+          setCurrentIdProspection(candidate.id_prospection ?? null);
+          return true;
+        } catch (err) {
+          console.warn('[DIALER] Erreur lors de la récupération du prospect ou file vide', err);
+          if (options?.showEmptyToast) {
+            showToast('error', 'Plus de prospect disponible', 5000);
+          }
+          return false;
+        }
+      }
+
+      if (options?.showEmptyToast) {
+        showToast('error', 'Plus de prospect disponible', 5000);
+      }
+      return false;
+    } finally {
+      isFetchingNextProspectRef.current = false;
+    }
+  }, [prochainProspect, showToast]);
+
   // Changer de statut
   const changerStatut = useCallback(async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {
     // Guards
@@ -781,45 +823,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await dialerService.changerStatut(nouveauStatut, raison);
 
       if (nouveauStatut === 'disponible') {
-        const MAX_SKIPS = 10;
-        let found = false;
-        for (let i = 0; i < MAX_SKIPS; i++) {
-          try {
-            const candidate = await dialerService.getNextProspect();
-            if (candidate.telephone && isMobilePhone(candidate.telephone) && !candidate.autoriser_mobile) {
-              console.warn(`[DIALER] Prospect #${candidate.id_prospect} skip (mobile ${candidate.telephone})`);
-              if (candidate.id_prospection) dialerService.markMobile(candidate.id_prospection).catch(() => {});
-              continue;
-            }
-            setProchainProspect(candidate);
-            setCurrentIdProspection(candidate.id_prospection ?? null);
-            found = true;
-            break;
-          } catch (err) {
-            console.warn('[DIALER] Erreur lors de la récupération du prospect ou file vide', err);
-            break;
-          }
-        }
-
-        if (!found) {
-          showToast('error', 'Plus de prospect disponible', 5000);
-          setStatut('pause');
-          setRaisonPause('technique');
-          setDepuisLe(new Date());
-          setProchainProspect(null);
-          try {
-            await dialerService.changerStatut('pause', 'technique');
-          } catch (e) {
-            console.error('[DIALER] Erreur transition automatique vers pause technique:', e);
-          }
-        }
+        await requestNextProspect({ showEmptyToast: false });
       }
     } catch (error) {
       console.warn('[Dialer] Échec synchro backend, statut local appliqué', error);
     } finally {
       setIsLoading(false);
     }
-  }, [sipConnected, showToast]);
+  }, [requestNextProspect, sipConnected]);
 
   // Ouvrir un prospect manuellement
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string, rendezVousSourceId?: number) => {
@@ -981,6 +992,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       lastSentDigits,
       remoteAudioRef,
       changerStatut,
+      requestNextProspect,
       clearProchainProspect,
       call,
       sendDigits,

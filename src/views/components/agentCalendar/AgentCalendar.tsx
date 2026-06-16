@@ -31,7 +31,7 @@ const localizer = dateFnsLocalizer({
 });
 
 function eventStyleGetter(event: CalendarEvent) {
-  const { statut } = event.resource;
+  const { statut, motif } = event.resource;
   const { eventType } = event;
 
   if (eventType === 'other-agent-prospect') {
@@ -48,7 +48,8 @@ function eventStyleGetter(event: CalendarEvent) {
     };
   }
 
-  const color = STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie;
+  const isCommande = motif && motif.trim() === 'Commande à établir';
+  const color = isCommande ? '#E95420' : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie);
 
   if (eventType === 'mine-prospect') {
     return {
@@ -60,7 +61,7 @@ function eventStyleGetter(event: CalendarEvent) {
         color: 'white',
         fontWeight: 600,
       },
-      className: `event event--${statut} event--mine-prospect`,
+      className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}`,
     };
   }
 
@@ -70,10 +71,10 @@ function eventStyleGetter(event: CalendarEvent) {
       borderRadius: '0.375rem',
       border: 'none',
       color: 'white',
-      opacity: statut === 'annule' ? 0.35 : 0.65,
-      fontWeight: statut === 'planifie' ? 600 : 400,
+      opacity: statut === 'annule' ? 0.35 : (isCommande ? 0.9 : 0.65),
+      fontWeight: (statut === 'planifie' || isCommande) ? 600 : 400,
     },
-    className: `event event--${statut} event--mine-other`,
+    className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}`,
   };
 }
 
@@ -81,12 +82,14 @@ interface AgentCalendarProps {
   prospectId?: number;
   prospectName?: string;
   isReadOnly?: boolean;
+  selectedCallStatus?: string | null;
 }
 
 export default function AgentCalendar({
   prospectId = undefined,
   prospectName = undefined,
   isReadOnly = false,
+  selectedCallStatus = null,
 }: AgentCalendarProps) {
   const { user } = useUser();
   const { currentCampaign } = useCampaign();
@@ -348,6 +351,7 @@ export default function AgentCalendar({
           isReadOnly={isReadOnly}
           onCreate={handleCreateRendezVous}
           onUpdate={handleUpdateRendezVous}
+          defaultMotif={selectedCallStatus === 'rdv_pris' ? 'Commande à établir' : undefined}
           onRequestDelete={() => {
             if (selectedRendezVous) {
               const tempEvent: CalendarEvent = {

@@ -49,25 +49,28 @@ import { ProspectProvider } from "./context/prospectContext/ProspectProvider";
 import { CartProvider } from "./context/cartContext/CartProvider";
 import { ToastProvider } from "./context/toastContext/ToastProvider";
 import { DialerProvider } from "./context/dialerContext/DialerProvider";
+import { AlertProvider } from "./context/alertContext/AlertProvider";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>
-      <ToastProvider>
-        <AppProvider>
-          <UserProvider>
-            <DialerProvider>
-              <CampaignProvider>
-                <ProspectProvider>
-                  <CartProvider>
-                    <App />
-                  </CartProvider>
-                </ProspectProvider>
-              </CampaignProvider>
-            </DialerProvider>
-          </UserProvider>
-        </AppProvider>
-      </ToastProvider>
+      <AlertProvider>
+        <ToastProvider>
+          <AppProvider>
+            <UserProvider>
+              <DialerProvider>
+                <CampaignProvider>
+                  <ProspectProvider>
+                    <CartProvider>
+                      <App />
+                    </CartProvider>
+                  </ProspectProvider>
+                </CampaignProvider>
+              </DialerProvider>
+            </UserProvider>
+          </AppProvider>
+        </ToastProvider>
+      </AlertProvider>
     </ErrorBoundary>
   </StrictMode>
 );

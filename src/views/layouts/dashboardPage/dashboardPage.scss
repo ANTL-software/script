@@ -277,6 +277,38 @@
       box-shadow: 0 0 8px rgba(vars.$colorPrimary, 0.15);
     }
 
+    &--commande {
+      background: #fdf2e9;
+      border-color: #E95420;
+      box-shadow: 0 0 8px rgba(233, 84, 32, 0.15);
+
+      &:hover {
+        background: #fbe6d5;
+      }
+
+      .dashboard__rdv-heure {
+        color: #E95420;
+      }
+
+      .dashboard__rdv-nom {
+        color: #E95420;
+        font-weight: vars.$fontWeight-bold;
+      }
+    }
+
+    .dashboard__rdv-badge-commande {
+      margin-left: vars.$spacing-xs;
+      background: #E95420;
+      color: white;
+      font-size: 9px;
+      font-weight: vars.$fontWeight-bold;
+      padding: 1px 5px;
+      border-radius: vars.$radius-sm;
+      text-transform: uppercase;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
     .dashboard__rdv-heure {
       font-size: vars.$fontSize-sm;
       font-weight: vars.$fontWeight-bold;

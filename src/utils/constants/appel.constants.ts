@@ -103,13 +103,6 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     icon: '👯',
     color: '#64748b',
   },
-  {
-    value: 'optout',
-    label: 'Opt-out',
-    description: 'Ne plus jamais contacter',
-    icon: '⛔',
-    color: '#ef4444',
-  },
 ];
 
 /**

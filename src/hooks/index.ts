@@ -5,6 +5,7 @@ export { useCampaign } from './useCampaign';
 export { useCart } from './useCart';
 export { useApp } from './useApp';
 export { useToast } from './useToast';
+export { useAlert } from './useAlert';
 export { useDialer } from './useDialer';
 export { useAgentCalendar } from './useAgentCalendar';
 export { useDashboardData } from './useDashboardData';

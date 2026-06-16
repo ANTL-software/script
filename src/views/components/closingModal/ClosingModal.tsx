@@ -42,11 +42,11 @@ export default function ClosingModal({
     handleSubmit,
   } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete });
 
-  const [showConfirm, setShowConfirm] = useState<'doublon' | 'optout' | null>(null);
+  const [showConfirm, setShowConfirm] = useState<'doublon' | null>(null);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedStatut === 'doublon' || selectedStatut === 'optout') {
+    if (selectedStatut === 'doublon') {
       setShowConfirm(selectedStatut);
     } else {
       handleSubmit(e);
@@ -169,6 +169,7 @@ export default function ClosingModal({
                 <AgentCalendar
                   prospectId={prospectId}
                   prospectName={prospectName}
+                  selectedCallStatus={selectedStatut}
                 />
               </div>
 
@@ -187,14 +188,10 @@ export default function ClosingModal({
 
       <ConfirmModal
         isOpen={showConfirm !== null}
-        type={showConfirm === 'optout' ? 'danger' : 'warning'}
-        title={showConfirm === 'doublon' ? 'Signaler un doublon' : 'Opt-out — Ne plus contacter'}
-        message={
-          showConfirm === 'doublon'
-            ? 'Ce prospect sera marqué comme doublon. Cette action est définitive. Continuer ?'
-            : 'Ce prospect ne sera plus jamais contacté. Cette action est définitive et irréversible. Continuer ?'
-        }
-        confirmText={showConfirm === 'doublon' ? 'Signaler doublon' : 'Confirmer opt-out'}
+        type="warning"
+        title="Signaler un doublon"
+        message="Ce prospect sera marqué comme doublon. Cette action est définitive. Continuer ?"
+        confirmText="Signaler doublon"
         isLoading={isSubmitting}
         onConfirm={handleConfirmAction}
         onCancel={() => setShowConfirm(null)}

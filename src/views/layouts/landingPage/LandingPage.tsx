@@ -15,11 +15,13 @@ import CatalogueProduits from '../../components/catalogueProduits/CatalogueProdu
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import { useEffect } from 'react';
+import { useAlert } from '../../../hooks';
 
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { fullName: prospectFullName } = useProspect();
+  const { showWarning } = useAlert();
 
   // Mode test : détecter le paramètre ?test=true
   const isTestMode = searchParams.get('test') === 'true';
@@ -47,6 +49,24 @@ export default function LandingPage() {
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [searchParams, currentProspect, currentCampaign]);
+
+  useEffect(() => {
+    const isAutoReminder = searchParams.get('autoReminder') === '1';
+    const isRappelSource = searchParams.get('source') === 'rappel';
+
+    if (!isAutoReminder || !isRappelSource || !currentProspect) {
+      return;
+    }
+
+    showWarning(
+      'Cette fiche correspond à un rendez-vous programmé. L’appel ne se lance pas automatiquement. Choisissez le numéro principal ou le numéro de contact pour démarrer l’appel.',
+      'Rendez-vous à rappeler',
+      12000
+    ).catch(() => {});
+
+    const nextUrl = `${window.location.pathname}?source=rappel&rdvId=${searchParams.get('rdvId') ?? ''}`;
+    window.history.replaceState({}, '', nextUrl);
+  }, [currentProspect, searchParams, showWarning]);
 
   if (isLoading) {
     return (

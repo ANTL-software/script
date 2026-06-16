@@ -774,7 +774,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           }
 
           setProchainProspect(candidate);
+          setCurrentAppelId(null);
           setCurrentIdProspection(candidate.id_prospection ?? null);
+          setCurrentOrigineAppel(null);
+          setCurrentRendezVousSourceId(null);
           return true;
         } catch (err) {
           console.warn('[DIALER] Erreur lors de la récupération du prospect ou file vide', err);
@@ -964,10 +967,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   // Clear prochain prospect
   const clearProchainProspect = useCallback(() => {
     setProchainProspect(null);
-    setCurrentAppelId(null);
-    setCurrentIdProspection(null);
-    setCurrentOrigineAppel(null);
-    setCurrentRendezVousSourceId(null);
     isClosingRef.current = false;
   }, []);
 

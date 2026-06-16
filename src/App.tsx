@@ -2,7 +2,7 @@ import './utils/styles/global.scss'
 
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
 
-import { getSalutation } from "./utils/scripts/utils";
+import { getGreetingName, getSalutation } from "./utils/scripts/utils";
 import { useUser, useApp, useForceClosing } from './hooks';
 import { closingService } from './API/services';
 import ClosingModal from './views/components/closingModal/ClosingModal';
@@ -24,7 +24,7 @@ function AppRouter() {
   const navigate = useNavigate();
 
   const props = {
-    pageTitle: getSalutation(user?.prenom),
+    pageTitle: getSalutation(getGreetingName(user?.prenom, user?.id_employe)),
   }
 
   const showHeader = currentView !== 'commande' && currentView !== 'rendez-vous';

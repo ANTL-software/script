@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
 
+export function getGreetingName(prenom?: string, userId?: number): string | undefined {
+  if (userId === 5) {
+    return 'Anthony McCallister';
+  }
+
+  return prenom;
+}
+
 /**
  * Retourne un message d'accueil contextuel selon l'heure, le jour et le prénom.
  * Les commerciaux ANTL travaillent du lundi au jeudi.

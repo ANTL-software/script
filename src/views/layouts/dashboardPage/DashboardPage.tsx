@@ -29,6 +29,14 @@ function buildRappelUrl(rdv: RendezVous): string | null {
   return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}`;
 }
 
+function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: number | null): string {
+  if (!rendezVousSourceId) {
+    return `/prospect/${idProspect}`;
+  }
+
+  return `/prospect/${idProspect}?source=rappel&rdvId=${rendezVousSourceId}`;
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { prochainProspect, clearProchainProspect, call } = useDialer();
@@ -74,14 +82,23 @@ export default function DashboardPage() {
     }
   }, [showToast]);
 
-  // Quand le contexte dialer reçoit un prospect assigné (de la queue), on ouvre sa fiche et on lance l'appel
-  // IMPORTANT: Cet effet ne se déclenche que pour les appels automatiques (queue), PAS pour les recherches manuelles
+  // Le pot commun déclenche un appel automatiquement.
+  // Les rappels privés remontés par la queue ouvrent seulement la fiche,
+  // pour laisser le commercial choisir le numéro comme sur un rappel manuel.
   useEffect(() => {
     if (!prochainProspect) return;
-    const { id_prospect, telephone, id_campagne_assignee } = prochainProspect;
+    const {
+      id_prospect,
+      telephone,
+      id_campagne_assignee,
+      distribution_mode,
+      id_rendez_vous_source
+    } = prochainProspect;
     clearProchainProspect();
-    // PAS de paramètre ?source=manual ici, c'est un appel automatique de la queue
-    navigate(`/prospect/${id_prospect}`);
+    navigate(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source));
+    if (distribution_mode === 'rappel') {
+      return;
+    }
     call(telephone, id_campagne_assignee ?? undefined, id_prospect);
   }, [prochainProspect, clearProchainProspect, navigate, call]);
 

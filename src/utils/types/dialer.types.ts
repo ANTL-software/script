@@ -31,4 +31,6 @@ export interface ProspectAssigne {
   id_prospection?: number;
   nb_tentatives?: number;
   autoriser_mobile?: boolean;
+  distribution_mode?: 'auto' | 'rappel';
+  id_rendez_vous_source?: number | null;
 }

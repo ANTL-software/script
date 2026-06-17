@@ -191,10 +191,11 @@
 
   &__statut-option {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 0.15rem;
-    padding: 0.35rem 0.25rem;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.5rem;
     background: vars.$colorWhite;
     border: 2px solid vars.$colorGray200;
     border-radius: vars.$radius-md;

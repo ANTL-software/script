@@ -35,7 +35,7 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   const left = x + 228 > window.innerWidth ? x - 228 - 8 : x + 12;
   const top  = y + 8;
 
-  const isCommande = (resource.motif && resource.motif.trim() === 'Commande à établir') || (resource.prospect?.statut === 'rappel');
+  const isCommande = resource.motif && resource.motif.trim() === 'Commande à établir';
   const headerColor = isOtherAgent
     ? '#d97706'
     : (isCommande ? '#E95420' : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie));

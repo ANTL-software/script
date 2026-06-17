@@ -5,7 +5,7 @@ export type StatutAppel =
   | 'en_cours'
   | 'abouti'
   | 'non_abouti'
-  | 'messagerie'
+  | 'rendez_vous_pris'
   | 'rdv_pris'
   | 'vente_conclue'
   | 'refus_definitif'
@@ -16,7 +16,9 @@ export type StatutAppel =
   | 'pas_disponible'
   | 'fax'
   | 'doublon'
-  | 'optout';
+  | 'optout'
+  | 'repondeur'
+  | 'relance';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
 

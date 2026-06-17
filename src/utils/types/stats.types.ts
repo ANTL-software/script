@@ -20,6 +20,7 @@ export interface StatsDuJour {
   appels_aboutis: number;
   ventes: number;
   rdv_pris: number;
+  rendez_vous_pris: number;
   taux_conversion: number;
   ventes_jour_montant: number;
   ventes_mois_count: number;

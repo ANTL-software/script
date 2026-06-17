@@ -196,7 +196,7 @@ export default function DashboardPage() {
             <ul className="dashboard__rdv-list">
               {rdvDuJour.map(rdv => {
                 const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
-                const isCommande = (rdv.motif && rdv.motif.trim() === 'Commande à établir') || (rdv.prospect?.statut === 'rappel');
+                const isCommande = rdv.motif && rdv.motif.trim() === 'Commande à établir';
                 return (
                   <li
                     key={rdv.id_rendez_vous}
@@ -267,6 +267,10 @@ export default function DashboardPage() {
             <div className="dashboard__stat">
               <span className="dashboard__stat-value">{stats.rdv_pris}</span>
               <span className="dashboard__stat-label">Cmd à établir</span>
+            </div>
+            <div className="dashboard__stat">
+              <span className="dashboard__stat-value">{stats.rendez_vous_pris}</span>
+              <span className="dashboard__stat-label">Rdv pris</span>
             </div>
             <div className="dashboard__stat">
               <span className="dashboard__stat-value">{stats.taux_conversion}%</span>

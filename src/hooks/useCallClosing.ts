@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useUser, useToast, useDialer } from './index';
-import { appelService, closingService, dialerService } from '../API/services';
+import { appelService, closingService, dialerService, rendezVousService } from '../API/services';
 import type { StatutAppel } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 
@@ -41,6 +41,24 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
 
     setIsSubmitting(true);
 
+    if (selectedStatut === 'rdv_pris' || selectedStatut === 'rendez_vous_pris') {
+      try {
+        const rdvs = await rendezVousService.getRendezVousByProspect(prospectId);
+        const activeRdvs = rdvs.filter(r => r.statut === 'planifie' || r.statut === 'reporte');
+        if (activeRdvs.length === 0) {
+          showToast('warning', 'Veuillez planifier un rendez-vous dans le calendrier avant de valider.');
+          setError('Planification de rendez-vous obligatoire pour ce statut.');
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err) {
+        console.error("Erreur lors de la validation du rendez-vous:", err);
+        setError("Impossible de vérifier la planification du rendez-vous.");
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     try {
       const resolvedAppelId = currentAppelId ?? appelId ?? null;
       const resolvedOrigineAppel = currentOrigineAppel ?? origineAppel ?? 'manuel';
@@ -49,7 +67,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
       if (resolvedAppelId) {
         // Appel SIP : terminer l'appel existant avec le statut final
         const finalDuration = dureeAppel ?? callDuration;
-        const abouti = ['vente_conclue', 'rdv_pris', 'abouti', 'refus_definitif', 'doublon', 'optout'].includes(selectedStatut);
+        const abouti = ['vente_conclue', 'rdv_pris', 'rendez_vous_pris', 'abouti', 'refus_definitif', 'doublon', 'optout', 'relance'].includes(selectedStatut);
         await appelService.terminerAppel(resolvedAppelId, {
           statut_appel: selectedStatut,
           notes: notes.trim() || undefined,

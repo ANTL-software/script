@@ -48,7 +48,7 @@ function eventStyleGetter(event: CalendarEvent) {
     };
   }
 
-  const isCommande = (motif && motif.trim() === 'Commande à établir') || (event.resource.prospect?.statut === 'rappel');
+  const isCommande = motif && motif.trim() === 'Commande à établir';
   const color = isCommande ? '#E95420' : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie);
 
   if (eventType === 'mine-prospect') {
@@ -351,7 +351,7 @@ export default function AgentCalendar({
           isReadOnly={isReadOnly}
           onCreate={handleCreateRendezVous}
           onUpdate={handleUpdateRendezVous}
-          defaultMotif={selectedCallStatus === 'rdv_pris' ? 'Commande à établir' : undefined}
+          defaultMotif={selectedCallStatus === 'rdv_pris' ? 'Commande à établir' : (selectedCallStatus === 'rendez_vous_pris' ? 'Rendez-vous' : undefined)}
           onRequestDelete={() => {
             if (selectedRendezVous) {
               const tempEvent: CalendarEvent = {

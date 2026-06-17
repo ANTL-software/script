@@ -78,7 +78,8 @@ test('getErrorMessage extrait un message fiable', () => {
 
 test('les helpers de statut d’appel renvoient les classes et labels attendus', () => {
   assert.equal(getStatutAppelClass('vente_conclue'), 'appel-card__statut--success');
-  assert.equal(getStatutAppelClass('messagerie'), 'appel-card__statut--warning');
+  assert.equal(getStatutAppelClass('rendez_vous_pris'), 'appel-card__statut--success');
+  assert.equal(getStatutAppelClass('repondeur'), 'appel-card__statut--warning');
   assert.equal(getStatutAppelClass('optout'), 'appel-card__statut--danger');
   assert.equal(getStatutAppelClass('inconnu'), '');
 

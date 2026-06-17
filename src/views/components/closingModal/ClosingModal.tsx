@@ -138,7 +138,6 @@ export default function ClosingModal({
                       >
                         <span className="closing-modal__statut-icon">{option.icon}</span>
                         <span className="closing-modal__statut-label">{option.label}</span>
-                        <span className="closing-modal__statut-description">{option.description}</span>
                       </button>
                     ))}
                   </div>

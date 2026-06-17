@@ -20,9 +20,23 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     color: '#22c55e',
   },
   {
+    value: 'relance',
+    label: 'Relance',
+    description: 'Relance post vente',
+    icon: '🔄',
+    color: '#10b981',
+  },
+  {
     value: 'rdv_pris',
     label: 'Commande à établir',
     description: 'Un rappel a ete planifie',
+    icon: '📅',
+    color: '#3b82f6',
+  },
+  {
+    value: 'rendez_vous_pris',
+    label: 'Rendez-vous pris',
+    description: 'Un rendez-vous a été pris',
     icon: '📅',
     color: '#3b82f6',
   },
@@ -34,18 +48,18 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     color: '#8b5cf6',
   },
   {
-    value: 'refus_definitif',
-    label: 'Refus definitif',
-    description: 'Le prospect n\'est pas interesse',
-    icon: '🚫',
-    color: '#ef4444',
+    value: 'pas_disponible',
+    label: 'Pas disponible',
+    description: 'Le prospect n\'est pas disponible',
+    icon: '📅',
+    color: '#be185d',
   },
   {
-    value: 'messagerie',
-    label: 'Messagerie',
-    description: 'Message laisse sur repondeur',
-    icon: '📧',
-    color: '#6b7280',
+    value: 'repondeur',
+    label: 'Répondeur',
+    description: 'Répondeur détecté',
+    icon: '📟',
+    color: '#e11d48',
   },
   {
     value: 'non_abouti',
@@ -53,6 +67,13 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     description: 'Barrage secrétaire',
     icon: '❌',
     color: '#dc2626',
+  },
+  {
+    value: 'refus_definitif',
+    label: 'Refus definitif',
+    description: 'Le prospect n\'est pas interesse',
+    icon: '🚫',
+    color: '#ef4444',
   },
   {
     value: 'siege',
@@ -83,13 +104,6 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     color: '#8b5cf6',
   },
   {
-    value: 'pas_disponible',
-    label: 'Pas disponible',
-    description: 'Le prospect n\'est pas disponible',
-    icon: '📅',
-    color: '#be185d',
-  },
-  {
     value: 'fax',
     label: 'Fax',
     description: 'Numéro de fax détecté',
@@ -114,7 +128,7 @@ export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
   rdv_pris: '#3b82f6',
   abouti: '#8b5cf6',
   refus_definitif: '#ef4444',
-  messagerie: '#6b7280',
+  rendez_vous_pris: '#3b82f6',
   non_abouti: '#dc2626',
   siege: '#64748b',
   faillite: '#991b1b',
@@ -124,6 +138,8 @@ export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
   fax: '#64748b',
   doublon: '#64748b',
   optout: '#ef4444',
+  repondeur: '#e11d48',
+  relance: '#10b981',
 };
 
 /**

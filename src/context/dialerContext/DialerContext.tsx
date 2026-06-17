@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights } from '../../utils/types';
 
 export interface IncomingCall {
   from: string;
@@ -22,6 +22,7 @@ export interface DialerContextType {
   currentIdProspection: number | null;
   currentOrigineAppel: OrigineAppel | null;
   currentRendezVousSourceId: number | null;
+  currentCallInsights: ActiveCallInsights;
   lastSentDigits: string;
   remoteAudioRef: React.RefObject<HTMLAudioElement | null>;
   changerStatut: (statut: StatutDialer, raison?: RaisonPause) => Promise<void>;

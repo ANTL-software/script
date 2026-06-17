@@ -40,7 +40,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
     const parsed = Number.parseInt(raw, 10);
     return Number.isNaN(parsed) ? undefined : parsed;
   })();
-  const isCalling = statut === 'en_appel' || statut === 'appel_sortant';
+  const isCalling = statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer';
 
   const handleCallFromManual = async (phoneNumber: string) => {
     if (!currentProspect) return;
@@ -56,7 +56,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
 
   // Toujours afficher le bouton de raccrochage (activé uniquement si en appel)
   const showHangupButton = true;
-  const canHangup = statut === 'en_appel' || statut === 'appel_sortant';
+  const canHangup = statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer';
 
   if (!currentProspect) {
     return null;

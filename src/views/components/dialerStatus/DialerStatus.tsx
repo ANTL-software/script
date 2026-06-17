@@ -7,6 +7,8 @@ import { formatTimerDuration } from '../../../utils/scripts/formatters';
 const LABELS_STATUT: Record<StatutDialer, string> = {
   disponible: 'Disponible',
   en_appel: 'En appel',
+  qualification_en_cours: 'Qualification en cours',
+  svi_a_naviguer: 'SVI à naviguer',
   appel_sortant: 'Appel sortant',
   pause_apres_appel: 'Pause après appel',
   pause: 'En pause',
@@ -24,7 +26,7 @@ const LABELS_PAUSE: Record<RaisonPause, string> = {
 const RAISONS_PAUSE: RaisonPause[] = ['repas', 'personnelle', 'legale', 'brief', 'technique'];
 
 export default function DialerStatus() {
-  const { statut, raisonPause, depuisLe, isLoading, changerStatut } = useDialer();
+  const { statut, raisonPause, depuisLe, isLoading, changerStatut, currentCallInsights } = useDialer();
   const [isOpen, setIsOpen] = useState(false);
   const [duree, setDuree] = useState('00:00');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -64,23 +66,49 @@ export default function DialerStatus() {
     ? LABELS_PAUSE[raisonPause]
     : LABELS_STATUT[statut];
 
+  const insightLabel = (() => {
+    if (currentCallInsights.endedBySystem) {
+      switch (currentCallInsights.classification) {
+        case 'messagerie_detectee':
+          return 'Coupure système: messagerie détectée';
+        case 'fax_detecte':
+          return 'Coupure système: fax détecté';
+        default:
+          return 'Appel clôturé automatiquement';
+      }
+    }
+
+    switch (currentCallInsights.classification) {
+      case 'unknown_a_traiter':
+        return 'Décroché inconnu: surveiller le résultat';
+      case 'svi_detecte':
+        return 'Standard détecté: navigation DTMF possible';
+      default:
+        return null;
+    }
+  })();
+
   return (
     <div className={`dialer-status dialer-status--${statut}`} ref={dropdownRef}>
       <button
         className="dialer-status__trigger"
         onClick={() => setIsOpen((o) => !o)}
-        disabled={isLoading || statut === 'en_appel'}
+        disabled={isLoading || statut === 'en_appel' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer'}
         aria-expanded={isOpen}
       >
         <span className="dialer-status__dot" />
         <span className="dialer-status__label">{labelActuel}</span>
-        {(statut === 'pause' || statut === 'pause_apres_appel' || statut === 'en_appel' || statut === 'appel_sortant') && (
+        {(statut === 'pause' || statut === 'pause_apres_appel' || statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer') && (
           <span className="dialer-status__timer">{duree}</span>
         )}
-        {statut !== 'en_appel' && (
+        {statut !== 'en_appel' && statut !== 'qualification_en_cours' && statut !== 'svi_a_naviguer' && (
           <span className={`dialer-status__arrow ${isOpen ? 'dialer-status__arrow--open' : ''}`}>▾</span>
         )}
       </button>
+
+      {insightLabel && (
+        <p className="dialer-status__insight">{insightLabel}</p>
+      )}
 
       {isOpen && (
         <div className="dialer-status__dropdown">

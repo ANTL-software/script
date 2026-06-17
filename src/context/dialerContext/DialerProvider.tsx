@@ -552,7 +552,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             id_campagne: campagneId,
             statut_appel: 'en_cours',
             origine_appel: 'auto',
-            id_prospection: prochainProspect?.id_prospection,
+            id_prospection: prochainProspect?.id_prospection ?? currentIdProspection ?? undefined,
           });
           setCurrentAppelId(appel.id_appel);
           setCurrentRendezVousSourceId(null);

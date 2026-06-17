@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
-import { useCart, useProspect, useCampaign, useUser } from './index';
+import { useCart, useProspect, useCampaign, useUser, useDialer } from './index';
 import type { ModePaiement, DelaisLivraison } from '../utils/types';
 import { closingService } from '../API/services';
 import { validateOrderForm, buildVentePayload } from '../utils/scripts/orderValidation';
@@ -37,6 +37,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   const { currentProspect, createVente, updateProspect } = useProspect();
   const { currentCampaign } = useCampaign();
   const { user } = useUser();
+  const { currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration } = useDialer();
 
   const [formData, setFormData] = useState<FormData>({
     adresse_facturation: currentProspect?.adresse_facturation || '',
@@ -226,6 +227,10 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         prospectId: currentProspect.id_prospect,
         prospectName,
         campagneId: currentCampaign.id_campagne,
+        appelId: currentAppelId ?? undefined,
+        origineAppel: currentOrigineAppel ?? undefined,
+        rendezVousSourceId: currentRendezVousSourceId ?? undefined,
+        dureeAppel: callDuration,
       });
 
       clearCart();

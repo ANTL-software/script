@@ -6,7 +6,7 @@ import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService, twilioService } from '../../API/services';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel } from '../../utils/types';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { useToast } from '../../hooks';
 
@@ -38,6 +38,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [currentIdProspection, setCurrentIdProspection] = useState<number | null>(null);
   const [currentOrigineAppel, setCurrentOrigineAppel] = useState<OrigineAppel | null>(null);
   const [currentRendezVousSourceId, setCurrentRendezVousSourceId] = useState<number | null>(null);
+  const [currentCallInsights, setCurrentCallInsights] = useState<ActiveCallInsights>({
+    answeredBy: null,
+    classification: null,
+    amdStatus: null,
+    sviDetecte: false,
+    bridgedToAgentAt: null,
+    endedBySystem: false,
+    endReason: null
+  });
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const dtmfResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -55,9 +64,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const isForceLogoutInProgressRef = useRef<boolean>(false);
 
   const currentAppelIdRef = useRef<number | null>(null);
+  const currentOrigineAppelRef = useRef<OrigineAppel | null>(null);
   useEffect(() => {
     currentAppelIdRef.current = currentAppelId;
   }, [currentAppelId]);
+  useEffect(() => {
+    currentOrigineAppelRef.current = currentOrigineAppel;
+  }, [currentOrigineAppel]);
 
   // Formatage de la durée d'appel en MM:SS
   const callDurationFormatted = useMemo(() => {
@@ -103,6 +116,16 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       clearTimeout(dtmfResetTimeoutRef.current);
       dtmfResetTimeoutRef.current = null;
     }
+
+    setCurrentCallInsights({
+      answeredBy: null,
+      classification: null,
+      amdStatus: null,
+      sviDetecte: false,
+      bridgedToAgentAt: null,
+      endedBySystem: false,
+      endReason: null
+    });
   }, []);
 
   const registerActiveCall = useCallback((call: Call) => {
@@ -320,46 +343,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         showToast('info', `Appel entrant de: ${call.parameters.From}`, 10000);
       });
 
-      device.on('callConnected', (call: Call) => {
-        console.groupCollapsed('✅ [TWILIO] Appel connecté');
-        console.log('Call SID:', call.parameters.CallSid);
-        registerActiveCall(call);
-        
-        const callSid = call.parameters.CallSid;
-        const activeAppelId = currentAppelIdRef.current;
-        
-        if (activeAppelId && callSid) {
-          console.log(`[TWILIO] Association du CallSid ${callSid} à l'appel #${activeAppelId}`);
-          appelService.updateCallSid(activeAppelId, callSid).catch((err) => {
-            console.error('❌ [TWILIO] Échec de l\'association du CallSid:', err);
-          });
-        }
-
-        isCallActiveRef.current = true;
-        setIsCallConnected(true);
-        startCallTimer();
-        setStatut('en_appel');
-        setDepuisLe(new Date());
-        console.groupEnd();
-        showToast('success', 'Appel établi', 3000);
-      });
-
-      device.on('callEnded', (call: Call) => {
-        console.groupCollapsed('📞 [TWILIO] Appel terminé');
-        console.log('Call SID:', call.parameters.CallSid);
-        stopCallTimer();
-        isCallActiveRef.current = false;
-        setStatut('pause_apres_appel');
-        setDepuisLe(new Date());
-        setIncomingCall(null);
-        clearActiveCall();
-
-        // Synchro backend
-        dialerService.changerStatut('pause_apres_appel').catch(() => {});
-        console.groupEnd();
-        showToast('info', 'Appel terminé', 3000);
-      });
-
       device.on('cancel', (call: Call) => {
         console.log('⚠️ [TWILIO] Appel annulé:', call.parameters.CallSid);
         setIncomingCall((prev) => (prev?.from === call.parameters.From ? null : prev));
@@ -531,7 +514,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     phoneNumber: string,
     campagneId?: number,
     prospectId?: number,
-    options?: { skipCreateAppel?: boolean; dbAppelId?: number }
+    options?: { skipCreateAppel?: boolean; dbAppelId?: number; origin?: OrigineAppel }
   ) => {
     console.groupCollapsed(`📞 [APPEL] ${phoneNumber}`);
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
@@ -556,10 +539,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       isCallActiveRef.current = true;
 
       let resolvedAppelId = options?.dbAppelId || null;
+      let effectiveOrigin: OrigineAppel = options?.origin || 'auto';
 
       // Créer l'appel en DB
       if (campagneId && prospectId && !options?.skipCreateAppel) {
         setCurrentOrigineAppel('auto');
+        currentOrigineAppelRef.current = 'auto';
+        effectiveOrigin = 'auto';
         try {
           const appel = await appelService.createAppel({
             id_prospect: prospectId,
@@ -594,9 +580,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       registerActiveCall(call);
       isCallActiveRef.current = true;
       setIsCallConnected(false);
-      setStatut('en_appel');
+      setStatut(effectiveOrigin === 'auto' ? 'qualification_en_cours' : 'appel_sortant');
       setDepuisLe(new Date());
-      startCallTimer();
 
       // Associer le CallSid dès qu'il est disponible (sur l'événement ringing ou accept du call)
       const associerCallSid = () => {
@@ -619,6 +604,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       call.on('accept', () => {
         associerCallSid();
         setIsCallConnected(true);
+        if (effectiveOrigin === 'manuel' || effectiveOrigin === 'rappel' || options?.skipCreateAppel) {
+          setStatut('en_appel');
+          if (!timerRef.current) {
+            startCallTimer();
+          }
+        }
       });
 
       // IMPORTANT: Écouter les événements de fin d'appel sur le call lui-même
@@ -642,6 +633,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         dialerService.changerStatut('pause_apres_appel').catch((err) => {
           console.error('❌ [TWILIO] Erreur changement statut:', err);
         });
+        dialerService.endSession().catch((err) => {
+          console.error('❌ [TWILIO] Erreur endSession après disconnect:', err);
+        });
 
         console.groupEnd();
         showToast('info', 'Appel terminé', 3000);
@@ -650,11 +644,31 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       // Écouter aussi les autres événements du call pour robustesse
       call.on('reject', () => {
         console.log('⚠️ [TWILIO] Appel rejeté');
+        stopCallTimer();
+        isCallActiveRef.current = false;
+        setStatut('pause_apres_appel');
+        setDepuisLe(new Date());
+        dialerService.changerStatut('pause_apres_appel').catch((err) => {
+          console.error('❌ [TWILIO] Erreur changement statut après reject:', err);
+        });
+        dialerService.endSession().catch((err) => {
+          console.error('❌ [TWILIO] Erreur endSession après reject:', err);
+        });
         clearActiveCall();
       });
 
       call.on('cancel', () => {
         console.log('⚠️ [TWILIO] Appel annulé');
+        stopCallTimer();
+        isCallActiveRef.current = false;
+        setStatut('pause_apres_appel');
+        setDepuisLe(new Date());
+        dialerService.changerStatut('pause_apres_appel').catch((err) => {
+          console.error('❌ [TWILIO] Erreur changement statut après cancel:', err);
+        });
+        dialerService.endSession().catch((err) => {
+          console.error('❌ [TWILIO] Erreur endSession après cancel:', err);
+        });
         clearActiveCall();
       });
 
@@ -754,9 +768,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, []);
 
   const requestNextProspect = useCallback(async (options?: { showEmptyToast?: boolean }) => {
-    if (isFetchingNextProspectRef.current || isCallActiveRef.current || prochainProspect) {
-      return false;
-    }
+      if (isFetchingNextProspectRef.current || isCallActiveRef.current || prochainProspect) {
+        return false;
+      }
 
     isFetchingNextProspectRef.current = true;
     try {
@@ -778,6 +792,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           setCurrentIdProspection(candidate.id_prospection ?? null);
           setCurrentOrigineAppel(null);
           setCurrentRendezVousSourceId(null);
+          setCurrentCallInsights({
+            answeredBy: null,
+            classification: null,
+            amdStatus: null,
+            sviDetecte: false,
+            bridgedToAgentAt: null,
+            endedBySystem: false,
+            endReason: null
+          });
           return true;
         } catch (err) {
           console.warn('[DIALER] Erreur lors de la récupération du prospect ou file vide', err);
@@ -876,10 +899,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentCampagneId(campagneId);
       setCurrentIdProspection(null);
       setCurrentOrigineAppel(origin);
+      currentOrigineAppelRef.current = origin;
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       if (formattedNumber) {
-        await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel });
+        await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel, origin });
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
@@ -945,10 +969,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentCampagneId(targetCampagneId);
       setCurrentIdProspection(null);
       setCurrentOrigineAppel(rendezVousSourceId ? 'rappel' : 'manuel');
+      currentOrigineAppelRef.current = rendezVousSourceId ? 'rappel' : 'manuel';
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       // Lancer l'appel Twilio avec le numéro formaté
-      await call(formattedNumber, targetCampagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel });
+      await call(formattedNumber, targetCampagneId, prospectId, {
+        skipCreateAppel: true,
+        dbAppelId: appel.id_appel,
+        origin: rendezVousSourceId ? 'rappel' : 'manuel'
+      });
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
     } catch (err) {
@@ -970,6 +999,73 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     isClosingRef.current = false;
   }, []);
 
+  useEffect(() => {
+    if (!currentAppelId || !hasActiveTwilioCall) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const applyClassification = (classification: CallClassification | null, insights: ActiveCallInsights) => {
+      if (classification === 'humain_detecte') {
+        setStatut('en_appel');
+        if (!timerRef.current) {
+          startCallTimer();
+        }
+        return;
+      }
+
+      if (classification === 'svi_detecte') {
+        setStatut('svi_a_naviguer');
+        return;
+      }
+
+      if (classification === 'qualification_en_cours' || classification === 'unknown_a_traiter') {
+        setStatut('qualification_en_cours');
+        return;
+      }
+
+      if ((classification === 'messagerie_detectee' || classification === 'fax_detecte') && insights.endedBySystem) {
+        stopCallTimer();
+        setStatut('pause_apres_appel');
+      }
+    };
+
+    const pollInsights = async () => {
+      try {
+        const appel = await appelService.getAppelById(currentAppelId);
+        if (cancelled) {
+          return;
+        }
+
+        const nextInsights: ActiveCallInsights = {
+          answeredBy: appel.answered_by ?? null,
+          classification: appel.call_classification ?? null,
+          amdStatus: appel.amd_status ?? null,
+          sviDetecte: Boolean(appel.svi_detecte),
+          bridgedToAgentAt: appel.bridged_to_agent_at ?? null,
+          endedBySystem: Boolean(appel.ended_by_system),
+          endReason: appel.end_reason ?? null
+        };
+
+        setCurrentCallInsights(nextInsights);
+        applyClassification(nextInsights.classification, nextInsights);
+      } catch (error) {
+        console.warn('[DIALER] Impossible de synchroniser les insights AMD', error);
+      }
+    };
+
+    void pollInsights();
+    const intervalId = window.setInterval(() => {
+      void pollInsights();
+    }, 2000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [currentAppelId, hasActiveTwilioCall, startCallTimer, stopCallTimer]);
+
   // Contexte à retourner
   return (
     <DialerContext.Provider value={{
@@ -978,7 +1074,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       depuisLe,
       isLoading,
       sipConnected,
-      canSendDigits: hasActiveTwilioCall && isCallConnected && statut === 'en_appel',
+      canSendDigits: hasActiveTwilioCall && isCallConnected && (statut === 'en_appel' || statut === 'svi_a_naviguer' || currentCallInsights.sviDetecte),
       callDuration,
       callDurationFormatted,
       incomingCall,
@@ -988,6 +1084,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       currentIdProspection,
       currentOrigineAppel,
       currentRendezVousSourceId,
+      currentCallInsights,
       lastSentDigits,
       remoteAudioRef,
       changerStatut,

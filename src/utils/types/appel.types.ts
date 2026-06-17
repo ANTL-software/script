@@ -1,4 +1,5 @@
 import type { Employe } from './user.types';
+import type { AnsweredBy, CallClassification } from './dialer.types';
 
 export type StatutAppel =
   | 'en_cours'
@@ -30,6 +31,16 @@ export interface Appel {
   statut_appel: StatutAppel;
   notes?: string | null;
   abouti: boolean;
+  answered_by?: AnsweredBy | null;
+  amd_mode?: string | null;
+  amd_status?: string | null;
+  amd_completed_at?: string | null;
+  amd_latency_ms?: number | null;
+  call_classification?: CallClassification | null;
+  svi_detecte?: boolean;
+  bridged_to_agent_at?: string | null;
+  ended_by_system?: boolean;
+  end_reason?: string | null;
   created_at: string;
   updated_at: string;
   Employe?: Employe;

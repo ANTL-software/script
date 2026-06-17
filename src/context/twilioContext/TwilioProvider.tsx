@@ -145,51 +145,6 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
         showToast('info', `Appel entrant de: ${call.parameters.From}`, 10000);
       });
 
-      // Quand un call est accepté/connecté
-      const handleCallConnected = (call: Call) => {
-        console.groupCollapsed('✅ [TWILIO] Appel connecté');
-        console.log('Call SID:', call.parameters.CallSid);
-        setActiveCallSid(call.parameters.CallSid);
-        setIsCallActive(true);
-        startCallTimer();
-        console.groupEnd();
-        showToast('success', 'Appel connecté', 3000);
-      };
-
-      // Écouter les événements des calls sortants
-      device.on('callConnecting', (call: Call) => {
-        console.log('🔄 [TWILIO] Call connecting:', call.parameters.CallSid);
-      });
-
-      device.on('callConnected', handleCallConnected);
-
-      device.on('callOpen', (call: Call) => {
-        console.log('📞 [TWILIO] Call open (media established):', call.parameters.CallSid);
-      });
-
-      // Quand un call se termine
-      device.on('callEnded', (call: Call) => {
-        console.groupCollapsed('📞 [TWILIO] Appel terminé');
-        console.log('Call SID:', call.parameters.CallSid);
-        stopCallTimer();
-        setIsCallActive(false);
-        setActiveCallSid(null);
-
-        // Si c'était un appel entrant, le supprimer
-        if (incomingCall?.parameters.CallSid === call.parameters.CallSid) {
-          setIncomingCall(null);
-        }
-        console.groupEnd();
-        showToast('info', 'Appel terminé', 3000);
-      });
-
-      device.on('callDisconnected', (call: Call) => {
-        console.log('⚠️ [TWILIO] Call disconnected:', call.parameters.CallSid);
-        if (incomingCall?.parameters.CallSid === call.parameters.CallSid) {
-          setIncomingCall(null);
-        }
-      });
-
       device.on('cancel', (call: Call) => {
         console.log('⚠️ [TWILIO] Appel annulé:', call.parameters.CallSid);
         if (incomingCall?.parameters.CallSid === call.parameters.CallSid) {

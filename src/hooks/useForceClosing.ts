@@ -36,7 +36,7 @@ export function useForceClosing(): UseForceClosingResult {
   }
 
   // Ne pas afficher de modale pendant un appel actif (statut dialer en cours d'appel)
-  if (statut === 'en_appel' || statut === 'appel_sortant') {
+  if (statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer') {
     return { pendingClosing: null, forceMode: false };
   }
 

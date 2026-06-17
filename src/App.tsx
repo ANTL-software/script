@@ -31,7 +31,6 @@ function AppRouter() {
 
   return (
     <>
-      <audio id="remoteAudio" autoPlay />
       <IncomingCallBanner />
 
       {/* ClosingModal global (mode force si nécessaire) */}

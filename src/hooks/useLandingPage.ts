@@ -23,7 +23,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const wasCallActiveRef = useRef<boolean>(false);
 
   // Détecter si un appel a été actif (sortant ou en cours) pendant la visite de cette fiche
-  if (statut === 'en_appel' || statut === 'appel_sortant') {
+  if (statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer') {
     wasCallActiveRef.current = true;
   }
 

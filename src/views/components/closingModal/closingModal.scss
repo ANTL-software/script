@@ -136,7 +136,7 @@
   }
 
   &__left {
-    width: 340px;
+    width: 380px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -194,8 +194,8 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.5rem;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
     background: vars.$colorWhite;
     border: 2px solid vars.$colorGray200;
     border-radius: vars.$radius-md;
@@ -225,12 +225,12 @@
   }
 
   &__statut-icon {
-    font-size: 0.9rem;
+    font-size: 1.4rem;
     line-height: 1;
   }
 
   &__statut-label {
-    font-size: 0.7rem;
+    font-size: 1rem;
     font-weight: 600;
     color: vars.$colorGray900;
   }

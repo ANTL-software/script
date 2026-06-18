@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import './prospectInfoHeader.scss';
 import { useSearchParams } from 'react-router-dom';
 import { useProspect } from '../../../hooks/useProspect';
@@ -19,10 +20,16 @@ interface ProspectInfoHeaderProps {
 }
 
 export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous, isTestMode = false }: ProspectInfoHeaderProps) {
-  const { currentProspect, fullName, typeFiche } = useProspect();
+  const { currentProspect, fullName, typeFiche, appels, loadAppels } = useProspect();
   const { statut, hangup, callFromManual } = useDialer();
   const { showToast } = useToast();
   const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    if (currentProspect) {
+      loadAppels().catch(() => {});
+    }
+  }, [currentProspect, loadAppels]);
 
   const handleHangup = async () => {
     try {
@@ -58,6 +65,10 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
   const showHangupButton = true;
   const canHangup = statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer';
 
+  // Déterminer si le dernier appel terminé (excluant l'appel en cours) était "Commande à établir" (rdv_pris)
+  const lastFinishedCall = appels.find(call => call.statut_appel !== 'en_cours');
+  const showCommandeBadge = lastFinishedCall?.statut_appel === 'rdv_pris';
+
   if (!currentProspect) {
     return null;
   }
@@ -68,6 +79,11 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
         <div className="prospect-info-header__title">
           <h1>{fullName}</h1>
           <TypeFicheBadge typeFiche={typeFiche} />
+          {showCommandeBadge && (
+            <span className="type-fiche-badge type-fiche-badge--red">
+              Commande à établir
+            </span>
+          )}
           {isTestMode && (
             <span className="test-mode-badge">MODE TEST</span>
           )}

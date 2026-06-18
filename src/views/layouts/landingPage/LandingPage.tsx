@@ -15,7 +15,6 @@ import CatalogueProduits from '../../components/catalogueProduits/CatalogueProdu
 import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import { useEffect } from 'react';
-import { useAlert } from '../../../hooks';
 import { useToast } from '../../../hooks/useToast';
 import { prospectService } from '../../../API/services/Prospect.service';
 
@@ -23,7 +22,6 @@ export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { fullName: prospectFullName } = useProspect();
-  const { showWarning } = useAlert();
   const { showToast, confirm } = useToast();
 
   // Mode test : détecter le paramètre ?test=true
@@ -61,15 +59,12 @@ export default function LandingPage() {
       return;
     }
 
-    showWarning(
-      'Cette fiche correspond à un rendez-vous programmé. L’appel ne se lance pas automatiquement. Choisissez le numéro principal ou le numéro de contact pour démarrer l’appel.',
-      'Rendez-vous à rappeler',
-      12000
-    ).catch(() => {});
+    showToast('info', 'Rappel rendez-vous');
+    setView('historique-appels');
 
     const nextUrl = `${window.location.pathname}?source=rappel&rdvId=${searchParams.get('rdvId') ?? ''}`;
     window.history.replaceState({}, '', nextUrl);
-  }, [currentProspect, searchParams, showWarning]);
+  }, [currentProspect, searchParams, showToast, setView]);
 
   const handleSendCatalogue = async () => {
     if (!currentProspect) {

@@ -41,6 +41,14 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel pour la nouvelle fiche
   }, [currentProspect, clearCart, setView]);
 
+  // Réinitialise la vue et le panier lors de la fermeture/démontage de la fiche prospect
+  useEffect(() => {
+    return () => {
+      setView('qui-est-ce');
+      clearCart();
+    };
+  }, [setView, clearCart]);
+
   // Charge le prospect et la campagne associée à l'appel en cours
   // currentCampagneId vient du DialerContext (renseigné par call())
   useEffect(() => {

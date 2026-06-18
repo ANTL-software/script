@@ -251,3 +251,40 @@ export function formatTimerDuration(depuis: Date): string {
   const s = (secondes % 60).toString().padStart(2, '0');
   return `${m}:${s}`;
 }
+
+/**
+ * Vérifie si un motif de rendez-vous ou son appel source correspond à une commande à établir (rdv_pris).
+ */
+export function checkIsCommande(
+  motif?: string | null,
+  appelsSource?: Array<{ statut_appel: string }> | null,
+  selectedCallStatus?: string | null
+): boolean {
+  // 1. Si on a un appel actif en cours de classification avec statut rdv_pris
+  if (selectedCallStatus === 'rdv_pris') {
+    return true;
+  }
+  if (selectedCallStatus === 'rendez_vous_pris') {
+    return false;
+  }
+
+  // 2. Si on a les appels sources associés en base de données
+  if (appelsSource && appelsSource.length > 0) {
+    return appelsSource.some(call => call.statut_appel === 'rdv_pris');
+  }
+
+  // 3. Fallback de secours sur le motif (casse insensible, mots clés, etc.)
+  if (!motif) return false;
+  const m = motif.toLowerCase().trim();
+  return (
+    m === 'cde' ||
+    m === 'commande à établir' ||
+    m === 'commande a etablir' ||
+    m.includes('commande') ||
+    m.includes('etablir') ||
+    m.includes('établir') ||
+    /\bcde\b/.test(m)
+  );
+}
+
+

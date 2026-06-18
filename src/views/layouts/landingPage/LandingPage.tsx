@@ -92,9 +92,12 @@ export default function LandingPage() {
   };
 
   const handleTarifsClick = async () => {
+    const recipientEmail = currentProspect?.email?.trim();
     const confirmed = await confirm({
       title: 'Envoi du catalogue',
-      message: 'Êtes-vous sûr de vouloir envoyer le catalogue par mail ?',
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer le catalogue par mail à ${recipientEmail} ?`
+        : 'Êtes-vous sûr de vouloir envoyer le catalogue par mail ?',
       type: 'info',
       confirmText: 'Envoyer',
       cancelText: 'Annuler',
@@ -105,9 +108,12 @@ export default function LandingPage() {
   };
 
   const handleAgrementClick = async () => {
+    const recipientEmail = currentProspect?.email?.trim();
     const confirmed = await confirm({
       title: 'Envoi de l\'agrément',
-      message: 'Êtes-vous sûr de vouloir envoyer l\'agrément par mail ?',
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer l\'agrément par mail à ${recipientEmail} ?`
+        : 'Êtes-vous sûr de vouloir envoyer l\'agrément par mail ?',
       type: 'info',
       confirmText: 'Envoyer',
       cancelText: 'Annuler',

@@ -10,7 +10,7 @@ import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
 import { rendezVousService } from '../../../API/services';
 import type { UpdateRendezVousData, CreateRendezVousData } from '../../../utils/types/rendezVous.types';
-import { getErrorMessage, formatHeure } from '../../../utils/scripts/formatters';
+import { getErrorMessage, formatHeure, checkIsCommande } from '../../../utils/scripts/formatters';
 import Loader from '../loader/Loader';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
 import RendezVousDetailsModal from '../rendezVousDetailsModal/RendezVousDetailsModal';
@@ -30,53 +30,7 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-function eventStyleGetter(event: CalendarEvent) {
-  const { statut, motif } = event.resource;
-  const { eventType } = event;
-
-  if (eventType === 'other-agent-prospect') {
-    return {
-      style: {
-        backgroundColor: '#d97706',
-        borderRadius: '0.375rem',
-        border: 'none',
-        color: 'white',
-        opacity: 0.9,
-        fontStyle: 'italic',
-      },
-      className: 'event event--other-agent',
-    };
-  }
-
-  const isCommande = motif && motif.trim() === 'Commande à établir';
-  const color = isCommande ? '#E95420' : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie);
-
-  if (eventType === 'mine-prospect') {
-    return {
-      style: {
-        backgroundColor: color,
-        borderRadius: '0.375rem',
-        border: 'none',
-        boxShadow: `inset 0 0 0 2px white, 0 0 0 2px ${color}`,
-        color: 'white',
-        fontWeight: 600,
-      },
-      className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}`,
-    };
-  }
-
-  return {
-    style: {
-      backgroundColor: color,
-      borderRadius: '0.375rem',
-      border: 'none',
-      color: 'white',
-      opacity: statut === 'annule' ? 0.35 : (isCommande ? 0.9 : 0.65),
-      fontWeight: (statut === 'planifie' || isCommande) ? 600 : 400,
-    },
-    className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}`,
-  };
-}
+// eventStyleGetter is now declared inside the component using useCallback
 
 interface AgentCalendarProps {
   prospectId?: number;
@@ -123,6 +77,54 @@ export default function AgentCalendar({
   }, [today]);
 
   const handleViewChange = useCallback((view: View) => setCurrentView(view), []);
+
+  const eventStyleGetter = useCallback((event: CalendarEvent) => {
+    const { statut, motif, appelsSource } = event.resource;
+    const { eventType } = event;
+
+    if (eventType === 'other-agent-prospect') {
+      return {
+        style: {
+          backgroundColor: '#d97706',
+          borderRadius: '0.375rem',
+          border: 'none',
+          color: 'white',
+          opacity: 0.9,
+          fontStyle: 'italic',
+        },
+        className: 'event event--other-agent',
+      };
+    }
+
+    const isCommande = checkIsCommande(motif, appelsSource, selectedCallStatus);
+    const color = isCommande ? '#E95420' : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie);
+
+    if (eventType === 'mine-prospect') {
+      return {
+        style: {
+          backgroundColor: color,
+          borderRadius: '0.375rem',
+          border: 'none',
+          boxShadow: `inset 0 0 0 2px white, 0 0 0 2px ${color}`,
+          color: 'white',
+          fontWeight: 600,
+        },
+        className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}`,
+      };
+    }
+
+    return {
+      style: {
+        backgroundColor: color,
+        borderRadius: '0.375rem',
+        border: 'none',
+        color: 'white',
+        opacity: statut === 'annule' ? 0.35 : (isCommande ? 0.9 : 0.65),
+        fontWeight: (statut === 'planifie' || isCommande) ? 600 : 400,
+      },
+      className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}`,
+    };
+  }, [selectedCallStatus]);
 
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
     setSelectedRendezVous(event.resource);

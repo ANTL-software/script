@@ -1,7 +1,7 @@
 import './calendarTooltip.scss';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { formatProspectName } from '../../../utils/scripts/formatters';
+import { formatProspectName, checkIsCommande } from '../../../utils/scripts/formatters';
 import type { CalendarEvent } from '../../../utils/types';
 
 interface CalendarTooltipProps {
@@ -35,7 +35,7 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   const left = x + 228 > window.innerWidth ? x - 228 - 8 : x + 12;
   const top  = y + 8;
 
-  const isCommande = resource.motif && resource.motif.trim() === 'Commande à établir';
+  const isCommande = checkIsCommande(resource.motif, resource.appelsSource);
   const headerColor = isOtherAgent
     ? '#d97706'
     : (isCommande ? '#E95420' : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie));

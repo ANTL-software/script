@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
 import { useDialer } from '../../../hooks';
 import { useToast } from '../../../hooks';
-import { formatEur, formatHeure, formatProspectName } from '../../../utils/scripts/formatters';
+import { formatEur, formatHeure, formatProspectName, checkIsCommande } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
 import SalesGauge from '../../components/salesGauge/SalesGauge';
 import CalendarModal from '../../components/calendarModal/CalendarModal';
@@ -196,7 +196,7 @@ export default function DashboardPage() {
             <ul className="dashboard__rdv-list">
               {rdvDuJour.map(rdv => {
                 const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
-                const isCommande = rdv.motif && rdv.motif.trim() === 'Commande à établir';
+                const isCommande = checkIsCommande(rdv.motif, rdv.appelsSource);
                 return (
                   <li
                     key={rdv.id_rendez_vous}

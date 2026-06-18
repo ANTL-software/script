@@ -19,6 +19,10 @@ export interface RendezVous {
     telephone: string;
     statut?: string;
   };
+  appelsSource?: Array<{
+    id_appel: number;
+    statut_appel: string;
+  }>;
 }
 
 export interface CreateRendezVousData {

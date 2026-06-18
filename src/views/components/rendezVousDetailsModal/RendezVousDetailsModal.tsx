@@ -3,7 +3,7 @@ import { FaTimes, FaCalendarAlt, FaClock, FaUser, FaPhone, FaEdit, FaTrash } fro
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { RendezVous } from '../../../utils/types';
-import { formatProspectName, formatHeure } from '../../../utils/scripts/formatters';
+import { formatProspectName, formatHeure, checkIsCommande } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
 import { useNavigate } from 'react-router-dom';
 
@@ -50,7 +50,7 @@ export default function RendezVousDetailsModal({
       navigate(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}`);
     }
   };
-  const isCommande = rendezVous.motif && rendezVous.motif.trim() === 'Commande à établir';
+  const isCommande = checkIsCommande(rendezVous.motif, rendezVous.appelsSource);
   const statut = rendezVous.statut;
   const statutLabel = isCommande ? 'Commande à établir' : (STATUT_LABELS[statut] ?? statut);
   const statutColor = isCommande ? '#E95420' : (STATUT_COLORS[statut] ?? '#6b7280');

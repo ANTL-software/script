@@ -12,6 +12,7 @@ import {
   getStatutAppelClass,
   getStatutAppelLabel,
   isMobilePhone,
+  checkIsCommande,
 } from '../../src/utils/scripts/formatters.ts';
 
 test('formatDuration formate les minutes et secondes', () => {
@@ -87,3 +88,35 @@ test('les helpers de statut d’appel renvoient les classes et labels attendus',
   assert.equal(getStatutAppelLabel('fax'), 'Fax');
   assert.equal(getStatutAppelLabel('inconnu'), 'inconnu');
 });
+
+test('checkIsCommande détecte les motifs liés à une commande', () => {
+  // Test avec selectedCallStatus
+  assert.equal(checkIsCommande(null, null, 'rdv_pris'), true);
+  assert.equal(checkIsCommande('cde', null, 'rendez_vous_pris'), false); // Le statut de classification explicite l'emporte !
+  assert.equal(checkIsCommande(null, null, 'abouti'), false);
+
+  // Test avec appelsSource
+  assert.equal(checkIsCommande(null, [{ statut_appel: 'rdv_pris' }]), true);
+  assert.equal(checkIsCommande(null, [{ statut_appel: 'rendez_vous_pris' }]), false);
+  assert.equal(checkIsCommande('Rendez-vous', [{ statut_appel: 'rdv_pris' }]), true); // Le statut de l'appel l'emporte sur le motif !
+
+  // Commandes valides (motif fallback)
+  assert.equal(checkIsCommande('Commande à établir'), true);
+  assert.equal(checkIsCommande('commande a etablir'), true);
+  assert.equal(checkIsCommande('cde'), true);
+  assert.equal(checkIsCommande('CDE'), true);
+  assert.equal(checkIsCommande('cde ?'), true);
+  assert.equal(checkIsCommande('peut etre cde'), true);
+  assert.equal(checkIsCommande('relance cde'), true);
+  assert.equal(checkIsCommande('MME POULAIN COMMANDE A FAIRE'), true);
+  
+  // Non commandes (motif fallback)
+  assert.equal(checkIsCommande(null), false);
+  assert.equal(checkIsCommande(undefined), false);
+  assert.equal(checkIsCommande(''), false);
+  assert.equal(checkIsCommande('Rendez-vous'), false);
+  assert.equal(checkIsCommande('abs'), false);
+  assert.equal(checkIsCommande('décider'), false);
+});
+
+

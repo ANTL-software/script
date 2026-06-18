@@ -104,13 +104,6 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
     color: '#8b5cf6',
   },
   {
-    value: 'fax',
-    label: 'Fax',
-    description: 'Numéro de fax détecté',
-    icon: '📠',
-    color: '#64748b',
-  },
-  {
     value: 'doublon',
     label: 'Doublon',
     description: 'Ce prospect est un doublon',

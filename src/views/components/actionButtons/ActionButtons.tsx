@@ -1,9 +1,10 @@
 import './actionButtons.scss';
 import Button from '../button/Button';
-import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt } from 'react-icons/fa';
+import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt, FaTag, FaCertificate } from 'react-icons/fa';
 
 interface ActionButtonsProps {
   currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
+  onTarifs?: () => void;
   onHistoriqueAppels?: () => void;
   onHistoriqueOffres?: () => void;
   onRendezVous?: () => void;
@@ -12,6 +13,7 @@ interface ActionButtonsProps {
 
 export default function ActionButtons({
   currentView,
+  onTarifs,
   onHistoriqueAppels,
   onHistoriqueOffres,
   onRendezVous,
@@ -19,6 +21,23 @@ export default function ActionButtons({
 }: ActionButtonsProps) {
   return (
     <div className="action-buttons">
+      <div className="action-buttons__group action-buttons__group--left">
+        <Button
+          variant="primary"
+          size="small"
+          onClick={onTarifs}
+          type="button"
+        >
+          <FaTag /> Tarifs
+        </Button>
+        <Button
+          variant="primary"
+          size="small"
+          type="button"
+        >
+          <FaCertificate /> Agrément
+        </Button>
+      </div>
       <div className="action-buttons__group action-buttons__group--right">
         <Button
           variant="primary"

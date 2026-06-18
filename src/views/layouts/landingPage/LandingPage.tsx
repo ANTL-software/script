@@ -16,12 +16,15 @@ import Panier from '../../components/panier/Panier';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import { useEffect } from 'react';
 import { useAlert } from '../../../hooks';
+import { useToast } from '../../../hooks/useToast';
+import { prospectService } from '../../../API/services/Prospect.service';
 
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
   const { fullName: prospectFullName } = useProspect();
   const { showWarning } = useAlert();
+  const { showToast } = useToast();
 
   // Mode test : détecter le paramètre ?test=true
   const isTestMode = searchParams.get('test') === 'true';
@@ -68,6 +71,26 @@ export default function LandingPage() {
     window.history.replaceState({}, '', nextUrl);
   }, [currentProspect, searchParams, showWarning]);
 
+  const handleSendCatalogue = async () => {
+    if (!currentProspect) {
+      showToast('error', 'Aucun prospect chargé');
+      return;
+    }
+
+    if (!currentProspect.email) {
+      showToast('warning', 'Le prospect n\'a pas d\'adresse email renseignee');
+      return;
+    }
+
+    try {
+      const result = await prospectService.sendCatalogue(currentProspect.id_prospect);
+      showToast('success', `Catalogue envoyé à ${result.recipientEmail}`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du catalogue';
+      showToast('error', message);
+    }
+  };
+
   if (isLoading) {
     return (
       <main id="landingPage">
@@ -112,6 +135,7 @@ export default function LandingPage() {
 
       <ActionButtons
         currentView={currentView}
+        onTarifs={handleSendCatalogue}
         onHistoriqueAppels={() => setView('historique-appels')}
         onHistoriqueOffres={() => setView('historique-offres')}
         onRendezVous={() => setView('rendez-vous')}

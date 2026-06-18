@@ -4,6 +4,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
   padding: 0.75rem 1.5rem;
   background: white;
   border-bottom: 1px solid #e5e5e7;
@@ -31,6 +33,19 @@
 
     svg {
       font-size: 0.875rem;
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .action-buttons {
+    &__group {
+      width: 100%;
+      flex-wrap: wrap;
+    }
+
+    &__group--right {
+      justify-content: flex-start;
     }
   }
 }

@@ -5,6 +5,7 @@ import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt, FaTag, FaCertific
 interface ActionButtonsProps {
   currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
   onTarifs?: () => void;
+  onAgrement?: () => void;
   onHistoriqueAppels?: () => void;
   onHistoriqueOffres?: () => void;
   onRendezVous?: () => void;
@@ -14,6 +15,7 @@ interface ActionButtonsProps {
 export default function ActionButtons({
   currentView,
   onTarifs,
+  onAgrement,
   onHistoriqueAppels,
   onHistoriqueOffres,
   onRendezVous,
@@ -33,6 +35,7 @@ export default function ActionButtons({
         <Button
           variant="primary"
           size="small"
+          onClick={onAgrement}
           type="button"
         >
           <FaCertificate /> Agrément

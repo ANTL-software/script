@@ -24,7 +24,7 @@ export default function LandingPage() {
   const [searchParams] = useSearchParams();
   const { fullName: prospectFullName } = useProspect();
   const { showWarning } = useAlert();
-  const { showToast } = useToast();
+  const { showToast, confirm } = useToast();
 
   // Mode test : détecter le paramètre ?test=true
   const isTestMode = searchParams.get('test') === 'true';
@@ -91,6 +91,32 @@ export default function LandingPage() {
     }
   };
 
+  const handleTarifsClick = async () => {
+    const confirmed = await confirm({
+      title: 'Envoi du catalogue',
+      message: 'Êtes-vous sûr de vouloir envoyer le catalogue par mail ?',
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (!confirmed) return;
+    await handleSendCatalogue();
+  };
+
+  const handleAgrementClick = async () => {
+    const confirmed = await confirm({
+      title: 'Envoi de l\'agrément',
+      message: 'Êtes-vous sûr de vouloir envoyer l\'agrément par mail ?',
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (!confirmed) return;
+    showToast('warning', 'Aucun document d\'agrément n\'est encore configuré pour cet envoi');
+  };
+
   if (isLoading) {
     return (
       <main id="landingPage">
@@ -135,7 +161,8 @@ export default function LandingPage() {
 
       <ActionButtons
         currentView={currentView}
-        onTarifs={handleSendCatalogue}
+        onTarifs={handleTarifsClick}
+        onAgrement={handleAgrementClick}
         onHistoriqueAppels={() => setView('historique-appels')}
         onHistoriqueOffres={() => setView('historique-offres')}
         onRendezVous={() => setView('rendez-vous')}

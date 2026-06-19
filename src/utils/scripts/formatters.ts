@@ -194,6 +194,8 @@ export function getStatutAppelClass(statut: string): string {
     case 'non_abouti':
     case 'fax':
     case 'repondeur':
+    case 'amd_repondeur_auto':
+    case 'amd_fax_auto':
       return 'appel-card__statut--warning';
     case 'refus_definitif':
     case 'doublon':
@@ -223,6 +225,8 @@ const STATUT_APPEL_LABELS: Record<string, string> = {
   optout: 'Opt-out',
   repondeur: 'Répondeur',
   relance: 'Relance',
+  amd_repondeur_auto: 'Répondeur auto coupé',
+  amd_fax_auto: 'Fax auto coupé',
 };
 
 /**
@@ -286,5 +290,4 @@ export function checkIsCommande(
     /\bcde\b/.test(m)
   );
 }
-
 

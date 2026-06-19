@@ -81,11 +81,13 @@ test('les helpers de statut d’appel renvoient les classes et labels attendus',
   assert.equal(getStatutAppelClass('vente_conclue'), 'appel-card__statut--success');
   assert.equal(getStatutAppelClass('rendez_vous_pris'), 'appel-card__statut--success');
   assert.equal(getStatutAppelClass('repondeur'), 'appel-card__statut--warning');
+  assert.equal(getStatutAppelClass('amd_repondeur_auto'), 'appel-card__statut--warning');
   assert.equal(getStatutAppelClass('optout'), 'appel-card__statut--danger');
   assert.equal(getStatutAppelClass('inconnu'), '');
 
   assert.equal(getStatutAppelLabel('rdv_pris'), 'Commande à établir');
   assert.equal(getStatutAppelLabel('fax'), 'Fax');
+  assert.equal(getStatutAppelLabel('amd_fax_auto'), 'Fax auto coupé');
   assert.equal(getStatutAppelLabel('inconnu'), 'inconnu');
 });
 
@@ -118,5 +120,4 @@ test('checkIsCommande détecte les motifs liés à une commande', () => {
   assert.equal(checkIsCommande('abs'), false);
   assert.equal(checkIsCommande('décider'), false);
 });
-
 

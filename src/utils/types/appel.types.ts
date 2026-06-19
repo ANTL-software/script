@@ -18,7 +18,9 @@ export type StatutAppel =
   | 'doublon'
   | 'optout'
   | 'repondeur'
-  | 'relance';
+  | 'relance'
+  | 'amd_repondeur_auto'
+  | 'amd_fax_auto';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
 

@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Campaign, Produit, CategorieProduit } from '../../utils/types';
+import type { Campaign, Produit, CategorieProduit, CampaignPanier } from '../../utils/types';
 
 export interface CampaignContextType {
   currentCampaign: Campaign | null;
@@ -11,14 +11,19 @@ export interface CampaignContextType {
   categoriesTree: CategorieProduit[];
   produitsLoading: boolean;
   produitsError: string | null;
+  paniers: CampaignPanier[];
+  paniersLoading: boolean;
+  paniersError: string | null;
 
   loadCampaign: (id: number) => Promise<void>;
   loadProduits: () => Promise<void>;
   loadProduitsGrouped: () => Promise<void>;
+  loadPaniers: () => Promise<void>;
   searchProduits: (searchTerm: string, minChars?: number) => Produit[];
   clearCampaign: () => void;
   clearError: () => void;
   clearProduitsError: () => void;
+  clearPaniersError: () => void;
 }
 
 export const CampaignContext = createContext<CampaignContextType | undefined>(undefined);

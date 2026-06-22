@@ -65,7 +65,18 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
   return (
     <div className="panier-item">
       <div className="panier-item__header">
-        <h4 className="panier-item__name">{item.produit.nom_produit}</h4>
+        <div className="panier-item__title-group">
+          <h4 className="panier-item__name">{item.produit.nom_produit}</h4>
+          {item.panier_source_labels && item.panier_source_labels.length > 0 && (
+            <div className="panier-item__sources">
+              {item.panier_source_labels.map((label) => (
+                <span key={label} className="panier-item__source-badge">
+                  {label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
         <button className="panier-item__remove" onClick={handleRemove} aria-label="Supprimer">
           <FaTrash />
         </button>

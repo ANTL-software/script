@@ -30,6 +30,7 @@ export interface Produit {
   Categorie?: CategorieProduit; // Alias pour compatibilité avec le code existant
   typeProduit?: TypeProduit; // Relation avec le type de produit
   tarif?: Tarif; // Tarif spécifique à la campagne
+  type_produit?: string | null;
 }
 
 export interface CategorieProduit {
@@ -66,11 +67,24 @@ export interface CartItem {
   quantite: number;
   prix_unitaire: number;
   remise: number;
+  panier_source_ids?: number[];
+  panier_source_labels?: string[];
 }
 
 export interface Cart {
   items: CartItem[];
   total: number;
+}
+
+export interface CampaignPanier {
+  id_panier: number;
+  label: string;
+  origine: string;
+  actif: boolean;
+  produits: Produit[];
+  total_produits: number;
+  montant_estime_ht: number;
+  has_missing_price: boolean;
 }
 
 export interface Tarif {

@@ -1,8 +1,9 @@
 import './catalogueProduits.scss';
 import { useState, useMemo, useEffect } from 'react';
-import { useCampaign, useCart } from '../../../hooks';
+import { useCampaign, useCart, useToast } from '../../../hooks';
 import type { Produit } from '../../../utils/types';
 import ProduitCard from './ProduitCard';
+import CataloguePaniers from './CataloguePaniers';
 import CategoryTree from './CategoryTree';
 import Loader from '../loader/Loader';
 import ErrorMessage from '../errorMessage/ErrorMessage';
@@ -13,8 +14,22 @@ import { FaList, FaSitemap, FaSearch } from 'react-icons/fa';
 type ViewMode = 'tree' | 'search';
 
 export default function CatalogueProduits() {
-  const { produits, categoriesTree, produitsLoading, produitsError, clearProduitsError, loadProduitsGrouped, searchProduits } = useCampaign();
-  const { addItem } = useCart();
+  const {
+    currentCampaign,
+    produits,
+    categoriesTree,
+    produitsLoading,
+    produitsError,
+    clearProduitsError,
+    loadProduitsGrouped,
+    searchProduits,
+    paniers,
+    paniersLoading,
+    paniersError,
+    clearPaniersError,
+  } = useCampaign();
+  const { addItem, addPanier } = useCart();
+  const { showToast } = useToast();
 
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -29,6 +44,11 @@ export default function CatalogueProduits() {
 
   const handleAddToCart = (produit: Produit) => {
     addItem(produit, 1, 0);
+  };
+
+  const handleAddPanier = (panier: (typeof paniers)[number]) => {
+    addPanier(panier);
+    showToast('success', `${panier.label} ajoute au panier`);
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -118,6 +138,15 @@ export default function CatalogueProduits() {
 
       {viewMode === 'tree' || searchTerm.length < 3 ? (
         <div className="catalogue-produits__tree-view">
+          {currentCampaign?.id_campagne === 7 && (
+            <CataloguePaniers
+              paniers={paniers}
+              isLoading={paniersLoading}
+              error={paniersError}
+              onClearError={clearPaniersError}
+              onAddPanier={handleAddPanier}
+            />
+          )}
           <CategoryTree categories={categoriesTree} onAddToCart={handleAddToCart} />
         </div>
       ) : (

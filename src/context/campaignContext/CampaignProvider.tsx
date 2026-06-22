@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { CampaignContext } from './CampaignContext';
-import type { Campaign, Produit, CategorieProduit } from '../../utils/types';
+import type { Campaign, Produit, CategorieProduit, CampaignPanier } from '../../utils/types';
 import { campaignService, produitService } from '../../API/services';
 
 interface CampaignProviderProps {
@@ -17,6 +17,9 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
   const [categoriesTree, setCategoriesTree] = useState<CategorieProduit[]>([]);
   const [produitsLoading, setProduitsLoading] = useState<boolean>(false);
   const [produitsError, setProduitsError] = useState<string | null>(null);
+  const [paniers, setPaniers] = useState<CampaignPanier[]>([]);
+  const [paniersLoading, setPaniersLoading] = useState<boolean>(false);
+  const [paniersError, setPaniersError] = useState<string | null>(null);
 
   const loadCampaign = useCallback(async (id: number) => {
     setIsLoading(true);
@@ -126,20 +129,46 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
     }
   }, [currentCampaign]);
 
+  const loadPaniers = useCallback(async () => {
+    if (!currentCampaign) {
+      console.warn('[CAMPAIGN] Aucune campagne active, impossible de charger les paniers');
+      return;
+    }
+
+    setPaniersLoading(true);
+    setPaniersError(null);
+
+    try {
+      console.log(`[CAMPAIGN] Chargement paniers campagne ID: ${currentCampaign.id_campagne}`);
+      const data = await campaignService.getPaniers(currentCampaign.id_campagne);
+      setPaniers(data);
+      console.log(`[CAMPAIGN] ${data.length} paniers chargés`);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des paniers';
+      setPaniersError(errorMessage);
+      console.error('[CAMPAIGN] Erreur chargement paniers:', errorMessage);
+    } finally {
+      setPaniersLoading(false);
+    }
+  }, [currentCampaign]);
+
   // Charger automatiquement les produits quand la campagne est définie
   useEffect(() => {
     if (currentCampaign) {
       loadProduitsGrouped();
+      loadPaniers();
     }
-  }, [currentCampaign, loadProduitsGrouped]);
+  }, [currentCampaign, loadProduitsGrouped, loadPaniers]);
 
   const clearCampaign = useCallback(() => {
     setCurrentCampaign(null);
     setProduits([]);
     setCategories([]);
     setCategoriesTree([]);
+    setPaniers([]);
     setError(null);
     setProduitsError(null);
+    setPaniersError(null);
   }, []);
 
   const clearError = useCallback(() => {
@@ -148,6 +177,10 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
 
   const clearProduitsError = useCallback(() => {
     setProduitsError(null);
+  }, []);
+
+  const clearPaniersError = useCallback(() => {
+    setPaniersError(null);
   }, []);
 
   const extractAllProductsFromTree = useCallback((categories: CategorieProduit[]): Produit[] => {
@@ -193,13 +226,18 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
     categoriesTree,
     produitsLoading,
     produitsError,
+    paniers,
+    paniersLoading,
+    paniersError,
     loadCampaign,
     loadProduits,
     loadProduitsGrouped,
+    loadPaniers,
     searchProduits,
     clearCampaign,
     clearError,
     clearProduitsError,
+    clearPaniersError,
   };
 
   return <CampaignContext.Provider value={value}>{children}</CampaignContext.Provider>;

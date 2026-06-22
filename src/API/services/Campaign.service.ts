@@ -1,7 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
 import { CampaignModel } from '../models';
-import type { Campaign, PlanAppelEtape, Objection } from '../../utils/types';
+import type { Campaign, PlanAppelEtape, Objection, CampaignPanier } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class CampaignService {
@@ -49,6 +49,11 @@ export class CampaignService {
     const response = await apiCalls.get<Objection[]>(`/campagnes/${campagneId}/objections`);
     const data = throwIfApiError(response, 'Erreur lors de la recuperation des objections');
     return data;
+  }
+
+  public async getPaniers(campagneId: number): Promise<CampaignPanier[]> {
+    const response = await apiCalls.get<CampaignPanier[]>(`/campagnes/${campagneId}/paniers`);
+    return throwIfApiError(response, 'Erreur lors de la recuperation des paniers');
   }
 }
 

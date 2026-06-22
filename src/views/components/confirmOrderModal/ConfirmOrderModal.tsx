@@ -292,10 +292,18 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                 <div className="confirm-order-modal__cart-items">
                   {items.map((item) => {
                     const sousTotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
+                    const isPanierLine = item.item_type === 'panier';
                     return (
                       <div key={item.produit.id_produit} className="confirm-order-modal__cart-item">
                         <div className="confirm-order-modal__cart-item-info">
-                          <span className="confirm-order-modal__cart-item-name">{item.produit.nom_produit}</span>
+                          <span className="confirm-order-modal__cart-item-name">
+                            {isPanierLine ? (item.panier_label || item.produit.nom_produit) : item.produit.nom_produit}
+                          </span>
+                          {isPanierLine && item.panier_produits && item.panier_produits.length > 0 && (
+                            <span className="confirm-order-modal__cart-item-quantity">
+                              {item.panier_produits.length} article{item.panier_produits.length > 1 ? 's' : ''} inclus
+                            </span>
+                          )}
                           <span className="confirm-order-modal__cart-item-quantity">x{item.quantite}</span>
                         </div>
                         <div className="confirm-order-modal__cart-item-price">

@@ -5,12 +5,18 @@ export type ModePaiement = 'Prelevement' | 'Cheque' | 'Virement';
 
 export interface DetailVente {
   id_detail?: number;
-  id_produit: number;
+  id_produit?: number;
+  id_panier?: number;
   quantite: number;
   prix_unitaire: number;
   remise: number;
   montant_ligne?: number;
   produit?: Produit; // Relation optionnelle avec le produit (minuscule = Sequelize)
+  panier?: {
+    id_panier: number;
+    label: string;
+    prix_ht?: number | null;
+  };
 }
 
 export interface Vente {

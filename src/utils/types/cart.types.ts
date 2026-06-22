@@ -63,10 +63,14 @@ export interface ProduitsGroupedData {
 }
 
 export interface CartItem {
+  item_type?: 'produit' | 'panier';
   produit: Produit;
   quantite: number;
   prix_unitaire: number;
   remise: number;
+  id_panier_line?: number;
+  panier_label?: string;
+  panier_produits?: Produit[];
   panier_source_ids?: number[];
   panier_source_labels?: string[];
 }
@@ -80,10 +84,10 @@ export interface CampaignPanier {
   id_panier: number;
   label: string;
   origine: string;
+  prix_ht: number | null;
   actif: boolean;
   produits: Produit[];
   total_produits: number;
-  montant_estime_ht: number;
   has_missing_price: boolean;
 }
 

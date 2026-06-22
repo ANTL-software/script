@@ -13,15 +13,29 @@ interface VenteCardProps {
 
 export default function VenteCard({ vente }: VenteCardProps) {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const { addItem } = useCart();
+  const { addItem, addPanier } = useCart();
   const { showToast } = useToast();
-  const { produits } = useCampaign();
+  const { produits, paniers } = useCampaign();
 
   const handleSendToCart = () => {
     let added = 0;
     let skipped = 0;
 
     (vente.details ?? []).forEach((detail) => {
+      if (detail.id_panier) {
+        const panierCourant = paniers.find((panier) => panier.id_panier === detail.id_panier);
+        if (!panierCourant) {
+          skipped++;
+          return;
+        }
+
+        for (let index = 0; index < detail.quantite; index += 1) {
+          addPanier(panierCourant);
+        }
+        added++;
+        return;
+      }
+
       // 1. On cherche le produit dans le catalogue courant (avec tarifs campagne)
       const catalogueProduit = produits.find((p) => p.id_produit === detail.id_produit);
 
@@ -143,7 +157,12 @@ export default function VenteCard({ vente }: VenteCardProps) {
                   {vente.details.map((detail, index) => (
                     <tr key={index}>
                       <td className="product-name">
-                        {detail.produit ? (
+                        {detail.panier ? (
+                          <>
+                            {detail.panier.label}
+                            <span className="product-code"> (panier #{detail.panier.id_panier})</span>
+                          </>
+                        ) : detail.produit ? (
                           <>
                             {detail.produit.nom_produit} #{detail.produit.id_produit}
                             {detail.produit.code_produit && (
@@ -151,7 +170,7 @@ export default function VenteCard({ vente }: VenteCardProps) {
                             )}
                           </>
                         ) : (
-                          `Produit #${detail.id_produit}`
+                          `Ligne #${detail.id_detail ?? index + 1}`
                         )}
                       </td>
                       <td>{formatCurrency(detail.prix_unitaire)}</td>

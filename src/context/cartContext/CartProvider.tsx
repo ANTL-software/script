@@ -71,49 +71,44 @@ export const CartProvider = ({ children }: CartProviderProps) => {
 
   const addPanier = useCallback((panier: CampaignPanier) => {
     setItems((prevItems) => {
-      let nextItems = [...prevItems];
+      const syntheticProductId = -panier.id_panier;
+      const existingItemIndex = prevItems.findIndex((item) => item.item_type === 'panier' && item.id_panier_line === panier.id_panier);
 
-      panier.produits.forEach((produit) => {
-        const existingItemIndex = nextItems.findIndex((item) => item.produit.id_produit === produit.id_produit);
+      if (existingItemIndex > -1) {
+        const nextItems = [...prevItems];
+        const currentItem = nextItems[existingItemIndex];
+        nextItems[existingItemIndex] = {
+          ...currentItem,
+          quantite: currentItem.quantite + 1,
+          panier_produits: panier.produits,
+        };
+        console.log(`[CART] Quantité panier mise à jour pour ${panier.label}: ${nextItems[existingItemIndex].quantite}`);
+        return nextItems;
+      }
 
-        const tarifPrix = produit.tarif?.prix_unitaire;
-        const produitPrix = produit.prix_unitaire;
-        const rawPrix = tarifPrix ?? produitPrix;
-        const prixUnitaire = typeof rawPrix === 'number'
-          ? rawPrix
-          : (typeof rawPrix === 'string' ? parseFloat(rawPrix) : 0);
+      const syntheticProduit: Produit = {
+        id_produit: syntheticProductId,
+        nom_produit: panier.label,
+        actif: true,
+        created_at: '',
+        updated_at: '',
+      };
 
-        const tarifPromo = produit.tarif?.prix_promo;
-        const produitPromo = produit.prix_promo;
-        const rawPromo = tarifPromo ?? produitPromo;
-        const prixPromo = rawPromo
-          ? (typeof rawPromo === 'number' ? rawPromo : parseFloat(String(rawPromo)))
-          : null;
-
-        const prixFinal = (prixPromo !== null && prixPromo > 0) ? prixPromo : prixUnitaire;
-
-        if (existingItemIndex > -1) {
-          const currentItem = nextItems[existingItemIndex];
-          nextItems[existingItemIndex] = {
-            ...currentItem,
-            quantite: currentItem.quantite + 1,
-            panier_source_ids: Array.from(new Set([...(currentItem.panier_source_ids || []), panier.id_panier])),
-            panier_source_labels: Array.from(new Set([...(currentItem.panier_source_labels || []), panier.label])),
-          };
-          return;
-        }
-
-        nextItems.push({
-          produit,
+      const nextItems = [
+        ...prevItems,
+        {
+          item_type: 'panier' as const,
+          produit: syntheticProduit,
           quantite: 1,
-          prix_unitaire: prixFinal,
+          prix_unitaire: panier.prix_ht ?? 0,
           remise: 0,
-          panier_source_ids: [panier.id_panier],
-          panier_source_labels: [panier.label],
-        });
-      });
+          id_panier_line: panier.id_panier,
+          panier_label: panier.label,
+          panier_produits: panier.produits,
+        }
+      ];
 
-      console.log(`[CART] Ajout panier: ${panier.label} (${panier.produits.length} produit(s))`);
+      console.log(`[CART] Ajout panier: ${panier.label}`);
       return nextItems;
     });
   }, []);

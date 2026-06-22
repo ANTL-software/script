@@ -14,6 +14,8 @@ interface PanierItemProps {
 export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierItemProps) {
   const subtotal = calculateLineTotal(item.prix_unitaire, item.quantite, item.remise);
   const [inputValue, setInputValue] = useState(item.quantite.toString());
+  const isPanierLine = item.item_type === 'panier';
+  const itemTitle = isPanierLine ? (item.panier_label || item.produit.nom_produit) : item.produit.nom_produit;
 
   // Synchroniser l'input avec la quantité quand elle change de l'extérieur
   useEffect(() => {
@@ -66,8 +68,14 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
     <div className="panier-item">
       <div className="panier-item__header">
         <div className="panier-item__title-group">
-          <h4 className="panier-item__name">{item.produit.nom_produit}</h4>
-          {item.panier_source_labels && item.panier_source_labels.length > 0 && (
+          <h4 className="panier-item__name">{itemTitle}</h4>
+          {isPanierLine && item.panier_produits && item.panier_produits.length > 0 ? (
+            <div className="panier-item__sources">
+              <span className="panier-item__source-badge">
+                {item.panier_produits.length} article{item.panier_produits.length > 1 ? 's' : ''} inclus
+              </span>
+            </div>
+          ) : item.panier_source_labels && item.panier_source_labels.length > 0 ? (
             <div className="panier-item__sources">
               {item.panier_source_labels.map((label) => (
                 <span key={label} className="panier-item__source-badge">
@@ -75,7 +83,7 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
                 </span>
               ))}
             </div>
-          )}
+          ) : null}
         </div>
         <button className="panier-item__remove" onClick={handleRemove} aria-label="Supprimer">
           <FaTrash />
@@ -83,7 +91,10 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
       </div>
 
       <div className="panier-item__details">
-        <span className="panier-item__price">{formatCurrency(item.prix_unitaire)}</span>
+        <span className="panier-item__price">
+          {formatCurrency(item.prix_unitaire)}
+          {isPanierLine ? ' / panier' : ''}
+        </span>
         {item.remise > 0 && (
           <span className="panier-item__remise">- {formatCurrency(item.remise)}</span>
         )}

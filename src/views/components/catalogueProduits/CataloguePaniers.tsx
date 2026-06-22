@@ -94,11 +94,11 @@ export default function CataloguePaniers({
                     </div>
                     <div className="catalogue-paniers__item-side">
                       <div className="catalogue-paniers__price">
-                        <span>Total estimé HT</span>
+                        <span>Prix panier HT</span>
                         <strong>
                           {panier.has_missing_price
                             ? 'Prix à confirmer'
-                            : formatCurrency(panier.montant_estime_ht)}
+                            : formatCurrency(panier.prix_ht ?? 0)}
                         </strong>
                       </div>
                       <Button
@@ -121,18 +121,13 @@ export default function CataloguePaniers({
                         {panier.produits.map((produit) => (
                           <li key={produit.id_produit}>
                             <span>{produit.nom_produit}</span>
-                            {produit.prix_unitaire != null && (
-                              <strong>
-                                {formatCurrency(typeof produit.prix_unitaire === 'number' ? produit.prix_unitaire : parseFloat(String(produit.prix_unitaire)))}
-                              </strong>
-                            )}
                           </li>
                         ))}
                       </ul>
 
                       {panier.has_missing_price && (
                         <p className="catalogue-paniers__warning">
-                          Certains articles n'ont pas encore de prix campagne.
+                          Le prix de ce panier n'est pas encore renseigné.
                         </p>
                       )}
                     </div>

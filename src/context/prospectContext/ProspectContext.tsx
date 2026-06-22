@@ -4,6 +4,7 @@ import type { Prospect, Appel, Vente, CreateVenteData, Pagination, UpdateProspec
 export interface ProspectContextType {
   // Prospect
   currentProspect: Prospect | null;
+  currentProgpa: number | null;
   isLoading: boolean;
   error: string | null;
 
@@ -22,6 +23,8 @@ export interface ProspectContextType {
   loadProspect: (id: number) => Promise<void>;
   loadProspectByPhone: (phone: string) => Promise<void>;
   updateProspect: (data: UpdateProspectData) => Promise<void>;
+  setCurrentProgpa: (value: number | null) => void;
+  resetCurrentProgpa: () => void;
   clearProspect: () => void;
   clearError: () => void;
 

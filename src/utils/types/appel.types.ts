@@ -45,6 +45,7 @@ export interface Appel {
   bridged_to_agent_at?: string | null;
   ended_by_system?: boolean;
   end_reason?: string | null;
+  progpa_atteint: number;
   created_at: string;
   updated_at: string;
   Employe?: Employe;
@@ -59,6 +60,7 @@ export interface CreateAppelData {
   origine_appel?: OrigineAppel;
   numero_telephone?: string;
   id_rendez_vous_source?: number;
+  progpa_atteint?: number;
 }
 
 export interface TerminerAppelData {
@@ -67,6 +69,7 @@ export interface TerminerAppelData {
   abouti?: boolean;
   duree_secondes?: number;
   id_prospection?: number;
+  progpa_atteint?: number;
 }
 
 export interface UpdateAppelData {
@@ -74,4 +77,5 @@ export interface UpdateAppelData {
   duree_secondes?: number;
   notes?: string;
   abouti?: boolean;
+  progpa_atteint?: number;
 }

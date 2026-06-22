@@ -13,6 +13,7 @@ import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes
 import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
+import ProgPA from '../../components/progPA/ProgPA';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import { useEffect } from 'react';
 import { useToast } from '../../../hooks/useToast';
@@ -160,37 +161,45 @@ export default function LandingPage() {
         isTestMode={isTestMode}
       />
 
-      <ActionButtons
-        currentView={currentView}
-        onTarifs={handleTarifsClick}
-        onAgrement={handleAgrementClick}
-        onHistoriqueAppels={() => setView('historique-appels')}
-        onHistoriqueOffres={() => setView('historique-offres')}
-        onRendezVous={() => setView('rendez-vous')}
-        onCommande={handleCommande}
-      />
-
-      <div className={`landing-page__content ${currentView === 'commande' ? 'view-commande' : ''}`}>
-        {currentView === 'qui-est-ce' && <QuiEstCe />}
-        {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
-        {currentView === 'historique-appels' && <HistoriqueAppels />}
-        {currentView === 'historique-offres' && <HistoriqueVentes />}
-        {currentView === 'rendez-vous' && (
-          <AgentCalendar
-            prospectId={currentProspect.id_prospect}
-            prospectName={prospectFullName}
+      <div className="landing-page__workspace">
+        <div className="landing-page__main">
+          <ActionButtons
+            currentView={currentView}
+            onTarifs={handleTarifsClick}
+            onAgrement={handleAgrementClick}
+            onHistoriqueAppels={() => setView('historique-appels')}
+            onHistoriqueOffres={() => setView('historique-offres')}
+            onRendezVous={() => setView('rendez-vous')}
+            onCommande={handleCommande}
           />
-        )}
-        {currentView === 'commande' && (
-          <div className="landing-page__commande">
-            <div className="landing-page__catalogue">
-              <CatalogueProduits />
-            </div>
-            <div className="landing-page__panier">
-              <Panier onValidateOrder={() => setIsModalOpen(true)} />
-            </div>
+
+          <div className={`landing-page__content ${currentView === 'commande' ? 'view-commande' : ''}`}>
+            {currentView === 'qui-est-ce' && <QuiEstCe />}
+            {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
+            {currentView === 'historique-appels' && <HistoriqueAppels />}
+            {currentView === 'historique-offres' && <HistoriqueVentes />}
+            {currentView === 'rendez-vous' && (
+              <AgentCalendar
+                prospectId={currentProspect.id_prospect}
+                prospectName={prospectFullName}
+              />
+            )}
+            {currentView === 'commande' && (
+              <div className="landing-page__commande">
+                <div className="landing-page__catalogue">
+                  <CatalogueProduits />
+                </div>
+                <div className="landing-page__panier">
+                  <Panier onValidateOrder={() => setIsModalOpen(true)} />
+                </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+
+        <div className="landing-page__gauge">
+          <ProgPA />
+        </div>
       </div>
 
       <ConfirmOrderModal

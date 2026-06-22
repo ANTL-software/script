@@ -13,6 +13,7 @@ interface ProspectProviderProps {
 export const ProspectProvider = ({ children }: ProspectProviderProps) => {
   // Prospect state
   const [currentProspect, setCurrentProspect] = useState<Prospect | null>(null);
+  const [currentProgpa, setCurrentProgpaState] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +45,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     try {
       const prospectModel = await prospectService.getProspectById(id);
       setCurrentProspect(prospectModel.toJSON());
+      setCurrentProgpaState(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement du prospect';
       setError(errorMessage);
@@ -59,6 +61,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     try {
       const prospectModel = await prospectService.getProspectByPhone(phone);
       setCurrentProspect(prospectModel.toJSON());
+      setCurrentProgpaState(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Prospect non trouve';
       setError(errorMessage);
@@ -70,6 +73,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
 
   const clearProspect = useCallback(() => {
     setCurrentProspect(null);
+    setCurrentProgpaState(null);
     setError(null);
     appelsHook.reset();
     ventesHook.reset();
@@ -102,9 +106,24 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     }
   }, [currentProspect]);
 
+  const setCurrentProgpa = useCallback((value: number | null) => {
+    if (value === null) {
+      setCurrentProgpaState(null);
+      return;
+    }
+
+    const normalizedValue = Math.max(0, Math.min(5, value));
+    setCurrentProgpaState(normalizedValue);
+  }, []);
+
+  const resetCurrentProgpa = useCallback(() => {
+    setCurrentProgpaState(null);
+  }, []);
+
   const value = {
     // Prospect
     currentProspect,
+    currentProgpa,
     isLoading,
     error,
 
@@ -123,6 +142,8 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     loadProspect,
     loadProspectByPhone,
     updateProspect,
+    setCurrentProgpa,
+    resetCurrentProgpa,
     clearProspect,
     clearError,
 

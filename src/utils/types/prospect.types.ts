@@ -32,6 +32,7 @@ export interface Prospect {
   region?: string;
   civilite?: string;
   telephone_contact?: string;
+  max_progpa: number;
   created_at: string;
   updated_at: string;
 }

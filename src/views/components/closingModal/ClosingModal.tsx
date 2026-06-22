@@ -2,6 +2,7 @@ import './closingModal.scss';
 import { FaPhoneAlt, FaCheck, FaSpinner, FaClock, FaStickyNote, FaExclamationTriangle, FaMinus } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { useCallClosing } from '../../../hooks/useCallClosing';
+import { useProspect } from '../../../hooks/useProspect';
 import { STATUT_APPEL_OPTIONS } from '../../../utils/constants';
 import { formatDuration } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
@@ -34,6 +35,7 @@ export default function ClosingModal({
   forceMode = false,
 }: ClosingModalProps) {
   const [isMinimized, setIsMinimized] = useState(false);
+  const { currentProgpa } = useProspect();
 
   const {
     selectedStatut, setSelectedStatut,
@@ -160,7 +162,7 @@ export default function ClosingModal({
                     type="submit"
                     variant="primary"
                     fullWidth
-                    disabled={isSubmitting || !selectedStatut}
+                    disabled={isSubmitting || !selectedStatut || currentProgpa === null}
                   >
                     {isSubmitting ? (
                       <><FaSpinner className="spinner" /> Enregistrement...</>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
-import { useUser, useToast, useDialer } from './index';
+import { useUser, useToast, useDialer, useProspect } from './index';
 import { appelService, closingService, dialerService, rendezVousService } from '../API/services';
 import type { StatutAppel } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
@@ -18,6 +18,7 @@ interface UseCallClosingOptions {
 export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete, dureeAppel }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
+  const { currentProgpa, resetCurrentProgpa } = useProspect();
   const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
@@ -36,6 +37,11 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
 
     if (!user) {
       setError('Session expiree, veuillez vous reconnecter');
+      return;
+    }
+
+    if (currentProgpa === null) {
+      setError("Veuillez renseigner l'etape atteinte dans le plan d'appel");
       return;
     }
 
@@ -74,6 +80,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           abouti,
           duree_secondes: finalDuration > 0 ? finalDuration : undefined,
           id_prospection: currentIdProspection ?? undefined,
+          progpa_atteint: currentProgpa,
         });
       } else {
         // Mode manuel : créer l'appel directement (pas de session SIP tracée)
@@ -85,12 +92,14 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           notes: notes.trim() || undefined,
           origine_appel: resolvedOrigineAppel,
           id_rendez_vous_source: resolvedRendezVousSourceId,
+          progpa_atteint: currentProgpa,
         });
         // Garde : s'assurer que le backend est bien en pause_apres_appel
         await dialerService.changerStatut('pause_apres_appel');
       }
 
       closingService.clearPending();
+      resetCurrentProgpa();
       showToast('success', "Resultat d'appel enregistre");
       onComplete();
     } catch (err) {

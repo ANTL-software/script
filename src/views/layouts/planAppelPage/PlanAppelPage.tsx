@@ -1,4 +1,5 @@
 import './planAppelPage.scss';
+import { useEffect, useRef } from 'react';
 import { usePlanAppel } from '../../../hooks/usePlanAppel';
 import Button from '../../components/button/Button';
 import Loader from '../../components/loader/Loader';
@@ -12,11 +13,11 @@ const CIGALES_PLAN_APPEL: PlanAppelEtape[] = [
     id_campagne: 7,
     etape: 1,
     titre: 'IDENTIFICATION - Obtenir le nom du décisionnaire',
-    contenu: `Bonjour, vous allez sûrement pouvoir m’orienter. Je suis Sophie LAGAGNE des Cigales, j’aimerais parler au responsable de l’établissement mais je n’ai pas son nom, c’est Madame… Monsieur… ? Vous pouvez me le/la passer s’il vous plaît ?
+    contenu: `Bonjour, vous allez sûrement pouvoir m’orienter, je suis Sophie LAGAGNE des Cigales, j’aimerais parler au responsable de l’établissement mais je n’ai pas son nom, c’est Madame… Monsieur… ? Vous pouvez me le/la passer, s’il vous plaît ?
 
-« C’est pourquoi ? » : C’est l’ESAT Les Cigales, le centre médico-social de l’AGAPEI 13.
+« C’est pourquoi ? » : C’est l’ESAT Les Cigales, le centre de médico-social de l’AGAPEI 13.
 
-(Si elle insiste :)
+Si elle insiste :
 
 « Oui mais c’est à quel sujet ? » : C’est pour le programme d’accompagnement professionnel des travailleurs en situation de handicap. Vous pouvez me la/le passer, s’il vous plaît ?`,
     ordre_affichage: 10,
@@ -29,11 +30,9 @@ const CIGALES_PLAN_APPEL: PlanAppelEtape[] = [
     id_campagne: 7,
     etape: 2,
     titre: 'PRESENTATION - Se faire accepter par le décisionnaire',
-    contenu: `Bonjour Mme/M. ... Je suis Sophie LAGAGNE, déléguée de l’ESAT Les Cigales, le centre pour les travailleurs en situation de handicap. Comment allez-vous ?
+    contenu: `Bonjour M./Mme… Je suis Sophie LAGAGNE, déléguée de l’ESAT Les Cigales, le centre pour les travailleurs en situation de handicap. Comment allez-vous ?
 
-L’ESAT Les Cigales à Salon-de-Provence, ça vous dit quelque chose ?
-
-En quelques mots, nous sommes une structure médico-sociale qui accueille plus de 120 usagers ; un public qui se heurte à une difficulté d’embauche de la part des entreprises. Il faut dire que toutes les entreprises ne sont pas organisées pour mettre en place un accompagnement comme nous le faisons.`,
+L’ESAT Les Cigales à Salon-de-Provence, ça vous dit quelque chose ?`,
     ordre_affichage: 20,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -44,13 +43,17 @@ En quelques mots, nous sommes une structure médico-sociale qui accueille plus d
     id_campagne: 7,
     etape: 3,
     titre: 'DECOUVERTE - Comprendre l’environnement du client pour créer un lien',
-    contenu: `Vous le savez peut-être, mais depuis 2005, le Gouvernement a renforcé le mécanisme d’incitation à l’embauche des personnes en situation de handicap. D’ailleurs, vous-même, avez-vous du personnel en situation de handicap dans votre entreprise, Mme/M. Untel ?
+    contenu: `En quelques mots, nous sommes une structure médico-social qui accueille plus de 120 usagers ; un public qui se heurte à une difficulté d’embauche de la part des entreprises. Il faut dire que toutes les entreprises ne sont pas organisées pour mettre en place un accompagnement comme nous le faisons.
 
-Si oui… : Eh bien bravo ! Cela montre que vous êtes sensible à cette cause et c’est très motivant pour nous. Avez-vous dû adapter leurs postes ? (Si oui, comment ?) Il faut tout de même reconnaître que depuis 20 ans, l’effort des entreprises a été très encourageant pour aménager des postes adaptés mais c’est encore insuffisant.
+D’ailleurs, vous Mr UNTEL, vous avez des travailleurs en situation de handicap ?
 
-Si non : C’est que vous êtes une petite structure, c’est cela ? D’ailleurs, vous êtes combien chez vous ? Je comprends tout à fait qu’on ne puisse pas toujours accompagner le personnel en situation de handicap…
+Si oui… : Eh bien bravo ! Cela montre que vous êtes sensible à cette cause et c’est très motivant pour nous. Avez-vous dû adapter leurs postes ? (si oui, comment ?) Il faut tout de même reconnaître que l’effort des entreprises est encourageant pour aménager des postes adaptés mais c’est encore insuffisant.
 
-Et c’est là que nous intervenons : les achats que vous effectuez auprès de notre établissement vous permettent de participer à cet effort, voire même de bénéficier d’une réduction de la taxe AGEFIPH si vous y êtes assujetti. J’imagine que vous comprenez le sens de ma mission, Mme/M. Untel ; qu’en pensez-vous ?`,
+Si non : C’est que vous êtes une petite structure, c’est cela ? D’ailleurs vous êtes combien chez vous ? Je comprends tout à fait qu’on ne puisse pas toujours accompagner le personnel en situation de handicap…
+
+C’est là que nous intervenons. Concrètement, la préparation de commandes pour des clients tels que vous, permet de favoriser l’apprentissage d’un métier, de valoriser les personnes et de garantir une inclusion sociale et économique.
+
+De ce fait, les achats que vous effectuez auprès de notre établissement vous permettent de participer à cet effort, j’imagine que vous comprenez le sens de ma mission Mme/M. Untel ; qu’en pensez-vous ?`,
     ordre_affichage: 30,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -61,11 +64,7 @@ Et c’est là que nous intervenons : les achats que vous effectuez auprès de n
     id_campagne: 7,
     etape: 4,
     titre: 'PROPOSITION - Obtenir un accord de principe',
-    contenu: `Sachez que depuis plus de 40 ans, nous développons notre distribution de fournitures de bureau sur l’ensemble du territoire, et avec notre gamme développement durable et locale, nous mettons en avant notre ambition environnementale pour faire émerger des solutions écoresponsables.
-
-Concrètement, la préparation de commandes pour des clients tels que vous permet de favoriser l’apprentissage d’un métier, de valoriser les personnes et de garantir une inclusion sociale et économique.
-
-Je viens vers vous aujourd’hui pour vous offrir l’opportunité de vous compter parmi nos partenaires privilégiés et de contribuer à notre cause par le biais d’une commande de fournitures de bureau. Qu’est-ce qui vous est le plus utile, plutôt de la papeterie ou des produits d’hygiène ?`,
+    contenu: `Si je viens vers vous aujourd’hui, c’est pour vous offrir l’opportunité de vous compter parmi nos partenaires privilégiés et de contribuer à notre cause par le biais d’une commande de fournitures de bureau. Qu’est-ce qui vous est le plus utile, plutôt de la papeterie ou des produits d’hygiène ?`,
     ordre_affichage: 40,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -81,8 +80,8 @@ Je viens vers vous aujourd’hui pour vous offrir l’opportunité de vous compt
 Détection produit :
 
 - On propose un ou plusieurs kits en fonction du budget du client.
-- On récapitule la commande et on annonce le tarif HT, frais de port inclus.
-- Validation des coordonnées du client.
+- On récapitule la commande et on annonce le tarif HT frais de port inclus.
+- Validation coordonnées client.
 - Délai de livraison.
 - Délai de règlement.`,
     ordre_affichage: 50,
@@ -97,7 +96,7 @@ Détection produit :
     titre: 'RETOUR DE COMMANDE - Faire revenir la commande « acceptée »',
     contenu: `Pour valider votre participation, j’ai besoin que vous me retourniez le bon de commande signé, avec votre bon pour accord. Je peux compter sur vous pour un retour dans la foulée ?
 
-Sans nouvelles de votre part dans les 10 minutes, je me permettrai un rappel pour m’assurer de la bonne réception du bon de commande, c’est ok pour vous ?`,
+Sans nouvelles de votre part dans les 10 minutes je me permettrai un rappel pour m’assurer de la bonne réception du bon de commande, c’est ok pour vous ?`,
     ordre_affichage: 60,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -110,7 +109,7 @@ Sans nouvelles de votre part dans les 10 minutes, je me permettrai un rappel pou
     titre: 'PRISE DE CONGÉ - Préparer le prochain appel et laisser une bonne image',
     contenu: `De la part de tous les travailleurs de l’ESAT Les Cigales, encore mille mercis pour votre soutien !
 
-Je me permettrai de vous rappeler à réception de la commande pour m’assurer que tout se sera bien passé. Entre-temps, si vous avez des questions, n’hésitez pas à me contacter par e-mail ou par téléphone, vous trouverez toutes nos coordonnées sur le bon de commande.`,
+Je me permettrai de vous rappeler à réception de la commande pour m’assurer que tout se sera bien passé. Entre-temps si vous avez des questions, n’hésitez pas à me contacter par mail ou par téléphone, vous trouverez toutes nos coordonnées sur le bon de commande.`,
     ordre_affichage: 70,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -120,17 +119,17 @@ Je me permettrai de vous rappeler à réception de la commande pour m’assurer 
     id_plan: 8,
     id_campagne: 7,
     etape: 8,
-    titre: 'CONTRÔLE SATISFACTION - Valider la satisfaction client après livraison',
-    contenu: `Bonjour, c’est Sophie Lagagne de l’ESAT Les Cigales, j’aimerais parler à Mme/M. Untel.
+    titre: 'CONTROLE SATISFACTION - Valider la satisfaction client après livraison',
+    contenu: `Bonjour, je suis c’est Sophie LAGAGNE de l’ESAT Les Cigales, j’aimerais parler à Mme/M. Untel.
 
 Bonjour Mme/M. Untel, c’est Sophie pour l’ESAT Les Cigales, vous vous souvenez de moi ? Comment allez-vous ? Vous avez dû recevoir votre commande ? Je viens m’assurer que la livraison s’est bien passée ?
 
 Si non : J’en suis désolée, je vais reporter ces désagréments à l’atelier qui ne manquera pas de revenir vers vous pour trouver une solution, et je me permettrai un rappel pour m’assurer que le problème a été réglé.
-(On arrête l’appel et on en reprogramme un autre pour suivre le litige)
+(On arrête l’appel et on reprogramme un autre pour suivre le litige)
 
-Si oui… : J’en suis ravie ! Pensez à faire savoir à vos collaborateurs que les produits qu’ils vont utiliser ont été conditionnés par des travailleurs en situation de handicap. Je sais que les gens ont souvent à cœur de participer à la cause, et ça donnera une image très positive de votre entreprise.
+Si oui… : J’en suis ravie ! Pensez à faire savoir à vos collaborateurs que les produits qu’ils vont utiliser ont été conditionnés par des travailleurs en situation de handicap, je sais que les gens ont souvent à cœur de participer à la cause, et ça donnera une image très positive de votre entreprise.
 
-Avant de vous laisser, j’ai 2 faveurs à vous demander : 1- Auriez-vous la gentillesse de mettre un avis positif sur le site internet de l’ESAT ? et 2- Dans combien de temps pensez-vous avoir consommé les articles, afin que je ne revienne pas vers vous trop tôt pour une future commande ?`,
+Avant de vous laisser j’ai 2 faveurs à vous demander ? 1- Auriez-vous la gentillesse de mettre un avis positif sur le site internet de l’ESAT ? et 2- Dans combien de temps pensez-vous avoir consommé les articles, afin que je ne revienne pas vers vous trop tôt pour une future commande ?`,
     ordre_affichage: 80,
     actif: true,
     created_at: '2026-06-09T00:00:00.000Z',
@@ -138,9 +137,27 @@ Avant de vous laisser, j’ai 2 faveurs à vous demander : 1- Auriez-vous la gen
   }
 ];
 
+function renderPlanParagraph(paragraph: string, index: number) {
+  const conditionalMatch = paragraph.match(/^(Si oui…?\s*:|Si non\s*:)(.*)$/);
+
+  if (conditionalMatch) {
+    const [, label, content] = conditionalMatch;
+
+    return (
+      <p key={index}>
+        <strong>{label}</strong>
+        {content}
+      </p>
+    );
+  }
+
+  return <p key={index}>{paragraph}</p>;
+}
+
 export default function PlanAppelPage() {
   const [searchParams] = useSearchParams();
   const campagneId = searchParams.get('campagne');
+  const stepRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const {
     etapes: apiEtapes,
@@ -156,6 +173,16 @@ export default function PlanAppelPage() {
   const campagneName = isCigales ? 'Les cigales' : apiCampagneName;
   const isLoading = isCigales ? false : apiIsLoading;
   const error = isCigales ? null : apiError;
+
+  useEffect(() => {
+    const activeStep = stepRefs.current[currentEtapeIndex];
+
+    activeStep?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, [currentEtapeIndex]);
 
   const handlePrevious = () => {
     if (currentEtapeIndex > 0) {
@@ -214,6 +241,9 @@ export default function PlanAppelPage() {
         {etapes.map((etape, index) => (
           <button
             key={etape.id_plan}
+            ref={(element) => {
+              stepRefs.current[index] = element;
+            }}
             className={`plan-appel-page__step ${index === currentEtapeIndex ? 'plan-appel-page__step--active' : ''} ${index < currentEtapeIndex ? 'plan-appel-page__step--completed' : ''}`}
             onClick={() => handleStepClick(index)}
           >
@@ -230,9 +260,7 @@ export default function PlanAppelPage() {
             <h2 className="plan-appel-page__etape-title">{currentEtape.titre}</h2>
           </div>
           <div className="plan-appel-page__etape-content">
-            {currentEtape.contenu.split('\n').map((paragraph, index) => (
-              <p key={index}>{paragraph}</p>
-            ))}
+            {currentEtape.contenu.split('\n').map(renderPlanParagraph)}
           </div>
         </div>
       </main>
@@ -261,4 +289,3 @@ export default function PlanAppelPage() {
     </div>
   );
 }
-

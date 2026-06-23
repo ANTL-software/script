@@ -35,6 +35,11 @@ export function useForceClosing(): UseForceClosingResult {
     return { pendingClosing: null, forceMode: false };
   }
 
+  // Ne pas afficher de modale pendant un appel actif (statut dialer en cours d'appel)
+  if (statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer') {
+    return { pendingClosing: null, forceMode: false };
+  }
+
   if (!pendingClosing) {
     return { pendingClosing: null, forceMode: false };
   }
@@ -46,14 +51,6 @@ export function useForceClosing(): UseForceClosingResult {
 
   // Force mode = true si on N'est PAS sur la bonne fiche prospect
   const forceMode = !isCorrectProspect;
-
-  // Pendant un appel actif, on conserve la closing uniquement sur la bonne fiche.
-  if (
-    (statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer') &&
-    forceMode
-  ) {
-    return { pendingClosing: null, forceMode: false };
-  }
 
   return { pendingClosing, forceMode };
 }

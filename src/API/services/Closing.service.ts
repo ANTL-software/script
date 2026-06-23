@@ -11,7 +11,6 @@ export interface PendingClosing {
   origineAppel?: 'auto' | 'manuel' | 'rappel' | null;
   rendezVousSourceId?: number | null;
   dureeAppel?: number;
-  startMinimized?: boolean;
   timestamp: number;
 }
 

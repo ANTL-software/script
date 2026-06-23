@@ -32,8 +32,9 @@ export default function Header({ props }: HeaderProps) {
   const searchParams = new URLSearchParams(location.search);
   const isTestMode = searchParams.get('test') === 'true';
   const isManualSearch = searchParams.get('source') === 'manual';
-  const shouldShowLogout = !isProspectView || (!isTestMode && !isManualSearch);
-  const shouldShowBack = isProspectView && (isManualSearch || isTestMode);
+  const isRappelSource = searchParams.get('source') === 'rappel';
+  const shouldShowLogout = !isProspectView || (!isTestMode && !isManualSearch && !isRappelSource);
+  const shouldShowBack = isProspectView && (isManualSearch || isTestMode || isRappelSource);
 
   const handleLogout = async () => {
     // Bloquer la déconnexion si un closing est en attente

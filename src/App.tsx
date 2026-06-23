@@ -45,7 +45,6 @@ function AppRouter() {
           rendezVousSourceId={pendingClosing.rendezVousSourceId ?? undefined}
           dureeAppel={pendingClosing.dureeAppel}
           forceMode={forceMode}
-          defaultMinimized={Boolean(pendingClosing.startMinimized) && !forceMode}
           onComplete={() => {
             closingService.clearPending();
             navigate('/');

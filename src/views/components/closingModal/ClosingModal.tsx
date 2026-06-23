@@ -21,7 +21,6 @@ interface ClosingModalProps {
   dureeAppel?: number;
   onComplete: () => void;
   forceMode?: boolean;
-  defaultMinimized?: boolean;
 }
 
 export default function ClosingModal({
@@ -35,9 +34,8 @@ export default function ClosingModal({
   dureeAppel,
   onComplete,
   forceMode = false,
-  defaultMinimized = false,
 }: ClosingModalProps) {
-  const [isMinimized, setIsMinimized] = useState(defaultMinimized);
+  const [isMinimized, setIsMinimized] = useState(false);
   const { currentProgpa } = useProspect();
 
   const {
@@ -69,14 +67,6 @@ export default function ClosingModal({
       setIsMinimized(false);
     }
   }, [forceMode]);
-
-  useEffect(() => {
-    if (forceMode) {
-      return;
-    }
-
-    setIsMinimized(defaultMinimized);
-  }, [defaultMinimized, forceMode, prospectId, appelId]);
 
   const handleMinimize = () => {
     if (forceMode) return;

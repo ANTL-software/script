@@ -158,8 +158,8 @@ export const STATUT_RENDEZ_VOUS_OPTIONS: StatutRendezVousOption[] = [
  */
 export const STATUT_RENDEZ_VOUS_COLORS: Record<RendezVousStatut, string> = {
   planifie: '#3b82f6',
-  effectue: '#22c55e',
-  reporte: '#f59e0b',
+  effectue: '#3b82f6',
+  reporte: '#3b82f6',
   non_honore: '#6b7280',
-  annule: '#ef4444',
+  annule: '#6b7280',
 };

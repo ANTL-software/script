@@ -19,9 +19,10 @@ const STATUT_LABELS: Record<string, string> = {
 
 const STATUT_COLORS: Record<string, string> = {
   planifie: '#3b82f6',
-  effectue: '#22c55e',
-  reporte: '#f59e0b',
-  annule: '#ef4444',
+  effectue: '#3b82f6',
+  reporte: '#3b82f6',
+  annule: '#6b7280',
+  non_honore: '#6b7280',
 };
 
 export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {

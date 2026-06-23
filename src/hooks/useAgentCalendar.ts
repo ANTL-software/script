@@ -66,7 +66,7 @@ export function useAgentCalendar(prospectId: number | null = null) {
 
     // Ajouter les RDV de l'agent
     for (const rdv of agentRdvList) {
-      if (rdv.statut === 'annule') continue;
+      if (rdv.statut === 'annule' || rdv.statut === 'effectue') continue;
       
       const isThisProspect = prospectId && rdv.id_prospect === prospectId;
       result.push(toCalendarEvent(rdv, isThisProspect ? 'mine-prospect' : 'mine-other'));
@@ -74,7 +74,7 @@ export function useAgentCalendar(prospectId: number | null = null) {
 
     // Ajouter les RDV des autres agents sur ce prospect (mode fiche prospect/closing)
     for (const rdv of otherAgentRdvList) {
-      if (rdv.statut === 'annule') continue;
+      if (rdv.statut === 'annule' || rdv.statut === 'effectue') continue;
       result.push(toCalendarEvent(rdv, 'other-agent-prospect'));
     }
 

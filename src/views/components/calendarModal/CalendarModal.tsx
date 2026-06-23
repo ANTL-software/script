@@ -27,11 +27,9 @@ export default function CalendarModal({
         </div>
 
         <div className="calendar-modal__legend">
-          <span className="calendar-modal__legend-item calendar-modal__legend-item--planifie">Planifié</span>
-          <span className="calendar-modal__legend-item calendar-modal__legend-item--effectue">Effectué</span>
-          <span className="calendar-modal__legend-item calendar-modal__legend-item--reporte">Reporté</span>
+          <span className="calendar-modal__legend-item calendar-modal__legend-item--planifie">Rendez-vous</span>
+          <span className="calendar-modal__legend-item calendar-modal__legend-item--commande">Commande à établir</span>
           <span className="calendar-modal__legend-item calendar-modal__legend-item--non-honore">Non honoré</span>
-          <span className="calendar-modal__legend-item calendar-modal__legend-item--annule">Annulé</span>
           <span className="calendar-modal__legend-hint">Cliquez sur un rendez-vous pour voir les détails</span>
         </div>
 

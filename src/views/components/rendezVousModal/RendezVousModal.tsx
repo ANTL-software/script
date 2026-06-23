@@ -16,7 +16,7 @@ interface RendezVousModalProps {
   prospectName?: string;
   isReadOnly?: boolean;
   onCreate: (data: { date: Date; motif: string; notes: string }) => Promise<void>;
-  onUpdate: (data: { date: Date; motif: string; notes: string; statut: string }) => Promise<void>;
+  onUpdate: (data: { date: Date; motif: string; notes: string; statut: RendezVousStatut }) => Promise<void>;
   onRequestDelete?: () => void;
   showToast?: (type: 'success' | 'error', message: string) => void;
   defaultMotif?: string;

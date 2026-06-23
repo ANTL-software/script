@@ -9,7 +9,7 @@ import { FaTrash, FaUser, FaExclamationTriangle } from 'react-icons/fa';
 import type { CalendarEvent } from '../../../utils/types';
 import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
 import { rendezVousService } from '../../../API/services';
-import type { UpdateRendezVousData, CreateRendezVousData } from '../../../utils/types/rendezVous.types';
+import type { UpdateRendezVousData, CreateRendezVousData, RendezVousStatut } from '../../../utils/types/rendezVous.types';
 import { getErrorMessage, formatHeure, checkIsCommande } from '../../../utils/scripts/formatters';
 import Loader from '../loader/Loader';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
@@ -56,6 +56,8 @@ export default function AgentCalendar({
     myProspectRdvs,
     otherAgentRdvList,
     nextMyProspectRdv,
+    currentRendezVousSource,
+    shouldRescheduleSourceRendezVous,
     loadRendezVous,
   } = useAgentCalendar(prospectId);
 
@@ -161,17 +163,32 @@ export default function AgentCalendar({
   const handleCreateRendezVous = useCallback(async (data: { date: Date; motif: string; notes: string }) => {
     if (!user?.id_employe || !prospectId) return;
     try {
-      const createData: CreateRendezVousData = {
-        id_agent: user.id_employe,
-        id_prospect: prospectId,
-        id_campagne: currentCampaign?.id_campagne ?? 7, // Fallback aux Cigales
-        date_rdv: format(data.date, 'yyyy-MM-dd'),
-        heure_rdv: format(data.date, 'HH:mm:ss'),
-        motif: data.motif,
-        notes: data.notes,
-      };
-      await rendezVousService.createRendezVous(createData);
-      showToast('success', 'Rendez-vous planifié avec succès');
+      const dateRdv = format(data.date, 'yyyy-MM-dd');
+      const heureRdv = format(data.date, 'HH:mm:ss');
+
+      if (shouldRescheduleSourceRendezVous && currentRendezVousSource) {
+        const updateData: UpdateRendezVousData = {
+          date_rdv: dateRdv,
+          heure_rdv: heureRdv,
+          motif: data.motif || undefined,
+          notes: data.notes || undefined,
+          statut: 'reporte',
+        };
+        await rendezVousService.updateRendezVous(currentRendezVousSource.id_rendez_vous, updateData);
+        showToast('success', 'Rendez-vous replanifie avec succès');
+      } else {
+        const createData: CreateRendezVousData = {
+          id_agent: user.id_employe,
+          id_prospect: prospectId,
+          id_campagne: currentCampaign?.id_campagne ?? 7, // Fallback aux Cigales
+          date_rdv: dateRdv,
+          heure_rdv: heureRdv,
+          motif: data.motif,
+          notes: data.notes,
+        };
+        await rendezVousService.createRendezVous(createData);
+        showToast('success', 'Rendez-vous planifié avec succès');
+      }
       setIsRdvModalOpen(false);
       setSelectedSlot(null);
       await loadRendezVous();
@@ -179,9 +196,9 @@ export default function AgentCalendar({
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors de la planification'));
     }
-  }, [user?.id_employe, prospectId, currentCampaign, showToast, loadRendezVous]);
+  }, [user?.id_employe, prospectId, currentCampaign, showToast, loadRendezVous, shouldRescheduleSourceRendezVous, currentRendezVousSource]);
 
-  const handleUpdateRendezVous = useCallback(async (data: { date: Date; motif: string; notes: string; statut: string }) => {
+  const handleUpdateRendezVous = useCallback(async (data: { date: Date; motif: string; notes: string; statut: RendezVousStatut }) => {
     if (!selectedRendezVous) return;
     try {
       const updateData: UpdateRendezVousData = {
@@ -189,7 +206,7 @@ export default function AgentCalendar({
         heure_rdv: format(data.date, 'HH:mm:ss'),
         motif: data.motif || undefined,
         notes: data.notes || undefined,
-        statut: data.statut as any,
+        statut: data.statut,
       };
 
       await rendezVousService.updateRendezVous(selectedRendezVous.id_rendez_vous, updateData);

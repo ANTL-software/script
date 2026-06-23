@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { startOfDay, addMinutes, parseISO } from 'date-fns';
-import { useUser, useToast } from './index';
+import { useUser, useToast, useDialer } from './index';
 import { rendezVousService } from '../API/services';
 import type { RendezVous, CalendarEvent, CalendarEventType } from '../utils/types';
 import { getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
@@ -26,6 +26,7 @@ export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): 
 export function useAgentCalendar(prospectId: number | null = null) {
   const { user } = useUser();
   const { showToast } = useToast();
+  const { currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
   const today = startOfDay(new Date());
 
@@ -97,6 +98,21 @@ export function useAgentCalendar(prospectId: number | null = null) {
     return futureRdvs[0] || null;
   }, [myProspectRdvs]);
 
+  const currentRendezVousSource = useMemo(() => {
+    if (!currentRendezVousSourceId) {
+      return null;
+    }
+
+    return agentRdvList.find((rdv) => rdv.id_rendez_vous === currentRendezVousSourceId) ?? null;
+  }, [agentRdvList, currentRendezVousSourceId]);
+
+  const shouldRescheduleSourceRendezVous = Boolean(
+    prospectId &&
+    currentOrigineAppel === 'rappel' &&
+    currentRendezVousSource &&
+    ['planifie', 'reporte', 'non_honore'].includes(currentRendezVousSource.statut)
+  );
+
   return {
     today,
     events,
@@ -104,6 +120,8 @@ export function useAgentCalendar(prospectId: number | null = null) {
     myProspectRdvs,
     otherAgentRdvList,
     nextMyProspectRdv,
+    currentRendezVousSource,
+    shouldRescheduleSourceRendezVous,
     loadRendezVous,
   };
 }

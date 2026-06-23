@@ -102,6 +102,10 @@
       background: #f59e0b;
     }
 
+    &--non-honore {
+      background: #6b7280;
+    }
+
     &--annule {
       background: #ef4444;
       opacity: 0.6;
@@ -240,6 +244,10 @@
   &--annule {
     opacity: 0.4;
     text-decoration: line-through;
+  }
+
+  &--non_honore {
+    opacity: 0.85;
   }
 }
 

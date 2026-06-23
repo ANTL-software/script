@@ -1,4 +1,4 @@
-export type RendezVousStatut = 'planifie' | 'effectue' | 'annule' | 'reporte';
+export type RendezVousStatut = 'planifie' | 'effectue' | 'annule' | 'reporte' | 'non_honore';
 
 export interface RendezVous {
   id_rendez_vous: number;

@@ -149,6 +149,7 @@ export const STATUT_RENDEZ_VOUS_OPTIONS: StatutRendezVousOption[] = [
   { value: 'planifie', label: 'Planifie' },
   { value: 'effectue', label: 'Effectue' },
   { value: 'reporte', label: 'Reporte' },
+  { value: 'non_honore', label: 'Non honore' },
   { value: 'annule', label: 'Annule' },
 ];
 
@@ -159,5 +160,6 @@ export const STATUT_RENDEZ_VOUS_COLORS: Record<RendezVousStatut, string> = {
   planifie: '#3b82f6',
   effectue: '#22c55e',
   reporte: '#f59e0b',
+  non_honore: '#6b7280',
   annule: '#ef4444',
 };

@@ -73,10 +73,9 @@ export default function AgentCalendar({
   const [calendarKey, setCalendarKey] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState<{ event: CalendarEvent | null }>({ event: null });
 
-  const handleNavigate = useCallback((newDate: Date, _view: View, action: NavigateAction) => {
-    if (action === 'PREV' && isBefore(startOfDay(newDate), today)) return;
+  const handleNavigate = useCallback((newDate: Date, _view: View, _action: NavigateAction) => {
     setCurrentDate(newDate);
-  }, [today]);
+  }, []);
 
   const handleViewChange = useCallback((view: View) => setCurrentView(view), []);
 

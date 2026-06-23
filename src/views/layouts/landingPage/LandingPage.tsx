@@ -22,7 +22,7 @@ import { prospectService } from '../../../API/services/Prospect.service';
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
-  const { fullName: prospectFullName } = useProspect();
+  const { fullName: prospectFullName, loadProspect } = useProspect();
   const { showToast, confirm } = useToast();
 
   // Mode test : détecter le paramètre ?test=true
@@ -80,6 +80,7 @@ export default function LandingPage() {
 
     try {
       const result = await prospectService.sendCatalogue(currentProspect.id_prospect);
+      await loadProspect(currentProspect.id_prospect);
       showToast('success', `Catalogue envoyé à ${result.recipientEmail}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du catalogue';

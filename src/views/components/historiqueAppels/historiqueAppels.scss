@@ -68,6 +68,34 @@
     border-radius: vars.$radius-full;
   }
 
+  &__header-meta {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  &__tarifs {
+    font-size: vars.$fontSize-sm;
+    padding: vars.$spacing-xs vars.$spacing-md;
+    border-radius: vars.$radius-full;
+    border: 1px solid transparent;
+    white-space: nowrap;
+
+    &--sent {
+      color: #157347;
+      background: #e8fff1;
+      border-color: #b7ebc6;
+    }
+
+    &--pending {
+      color: #9a6700;
+      background: #fff8db;
+      border-color: #f2d58a;
+    }
+  }
+
   &__list {
     display: flex;
     flex-direction: column;

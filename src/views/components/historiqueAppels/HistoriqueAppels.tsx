@@ -5,6 +5,7 @@ import { useProspect } from '../../../hooks/useProspect';
 import Loader from '../loader/Loader';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import AppelCard from './AppelCard';
+import { formatDateTime } from '../../../utils/scripts/formatters';
 
 export default function HistoriqueAppels() {
   const {
@@ -43,6 +44,11 @@ export default function HistoriqueAppels() {
       // L'erreur est deja geree dans le context
     }
   };
+
+  const grilleTarifaireEnvoyeeAt = currentProspect?.grille_tarifaire_envoyee_at ?? null;
+  const grilleTarifaireLabel = grilleTarifaireEnvoyeeAt
+    ? `Grille tarifaire envoyee le ${formatDateTime(grilleTarifaireEnvoyeeAt)}`
+    : 'Grille tarifaire non envoyee';
 
   if (appelsLoading) {
     return (
@@ -88,9 +94,14 @@ export default function HistoriqueAppels() {
     <div className="historique-appels">
       <div className="historique-appels__header">
         <h2>Historique des appels</h2>
-        <span className="historique-appels__count">
-          {appelsPagination.total} appel{appelsPagination.total > 1 ? 's' : ''}
-        </span>
+        <div className="historique-appels__header-meta">
+          <span className={`historique-appels__tarifs ${grilleTarifaireEnvoyeeAt ? 'historique-appels__tarifs--sent' : 'historique-appels__tarifs--pending'}`}>
+            {grilleTarifaireLabel}
+          </span>
+          <span className="historique-appels__count">
+            {appelsPagination.total} appel{appelsPagination.total > 1 ? 's' : ''}
+          </span>
+        </div>
       </div>
 
       <div className="historique-appels__list">

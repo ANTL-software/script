@@ -33,6 +33,7 @@ export interface Prospect {
   civilite?: string;
   telephone_contact?: string;
   max_progpa: number;
+  grille_tarifaire_envoyee_at?: string | null;
   created_at: string;
   updated_at: string;
 }

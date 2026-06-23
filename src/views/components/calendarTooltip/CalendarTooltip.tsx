@@ -69,8 +69,8 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
         <div className="cal-tooltip__motif">{resource.motif}</div>
       )}
 
-      {resource.notes && (
-        <div className="cal-tooltip__notes">{resource.notes}</div>
+      {resource.derniere_note_closing && (
+        <div className="cal-tooltip__notes">{resource.derniere_note_closing}</div>
       )}
     </div>
   );

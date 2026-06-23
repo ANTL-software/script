@@ -222,6 +222,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       const prospectName = currentProspect.prenom
         ? `${currentProspect.prenom} ${currentProspect.nom}`
         : currentProspect.nom;
+      const existingPending = closingService.getPending();
 
       closingService.savePending({
         prospectId: currentProspect.id_prospect,
@@ -231,6 +232,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         origineAppel: currentOrigineAppel ?? undefined,
         rendezVousSourceId: currentRendezVousSourceId ?? undefined,
         dureeAppel: callDuration,
+        startMinimized: existingPending?.startMinimized ?? true,
       });
 
       clearCart();

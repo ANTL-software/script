@@ -12,14 +12,15 @@
   &__workspace {
     flex: 1;
     min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 110px;
-    gap: 1rem;
+    display: flex;
+    align-items: stretch;
     padding: 0.75rem 1.5rem 1rem 1.5rem;
     overflow: hidden;
   }
 
   &__main {
+    flex: 1;
+    width: 100%;
     min-width: 0;
     min-height: 0;
     display: flex;
@@ -76,11 +77,6 @@
       padding-right: 0;
     }
   }
-
-  &__gauge {
-    min-height: 0;
-  }
-
   &__qui-est-ce {
     h2 {
       margin-top: 0;
@@ -180,8 +176,6 @@
 @media (max-width: 1280px) {
   .landing-page {
     &__workspace {
-      grid-template-columns: minmax(0, 1fr) 96px;
-      gap: 0.875rem;
       padding-left: 1rem;
       padding-right: 1rem;
     }
@@ -195,7 +189,6 @@
 @media (max-width: 1024px) {
   .landing-page {
     &__workspace {
-      grid-template-columns: 1fr;
       overflow: auto;
     }
 
@@ -206,11 +199,6 @@
     &__content {
       min-height: 520px;
     }
-
-    &__gauge {
-      min-height: auto;
-    }
-
     &__commande {
       grid-template-columns: 1fr;
     }

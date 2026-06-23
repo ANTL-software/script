@@ -128,7 +128,7 @@
     }
   }
 
-  // ── Corps en 2 colonnes ───────────────────────────────────────────
+  // ── Corps en 3 colonnes ───────────────────────────────────────────
   &__body {
     display: flex;
     flex: 1;
@@ -153,6 +153,15 @@
     flex-direction: column;
     padding: 0.5rem;
     overflow: hidden;
+  }
+
+  &__aside {
+    width: 180px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.5rem 0.5rem 0.5rem 0;
   }
 
   // ── Sections gauche ───────────────────────────────────────────────
@@ -180,6 +189,35 @@
         font-size: 0.75rem;
       }
     }
+  }
+
+  &__progpa-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+  }
+
+  &__progpa-status {
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(vars.$colorSuccess, 0.12);
+    color: vars.$colorSuccess;
+    font-size: 0.68rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &--missing {
+      background: rgba(vars.$colorDanger, 0.12);
+      color: vars.$colorDanger;
+    }
+  }
+
+  &__progpa {
+    flex: 1;
+    min-height: 0;
   }
 
   &__statut-grid {

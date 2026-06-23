@@ -13,7 +13,6 @@ import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes
 import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
-import ProgPA from '../../components/progPA/ProgPA';
 import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
 import { useEffect } from 'react';
 import { useToast } from '../../../hooks/useToast';
@@ -196,10 +195,6 @@ export default function LandingPage() {
               </div>
             )}
           </div>
-        </div>
-
-        <div className="landing-page__gauge">
-          <ProgPA />
         </div>
       </div>
 

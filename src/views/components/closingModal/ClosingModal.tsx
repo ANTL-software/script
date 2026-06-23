@@ -8,6 +8,7 @@ import { formatDuration } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
 import AgentCalendar from '../agentCalendar/AgentCalendar';
 import ConfirmModal from '../confirmModal/ConfirmModal';
+import ProgPA from '../progPA/ProgPA';
 
 interface ClosingModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface ClosingModalProps {
   dureeAppel?: number;
   onComplete: () => void;
   forceMode?: boolean;
+  defaultMinimized?: boolean;
 }
 
 export default function ClosingModal({
@@ -33,8 +35,9 @@ export default function ClosingModal({
   dureeAppel,
   onComplete,
   forceMode = false,
+  defaultMinimized = false,
 }: ClosingModalProps) {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(defaultMinimized);
   const { currentProgpa } = useProspect();
 
   const {
@@ -180,6 +183,18 @@ export default function ClosingModal({
                   selectedCallStatus={selectedStatut}
                 />
               </div>
+
+              <aside className="closing-modal__aside">
+                <div className="closing-modal__progpa-header">
+                  <h3>Progression du plan d'appel</h3>
+                  <span className={`closing-modal__progpa-status${currentProgpa === null ? ' closing-modal__progpa-status--missing' : ''}`}>
+                    {currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`}
+                  </span>
+                </div>
+                <div className="closing-modal__progpa">
+                  <ProgPA compact />
+                </div>
+              </aside>
 
             </div>
           </div>

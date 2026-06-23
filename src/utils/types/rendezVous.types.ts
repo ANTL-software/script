@@ -9,6 +9,7 @@ export interface RendezVous {
   heure_rdv: string;
   motif: string | null;
   notes: string | null;
+  derniere_note_closing?: string | null;
   statut: RendezVousStatut;
   created_at: string;
   updated_at: string;
@@ -32,7 +33,6 @@ export interface CreateRendezVousData {
   date_rdv: string;
   heure_rdv: string;
   motif?: string;
-  notes?: string;
 }
 
 export interface UpdateRendezVousData {

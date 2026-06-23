@@ -68,19 +68,19 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
   // sans passer par une vente — garantit que chaque appel est enregistré en DB
   useEffect(() => {
-    if (statut !== 'pause_apres_appel') return;
-    if (!wasCallActiveRef.current) return;
     if (!currentProspect) return;
-
-    // Si un closing a déjà été créé (par exemple suite à une commande validée),
-    // on a simplement à réinitialiser le marqueur d'appel.
-    if (closingService.hasPending()) {
-      wasCallActiveRef.current = false;
-      return;
-    }
 
     const campagneId = currentCampagneId ?? currentCampaign?.id_campagne ?? 0;
     if (!campagneId) return;
+
+    const existingPending = closingService.getPending();
+    if (existingPending && existingPending.prospectId !== currentProspect.id_prospect) {
+      return;
+    }
+
+    if (existingPending?.prospectId === currentProspect.id_prospect) {
+      return;
+    }
 
     const pending: Omit<PendingClosing, 'timestamp'> = {
       prospectId: currentProspect.id_prospect,
@@ -90,6 +90,45 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       origineAppel: currentOrigineAppel,
       rendezVousSourceId: currentRendezVousSourceId,
       dureeAppel: callDuration,
+      startMinimized: true,
+    };
+
+    closingService.savePending(pending);
+  }, [
+    currentProspect,
+    currentCampaign,
+    currentCampagneId,
+    currentAppelId,
+    currentOrigineAppel,
+    currentRendezVousSourceId,
+    callDuration
+  ]);
+
+  // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
+  // sans passer par une vente — garantit que chaque appel est enregistré en DB
+  useEffect(() => {
+    if (statut !== 'pause_apres_appel') return;
+    if (!wasCallActiveRef.current) return;
+    if (!currentProspect) return;
+
+    const campagneId = currentCampagneId ?? currentCampaign?.id_campagne ?? 0;
+    if (!campagneId) return;
+
+    const existingPending = closingService.getPending();
+    if (existingPending && existingPending.prospectId !== currentProspect.id_prospect) {
+      wasCallActiveRef.current = false;
+      return;
+    }
+
+    const pending: Omit<PendingClosing, 'timestamp'> = {
+      prospectId: currentProspect.id_prospect,
+      prospectName: formatProspectName({ nom: currentProspect.nom, prenom: currentProspect.prenom }),
+      campagneId,
+      appelId: currentAppelId,
+      origineAppel: currentOrigineAppel,
+      rendezVousSourceId: currentRendezVousSourceId,
+      dureeAppel: callDuration,
+      startMinimized: existingPending?.startMinimized ?? true,
     };
 
     closingService.savePending(pending);

@@ -7,10 +7,14 @@ const STEP_DEFINITIONS = [
   { value: 3, label: 'Decouverte' },
   { value: 2, label: 'Presentation' },
   { value: 1, label: 'Identification' },
-  { value: 0, label: 'Contact' },
+  { value: 0, label: 'Aucun contact' },
 ];
 
-export default function ProgPA() {
+interface ProgPAProps {
+  compact?: boolean;
+}
+
+export default function ProgPA({ compact = false }: ProgPAProps) {
   const { currentProgpa, setCurrentProgpa } = useProspect();
   const activeStep = currentProgpa;
   const completedSteps = activeStep === null
@@ -23,7 +27,7 @@ export default function ProgPA() {
   };
 
   return (
-    <aside className="prog-pa" aria-label="Progression du plan d'appel">
+    <aside className={`prog-pa${compact ? ' prog-pa--compact' : ''}`} aria-label="Progression du plan d'appel">
       <div className="prog-pa__panel">
         <div className="prog-pa__header">
           <span className="prog-pa__eyebrow">Plan d'appel</span>
@@ -51,8 +55,6 @@ export default function ProgPA() {
                 key={step.value}
                 type="button"
                 className="prog-pa__step"
-                onMouseEnter={() => handleStepChange(step.value)}
-                onFocus={() => handleStepChange(step.value)}
                 onClick={() => handleStepChange(step.value)}
                 aria-label={`${step.label}, etape ${step.value} sur 5`}
                 aria-pressed={activeStep !== null && step.value <= activeStep}

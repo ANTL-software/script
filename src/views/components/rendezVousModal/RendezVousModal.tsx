@@ -15,11 +15,10 @@ interface RendezVousModalProps {
   initialDate?: Date;
   prospectName?: string;
   isReadOnly?: boolean;
-  onCreate: (data: { date: Date; motif: string; notes: string }) => Promise<void>;
-  onUpdate: (data: { date: Date; motif: string; notes: string; statut: RendezVousStatut }) => Promise<void>;
+  onCreate: (data: { date: Date }) => Promise<void>;
+  onUpdate: (data: { date: Date; statut: RendezVousStatut }) => Promise<void>;
   onRequestDelete?: () => void;
   showToast?: (type: 'success' | 'error', message: string) => void;
-  defaultMotif?: string;
 }
 
 export default function RendezVousModal({
@@ -33,14 +32,11 @@ export default function RendezVousModal({
   onUpdate,
   onRequestDelete,
   showToast,
-  defaultMotif,
 }: RendezVousModalProps) {
   const isEditMode = !!rendezVous;
 
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
-  const [motif, setMotif] = useState('');
-  const [notes, setNotes] = useState('');
   const [statut, setStatut] = useState<RendezVousStatut>('planifie');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,18 +45,14 @@ export default function RendezVousModal({
       if (rendezVous) {
         setDate(rendezVous.date_rdv);
         setTime(rendezVous.heure_rdv.substring(0, 5));
-        setMotif(rendezVous.motif || '');
-        setNotes(rendezVous.notes || '');
         setStatut(rendezVous.statut);
       } else if (initialDate) {
         setDate(format(initialDate, 'yyyy-MM-dd'));
         setTime(format(initialDate, 'HH:mm'));
-        setMotif(defaultMotif || '');
-        setNotes('');
         setStatut('planifie');
       }
     }
-  }, [isOpen, rendezVous, initialDate, defaultMotif]);
+  }, [isOpen, rendezVous, initialDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,9 +78,9 @@ export default function RendezVousModal({
 
     try {
       if (isEditMode) {
-        await onUpdate({ date: dateTime, motif, notes, statut });
+        await onUpdate({ date: dateTime, statut });
       } else {
-        await onCreate({ date: dateTime, motif, notes });
+        await onCreate({ date: dateTime });
       }
     } finally {
       setIsSubmitting(false);
@@ -151,29 +143,6 @@ export default function RendezVousModal({
                 disabled={isReadOnly}
               />
             </div>
-          </div>
-
-          <div className="rdv-modal__field">
-            <label>Motif du rappel</label>
-            <Input
-              type="text"
-              value={motif}
-              onChange={(e) => setMotif(e.target.value)}
-              placeholder="Ex: Devis à finaliser, Relance commerciale..."
-              disabled={isReadOnly}
-            />
-          </div>
-
-          <div className="rdv-modal__field">
-            <label>Notes</label>
-            <textarea
-              className="rdv-modal__textarea"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notes supplémentaires..."
-              rows={3}
-              disabled={isReadOnly}
-            />
           </div>
 
           {isEditMode && (

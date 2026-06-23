@@ -58,6 +58,7 @@ export default function RendezVousDetailsModal({
   const rdvDate = parseISO(rendezVous.date_rdv);
   const formattedDate = format(rdvDate, 'EEEE d MMMM yyyy', { locale: fr });
   const formattedTime = formatHeure(rendezVous.heure_rdv);
+  const noteToDisplay = rendezVous.derniere_note_closing;
 
   return (
     <div className="rdv-details-modal-overlay" onClick={onClose}>
@@ -135,10 +136,10 @@ export default function RendezVousDetailsModal({
           )}
 
           {/* Notes */}
-          {rendezVous.notes && (
+          {noteToDisplay && (
             <div className="rdv-details-modal__section">
               <h3 className="rdv-details-modal__section-title">Notes</h3>
-              <p className="rdv-details-modal__text rdv-details-modal__notes">{rendezVous.notes}</p>
+              <p className="rdv-details-modal__text rdv-details-modal__notes">{noteToDisplay}</p>
             </div>
           )}
         </div>

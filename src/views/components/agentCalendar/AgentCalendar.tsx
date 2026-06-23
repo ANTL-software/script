@@ -159,7 +159,7 @@ export default function AgentCalendar({
     setSelectedSlot(null);
   }, []);
 
-  const handleCreateRendezVous = useCallback(async (data: { date: Date; motif: string; notes: string }) => {
+  const handleCreateRendezVous = useCallback(async (data: { date: Date }) => {
     if (!user?.id_employe || !prospectId) return;
     try {
       const dateRdv = format(data.date, 'yyyy-MM-dd');
@@ -169,8 +169,6 @@ export default function AgentCalendar({
         const updateData: UpdateRendezVousData = {
           date_rdv: dateRdv,
           heure_rdv: heureRdv,
-          motif: data.motif || undefined,
-          notes: data.notes || undefined,
           statut: 'reporte',
         };
         await rendezVousService.updateRendezVous(currentRendezVousSource.id_rendez_vous, updateData);
@@ -182,8 +180,6 @@ export default function AgentCalendar({
           id_campagne: currentCampaign?.id_campagne ?? 7, // Fallback aux Cigales
           date_rdv: dateRdv,
           heure_rdv: heureRdv,
-          motif: data.motif,
-          notes: data.notes,
         };
         await rendezVousService.createRendezVous(createData);
         showToast('success', 'Rendez-vous planifié avec succès');
@@ -197,14 +193,12 @@ export default function AgentCalendar({
     }
   }, [user?.id_employe, prospectId, currentCampaign, showToast, loadRendezVous, shouldRescheduleSourceRendezVous, currentRendezVousSource]);
 
-  const handleUpdateRendezVous = useCallback(async (data: { date: Date; motif: string; notes: string; statut: RendezVousStatut }) => {
+  const handleUpdateRendezVous = useCallback(async (data: { date: Date; statut: RendezVousStatut }) => {
     if (!selectedRendezVous) return;
     try {
       const updateData: UpdateRendezVousData = {
         date_rdv: format(data.date, 'yyyy-MM-dd'),
         heure_rdv: format(data.date, 'HH:mm:ss'),
-        motif: data.motif || undefined,
-        notes: data.notes || undefined,
         statut: data.statut,
       };
 
@@ -369,7 +363,6 @@ export default function AgentCalendar({
           isReadOnly={isReadOnly}
           onCreate={handleCreateRendezVous}
           onUpdate={handleUpdateRendezVous}
-          defaultMotif={selectedCallStatus === 'rdv_pris' ? 'Commande à établir' : (selectedCallStatus === 'rendez_vous_pris' ? 'Rendez-vous' : undefined)}
           onRequestDelete={() => {
             if (selectedRendezVous) {
               const tempEvent: CalendarEvent = {

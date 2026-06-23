@@ -70,6 +70,14 @@ export default function ClosingModal({
     }
   }, [forceMode]);
 
+  useEffect(() => {
+    if (forceMode) {
+      return;
+    }
+
+    setIsMinimized(defaultMinimized);
+  }, [defaultMinimized, forceMode, prospectId, appelId]);
+
   const handleMinimize = () => {
     if (forceMode) return;
     setIsMinimized(true);

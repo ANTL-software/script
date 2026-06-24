@@ -11,3 +11,4 @@ export * from './rendezVous.types';
 export * from './dialer.types';
 export * from './notification.types';
 export * from './stats.types';
+export * from './enregistrement.types';

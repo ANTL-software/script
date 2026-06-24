@@ -1,4 +1,4 @@
-import type { ModePaiement, DelaisLivraison, CartItem } from '../types';
+import type { ModePaiement, DelaisLivraison, CartItem, CreateVenteData } from '../types';
 
 interface OrderFormData {
   adresse_facturation: string;
@@ -74,7 +74,7 @@ export function buildVentePayload(params: {
   campagneId: number;
   formData: OrderFormData;
   items: CartItem[];
-}) {
+}): CreateVenteData {
   const { prospectId, campagneId, formData, items } = params;
 
   // Déterminer l'adresse de livraison à utiliser
@@ -107,12 +107,23 @@ export function buildVentePayload(params: {
     pays_livraison: paysLivraison.trim(),
     livraison_offerte: formData.livraison_offerte,
     plage_horaire_livraison: formData.plage_horaire_livraison.trim() || undefined,
-    details: items.map(item => ({
-      id_produit: item.item_type === 'panier' ? undefined : item.produit.id_produit,
-      id_panier: item.item_type === 'panier' ? item.id_panier_line : undefined,
-      quantite: item.quantite,
-      prix_unitaire: item.prix_unitaire,
-      remise: item.remise,
-    })),
+    details: items.map(item => {
+      const baseDetail = {
+        quantite: item.quantite,
+        prix_unitaire: item.prix_unitaire,
+        remise: item.remise,
+      };
+      if (item.item_type === 'panier') {
+        return {
+          ...baseDetail,
+          id_panier: item.id_panier_line,
+        };
+      }
+
+      return {
+        ...baseDetail,
+        id_produit: item.produit.id_produit,
+      };
+    }),
   };
 }

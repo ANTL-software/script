@@ -14,3 +14,4 @@ export { TwilioService, twilioService } from './Twilio.service';
 export type { TwilioAccessTokenResponse, TwilioCallLogRequest, TwilioCallLogResponse } from './Twilio.service';
 export { NotificationService, notificationService } from './Notification.service';
 export { StatsService, statsService } from './Stats.service';
+export { EnregistrementService, enregistrementService } from './Enregistrement.service';

@@ -5,7 +5,7 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { dialerService, appelService, closingService, twilioService, rendezVousService } from '../../API/services';
+import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { useToast } from '../../hooks';
@@ -13,6 +13,32 @@ import { useToast } from '../../hooks';
 interface DialerProviderProps {
   children: ReactNode;
 }
+
+type TwilioCallWithStreams = Call & {
+  getLocalStream?: () => MediaStream | null;
+  getRemoteStream?: () => MediaStream | null;
+  sid?: string;
+};
+
+type AudioContextWindow = Window & {
+  webkitAudioContext?: typeof AudioContext;
+};
+
+const getTwilioCallSid = (call: Call): string | undefined => {
+  const recordableCall = call as TwilioCallWithStreams;
+  return call.parameters.CallSid || recordableCall.sid;
+};
+
+const getRecordingExtension = (mimeType: string): string => {
+  if (mimeType.includes('mp4')) return 'mp4';
+  if (mimeType.includes('ogg')) return 'ogg';
+  if (mimeType.includes('wav')) return 'wav';
+  return 'webm';
+};
+
+const getErrorMessage = (error: unknown): string => {
+  return error instanceof Error ? error.message : 'Erreur inconnue';
+};
 
 export const DialerProvider = ({ children }: DialerProviderProps) => {
   const userContext = useContext(UserContext);
@@ -50,6 +76,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const dtmfResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recordingStartIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deviceRef = useRef<Device | null>(null);
   const activeCallRef = useRef<Call | null>(null);
   const incomingCallRef = useRef<Call | null>(null);
@@ -65,12 +92,16 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   const currentAppelIdRef = useRef<number | null>(null);
   const currentOrigineAppelRef = useRef<OrigineAppel | null>(null);
+  const callDurationRef = useRef<number>(0);
   useEffect(() => {
     currentAppelIdRef.current = currentAppelId;
   }, [currentAppelId]);
   useEffect(() => {
     currentOrigineAppelRef.current = currentOrigineAppel;
   }, [currentOrigineAppel]);
+  useEffect(() => {
+    callDurationRef.current = callDuration;
+  }, [callDuration]);
 
   // Formatage de la durée d'appel en MM:SS
   const callDurationFormatted = useMemo(() => {
@@ -132,6 +163,226 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     activeCallRef.current = call;
     setHasActiveTwilioCall(true);
   }, []);
+
+  // Références pour le mixage et l'enregistrement audio WebRTC
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const isRecordingRef = useRef<boolean>(false);
+
+  // Débuter l'enregistrement
+  const startRecording = useCallback((call: Call) => {
+    if (isRecordingRef.current) {
+      console.warn('[RECORDING] Un enregistrement est déjà en cours.');
+      return;
+    }
+
+    if (recordingStartIntervalRef.current) {
+      clearInterval(recordingStartIntervalRef.current);
+      recordingStartIntervalRef.current = null;
+    }
+
+    let retries = 0;
+    const maxRetries = 15; // 3 secondes (15 * 200ms)
+    recordingStartIntervalRef.current = setInterval(() => {
+      if (!isCallActiveRef.current) {
+        if (recordingStartIntervalRef.current) {
+          clearInterval(recordingStartIntervalRef.current);
+          recordingStartIntervalRef.current = null;
+        }
+        return;
+      }
+
+      const recordableCall = call as TwilioCallWithStreams;
+      const localStream = recordableCall.getLocalStream?.() ?? null;
+      const remoteStream = recordableCall.getRemoteStream?.() ?? null;
+
+      if (localStream && remoteStream) {
+        if (recordingStartIntervalRef.current) {
+          clearInterval(recordingStartIntervalRef.current);
+          recordingStartIntervalRef.current = null;
+        }
+        try {
+          console.log('[RECORDING] Flux WebRTC détectés. Lancement du mixage audio...');
+
+          const audioWindow = window as AudioContextWindow;
+          const AudioContextClass = window.AudioContext || audioWindow.webkitAudioContext;
+          if (!AudioContextClass) {
+            throw new Error('AudioContext indisponible dans ce navigateur');
+          }
+          const audioContext = new AudioContextClass();
+          audioContextRef.current = audioContext;
+
+          const localSource = audioContext.createMediaStreamSource(localStream);
+          const remoteSource = audioContext.createMediaStreamSource(remoteStream);
+          const destination = audioContext.createMediaStreamDestination();
+
+          localSource.connect(destination);
+          remoteSource.connect(destination);
+
+          const mixedStream = destination.stream;
+
+          let mimeType = 'audio/webm';
+          if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/ogg';
+          if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'audio/mp4';
+          if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = ''; // défaut navigateur
+
+          const recorder = mimeType
+            ? new MediaRecorder(mixedStream, { mimeType })
+            : new MediaRecorder(mixedStream);
+
+          mediaRecorderRef.current = recorder;
+          audioChunksRef.current = [];
+          isRecordingRef.current = true;
+
+          recorder.ondataavailable = (e) => {
+            if (e.data && e.data.size > 0) {
+              audioChunksRef.current.push(e.data);
+            }
+          };
+
+          recorder.onstop = async () => {
+            console.log('[RECORDING] Enregistrement arrêté. Préparation de l\'envoi...');
+            const recordingMimeType = recorder.mimeType || 'audio/webm';
+            const recordedBlob = new Blob(audioChunksRef.current, { type: recordingMimeType });
+
+            if (audioContextRef.current) {
+              audioContextRef.current.close().catch(err => console.error('[RECORDING] Erreur fermeture AudioContext:', err));
+              audioContextRef.current = null;
+            }
+
+            const activeAppelId = currentAppelIdRef.current;
+            if (activeAppelId && recordedBlob.size > 1000) {
+              try {
+                const ext = getRecordingExtension(recordingMimeType);
+                const filename = `recording_${activeAppelId}_${Date.now()}.${ext}`;
+                const file = new File([recordedBlob], filename, { type: recordingMimeType });
+
+                console.log(`[RECORDING] Upload de l'enregistrement pour l'appel #${activeAppelId}...`);
+                await enregistrementService.uploadRecording(activeAppelId, file, callDurationRef.current);
+                console.log(`[RECORDING] Enregistrement uploadé avec succès`);
+                showToast('success', 'Enregistrement de l\'appel sauvegardé', 3000);
+              } catch (err) {
+                console.error('[RECORDING] Échec de l\'upload:', err);
+                showToast('error', 'Échec de la sauvegarde de l\'enregistrement', 5000);
+              }
+            } else {
+              console.warn('[RECORDING] Fichier trop petit ou ID appel manquant:', activeAppelId);
+            }
+            isRecordingRef.current = false;
+          };
+
+          recorder.start(1000);
+          console.log('[RECORDING] Enregistrement démarré.');
+        } catch (err) {
+          console.error('[RECORDING] Erreur d\'initialisation du mixage:', err);
+          isRecordingRef.current = false;
+        }
+      } else {
+        retries++;
+        if (retries >= maxRetries) {
+          if (recordingStartIntervalRef.current) {
+            clearInterval(recordingStartIntervalRef.current);
+            recordingStartIntervalRef.current = null;
+          }
+          console.warn('[RECORDING] Annulé : flux WebRTC audio non disponibles après 3s');
+        }
+      }
+    }, 200);
+  }, [showToast]);
+
+  // Arrêter l'enregistrement
+  const stopRecording = useCallback(() => {
+    if (recordingStartIntervalRef.current) {
+      clearInterval(recordingStartIntervalRef.current);
+      recordingStartIntervalRef.current = null;
+    }
+
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      console.log('[RECORDING] Arrêt de l\'enregistrement demandé...');
+      mediaRecorderRef.current.stop();
+    }
+  }, []);
+
+  // Configuration commune des événements d'un appel (appel entrant ou sortant)
+  const setupCallEvents = useCallback((call: Call, effectiveOrigin: OrigineAppel, resolvedAppelId: number | null) => {
+    const associerCallSid = () => {
+      const callSid = getTwilioCallSid(call);
+      const activeAppelId = resolvedAppelId || currentAppelIdRef.current;
+      console.log(`[TWILIO] Connexion établie. CallSid: ${callSid}, activeAppelId: ${activeAppelId}`);
+      if (activeAppelId && callSid) {
+        appelService.updateCallSid(activeAppelId, callSid).then(() => {
+          console.log(`[TWILIO] CallSid ${callSid} associé`);
+        }).catch((err) => {
+          console.error('❌ [TWILIO] Erreur association CallSid:', err);
+        });
+      }
+    };
+
+    call.on('ringing', associerCallSid);
+
+    call.on('accept', () => {
+      associerCallSid();
+      setIsCallConnected(true);
+      if (effectiveOrigin === 'manuel' || effectiveOrigin === 'rappel' || !resolvedAppelId) {
+        setStatut('en_appel');
+        if (!timerRef.current) {
+          startCallTimer();
+        }
+      }
+      // Démarrer l'enregistrement de l'appel dès qu'il est connecté
+      startRecording(call);
+    });
+
+    call.on('disconnect', () => {
+      stopRecording();
+
+      if (!isCallActiveRef.current) {
+        console.warn('⚠️ [TWILIO] disconnect ignoré car aucun appel actif');
+        return;
+      }
+
+      console.groupCollapsed('📞 [TWILIO] Appel déconnecté');
+
+      stopCallTimer();
+      isCallActiveRef.current = false;
+      setStatut('pause_apres_appel');
+      setDepuisLe(new Date());
+      clearActiveCall();
+
+      dialerService.changerStatut('pause_apres_appel').catch((err) => {
+        console.error('❌ Erreur synchro statut:', err);
+      });
+      dialerService.endSession().catch((err) => {
+        console.error('❌ Erreur endSession:', err);
+      });
+
+      console.groupEnd();
+      showToast('info', 'Appel terminé', 3000);
+    });
+
+    const handleAbort = (reason: string) => {
+      console.log(`⚠️ [TWILIO] Appel ${reason}`);
+
+      stopRecording();
+      stopCallTimer();
+      isCallActiveRef.current = false;
+      setStatut('pause_apres_appel');
+      setDepuisLe(new Date());
+
+      dialerService.changerStatut('pause_apres_appel').catch((err) => {
+        console.error('❌ Erreur synchro statut:', err);
+      });
+      dialerService.endSession().catch((err) => {
+        console.error('❌ Erreur endSession:', err);
+      });
+      clearActiveCall();
+    };
+
+    call.on('reject', () => handleAbort('rejeté'));
+    call.on('cancel', () => handleAbort('annulé'));
+  }, [clearActiveCall, startCallTimer, stopCallTimer, startRecording, stopRecording, showToast]);
+
 
   const sendDigits = useCallback((digits: string) => {
     if (!digits || !/^[0-9*#w]+$/i.test(digits)) {
@@ -311,14 +562,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       });
 
       // Tracer TOUS les changements d'état pour le debug
-      device.on('stateChanged', (state: any) => {
+      device.on('stateChanged', (state: unknown) => {
         console.log('🔄 [TWILIO] État Device changé:', state);
       });
 
-      device.on('error', (error: any) => {
+      device.on('error', (error: unknown) => {
         console.error('❌ [TWILIO] Erreur Device:', error);
         setSipConnected(false);
-        showToast('error', 'Erreur Twilio: ' + error.message, 5000);
+        showToast('error', 'Erreur Twilio: ' + getErrorMessage(error), 5000);
       });
 
       device.on('tokenWillExpire', () => {
@@ -395,7 +646,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setSipConnected(false);
       isInitializingRef.current = false;
     }
-  }, [clearActiveCall, fetchTwilioToken, registerActiveCall, showToast, startCallTimer, stopCallTimer]);
+  }, [clearActiveCall, fetchTwilioToken, forceLogoutForTwilioFailure, recoverDeviceRegistration, refreshDeviceToken, showToast]);
 
   // ============================================================
   // INITIALISATION TWILIO (useEffect séparé pour éviter les re-créations)
@@ -583,94 +834,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setStatut(effectiveOrigin === 'auto' ? 'qualification_en_cours' : 'appel_sortant');
       setDepuisLe(new Date());
 
-      // Associer le CallSid dès qu'il est disponible (sur l'événement ringing ou accept du call)
-      const associerCallSid = () => {
-        const callSid = call.parameters.CallSid || (call as any).sid;
-        const activeAppelId = resolvedAppelId || currentAppelIdRef.current;
-        console.log(`[TWILIO] Evénement de connexion reçu. CallSid: ${callSid}, activeAppelId: ${activeAppelId}`);
-        if (activeAppelId && callSid) {
-          console.log(`[TWILIO] Association du CallSid ${callSid} à l'appel #${activeAppelId}`);
-          appelService.updateCallSid(activeAppelId, callSid).then(() => {
-            console.log(`[TWILIO] ✅ Association réussie du CallSid ${callSid}`);
-          }).catch((err) => {
-            console.error('❌ [TWILIO] Échec de l\'association du CallSid:', err);
-          });
-        } else {
-          console.warn(`[TWILIO] Impossible d'associer: activeAppelId=${activeAppelId}, callSid=${callSid}`);
-        }
-      };
-
-      call.on('ringing', associerCallSid);
-      call.on('accept', () => {
-        associerCallSid();
-        setIsCallConnected(true);
-        if (effectiveOrigin === 'manuel' || effectiveOrigin === 'rappel' || options?.skipCreateAppel) {
-          setStatut('en_appel');
-          if (!timerRef.current) {
-            startCallTimer();
-          }
-        }
-      });
-
-      // IMPORTANT: Écouter les événements de fin d'appel sur le call lui-même
-      // L'événement 'disconnect' se déclenche quand l'interlocuteur raccroche
-      call.on('disconnect', () => {
-        // Vérifier qu'il y a vraiment un appel en cours pour éviter les faux positifs
-        if (!isCallActiveRef.current) {
-          console.warn('⚠️ [TWILIO] disconnect reçu mais aucun appel actif - ignoré');
-          return;
-        }
-
-        console.groupCollapsed('📞 [TWILIO] Appel terminé (disconnect)');
-        console.log('Call SID:', call.parameters.CallSid);
-        stopCallTimer();
-        isCallActiveRef.current = false;
-        setStatut('pause_apres_appel');
-        setDepuisLe(new Date());
-        clearActiveCall();
-
-        // Synchro backend
-        dialerService.changerStatut('pause_apres_appel').catch((err) => {
-          console.error('❌ [TWILIO] Erreur changement statut:', err);
-        });
-        dialerService.endSession().catch((err) => {
-          console.error('❌ [TWILIO] Erreur endSession après disconnect:', err);
-        });
-
-        console.groupEnd();
-        showToast('info', 'Appel terminé', 3000);
-      });
-
-      // Écouter aussi les autres événements du call pour robustesse
-      call.on('reject', () => {
-        console.log('⚠️ [TWILIO] Appel rejeté');
-        stopCallTimer();
-        isCallActiveRef.current = false;
-        setStatut('pause_apres_appel');
-        setDepuisLe(new Date());
-        dialerService.changerStatut('pause_apres_appel').catch((err) => {
-          console.error('❌ [TWILIO] Erreur changement statut après reject:', err);
-        });
-        dialerService.endSession().catch((err) => {
-          console.error('❌ [TWILIO] Erreur endSession après reject:', err);
-        });
-        clearActiveCall();
-      });
-
-      call.on('cancel', () => {
-        console.log('⚠️ [TWILIO] Appel annulé');
-        stopCallTimer();
-        isCallActiveRef.current = false;
-        setStatut('pause_apres_appel');
-        setDepuisLe(new Date());
-        dialerService.changerStatut('pause_apres_appel').catch((err) => {
-          console.error('❌ [TWILIO] Erreur changement statut après cancel:', err);
-        });
-        dialerService.endSession().catch((err) => {
-          console.error('❌ [TWILIO] Erreur endSession après cancel:', err);
-        });
-        clearActiveCall();
-      });
+      // Configurer le cycle de vie de l'appel sortant
+      setupCallEvents(call, effectiveOrigin, resolvedAppelId);
 
       // Mettre à jour la session backend
       if (prospectId && campagneId) {
@@ -689,7 +854,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.groupEnd();
       showToast('error', 'Échec de l\'appel — Vérifiez votre connexion', 5000);
     }
-  }, [clearActiveCall, prochainProspect, registerActiveCall, showToast, startCallTimer]);
+  }, [clearActiveCall, currentIdProspection, prochainProspect, registerActiveCall, setupCallEvents, showToast]);
 
   // Raccrocher
   const hangup = useCallback(() => {
@@ -711,6 +876,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     // Utiliser device.disconnectAll() pour couper tous les appels
     // Cette méthode est plus fiable que d'itérer sur device.calls
+    stopRecording();
     device.disconnectAll();
 
     // Nettoyer l'état local
@@ -730,7 +896,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     console.log('✅ [HANGUP] Hangup terminé');
     console.groupEnd();
-  }, [clearActiveCall, stopCallTimer]);
+  }, [clearActiveCall, stopCallTimer, stopRecording]);
 
   // Répondre
   const answer = useCallback(() => {
@@ -742,6 +908,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     console.groupCollapsed('📞 [APPEL ENTRANT] Réponse');
     registerActiveCall(call);
+
+    // Configurer le cycle de vie de l'appel entrant (déconnexion, enregistrement)
+    setupCallEvents(call, 'auto', null);
+
     call.accept();
     setIncomingCall(null);
     isCallActiveRef.current = true;
@@ -751,7 +921,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setDepuisLe(new Date());
     console.log('✅ Appel accepté');
     console.groupEnd();
-  }, [registerActiveCall, startCallTimer]);
+  }, [registerActiveCall, startCallTimer, setupCallEvents]);
 
   // Rejeter
   const reject = useCallback(() => {

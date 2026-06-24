@@ -128,12 +128,16 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
         setIsTwilioReady(false);
       });
 
-      device.on('error', (error: any) => {
+      device.on('error', (error: unknown) => {
+        const message = error instanceof Error ? error.message : 'Erreur inconnue';
+        const code = typeof error === 'object' && error !== null && 'code' in error
+          ? String(error.code)
+          : 'N/A';
         console.error('❌ [TWILIO] Erreur Device:', error);
-        console.error('❌ [TWILIO] Error.code:', error.code);
-        console.error('❌ [TWILIO] Error.message:', error.message);
+        console.error('❌ [TWILIO] Error.code:', code);
+        console.error('❌ [TWILIO] Error.message:', message);
         setTwilioConnected(false);
-        showToast('error', 'Erreur Twilio: ' + error.message, 5000);
+        showToast('error', 'Erreur Twilio: ' + message, 5000);
       });
 
       device.on('incoming', (call: Call) => {

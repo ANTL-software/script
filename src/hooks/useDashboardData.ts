@@ -92,9 +92,9 @@ export function useDashboardData() {
       } else {
         setSearchError('Recherche par nom non disponible pour le moment. Saisissez un numéro de téléphone.');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Gestion améliorée des erreurs avec message plus explicite
-      const errorMessage = error?.message || 'Erreur lors de la recherche';
+      const errorMessage = error instanceof Error ? error.message : 'Erreur lors de la recherche';
       if (errorMessage.includes('Aucun prospect trouvé') || errorMessage.includes('not found')) {
         setSearchError('Aucune fiche trouvée pour ce numéro.');
       } else {

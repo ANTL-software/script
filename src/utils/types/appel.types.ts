@@ -20,7 +20,8 @@ export type StatutAppel =
   | 'repondeur'
   | 'relance'
   | 'amd_repondeur_auto'
-  | 'amd_fax_auto';
+  | 'amd_fax_auto'
+  | 'amd_machine_start_auto';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
 

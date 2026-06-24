@@ -135,6 +135,7 @@ export const STATUT_APPEL_COLORS: Record<StatutAppel, string> = {
   relance: '#10b981',
   amd_repondeur_auto: '#f97316',
   amd_fax_auto: '#475569',
+  amd_machine_start_auto: '#ea580c',
 };
 
 /**

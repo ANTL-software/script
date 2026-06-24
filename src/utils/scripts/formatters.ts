@@ -196,6 +196,7 @@ export function getStatutAppelClass(statut: string): string {
     case 'repondeur':
     case 'amd_repondeur_auto':
     case 'amd_fax_auto':
+    case 'amd_machine_start_auto':
       return 'appel-card__statut--warning';
     case 'refus_definitif':
     case 'doublon':
@@ -227,6 +228,7 @@ const STATUT_APPEL_LABELS: Record<string, string> = {
   relance: 'Relance',
   amd_repondeur_auto: 'Répondeur auto coupé',
   amd_fax_auto: 'Fax auto coupé',
+  amd_machine_start_auto: 'Automate filtré auto',
 };
 
 /**
@@ -290,4 +292,3 @@ export function checkIsCommande(
     /\bcde\b/.test(m)
   );
 }
-

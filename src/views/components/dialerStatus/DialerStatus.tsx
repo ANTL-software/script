@@ -69,6 +69,8 @@ export default function DialerStatus() {
   const insightLabel = (() => {
     if (currentCallInsights.endedBySystem) {
       switch (currentCallInsights.classification) {
+        case 'automate_filtre':
+          return 'Coupure système: automate filtré';
         case 'messagerie_detectee':
           return 'Coupure système: messagerie détectée';
         case 'fax_detecte':

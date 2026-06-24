@@ -74,6 +74,8 @@ export default function DtmfPad() {
         return 'Humain détecté';
       case 'svi_detecte':
         return 'SVI détecté';
+      case 'automate_filtre':
+        return 'Automate filtré';
       case 'messagerie_detectee':
         return 'Messagerie détectée';
       case 'fax_detecte':
@@ -97,6 +99,8 @@ export default function DtmfPad() {
         return 'Fin automatique: messagerie confirmée';
       case 'fax_detecte':
         return 'Fin automatique: fax détecté';
+      case 'automate_filtre':
+        return 'Fin automatique: machine_start filtré';
       default:
         return 'Fin automatique par le système';
     }

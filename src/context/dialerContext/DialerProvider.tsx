@@ -1025,7 +1025,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         return;
       }
 
-      if ((classification === 'messagerie_detectee' || classification === 'fax_detecte') && insights.endedBySystem) {
+      if ((classification === 'messagerie_detectee' || classification === 'fax_detecte' || classification === 'automate_filtre') && insights.endedBySystem) {
         stopCallTimer();
         setStatut('pause_apres_appel');
       }

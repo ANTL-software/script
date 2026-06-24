@@ -21,6 +21,7 @@ export type CallClassification =
   | 'qualification_en_cours'
   | 'humain_detecte'
   | 'svi_detecte'
+  | 'automate_filtre'
   | 'messagerie_detectee'
   | 'fax_detecte'
   | 'unknown_a_traiter';

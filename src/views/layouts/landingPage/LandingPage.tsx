@@ -62,7 +62,17 @@ export default function LandingPage() {
     showToast('info', 'Rappel rendez-vous');
     setView('historique-appels');
 
-    const nextUrl = `${window.location.pathname}?source=rappel&rdvId=${searchParams.get('rdvId') ?? ''}`;
+    const nextParams = new URLSearchParams();
+    nextParams.set('source', 'rappel');
+    const rdvId = searchParams.get('rdvId');
+    const campagneId = searchParams.get('campagneId') ?? searchParams.get('campagne');
+    if (rdvId) {
+      nextParams.set('rdvId', rdvId);
+    }
+    if (campagneId) {
+      nextParams.set('campagneId', campagneId);
+    }
+    const nextUrl = `${window.location.pathname}?${nextParams.toString()}`;
     window.history.replaceState({}, '', nextUrl);
   }, [currentProspect, searchParams, showToast, setView]);
 
@@ -182,6 +192,7 @@ export default function LandingPage() {
               <AgentCalendar
                 prospectId={currentProspect.id_prospect}
                 prospectName={prospectFullName}
+                campagneId={currentCampaign?.id_campagne}
               />
             )}
             {currentView === 'commande' && (

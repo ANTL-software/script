@@ -1,8 +1,9 @@
 import './calendarTooltip.scss';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { formatProspectName, checkIsCommande } from '../../../utils/scripts/formatters';
+import { formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
 import type { CalendarEvent } from '../../../utils/types';
+import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants';
 
 interface CalendarTooltipProps {
   event: CalendarEvent;
@@ -37,12 +38,15 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   const top  = y + 8;
 
   const isCommande = checkIsCommande(resource.motif, resource.appelsSource);
+  const isRelanceVente = checkIsRelanceVente(resource.motif, resource.appelsSource);
   const headerColor = isOtherAgent
     ? '#d97706'
-    : (isCommande ? '#E95420' : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie));
+    : (isRelanceVente
+      ? RENDEZ_VOUS_KIND_COLORS.relanceVente
+      : (isCommande ? RENDEZ_VOUS_KIND_COLORS.commande : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie)));
   const headerLabel = isOtherAgent
     ? 'Autre agent'
-    : (isCommande ? 'Commande à établir' : (STATUT_LABELS[resource.statut] ?? resource.statut));
+    : (isRelanceVente ? 'Relance vente' : (isCommande ? 'Commande à établir' : (STATUT_LABELS[resource.statut] ?? resource.statut)));
 
   return (
     <div className="cal-tooltip" style={{ left, top }}>

@@ -296,9 +296,38 @@
       }
     }
 
+    &--relance-vente {
+      background: #f5f0ff;
+      border-color: #7c3aed;
+      box-shadow: 0 0 8px rgba(124, 58, 237, 0.15);
+
+      &:hover {
+        background: #ede4ff;
+      }
+
+      .dashboard__rdv-heure,
+      .dashboard__rdv-nom {
+        color: #7c3aed;
+        font-weight: vars.$fontWeight-bold;
+      }
+    }
+
     .dashboard__rdv-badge-commande {
       margin-left: vars.$spacing-xs;
       background: #E95420;
+      color: white;
+      font-size: 9px;
+      font-weight: vars.$fontWeight-bold;
+      padding: 1px 5px;
+      border-radius: vars.$radius-sm;
+      text-transform: uppercase;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .dashboard__rdv-badge-relance {
+      margin-left: vars.$spacing-xs;
+      background: #7c3aed;
       color: white;
       font-size: 9px;
       font-weight: vars.$fontWeight-bold;

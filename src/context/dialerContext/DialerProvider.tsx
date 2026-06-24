@@ -5,7 +5,7 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { dialerService, appelService, closingService, twilioService } from '../../API/services';
+import { dialerService, appelService, closingService, twilioService, rendezVousService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { useToast } from '../../hooks';
@@ -789,9 +789,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
           setProchainProspect(candidate);
           setCurrentAppelId(null);
+          setCurrentCampagneId(candidate.id_campagne_assignee ?? null);
           setCurrentIdProspection(candidate.id_prospection ?? null);
-          setCurrentOrigineAppel(null);
-          setCurrentRendezVousSourceId(null);
+          setCurrentOrigineAppel(candidate.distribution_mode === 'rappel' ? 'rappel' : null);
+          setCurrentRendezVousSourceId(candidate.id_rendez_vous_source ?? null);
           setCurrentCallInsights({
             answeredBy: null,
             classification: null,
@@ -864,6 +865,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       showToast('error', "Veuillez d'abord enregistrer le résultat de l'appel en cours.", 5000);
       return;
     }
+    const previousStatut = statut;
+    const previousRaisonPause = raisonPause;
     try {
       const campagnes = await dialerService.getCampagnesAgent();
       if (!campagnes || campagnes.length === 0) {
@@ -907,14 +910,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
-      // IMPORTANT: Réinitialiser le statut en cas d'erreur pour éviter d'être coincé
-      setStatut('disponible');
-      setRaisonPause(null);
+      setStatut(previousStatut);
+      setRaisonPause(previousRaisonPause);
       setDepuisLe(new Date());
-      await dialerService.changerStatut('disponible').catch(() => {});
+      await dialerService.changerStatut(previousStatut, previousRaisonPause ?? undefined).catch(() => {});
       throw err;
     }
-  }, [call, showToast]);
+  }, [call, raisonPause, showToast, statut]);
 
   // Appel manuel depuis la fiche prospect (boutons d'appel)
   const callFromManual = useCallback(async (
@@ -927,10 +929,23 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       showToast('error', "Veuillez d'abord enregistrer le résultat de l'appel en cours.", 5000);
       return;
     }
+    const previousStatut = statut;
+    const previousRaisonPause = raisonPause;
     console.groupCollapsed(`📞 [APPEL MANUEL] ${phoneNumber}`);
 
     // Récupérer la campagne active si non fournie
     let targetCampagneId = campagneId;
+    if (!targetCampagneId && rendezVousSourceId) {
+      try {
+        const rendezVous = await rendezVousService.getRendezVousById(rendezVousSourceId);
+        targetCampagneId = rendezVous.id_campagne;
+      } catch (err) {
+        console.error('[APPEL MANUEL] Erreur récupération rendez-vous source:', err);
+        showToast('error', 'Impossible de récupérer la campagne du rendez-vous', 5000);
+        console.groupEnd();
+        throw err;
+      }
+    }
     if (!targetCampagneId) {
       try {
         const campagnes = await dialerService.getCampagnesAgent();
@@ -982,16 +997,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
     } catch (err) {
       console.error('[APPEL MANUEL] Erreur:', err);
-      // IMPORTANT: Réinitialiser le statut en cas d'erreur pour éviter d'être coincé
-      setStatut('disponible');
-      setRaisonPause(null);
+      setStatut(previousStatut);
+      setRaisonPause(previousRaisonPause);
       setDepuisLe(new Date());
-      await dialerService.changerStatut('disponible').catch(() => {});
+      await dialerService.changerStatut(previousStatut, previousRaisonPause ?? undefined).catch(() => {});
       throw err;
     } finally {
       console.groupEnd();
     }
-  }, [call, showToast]);
+  }, [call, raisonPause, showToast, statut]);
 
   // Clear prochain prospect
   const clearProchainProspect = useCallback(() => {

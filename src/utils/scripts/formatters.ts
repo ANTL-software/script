@@ -292,3 +292,21 @@ export function checkIsCommande(
     /\bcde\b/.test(m)
   );
 }
+
+export function checkIsRelanceVente(
+  motif?: string | null,
+  appelsSource?: Array<{ statut_appel: string }> | null,
+  selectedCallStatus?: string | null
+): boolean {
+  if (selectedCallStatus === 'vente_conclue') {
+    return true;
+  }
+
+  if (appelsSource && appelsSource.length > 0) {
+    return appelsSource.some(call => call.statut_appel === 'vente_conclue');
+  }
+
+  if (!motif) return false;
+  const m = motif.toLowerCase().trim();
+  return m === 'relance vente conclue' || (m.includes('relance') && m.includes('vente conclue'));
+}

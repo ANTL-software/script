@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
 import { closingService, type PendingClosing } from '../API/services';
 import { formatProspectName } from '../utils/scripts/formatters';
 
 export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
@@ -60,10 +61,14 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     loadProspect(prospectId);
     // Charger la campagne de l'agent (via le dialer ou le prospect assigné)
     // Ne pas fallback à 1 — si aucune campagne, l'agent n'est pas assigné
-    if (currentCampagneId) {
-      loadCampaign(currentCampagneId);
+    const rawCampagneId = searchParams.get('campagneId') ?? searchParams.get('campagne');
+    const urlCampagneId = rawCampagneId ? Number.parseInt(rawCampagneId, 10) : NaN;
+    const campagneId = currentCampagneId ?? (Number.isNaN(urlCampagneId) ? null : urlCampagneId);
+
+    if (campagneId) {
+      loadCampaign(campagneId);
     }
-  }, [id, loadProspect, loadCampaign, navigate, currentCampagneId]);
+  }, [id, loadProspect, loadCampaign, navigate, currentCampagneId, searchParams]);
 
   // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
   // sans passer par une vente — garantit que chaque appel est enregistré en DB

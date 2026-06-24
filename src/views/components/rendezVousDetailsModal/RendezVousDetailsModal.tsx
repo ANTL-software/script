@@ -3,9 +3,10 @@ import { FaTimes, FaCalendarAlt, FaClock, FaUser, FaPhone, FaEdit, FaTrash } fro
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { RendezVous } from '../../../utils/types';
-import { formatProspectName, formatHeure, checkIsCommande } from '../../../utils/scripts/formatters';
+import { formatProspectName, formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
 import { useNavigate } from 'react-router-dom';
+import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants';
 
 interface RendezVousDetailsModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface RendezVousDetailsModalProps {
   onEdit: () => void;
   onDelete: () => void;
   showMonterFiche?: boolean;
+  isReadOnly?: boolean;
 }
 
 const STATUT_LABELS: Record<string, string> = {
@@ -38,6 +40,7 @@ export default function RendezVousDetailsModal({
   onEdit,
   onDelete,
   showMonterFiche = false,
+  isReadOnly = false,
 }: RendezVousDetailsModalProps) {
   const navigate = useNavigate();
 
@@ -48,13 +51,17 @@ export default function RendezVousDetailsModal({
   const handleMonterFiche = () => {
     if (prospect) {
       onClose();
-      navigate(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}`);
+      navigate(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}&campagneId=${rendezVous.id_campagne}`);
     }
   };
-  const isCommande = checkIsCommande(rendezVous.motif, rendezVous.appelsSource);
+  const isRelanceVente = checkIsRelanceVente(rendezVous.motif, rendezVous.appelsSource);
+  const actionsLocked = isReadOnly || isRelanceVente;
+  const isCommande = !isRelanceVente && checkIsCommande(rendezVous.motif, rendezVous.appelsSource);
   const statut = rendezVous.statut;
-  const statutLabel = isCommande ? 'Commande à établir' : (STATUT_LABELS[statut] ?? statut);
-  const statutColor = isCommande ? '#E95420' : (STATUT_COLORS[statut] ?? '#6b7280');
+  const statutLabel = isRelanceVente ? 'Relance vente' : (isCommande ? 'Commande à établir' : (STATUT_LABELS[statut] ?? statut));
+  const statutColor = isRelanceVente
+    ? RENDEZ_VOUS_KIND_COLORS.relanceVente
+    : (isCommande ? RENDEZ_VOUS_KIND_COLORS.commande : (STATUT_COLORS[statut] ?? '#6b7280'));
 
   const rdvDate = parseISO(rendezVous.date_rdv);
   const formattedDate = format(rdvDate, 'EEEE d MMMM yyyy', { locale: fr });
@@ -145,14 +152,22 @@ export default function RendezVousDetailsModal({
           )}
         </div>
 
-        <div className="rdv-details-modal__actions">
-          <Button variant="danger" onClick={onDelete}>
-            <FaTrash /> Supprimer
-          </Button>
-          <Button variant="secondary" onClick={onEdit}>
-            <FaEdit /> Modifier
-          </Button>
-        </div>
+        {actionsLocked ? (
+          <div className="rdv-details-modal__actions">
+            <p className="rdv-details-modal__locked-note">
+              Ce rendez-vous est automatique et ne peut pas être déplacé depuis le calendrier.
+            </p>
+          </div>
+        ) : (
+          <div className="rdv-details-modal__actions">
+            <Button variant="danger" onClick={onDelete}>
+              <FaTrash /> Supprimer
+            </Button>
+            <Button variant="secondary" onClick={onEdit}>
+              <FaEdit /> Modifier
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import './closingModal.scss';
 import { FaPhoneAlt, FaCheck, FaSpinner, FaClock, FaStickyNote, FaExclamationTriangle, FaMinus } from 'react-icons/fa';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCallClosing } from '../../../hooks/useCallClosing';
 import { useProspect } from '../../../hooks/useProspect';
 import { STATUT_APPEL_OPTIONS } from '../../../utils/constants';
@@ -36,16 +36,18 @@ export default function ClosingModal({
   forceMode = false,
 }: ClosingModalProps) {
   const [isMinimized, setIsMinimized] = useState(false);
-  const { currentProgpa } = useProspect();
+  const { currentProgpa, setCurrentProgpa } = useProspect();
+  const unlockedProgpaBeforeVenteRef = useRef<number | null | undefined>(undefined);
 
   const {
     selectedStatut, setSelectedStatut,
     notes, setNotes,
     isSubmitting, error,
     handleSubmit,
-  } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete });
+  } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, dureeAppel, onComplete });
 
   const [showConfirm, setShowConfirm] = useState<'doublon' | null>(null);
+  const isVenteConclue = selectedStatut === 'vente_conclue';
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +69,21 @@ export default function ClosingModal({
       setIsMinimized(false);
     }
   }, [forceMode]);
+
+  useEffect(() => {
+    if (selectedStatut === 'vente_conclue') {
+      if (currentProgpa !== 5) {
+        unlockedProgpaBeforeVenteRef.current = currentProgpa;
+        setCurrentProgpa(5);
+      }
+      return;
+    }
+
+    if (unlockedProgpaBeforeVenteRef.current !== undefined) {
+      setCurrentProgpa(unlockedProgpaBeforeVenteRef.current);
+      unlockedProgpaBeforeVenteRef.current = undefined;
+    }
+  }, [currentProgpa, selectedStatut, setCurrentProgpa]);
 
   const handleMinimize = () => {
     if (forceMode) return;
@@ -163,7 +180,7 @@ export default function ClosingModal({
                     type="submit"
                     variant="primary"
                     fullWidth
-                    disabled={isSubmitting || !selectedStatut || currentProgpa === null}
+                    disabled={isSubmitting || !selectedStatut || (!isVenteConclue && currentProgpa === null)}
                   >
                     {isSubmitting ? (
                       <><FaSpinner className="spinner" /> Enregistrement...</>
@@ -178,7 +195,9 @@ export default function ClosingModal({
                 <AgentCalendar
                   prospectId={prospectId}
                   prospectName={prospectName}
+                  campagneId={campagneId}
                   selectedCallStatus={selectedStatut}
+                  isReadOnly={isVenteConclue}
                 />
               </div>
 
@@ -186,11 +205,16 @@ export default function ClosingModal({
                 <div className="closing-modal__progpa-header">
                   <h3>Progression du plan d'appel</h3>
                   <span className={`closing-modal__progpa-status${currentProgpa === null ? ' closing-modal__progpa-status--missing' : ''}`}>
-                    {currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`}
+                    {isVenteConclue ? 'Auto 5/5' : (currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`)}
                   </span>
                 </div>
+                {isVenteConclue && (
+                  <p className="closing-modal__progpa-auto-note">
+                    Vente conclue : relance automatique à +10 min, ProgPA verrouillé à 5.
+                  </p>
+                )}
                 <div className="closing-modal__progpa">
-                  <ProgPA compact />
+                  <ProgPA compact disabled={isVenteConclue} />
                 </div>
               </aside>
 

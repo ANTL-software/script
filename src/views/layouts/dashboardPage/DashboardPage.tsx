@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useMemo } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
 import { useDialer } from '../../../hooks';
 import { useToast } from '../../../hooks';
-import { formatEur, formatHeure, formatProspectName, checkIsCommande } from '../../../utils/scripts/formatters';
+import { formatEur, formatHeure, formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
 import SalesGauge from '../../components/salesGauge/SalesGauge';
 import CalendarModal from '../../components/calendarModal/CalendarModal';
@@ -26,15 +26,24 @@ function getMinutesFromTimeStr(timeStr: string): number {
 
 function buildRappelUrl(rdv: RendezVous): string | null {
   if (!rdv.prospect?.id_prospect) return null;
-  return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}`;
+  return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}&campagneId=${rdv.id_campagne}`;
 }
 
-function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: number | null): string {
+function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: number | null, campagneId?: number | null): string {
   if (!rendezVousSourceId) {
     return `/prospect/${idProspect}`;
   }
 
-  return `/prospect/${idProspect}?source=rappel&rdvId=${rendezVousSourceId}&autoReminder=1`;
+  const params = new URLSearchParams({
+    source: 'rappel',
+    rdvId: String(rendezVousSourceId),
+    autoReminder: '1',
+  });
+  if (campagneId) {
+    params.set('campagneId', String(campagneId));
+  }
+
+  return `/prospect/${idProspect}?${params.toString()}`;
 }
 
 export default function DashboardPage() {
@@ -95,7 +104,7 @@ export default function DashboardPage() {
       id_rendez_vous_source
     } = prochainProspect;
     clearProchainProspect();
-    navigate(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source));
+    navigate(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source, id_campagne_assignee));
     if (distribution_mode === 'rappel') {
       return;
     }
@@ -196,12 +205,13 @@ export default function DashboardPage() {
             <ul className="dashboard__rdv-list">
               {rdvDuJour.map(rdv => {
                 const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
-                const isCommande = checkIsCommande(rdv.motif, rdv.appelsSource);
+                const isRelanceVente = checkIsRelanceVente(rdv.motif, rdv.appelsSource);
+                const isCommande = !isRelanceVente && checkIsCommande(rdv.motif, rdv.appelsSource);
                 return (
                   <li
                     key={rdv.id_rendez_vous}
                     ref={isNext ? nextRdvRef : null}
-                    className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''} ${isCommande ? 'dashboard__rdv-item--commande' : ''}`}
+                    className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''} ${isCommande ? 'dashboard__rdv-item--commande' : ''} ${isRelanceVente ? 'dashboard__rdv-item--relance-vente' : ''}`}
                     onClick={() => {
                       const url = buildRappelUrl(rdv);
                       if (url) navigate(url);
@@ -213,6 +223,9 @@ export default function DashboardPage() {
                         {prospectLabel(rdv)}
                         {isCommande && (
                           <span className="dashboard__rdv-badge-commande">Commande à établir</span>
+                        )}
+                        {isRelanceVente && (
+                          <span className="dashboard__rdv-badge-relance">Relance vente conclue</span>
                         )}
                       </span>
                       {rdv.prospect?.telephone && (

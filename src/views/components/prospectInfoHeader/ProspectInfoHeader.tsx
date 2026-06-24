@@ -47,13 +47,24 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
     const parsed = Number.parseInt(raw, 10);
     return Number.isNaN(parsed) ? undefined : parsed;
   })();
+  const rappelCampagneId = (() => {
+    const raw = searchParams.get('campagneId') ?? searchParams.get('campagne');
+    if (!raw) return undefined;
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  })();
   const isCalling = statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer';
 
   const handleCallFromManual = async (phoneNumber: string) => {
     if (!currentProspect) return;
 
     try {
-      await callFromManual(phoneNumber, currentProspect.id_prospect, undefined, isRappelSource ? rendezVousSourceId : undefined);
+      await callFromManual(
+        phoneNumber,
+        currentProspect.id_prospect,
+        isRappelSource ? rappelCampagneId : undefined,
+        isRappelSource ? rendezVousSourceId : undefined
+      );
       showToast('info', 'Appel en cours...', 3000);
     } catch (error) {
       console.error('[PROSPECT_INFO_HEADER] Erreur appel manuel:', error);

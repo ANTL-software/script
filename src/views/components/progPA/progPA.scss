@@ -42,6 +42,17 @@
     }
   }
 
+  &--disabled {
+    .prog-pa__panel {
+      border-color: rgba(vars.$colorSuccess, 0.22);
+      box-shadow: 0 12px 28px rgba(22, 163, 74, 0.12);
+    }
+
+    .prog-pa__step {
+      cursor: not-allowed;
+    }
+  }
+
   &__panel {
     display: flex;
     flex-direction: column;

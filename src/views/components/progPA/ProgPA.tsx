@@ -12,9 +12,10 @@ const STEP_DEFINITIONS = [
 
 interface ProgPAProps {
   compact?: boolean;
+  disabled?: boolean;
 }
 
-export default function ProgPA({ compact = false }: ProgPAProps) {
+export default function ProgPA({ compact = false, disabled = false }: ProgPAProps) {
   const { currentProgpa, setCurrentProgpa } = useProspect();
   const activeStep = currentProgpa;
   const completedSteps = activeStep === null
@@ -23,11 +24,17 @@ export default function ProgPA({ compact = false }: ProgPAProps) {
   const fillHeight = `${(completedSteps / STEP_DEFINITIONS.length) * 100}%`;
 
   const handleStepChange = (value: number) => {
+    if (disabled) {
+      return;
+    }
     setCurrentProgpa(value);
   };
 
   return (
-    <aside className={`prog-pa${compact ? ' prog-pa--compact' : ''}`} aria-label="Progression du plan d'appel">
+    <aside
+      className={`prog-pa${compact ? ' prog-pa--compact' : ''}${disabled ? ' prog-pa--disabled' : ''}`}
+      aria-label="Progression du plan d'appel"
+    >
       <div className="prog-pa__panel">
         <div className="prog-pa__header">
           <span className="prog-pa__eyebrow">Plan d'appel</span>
@@ -58,6 +65,7 @@ export default function ProgPA({ compact = false }: ProgPAProps) {
                 onClick={() => handleStepChange(step.value)}
                 aria-label={`${step.label}, etape ${step.value} sur 5`}
                 aria-pressed={activeStep !== null && step.value <= activeStep}
+                disabled={disabled}
               >
                 <span>{step.label}</span>
               </button>

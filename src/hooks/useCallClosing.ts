@@ -40,7 +40,9 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
       return;
     }
 
-    if (currentProgpa === null) {
+    const effectiveProgpa = selectedStatut === 'vente_conclue' ? 5 : currentProgpa;
+
+    if (effectiveProgpa === null) {
       setError("Veuillez renseigner l'etape atteinte dans le plan d'appel");
       return;
     }
@@ -50,7 +52,11 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
     if (selectedStatut === 'rdv_pris' || selectedStatut === 'rendez_vous_pris') {
       try {
         const rdvs = await rendezVousService.getRendezVousByProspect(prospectId);
-        const activeRdvs = rdvs.filter(r => r.statut === 'planifie' || r.statut === 'reporte');
+        const activeRdvs = rdvs.filter(r =>
+          (r.statut === 'planifie' || r.statut === 'reporte') &&
+          r.id_agent === user.id_employe &&
+          r.id_campagne === campagneId
+        );
         if (activeRdvs.length === 0) {
           showToast('warning', 'Veuillez planifier un rendez-vous dans le calendrier avant de valider.');
           setError('Planification de rendez-vous obligatoire pour ce statut.');
@@ -80,7 +86,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           abouti,
           duree_secondes: finalDuration > 0 ? finalDuration : undefined,
           id_prospection: currentIdProspection ?? undefined,
-          progpa_atteint: currentProgpa,
+          progpa_atteint: effectiveProgpa,
         });
       } else {
         // Mode manuel : créer l'appel directement (pas de session SIP tracée)
@@ -92,7 +98,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           notes: notes.trim() || undefined,
           origine_appel: resolvedOrigineAppel,
           id_rendez_vous_source: resolvedRendezVousSourceId,
-          progpa_atteint: currentProgpa,
+          progpa_atteint: effectiveProgpa,
         });
         // Garde : s'assurer que le backend est bien en pause_apres_appel
         await dialerService.changerStatut('pause_apres_appel');

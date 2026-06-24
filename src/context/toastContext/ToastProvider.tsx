@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ToastContext } from './ToastContext';
 import type { Toast, ConfirmOptions, ToastContextType } from './ToastContext';
 import ToastContainer from '../../views/components/toast/ToastContainer';
 import ConfirmModal from '../../views/components/confirmModal/ConfirmModal';
+import { notificationService } from '../../API/services';
 
 interface ToastProviderProps {
   children: React.ReactNode;
@@ -27,6 +28,42 @@ export function ToastProvider({ children }: ToastProviderProps) {
     const id = `toast-${++toastIdCounter.current}`;
     setToasts((prev) => [...prev, { id, type, message, duration }]);
   }, []);
+
+  useEffect(() => {
+    let stopped = false;
+
+    const pollNotifications = async () => {
+      const employe = localStorage.getItem('employe');
+      if (!employe || stopped) {
+        return;
+      }
+
+      try {
+        const { notifications } = await notificationService.getMyNotifications(false);
+        const unreadNotifications = notifications.filter((notification) => !notification.lu);
+
+        for (const notification of unreadNotifications) {
+          if (stopped || !notification.message) {
+            continue;
+          }
+
+          const toastType = notification.type === 'rdv_manque' ? 'warning' : 'info';
+          showToast(toastType, notification.message, 8000);
+          await notificationService.marquerCommeLue(notification.id_notification);
+        }
+      } catch {
+        // Les notifications ne doivent jamais perturber l'usage principal du script.
+      }
+    };
+
+    pollNotifications();
+    const interval = window.setInterval(pollNotifications, 60000);
+
+    return () => {
+      stopped = true;
+      window.clearInterval(interval);
+    };
+  }, [showToast]);
 
   const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id));

@@ -7,10 +7,10 @@ import { fr } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTrash, FaUser, FaExclamationTriangle } from 'react-icons/fa';
 import type { CalendarEvent } from '../../../utils/types';
-import { CALENDAR_MESSAGES, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
+import { CALENDAR_MESSAGES, RENDEZ_VOUS_KIND_COLORS, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
 import { rendezVousService } from '../../../API/services';
 import type { UpdateRendezVousData, CreateRendezVousData, RendezVousStatut } from '../../../utils/types/rendezVous.types';
-import { getErrorMessage, formatHeure, checkIsCommande } from '../../../utils/scripts/formatters';
+import { getErrorMessage, formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
 import Loader from '../loader/Loader';
 import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
 import RendezVousDetailsModal from '../rendezVousDetailsModal/RendezVousDetailsModal';
@@ -35,6 +35,7 @@ const localizer = dateFnsLocalizer({
 interface AgentCalendarProps {
   prospectId?: number;
   prospectName?: string;
+  campagneId?: number;
   isReadOnly?: boolean;
   selectedCallStatus?: string | null;
 }
@@ -42,12 +43,14 @@ interface AgentCalendarProps {
 export default function AgentCalendar({
   prospectId = undefined,
   prospectName = undefined,
+  campagneId = undefined,
   isReadOnly = false,
   selectedCallStatus = null,
 }: AgentCalendarProps) {
   const { user } = useUser();
   const { currentCampaign } = useCampaign();
   const { showToast } = useToast();
+  const resolvedCampagneId = campagneId ?? currentCampaign?.id_campagne ?? null;
 
   const {
     today,
@@ -59,7 +62,7 @@ export default function AgentCalendar({
     currentRendezVousSource,
     shouldRescheduleSourceRendezVous,
     loadRendezVous,
-  } = useAgentCalendar(prospectId);
+  } = useAgentCalendar(prospectId, resolvedCampagneId);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>('week');
@@ -97,8 +100,16 @@ export default function AgentCalendar({
       };
     }
 
-    const isCommande = checkIsCommande(motif, appelsSource, selectedCallStatus);
-    const color = isCommande ? '#E95420' : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie);
+    const selectedStatusForEvent =
+      eventType === 'mine-prospect' &&
+      (!resolvedCampagneId || event.resource.id_campagne === resolvedCampagneId)
+        ? selectedCallStatus
+        : null;
+    const isRelanceVente = checkIsRelanceVente(motif, appelsSource, selectedStatusForEvent);
+    const isCommande = !isRelanceVente && checkIsCommande(motif, appelsSource, selectedStatusForEvent);
+    const color = isRelanceVente
+      ? RENDEZ_VOUS_KIND_COLORS.relanceVente
+      : (isCommande ? RENDEZ_VOUS_KIND_COLORS.commande : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie));
 
     if (eventType === 'mine-prospect') {
       return {
@@ -110,7 +121,7 @@ export default function AgentCalendar({
           color: 'white',
           fontWeight: 600,
         },
-        className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}`,
+        className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}`,
       };
     }
 
@@ -120,12 +131,12 @@ export default function AgentCalendar({
         borderRadius: '0.375rem',
         border: 'none',
         color: 'white',
-        opacity: statut === 'annule' ? 0.35 : (isCommande ? 0.9 : 0.65),
-        fontWeight: (statut === 'planifie' || isCommande) ? 600 : 400,
+        opacity: statut === 'annule' ? 0.35 : (isCommande || isRelanceVente ? 0.9 : 0.65),
+        fontWeight: (statut === 'planifie' || isCommande || isRelanceVente) ? 600 : 400,
       },
-      className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}`,
+      className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}`,
     };
-  }, [selectedCallStatus]);
+  }, [resolvedCampagneId, selectedCallStatus]);
 
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
     setSelectedRendezVous(event.resource);
@@ -161,6 +172,10 @@ export default function AgentCalendar({
 
   const handleCreateRendezVous = useCallback(async (data: { date: Date }) => {
     if (!user?.id_employe || !prospectId) return;
+    if (!resolvedCampagneId) {
+      showToast('error', 'Impossible de planifier sans campagne associée');
+      return;
+    }
     try {
       const dateRdv = format(data.date, 'yyyy-MM-dd');
       const heureRdv = format(data.date, 'HH:mm:ss');
@@ -177,7 +192,7 @@ export default function AgentCalendar({
         const createData: CreateRendezVousData = {
           id_agent: user.id_employe,
           id_prospect: prospectId,
-          id_campagne: currentCampaign?.id_campagne ?? 7, // Fallback aux Cigales
+          id_campagne: resolvedCampagneId,
           date_rdv: dateRdv,
           heure_rdv: heureRdv,
         };
@@ -191,7 +206,7 @@ export default function AgentCalendar({
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors de la planification'));
     }
-  }, [user?.id_employe, prospectId, currentCampaign, showToast, loadRendezVous, shouldRescheduleSourceRendezVous, currentRendezVousSource]);
+  }, [user?.id_employe, prospectId, resolvedCampagneId, showToast, loadRendezVous, shouldRescheduleSourceRendezVous, currentRendezVousSource]);
 
   const handleUpdateRendezVous = useCallback(async (data: { date: Date; statut: RendezVousStatut }) => {
     if (!selectedRendezVous) return;
@@ -230,6 +245,9 @@ export default function AgentCalendar({
 
   const handleQuickDelete = useCallback((event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche l'ouverture du modal de détails
+    if (checkIsRelanceVente(event.resource.motif, event.resource.appelsSource)) {
+      return;
+    }
     setConfirmDelete({ event });
   }, []);
 
@@ -252,6 +270,7 @@ export default function AgentCalendar({
 
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
+      const isLockedEvent = isReadOnly || checkIsRelanceVente(event.resource.motif, event.resource.appelsSource);
       return (
         <div className="cal-event-wrapper">
           <div
@@ -262,17 +281,19 @@ export default function AgentCalendar({
           >
             {event.title}
           </div>
-          <button
-            className="cal-event-delete-btn"
-            onClick={(e) => handleQuickDelete(event, e)}
-            title="Supprimer ce rendez-vous"
-          >
-            <FaTrash />
-          </button>
+          {!isLockedEvent && (
+            <button
+              className="cal-event-delete-btn"
+              onClick={(e) => handleQuickDelete(event, e)}
+              title="Supprimer ce rendez-vous"
+            >
+              <FaTrash />
+            </button>
+          )}
         </div>
       );
     };
-  }, [handleQuickDelete]);
+  }, [handleQuickDelete, isReadOnly]);
 
   if (isLoading) {
     return (
@@ -351,6 +372,7 @@ export default function AgentCalendar({
         onEdit={handleEditRendezVous}
         onDelete={handleDeleteRendezVous}
         showMonterFiche={!prospectId}
+        isReadOnly={isReadOnly}
       />
 
       {isRdvModalOpen && (

@@ -164,3 +164,8 @@ export const STATUT_RENDEZ_VOUS_COLORS: Record<RendezVousStatut, string> = {
   non_honore: '#6b7280',
   annule: '#6b7280',
 };
+
+export const RENDEZ_VOUS_KIND_COLORS = {
+  commande: '#E95420',
+  relanceVente: '#7c3aed',
+} as const;

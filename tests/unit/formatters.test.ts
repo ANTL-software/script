@@ -13,6 +13,7 @@ import {
   getStatutAppelLabel,
   isMobilePhone,
   checkIsCommande,
+  checkIsRelanceVente,
 } from '../../src/utils/scripts/formatters.ts';
 
 test('formatDuration formate les minutes et secondes', () => {
@@ -121,4 +122,14 @@ test('checkIsCommande détecte les motifs liés à une commande', () => {
   assert.equal(checkIsCommande('Rendez-vous'), false);
   assert.equal(checkIsCommande('abs'), false);
   assert.equal(checkIsCommande('décider'), false);
+});
+
+test('checkIsRelanceVente détecte uniquement les relances de vente conclue', () => {
+  assert.equal(checkIsRelanceVente(null, null, 'vente_conclue'), true);
+  assert.equal(checkIsRelanceVente(null, [{ statut_appel: 'vente_conclue' }]), true);
+  assert.equal(checkIsRelanceVente('Relance vente conclue'), true);
+
+  assert.equal(checkIsRelanceVente('Commande à établir'), false);
+  assert.equal(checkIsRelanceVente('relance cde'), false);
+  assert.equal(checkIsRelanceVente(null, [{ statut_appel: 'rdv_pris' }]), false);
 });

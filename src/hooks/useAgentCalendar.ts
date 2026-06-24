@@ -23,7 +23,7 @@ export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): 
   return { id: rdv.id_rendez_vous, title, start: startDate, end: endDate, resource: rdv, eventType };
 }
 
-export function useAgentCalendar(prospectId: number | null = null) {
+export function useAgentCalendar(prospectId: number | null = null, campagneId: number | null = null) {
   const { user } = useUser();
   const { showToast } = useToast();
   const { currentOrigineAppel, currentRendezVousSourceId } = useDialer();
@@ -49,13 +49,16 @@ export function useAgentCalendar(prospectId: number | null = null) {
       ]);
 
       setAgentRdvList(agentData);
-      setOtherAgentRdvList(prospectData.filter(r => r.id_agent !== agentId));
+      setOtherAgentRdvList(prospectData.filter(r =>
+        r.id_agent !== agentId &&
+        (!campagneId || r.id_campagne === campagneId)
+      ));
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id_employe, prospectId, showToast]);
+  }, [user?.id_employe, prospectId, campagneId, showToast]);
 
   useEffect(() => {
     loadRendezVous();
@@ -68,7 +71,11 @@ export function useAgentCalendar(prospectId: number | null = null) {
     for (const rdv of agentRdvList) {
       if (rdv.statut === 'annule' || rdv.statut === 'effectue') continue;
       
-      const isThisProspect = prospectId && rdv.id_prospect === prospectId;
+      const isThisProspect = Boolean(
+        prospectId &&
+        rdv.id_prospect === prospectId &&
+        (!campagneId || rdv.id_campagne === campagneId)
+      );
       result.push(toCalendarEvent(rdv, isThisProspect ? 'mine-prospect' : 'mine-other'));
     }
 
@@ -79,16 +86,17 @@ export function useAgentCalendar(prospectId: number | null = null) {
     }
 
     return result;
-  }, [agentRdvList, otherAgentRdvList, prospectId]);
+  }, [agentRdvList, otherAgentRdvList, prospectId, campagneId]);
 
   const myProspectRdvs = useMemo(() =>
     agentRdvList.filter(rdv =>
       prospectId &&
       rdv.id_prospect === prospectId &&
+      (!campagneId || rdv.id_campagne === campagneId) &&
       rdv.statut !== 'annule' &&
       rdv.statut !== 'effectue'
     ),
-    [agentRdvList, prospectId]
+    [agentRdvList, prospectId, campagneId]
   );
 
   const nextMyProspectRdv = useMemo(() => {

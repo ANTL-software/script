@@ -148,7 +148,6 @@ export interface StatutRendezVousOption {
 
 export const STATUT_RENDEZ_VOUS_OPTIONS: StatutRendezVousOption[] = [
   { value: 'planifie', label: 'Planifie' },
-  { value: 'effectue', label: 'Effectue' },
   { value: 'reporte', label: 'Reporte' },
   { value: 'non_honore', label: 'Non honore' },
   { value: 'annule', label: 'Annule' },

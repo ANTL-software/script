@@ -93,6 +93,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const currentAppelIdRef = useRef<number | null>(null);
   const currentOrigineAppelRef = useRef<OrigineAppel | null>(null);
   const callDurationRef = useRef<number>(0);
+  const callAcceptedAtRef = useRef<number | null>(null);
   useEffect(() => {
     currentAppelIdRef.current = currentAppelId;
   }, [currentAppelId]);
@@ -111,18 +112,39 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, [callDuration]);
 
   const startCallTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    const acceptedAt = Date.now();
+    callAcceptedAtRef.current = acceptedAt;
+    callDurationRef.current = 0;
     setCallDuration(0);
     hasCalledEstablishedRef.current = false;
     timerRef.current = setInterval(() => {
-      setCallDuration(prev => prev + 1);
+      const nextDuration = Math.max(0, Math.floor((Date.now() - acceptedAt) / 1000));
+      callDurationRef.current = nextDuration;
+      setCallDuration(nextDuration);
     }, 1000);
   }, []);
 
   const stopCallTimer = useCallback(() => {
+    let finalDuration = callDurationRef.current;
+
+    if (callAcceptedAtRef.current) {
+      finalDuration = Math.max(
+        finalDuration,
+        Math.max(0, Math.floor((Date.now() - callAcceptedAtRef.current) / 1000))
+      );
+    }
+
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+
+    callDurationRef.current = finalDuration;
+    setCallDuration(finalDuration);
   }, []);
 
   const scheduleDtmfReset = useCallback(() => {
@@ -139,6 +161,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const clearActiveCall = useCallback(() => {
     activeCallRef.current = null;
     incomingCallRef.current = null;
+    callAcceptedAtRef.current = null;
     setHasActiveTwilioCall(false);
     setIsCallConnected(false);
     setLastSentDigits('');
@@ -324,11 +347,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     call.on('accept', () => {
       associerCallSid();
       setIsCallConnected(true);
+      if (!timerRef.current) {
+        startCallTimer();
+      }
       if (effectiveOrigin === 'manuel' || effectiveOrigin === 'rappel' || !resolvedAppelId) {
         setStatut('en_appel');
-        if (!timerRef.current) {
-          startCallTimer();
-        }
       }
       // Démarrer l'enregistrement de l'appel dès qu'il est connecté
       startRecording(call);
@@ -916,7 +939,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setIncomingCall(null);
     isCallActiveRef.current = true;
     setIsCallConnected(true);
-    startCallTimer();
     setStatut('en_appel');
     setDepuisLe(new Date());
     console.log('✅ Appel accepté');

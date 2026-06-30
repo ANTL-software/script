@@ -104,13 +104,21 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const handlePlanAppels = () => {
     const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
     if (!campagneId) return;
-    window.open(`/plan-appel?campagne=${campagneId}`, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
+    const params = new URLSearchParams({ campagne: String(campagneId) });
+    if (isTestMode) {
+      params.set('test', 'true');
+    }
+    window.open(`/plan-appel?${params.toString()}`, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleObjections = () => {
     const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
     if (!campagneId) return;
-    window.open(`/objections?campagne=${campagneId}`, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
+    const params = new URLSearchParams({ campagne: String(campagneId) });
+    if (isTestMode) {
+      params.set('test', 'true');
+    }
+    window.open(`/objections?${params.toString()}`, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleCommande = () => {

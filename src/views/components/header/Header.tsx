@@ -10,6 +10,7 @@ import { useClosing } from "../../../hooks/useClosing";
 import DialerStatus from "../dialerStatus/DialerStatus";
 import DtmfPad from "../dtmfPad/DtmfPad";
 import Button from "../button/Button";
+import { isTestEnvironment } from "../../../utils/scripts/utils";
 
 export interface HeaderProps {
   props: {
@@ -24,6 +25,7 @@ export default function Header({ props }: HeaderProps) {
   const { hasPending } = useClosing();
   const navigate = useNavigate();
   const location = useLocation();
+  const showTestBadge = isTestEnvironment();
 
   // Masquer le bouton de déconnexion sur la vue prospect pour éviter la déconnexion pendant un appel
   // SAUF en mode test (paramètre ?test=true) où on affiche un bouton "Retour" à la place
@@ -60,7 +62,10 @@ export default function Header({ props }: HeaderProps) {
       <figure>
         <img src={antlLogo} alt="ANTL" />
       </figure>
-      <h1>{pageTitle ? pageTitle : ""}</h1>
+      <h1 className="header-title">
+        <span>{pageTitle ? pageTitle : ""}</span>
+        {showTestBadge && <span className="env-badge env-badge--test">TEST</span>}
+      </h1>
       <div className="header-actions">
         <DialerStatus />
         <DtmfPad />

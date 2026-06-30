@@ -7,6 +7,7 @@ import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
+import { getApiBaseUrl } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { useToast } from '../../hooks';
 
@@ -737,7 +738,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     // Beforeunload
     const handleBeforeUnload = () => {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8800/api';
+      const baseUrl = getApiBaseUrl();
       const token = localStorage.getItem('authToken');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;

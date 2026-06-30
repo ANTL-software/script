@@ -5,6 +5,7 @@ import type {
   InternalAxiosRequestConfig,
   AxiosResponse,
 } from "axios";
+import { getApiBaseUrl } from "../utils/scripts/utils";
 
 export interface ApiConfig {
   baseURL: string;
@@ -18,7 +19,7 @@ class ApiClient {
 
   private constructor() {
     this.axiosInstance = axios.create({
-      baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8800/api",
+      baseURL: getApiBaseUrl(),
       timeout: 30000,
       withCredentials: true, // Envoie les cookies httpOnly automatiquement
       headers: {
@@ -38,6 +39,11 @@ class ApiClient {
 
   private setupInterceptors(): void {
     // Pas d'injection de Bearer token — le cookie httpOnly est envoyé automatiquement
+
+    this.axiosInstance.interceptors.request.use((config) => {
+      config.baseURL = getApiBaseUrl();
+      return config;
+    });
 
     this.axiosInstance.interceptors.response.use(
       (response: AxiosResponse) => response,
@@ -84,7 +90,7 @@ class ApiClient {
       try {
         // Le refresh token httpOnly est envoyé automatiquement via withCredentials
         await axios.post(
-          `${this.axiosInstance.defaults.baseURL}/auth/refresh`,
+          `${getApiBaseUrl()}/auth/refresh`,
           {},
           { withCredentials: true }
         );

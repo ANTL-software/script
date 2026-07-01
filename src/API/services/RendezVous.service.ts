@@ -24,18 +24,23 @@ export class RendezVousService {
     return throwIfApiError(response, 'Erreur lors de la recuperation du rendez-vous');
   }
 
-  public async getRendezVousByAgent(agentId: number): Promise<RendezVous[]> {
-    const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/agent/${agentId}`);
+  public async getRendezVousByAgent(agentId: number, campagneId?: number): Promise<RendezVous[]> {
+    const query = campagneId ? `?campagne=${campagneId}` : '';
+    const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/agent/${agentId}${query}`);
     return throwIfApiError(response, 'Erreur lors de la recuperation des rendez-vous');
   }
 
-  public async getRendezVousByProspect(prospectId: number): Promise<RendezVous[]> {
-    const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/prospect/${prospectId}`);
+  public async getRendezVousByProspect(prospectId: number, campagneId?: number): Promise<RendezVous[]> {
+    const query = campagneId ? `?campagne=${campagneId}` : '';
+    const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/prospect/${prospectId}${query}`);
     return throwIfApiError(response, 'Erreur lors de la recuperation des rendez-vous');
   }
 
-  public async getRendezVousToday(agentId?: number): Promise<RendezVous[]> {
-    const query = agentId ? `?agent=${agentId}` : '';
+  public async getRendezVousToday(agentId?: number, campagneId?: number): Promise<RendezVous[]> {
+    const params = new URLSearchParams();
+    if (agentId) params.set('agent', String(agentId));
+    if (campagneId) params.set('campagne', String(campagneId));
+    const query = params.toString() ? `?${params.toString()}` : '';
     const response = await apiCalls.get<RendezVous[]>(`/rendez-vous/today${query}`);
     return throwIfApiError(response, 'Erreur lors de la recuperation des rendez-vous du jour');
   }

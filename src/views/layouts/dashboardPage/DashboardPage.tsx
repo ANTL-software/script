@@ -26,10 +26,10 @@ function getMinutesFromTimeStr(timeStr: string): number {
 
 function buildRappelUrl(rdv: RendezVous): string | null {
   if (!rdv.prospect?.id_prospect) return null;
-  return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}&campagneId=${rdv.id_campagne}`;
+  return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}`;
 }
 
-function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: number | null, campagneId?: number | null): string {
+function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: number | null): string {
   if (!rendezVousSourceId) {
     return `/prospect/${idProspect}`;
   }
@@ -39,9 +39,6 @@ function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: numbe
     rdvId: String(rendezVousSourceId),
     autoReminder: '1',
   });
-  if (campagneId) {
-    params.set('campagneId', String(campagneId));
-  }
 
   return `/prospect/${idProspect}?${params.toString()}`;
 }
@@ -104,7 +101,7 @@ export default function DashboardPage() {
       id_rendez_vous_source
     } = prochainProspect;
     clearProchainProspect();
-    navigate(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source, id_campagne_assignee));
+    navigate(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source));
     if (distribution_mode === 'rappel') {
       return;
     }

@@ -42,7 +42,7 @@ export class ProspectModel {
   }
 
   get statut(): ProspectStatut {
-    return this.data.statut;
+    return this.data.statut_campagne ?? this.data.statut;
   }
 
   get typeProspect(): ProspectType {
@@ -50,7 +50,7 @@ export class ProspectModel {
   }
 
   get typeFiche(): TypeFiche {
-    return getTypeFiche(this.data.statut);
+    return getTypeFiche(this.data.statut_campagne ?? this.data.statut);
   }
 
   public toJSON(): Prospect {

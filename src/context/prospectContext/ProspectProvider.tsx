@@ -4,6 +4,7 @@ import { prospectService } from '../../API/services';
 import { getTypeFiche } from '../../utils/scripts/utils';
 import { useProspectAppels } from '../../hooks/useProspectAppels';
 import { useProspectVentes } from '../../hooks/useProspectVentes';
+import { useCampaign } from '../../hooks/useCampaign';
 import type { Prospect, TypeFiche, UpdateProspectData } from '../../utils/types';
 
 interface ProspectProviderProps {
@@ -11,6 +12,7 @@ interface ProspectProviderProps {
 }
 
 export const ProspectProvider = ({ children }: ProspectProviderProps) => {
+  const { currentCampaign } = useCampaign();
   // Prospect state
   const [currentProspect, setCurrentProspect] = useState<Prospect | null>(null);
   const [currentProgpa, setCurrentProgpaState] = useState<number | null>(null);
@@ -19,8 +21,9 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
 
   // Sous-hooks spécialisés
   const prospectId = currentProspect?.id_prospect ?? null;
-  const appelsHook = useProspectAppels(prospectId);
-  const ventesHook = useProspectVentes(prospectId);
+  const campagneId = currentCampaign?.id_campagne ?? null;
+  const appelsHook = useProspectAppels(prospectId, campagneId);
+  const ventesHook = useProspectVentes(prospectId, campagneId);
 
   // Computed properties
   const fullName = useMemo(() => {
@@ -35,7 +38,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
 
   const typeFiche = useMemo((): TypeFiche => {
     if (!currentProspect) return 'jamais_appele';
-    return getTypeFiche(currentProspect.statut);
+    return getTypeFiche(currentProspect.statut_campagne ?? currentProspect.statut);
   }, [currentProspect]);
 
   // Prospect actions
@@ -43,7 +46,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const prospectModel = await prospectService.getProspectById(id);
+      const prospectModel = await prospectService.getProspectById(id, currentCampaign?.id_campagne ?? null);
       setCurrentProspect(prospectModel.toJSON());
       setCurrentProgpaState(null);
     } catch (err) {
@@ -53,7 +56,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentCampaign?.id_campagne]);
 
   const loadProspectByPhone = useCallback(async (phone: string) => {
     setIsLoading(true);

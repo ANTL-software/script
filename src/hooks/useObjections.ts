@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { campaignService } from '../API/services';
+import { useCampaign, useDialer } from './index';
 import type { Objection, ObjectionsByCategorie } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 import { OBJECTION_CATEGORIES_ORDER } from '../utils/constants';
+import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
 
 interface UseObjectionsReturn {
   objections: Objection[];
@@ -20,7 +22,13 @@ interface UseObjectionsReturn {
 
 export function useObjections(): UseObjectionsReturn {
   const [searchParams] = useSearchParams();
-  const campagneId = searchParams.get('campagne');
+  const { currentCampaign } = useCampaign();
+  const { currentCampagneId } = useDialer();
+  const campagneId = resolveRuntimeCampaignId({
+    currentCampaignId: currentCampaign?.id_campagne,
+    currentDialerCampaignId: currentCampagneId,
+    urlCampaignId: searchParams.get('campagne'),
+  });
 
   const [objections, setObjections] = useState<Objection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,11 +50,11 @@ export function useObjections(): UseObjectionsReturn {
         setError(null);
 
         // Charger la campagne pour avoir le nom
-        const campaign = await campaignService.getCampaignById(Number(campagneId));
+        const campaign = await campaignService.getCampaignById(campagneId);
         setCampagneName(campaign.toJSON().nom_campagne);
 
         // Charger les objections
-        const objectionsData = await campaignService.getObjections(Number(campagneId));
+        const objectionsData = await campaignService.getObjections(campagneId);
         setObjections(objectionsData);
 
         if (objectionsData.length === 0) {

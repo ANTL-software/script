@@ -24,6 +24,8 @@ export interface Prospect {
   ville?: string;
   pays?: string;
   statut: ProspectStatut;
+  statut_global?: ProspectStatut;
+  statut_campagne?: ProspectStatut | null;
   notes?: string;
   siret?: string;
   code_naf?: string;

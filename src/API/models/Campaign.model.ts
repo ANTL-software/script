@@ -15,12 +15,16 @@ export class CampaignModel {
     return this.data.nom_campagne;
   }
 
+  get typeCampagne(): string | null | undefined {
+    return this.data.type_campagne;
+  }
+
   get description(): string | undefined {
     return this.data.description;
   }
 
   get actif(): boolean {
-    return this.data.actif;
+    return this.data.actif ?? false;
   }
 
   get dateDebut(): string {

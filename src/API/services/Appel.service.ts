@@ -27,7 +27,7 @@ export class AppelService {
 
   public async getAppelsByProspect(
     prospectId: number,
-    params?: { page?: number; limit?: number }
+    params?: { page?: number; limit?: number; campagne?: number }
   ): Promise<{ appels: Appel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<Appel[]>(`/prospects/${prospectId}/appels${queryString}`);

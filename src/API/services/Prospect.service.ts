@@ -3,6 +3,7 @@ import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
 import { ProspectModel } from '../models';
 import type { Prospect, UpdateProspectData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
+import { buildProspectOptoutPayload } from './prospectPayloads';
 
 export class ProspectService {
   private static instance: ProspectService;
@@ -16,8 +17,9 @@ export class ProspectService {
     return ProspectService.instance;
   }
 
-  public async getProspectById(id: number): Promise<ProspectModel> {
-    const response = await apiCalls.get<Prospect>(`/prospects/${id}`);
+  public async getProspectById(id: number, campagneId?: number | null): Promise<ProspectModel> {
+    const query = campagneId ? `?campagne=${campagneId}` : '';
+    const response = await apiCalls.get<Prospect>(`/prospects/${id}${query}`);
     const data = throwIfApiError(response, 'Erreur lors de la récupération du prospect');
     return ProspectModel.fromJSON(data);
   }
@@ -65,8 +67,8 @@ export class ProspectService {
     }
   }
 
-  public async markOptout(id: number): Promise<void> {
-    const response = await apiCalls.patch(`/prospects/${id}/optout`, {});
+  public async markOptout(id: number, campagneId: number): Promise<void> {
+    const response = await apiCalls.patch(`/prospects/${id}/optout`, buildProspectOptoutPayload(campagneId));
     if (!response.success) {
       throw new Error(response.message || 'Erreur lors de l\'enregistrement opt-out');
     }

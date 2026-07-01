@@ -1,13 +1,18 @@
+import type { CampaignVariant } from '../scripts/campaignVariants';
+
 export interface Campaign {
   id_campagne: number;
   nom_campagne: string;
   description?: string;
-  id_type_campagne: number;
+  type_campagne?: CampaignVariant | null;
+  id_type_campagne?: number;
   date_debut: string;
   date_fin?: string;
   budget?: number;
   objectif_ventes?: number;
-  actif: boolean;
+  actif?: boolean;
+  statut?: 'inactive' | 'active' | 'terminee';
+  autoriser_mobile?: boolean;
   created_at: string;
   updated_at: string;
 }

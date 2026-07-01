@@ -242,8 +242,11 @@ export default function QuiEstCe() {
             </div>
             <div className="qui-est-ce__field">
               <span className="qui-est-ce__label">Statut</span>
-              <span className="qui-est-ce__value qui-est-ce__value--statut" data-statut={currentProspect.statut}>
-                {getStatutProspectLabel(currentProspect.statut)}
+              <span
+                className="qui-est-ce__value qui-est-ce__value--statut"
+                data-statut={currentProspect.statut_campagne ?? currentProspect.statut}
+              >
+                {getStatutProspectLabel(currentProspect.statut_campagne ?? currentProspect.statut)}
               </span>
             </div>
             <div className="qui-est-ce__field">

@@ -10,6 +10,8 @@ import QuiEstCe from '../../components/quiEstCe/QuiEstCe';
 import QuiSommesNous from '../../components/quiSommesNous/QuiSommesNous';
 import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
+import HistoriqueRendezVousPlaceholder from '../../components/historiqueRendezVousPlaceholder/HistoriqueRendezVousPlaceholder';
+import PriseRendezVousPlaceholder from '../../components/priseRendezVousPlaceholder/PriseRendezVousPlaceholder';
 import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
 import Panier from '../../components/panier/Panier';
@@ -17,6 +19,7 @@ import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderMo
 import { useEffect } from 'react';
 import { useToast } from '../../../hooks/useToast';
 import { prospectService } from '../../../API/services/Prospect.service';
+import { type ActionButtonId, getCampaignUiConfig } from '../../../utils/scripts/campaignVariants';
 
 export default function LandingPage() {
   const { id } = useParams<{ id: string }>();
@@ -34,6 +37,7 @@ export default function LandingPage() {
     handleOrderSuccess,
     setView, currentCampaign,
   } = useLandingPage(id, isTestMode);
+  const campaignUi = getCampaignUiConfig(currentCampaign);
 
   // DEBUG : Permettre de tester la closing modal via URL ?test=closing
   useEffect(() => {
@@ -65,12 +69,8 @@ export default function LandingPage() {
     const nextParams = new URLSearchParams();
     nextParams.set('source', 'rappel');
     const rdvId = searchParams.get('rdvId');
-    const campagneId = searchParams.get('campagneId') ?? searchParams.get('campagne');
     if (rdvId) {
       nextParams.set('rdvId', rdvId);
-    }
-    if (campagneId) {
-      nextParams.set('campagneId', campagneId);
     }
     const nextUrl = `${window.location.pathname}?${nextParams.toString()}`;
     window.history.replaceState({}, '', nextUrl);
@@ -129,6 +129,31 @@ export default function LandingPage() {
     showToast('warning', 'Aucun document d\'agrément n\'est encore configuré pour cet envoi');
   };
 
+  const handleAction = (actionId: ActionButtonId) => {
+    switch (actionId) {
+      case 'tarifs':
+        void handleTarifsClick();
+        break;
+      case 'agrement':
+        void handleAgrementClick();
+        break;
+      case 'historique-appels':
+        setView('historique-appels');
+        break;
+      case 'historique-offres':
+        setView(campaignUi.actions.find((action) => action.id === 'historique-offres')?.targetView ?? 'historique-offres');
+        break;
+      case 'rendez-vous':
+        setView('rendez-vous');
+        break;
+      case 'commande':
+        handleCommande();
+        break;
+      default:
+        break;
+    }
+  };
+
   if (isLoading) {
     return (
       <main id="landingPage">
@@ -175,12 +200,8 @@ export default function LandingPage() {
         <div className="landing-page__main">
           <ActionButtons
             currentView={currentView}
-            onTarifs={handleTarifsClick}
-            onAgrement={handleAgrementClick}
-            onHistoriqueAppels={() => setView('historique-appels')}
-            onHistoriqueOffres={() => setView('historique-offres')}
-            onRendezVous={() => setView('rendez-vous')}
-            onCommande={handleCommande}
+            buttons={campaignUi.actions}
+            onAction={handleAction}
           />
 
           <div className={`landing-page__content ${currentView === 'commande' ? 'view-commande' : ''}`}>
@@ -188,6 +209,7 @@ export default function LandingPage() {
             {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
             {currentView === 'historique-appels' && <HistoriqueAppels />}
             {currentView === 'historique-offres' && <HistoriqueVentes />}
+            {currentView === 'historique-rendez-vous' && <HistoriqueRendezVousPlaceholder />}
             {currentView === 'rendez-vous' && (
               <AgentCalendar
                 prospectId={currentProspect.id_prospect}
@@ -196,24 +218,30 @@ export default function LandingPage() {
               />
             )}
             {currentView === 'commande' && (
-              <div className="landing-page__commande">
-                <div className="landing-page__catalogue">
-                  <CatalogueProduits />
+              campaignUi.commandeMode === 'sales' ? (
+                <div className="landing-page__commande">
+                  <div className="landing-page__catalogue">
+                    <CatalogueProduits />
+                  </div>
+                  <div className="landing-page__panier">
+                    <Panier onValidateOrder={() => setIsModalOpen(true)} />
+                  </div>
                 </div>
-                <div className="landing-page__panier">
-                  <Panier onValidateOrder={() => setIsModalOpen(true)} />
-                </div>
-              </div>
+              ) : (
+                <PriseRendezVousPlaceholder />
+              )
             )}
           </div>
         </div>
       </div>
 
-      <ConfirmOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={handleOrderSuccess}
-      />
+      {campaignUi.commandeMode === 'sales' && (
+        <ConfirmOrderModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSuccess={handleOrderSuccess}
+        />
+      )}
     </main>
   );
 }

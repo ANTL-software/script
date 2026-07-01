@@ -6,7 +6,7 @@ import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService } from '../../API/services';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification, AgentRuntimeCampaign } from '../../utils/types';
 import { getApiBaseUrl } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { useToast } from '../../hooks';
@@ -39,6 +39,17 @@ const getRecordingExtension = (mimeType: string): string => {
 
 const getErrorMessage = (error: unknown): string => {
   return error instanceof Error ? error.message : 'Erreur inconnue';
+};
+
+const pickRuntimeCampaign = (
+  campagnes: AgentRuntimeCampaign[],
+  currentCampagneId: number | null,
+  statusCampaignId?: number | null,
+): AgentRuntimeCampaign | null => {
+  return campagnes.find((campagne) => campagne.id_campagne === currentCampagneId)
+    ?? campagnes.find((campagne) => campagne.is_active_runtime)
+    ?? (statusCampaignId ? campagnes.find((campagne) => campagne.id_campagne === statusCampaignId) ?? null : null)
+    ?? (campagnes.length === 1 ? campagnes[0] : null);
 };
 
 export const DialerProvider = ({ children }: DialerProviderProps) => {
@@ -700,34 +711,36 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   // INITIALISATION AU MONTAGE (sans Twilio)
   // ============================================================
 
+  const resolveRuntimeCampaign = useCallback(async () => {
+    const status = await dialerService.getStatut();
+    setStatut(status.statut);
+    setRaisonPause(status.raison_pause ?? null);
+    if (status.debut_statut) {
+      setDepuisLe(new Date(status.debut_statut));
+    }
+
+    const campagnes = await dialerService.getCampagnesAgent();
+    const runtimeCampaign = pickRuntimeCampaign(campagnes, currentCampagneId, status.id_campagne_active);
+
+    if (runtimeCampaign) {
+      if (!runtimeCampaign.is_active_runtime && campagnes.length === 1) {
+        const runtimeStatus = await dialerService.setCampagneActive(runtimeCampaign.id_campagne);
+        setCurrentCampagneId(runtimeStatus.id_campagne_active ?? runtimeCampaign.id_campagne);
+      } else {
+        setCurrentCampagneId(runtimeCampaign.id_campagne);
+      }
+      return;
+    }
+
+    setCurrentCampagneId(status.id_campagne_active ?? null);
+  }, [currentCampagneId]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Récupérer le statut backend
-    const recoverStatus = async () => {
-      try {
-        const data = await dialerService.getStatut();
-        setStatut(data.statut);
-        setRaisonPause(data.raison_pause ?? null);
-        if (data.debut_statut) {
-          setDepuisLe(new Date(data.debut_statut));
-        }
-      } catch {}
-    };
-    recoverStatus();
-
-    // Charger la première campagne
-    const loadAgentCampaign = async () => {
-      try {
-        const campagnes = await dialerService.getCampagnesAgent();
-        if (campagnes && campagnes.length > 0) {
-          setCurrentCampagneId(campagnes[0].id_campagne);
-        }
-      } catch (err) {
-        console.error('[DIALER] Erreur chargement campagnes:', err);
-      }
-    };
-    loadAgentCampaign();
+    resolveRuntimeCampaign().catch((err) => {
+      console.error('[DIALER] Erreur chargement campagnes:', err);
+    });
 
     // Heartbeat
     const sendHeartbeat = () => {
@@ -778,7 +791,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, resolveRuntimeCampaign]);
 
   // ============================================================
   // FONCTIONS D'APPEL
@@ -1062,11 +1075,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     const previousRaisonPause = raisonPause;
     try {
       const campagnes = await dialerService.getCampagnesAgent();
-      if (!campagnes || campagnes.length === 0) {
+      const campagne = pickRuntimeCampaign(campagnes, currentCampagneId, currentCampagneId);
+      if (!campagne) {
         console.warn('[DIALER] Aucune campagne active');
         return;
       }
-      const campagne = campagnes[0];
       const campagneId = campagne.id_campagne;
 
       if (prospectPhone && isMobilePhone(prospectPhone) && !campagne.autoriser_mobile) {
@@ -1109,7 +1122,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await dialerService.changerStatut(previousStatut, previousRaisonPause ?? undefined).catch(() => {});
       throw err;
     }
-  }, [call, raisonPause, showToast, statut]);
+  }, [call, currentCampagneId, raisonPause, showToast, statut]);
 
   // Appel manuel depuis la fiche prospect (boutons d'appel)
   const callFromManual = useCallback(async (
@@ -1142,10 +1155,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     if (!targetCampagneId) {
       try {
         const campagnes = await dialerService.getCampagnesAgent();
-        if (!campagnes || campagnes.length === 0) {
+        const campagneActive = pickRuntimeCampaign(campagnes, currentCampagneId, currentCampagneId);
+        if (!campagneActive) {
           throw new Error('Aucune campagne active');
         }
-        targetCampagneId = campagnes[0].id_campagne;
+        targetCampagneId = campagneActive.id_campagne;
       } catch (err) {
         console.error('[APPEL MANUEL] Erreur récupération campagnes:', err);
         showToast('error', 'Impossible de récupérer les campagnes actives', 5000);
@@ -1198,7 +1212,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     } finally {
       console.groupEnd();
     }
-  }, [call, raisonPause, showToast, statut]);
+  }, [call, currentCampagneId, raisonPause, showToast, statut]);
 
   // Clear prochain prospect
   const clearProchainProspect = useCallback(() => {

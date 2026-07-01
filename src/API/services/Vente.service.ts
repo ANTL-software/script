@@ -27,7 +27,7 @@ export class VenteService {
 
   public async getVentesByProspect(
     prospectId: number,
-    params?: { page?: number; limit?: number }
+    params?: { page?: number; limit?: number; campagne?: number }
   ): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<Vente[]>(`/prospects/${prospectId}/ventes${queryString}`);

@@ -4,7 +4,7 @@ import type { Appel, Pagination } from '../utils/types';
 
 const APPELS_LIMIT = 20;
 
-export function useProspectAppels(prospectId: number | null) {
+export function useProspectAppels(prospectId: number | null, campagneId: number | null) {
   const [appels, setAppels] = useState<Appel[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +24,11 @@ export function useProspectAppels(prospectId: number | null) {
     setError(null);
 
     try {
-      const response = await appelService.getAppelsByProspect(prospectId, { page, limit: APPELS_LIMIT });
+      const response = await appelService.getAppelsByProspect(prospectId, {
+        page,
+        limit: APPELS_LIMIT,
+        campagne: campagneId ?? undefined,
+      });
       setAppels(response.appels);
       setPagination({
         page: response.page,
@@ -39,7 +43,7 @@ export function useProspectAppels(prospectId: number | null) {
     } finally {
       setLoading(false);
     }
-  }, [prospectId]);
+  }, [campagneId, prospectId]);
 
   const updateNotes = useCallback(async (appelId: number, notes: string) => {
     setError(null);

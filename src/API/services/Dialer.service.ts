@@ -1,6 +1,6 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError } from '../apiHelpers';
-import type { StatutDialer, RaisonPause, StatutDialerResponse, Prospect, ProspectAssigne } from '../../utils/types';
+import type { StatutDialer, RaisonPause, StatutDialerResponse, Prospect, ProspectAssigne, AgentRuntimeCampaign } from '../../utils/types';
 
 export class DialerService {
   private static instance: DialerService;
@@ -44,9 +44,14 @@ export class DialerService {
     await apiCalls.post('/agents/me/heartbeat');
   }
 
-  public async getCampagnesAgent(): Promise<Array<{ id_campagne: number; nom_campagne: string; statut: string; autoriser_mobile: boolean }>> {
-    const response = await apiCalls.get<Array<{ id_campagne: number; nom_campagne: string; statut: string; autoriser_mobile: boolean }>>('/agents/me/campagnes');
+  public async getCampagnesAgent(): Promise<AgentRuntimeCampaign[]> {
+    const response = await apiCalls.get<AgentRuntimeCampaign[]>('/agents/me/campagnes');
     return throwIfApiError(response, 'Erreur lors de la récupération des campagnes');
+  }
+
+  public async setCampagneActive(id_campagne: number): Promise<StatutDialerResponse> {
+    const response = await apiCalls.patch<StatutDialerResponse>('/agents/me/campagne-active', { id_campagne });
+    return throwIfApiError(response, 'Erreur lors de la sélection de la campagne active');
   }
 
   public async markMobile(idProspection: number): Promise<void> {

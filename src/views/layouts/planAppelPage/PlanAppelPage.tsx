@@ -4,7 +4,6 @@ import { usePlanAppel } from '../../../hooks/usePlanAppel';
 import Button from '../../components/button/Button';
 import Loader from '../../components/loader/Loader';
 import { FaChevronLeft, FaChevronRight, FaListOl } from 'react-icons/fa';
-import { useSearchParams } from 'react-router-dom';
 import type { PlanAppelEtape } from '../../../utils/types';
 
 const CIGALES_PLAN_APPEL: PlanAppelEtape[] = [
@@ -137,6 +136,8 @@ Avant de vous laisser j’ai 2 faveurs à vous demander ? 1- Auriez-vous la gent
   }
 ];
 
+void CIGALES_PLAN_APPEL;
+
 function renderPlanParagraph(paragraph: string, index: number) {
   const conditionalMatch = paragraph.match(/^(Si oui…?\s*:|Si non\s*:)(.*)$/);
 
@@ -155,8 +156,6 @@ function renderPlanParagraph(paragraph: string, index: number) {
 }
 
 export default function PlanAppelPage() {
-  const [searchParams] = useSearchParams();
-  const campagneId = searchParams.get('campagne');
   const stepRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const {
@@ -168,11 +167,10 @@ export default function PlanAppelPage() {
     error: apiError,
   } = usePlanAppel();
 
-  const isCigales = campagneId === '7';
-  const etapes = isCigales ? CIGALES_PLAN_APPEL : apiEtapes;
-  const campagneName = isCigales ? 'Les cigales' : apiCampagneName;
-  const isLoading = isCigales ? false : apiIsLoading;
-  const error = isCigales ? null : apiError;
+  const etapes = apiEtapes;
+  const campagneName = apiCampagneName;
+  const isLoading = apiIsLoading;
+  const error = apiError;
 
   useEffect(() => {
     const activeStep = stepRefs.current[currentEtapeIndex];

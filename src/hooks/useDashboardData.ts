@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './useUser';
+import { useDialer } from './useDialer';
 import { prospectService, rendezVousService, statsService, notificationService } from '../API/services';
 import type { RendezVous, StatsDuJour, Notification } from '../utils/types';
 
@@ -8,6 +9,7 @@ const DASHBOARD_POLL_INTERVAL = 60_000;
 
 export function useDashboardData() {
   const { user } = useUser();
+  const { currentCampagneId } = useDialer();
   const navigate = useNavigate();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -35,7 +37,7 @@ export function useDashboardData() {
     setNotifsLoading(true);
 
     const [rdvResult, statsResult, notifsResult] = await Promise.allSettled([
-      rendezVousService.getRendezVousToday(user.id_employe),
+      rendezVousService.getRendezVousToday(user.id_employe, currentCampagneId ?? undefined),
       statsService.getMyStatsDuJour(),
       notificationService.getMyNotifications(false),
     ]);
@@ -51,7 +53,7 @@ export function useDashboardData() {
       setNonLues(notifsResult.value.non_lues);
     }
     setNotifsLoading(false);
-  }, [user]);
+  }, [currentCampagneId, user]);
 
   useEffect(() => {
     fetchData();

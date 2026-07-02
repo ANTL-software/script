@@ -10,7 +10,7 @@ import { useClosing } from "../../../hooks/useClosing";
 import DialerStatus from "../dialerStatus/DialerStatus";
 import DtmfPad from "../dtmfPad/DtmfPad";
 import Button from "../button/Button";
-import { isTestEnvironment, getCampagneLogoUrl } from "../../../utils/scripts/utils";
+import { isTestEnvironment, isProspectTestMode, getCampagneLogoUrl } from "../../../utils/scripts/utils";
 import { useCampaign } from "../../../hooks";
 
 export interface HeaderProps {
@@ -27,7 +27,7 @@ export default function Header({ props }: HeaderProps) {
   const { currentCampaign } = useCampaign();
   const navigate = useNavigate();
   const location = useLocation();
-  const showTestBadge = isTestEnvironment();
+  const showTestBadge = isTestEnvironment() || isProspectTestMode();
 
   const campaignLogoUrl = getCampagneLogoUrl(currentCampaign?.logo_path);
 

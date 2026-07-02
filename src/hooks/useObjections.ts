@@ -6,6 +6,7 @@ import type { Objection, ObjectionsByCategorie } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 import { OBJECTION_CATEGORIES_ORDER } from '../utils/constants';
 import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
+import { CIGALES_OBJECTIONS, MMA_OBJECTIONS } from '../utils/scripts/staticObjections';
 
 interface UseObjectionsReturn {
   objections: Objection[];
@@ -49,17 +50,39 @@ export function useObjections(): UseObjectionsReturn {
         setIsLoading(true);
         setError(null);
 
-        // Charger la campagne pour avoir le nom
-        const campaign = await campaignService.getCampaignById(campagneId);
-        setCampagneName(campaign.toJSON().nom_campagne);
-
-        // Charger les objections
-        const objectionsData = await campaignService.getObjections(campagneId);
-        setObjections(objectionsData);
-
-        if (objectionsData.length === 0) {
-          setError('Aucune objection definie pour cette campagne');
+        // Charger la campagne pour avoir le nom et le type
+        let campaign;
+        let name = '';
+        let type = '';
+        try {
+          campaign = await campaignService.getCampaignById(campagneId);
+          const data = campaign.toJSON();
+          name = data.nom_campagne || '';
+          type = data.type_campagne || '';
+          setCampagneName(name);
+        } catch (err) {
+          console.warn('Impossible de charger les infos de la campagne, fallback...', err);
+          name = currentCampaign?.nom_campagne || (campagneId === 7 ? 'Les Cigales' : 'MMA Planète Assurance') || '';
+          type = currentCampaign?.type_campagne || (campagneId === 7 ? 'social' : 'lead_b2b') || '';
+          setCampagneName(name);
         }
+
+        // Charger les objections de l'API
+        let objectionsData: Objection[] = [];
+        try {
+          objectionsData = await campaignService.getObjections(campagneId);
+        } catch (err) {
+          console.warn('Impossible de charger les objections de l\'API, utilisation du fallback statique...', err);
+        }
+
+        // Fallback statique si la base de données est vide ou injoignable
+        if (!objectionsData || objectionsData.length === 0) {
+          const isMMA = type === 'lead_b2b' || name.toLowerCase().includes('mma') || name.toLowerCase().includes('assurance');
+          objectionsData = isMMA ? MMA_OBJECTIONS : CIGALES_OBJECTIONS;
+          console.log(`[useObjections] Utilisation des objections statiques de fallback pour ${isMMA ? 'MMA' : 'Cigales'}`);
+        }
+
+        setObjections(objectionsData);
       } catch (err) {
         setError(getErrorMessage(err, 'Erreur lors du chargement'));
       } finally {
@@ -68,7 +91,7 @@ export function useObjections(): UseObjectionsReturn {
     };
 
     loadObjections();
-  }, [campagneId]);
+  }, [campagneId, currentCampaign]);
 
   // Filtrer les objections par recherche
   const filteredObjections = useMemo(() => {

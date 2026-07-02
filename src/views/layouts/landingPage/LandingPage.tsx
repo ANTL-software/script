@@ -10,7 +10,7 @@ import QuiEstCe from '../../components/quiEstCe/QuiEstCe';
 import QuiSommesNous from '../../components/quiSommesNous/QuiSommesNous';
 import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
 import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
-import HistoriqueRendezVousPlaceholder from '../../components/historiqueRendezVousPlaceholder/HistoriqueRendezVousPlaceholder';
+import HistoriqueRendezVous from '../../components/historiqueRendezVous/HistoriqueRendezVous';
 import PriseRendezVousPlaceholder from '../../components/priseRendezVousPlaceholder/PriseRendezVousPlaceholder';
 import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
 import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
@@ -46,6 +46,7 @@ export default function LandingPage() {
         prospectId: currentProspect.id_prospect,
         prospectName: `${currentProspect.nom} ${currentProspect.prenom || ''}`.trim(),
         campagneId: currentCampaign.id_campagne,
+        campaignVariant: getCampaignUiConfig(currentCampaign).variant,
         dureeAppel: 45,
       };
       closingService.savePending(testData);
@@ -209,7 +210,7 @@ export default function LandingPage() {
             {currentView === 'qui-sommes-nous' && <QuiSommesNous />}
             {currentView === 'historique-appels' && <HistoriqueAppels />}
             {currentView === 'historique-offres' && <HistoriqueVentes />}
-            {currentView === 'historique-rendez-vous' && <HistoriqueRendezVousPlaceholder />}
+            {currentView === 'historique-rendez-vous' && <HistoriqueRendezVous />}
             {currentView === 'rendez-vous' && (
               <AgentCalendar
                 prospectId={currentProspect.id_prospect}

@@ -66,6 +66,7 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
   const payload = buildVentePayload({
     prospectId: 17,
     campagneId: 4,
+    appelId: 12,
     formData: {
       ...baseFormData,
       meme_adresse: true,
@@ -84,6 +85,7 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
 
   assert.equal(payload.id_prospect, 17);
   assert.equal(payload.id_campagne, 4);
+  assert.equal(payload.id_appel, 12);
   assert.equal(payload.adresse_livraison, '10 rue des Lilas');
   assert.equal(payload.code_postal_livraison, '75001');
   assert.equal(payload.ville_livraison, 'Paris');
@@ -113,4 +115,15 @@ test('buildVentePayload conserve une adresse de livraison dédiée si nécessair
   assert.equal(payload.pays_livraison, 'France');
   assert.equal(payload.notes, 'Merci de rappeler avant livraison');
   assert.equal(payload.plage_horaire_livraison, '9h-12h');
+});
+
+test('buildVentePayload n ajoute pas id_appel si aucun appel courant n est fourni', () => {
+  const payload = buildVentePayload({
+    prospectId: 18,
+    campagneId: 5,
+    formData: baseFormData,
+    items: [],
+  });
+
+  assert.equal('id_appel' in payload, false);
 });

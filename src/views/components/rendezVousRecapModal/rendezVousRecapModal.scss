@@ -1,0 +1,146 @@
+@use '../../../utils/styles/variables' as vars;
+@use '../../../utils/styles/mixins' as mix;
+
+.rdv-recap-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: vars.$z-modal;
+  background: rgba(15, 23, 42, 0.56);
+  backdrop-filter: blur(6px);
+  padding: vars.$spacing-lg;
+  @include mix.flex-center;
+}
+
+.rdv-recap-modal {
+  width: min(900px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: vars.$colorWhite;
+  border-radius: vars.$radius-xl;
+  box-shadow: vars.$shadow-lg;
+  display: flex;
+  flex-direction: column;
+}
+
+.rdv-recap-modal__header {
+  @include mix.flex-between;
+  gap: vars.$spacing-lg;
+  padding: vars.$spacing-xl;
+  border-bottom: 1px solid vars.$colorGray300;
+}
+
+.rdv-recap-modal__title-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: vars.$spacing-md;
+
+  h2 {
+    margin: 0 0 vars.$spacing-xs;
+    font-size: 1.4rem;
+    color: vars.$colorBlack;
+  }
+
+  p {
+    margin: 0;
+    color: vars.$colorGray700;
+  }
+}
+
+.rdv-recap-modal__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: rgba(vars.$colorSuccess, 0.12);
+  color: vars.$colorSuccess;
+  font-size: 1.4rem;
+  @include mix.flex-center;
+  flex-shrink: 0;
+}
+
+.rdv-recap-modal__close {
+  background: transparent;
+  border: none;
+  color: vars.$colorGray700;
+  cursor: pointer;
+  font-size: 1.25rem;
+  padding: vars.$spacing-sm;
+  border-radius: vars.$radius-full;
+  transition: vars.$transition-base;
+
+  &:hover {
+    background: vars.$colorGray100;
+    color: vars.$colorBlack;
+  }
+}
+
+.rdv-recap-modal__body {
+  padding: vars.$spacing-xl;
+  display: grid;
+  gap: vars.$spacing-lg;
+}
+
+.rdv-recap-modal__speech-card,
+.rdv-recap-modal__card,
+.rdv-recap-modal__notes-card {
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-lg;
+  padding: vars.$spacing-lg;
+
+  h3 {
+    margin: 0 0 vars.$spacing-md;
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    color: vars.$colorBlack;
+    font-size: 1rem;
+  }
+
+  p {
+    margin: 0;
+    color: vars.$colorGray900;
+    line-height: 1.6;
+  }
+}
+
+.rdv-recap-modal__speech-card {
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.08), rgba(255, 255, 255, 0.95));
+  border-color: rgba(15, 118, 110, 0.18);
+}
+
+.rdv-recap-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: vars.$spacing-md;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rdv-recap-modal__card {
+  dl {
+    margin: 0;
+    display: grid;
+    gap: vars.$spacing-md;
+  }
+
+  dt {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: vars.$colorGray700;
+    margin-bottom: vars.$spacing-xs;
+  }
+
+  dd {
+    margin: 0;
+    color: vars.$colorBlack;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+}
+
+.rdv-recap-modal__footer {
+  padding: 0 vars.$spacing-xl vars.$spacing-xl;
+}

@@ -4,6 +4,7 @@ import { useCart, useProspect, useCampaign, useUser, useDialer } from './index';
 import type { ModePaiement, DelaisLivraison } from '../utils/types';
 import { closingService } from '../API/services';
 import { validateOrderForm, buildVentePayload } from '../utils/scripts/orderValidation';
+import { getCampaignVariant } from '../utils/scripts/campaignVariants';
 
 interface FormData {
   adresse_facturation: string;
@@ -213,6 +214,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       const venteData = buildVentePayload({
         prospectId: currentProspect.id_prospect,
         campagneId: currentCampaign.id_campagne,
+        appelId: currentAppelId ?? undefined,
         formData,
         items,
       });
@@ -227,6 +229,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         prospectId: currentProspect.id_prospect,
         prospectName,
         campagneId: currentCampaign.id_campagne,
+        campaignVariant: getCampaignVariant(currentCampaign),
         appelId: currentAppelId ?? undefined,
         origineAppel: currentOrigineAppel ?? undefined,
         rendezVousSourceId: currentRendezVousSourceId ?? undefined,

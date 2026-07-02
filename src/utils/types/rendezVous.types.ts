@@ -8,6 +8,10 @@ export interface RendezVous {
   date_rdv: string;
   heure_rdv: string;
   motif: string | null;
+  interlocuteur_nom?: string | null;
+  interlocuteur_role?: string | null;
+  telephone_contact_snapshot?: string | null;
+  email_contact_snapshot?: string | null;
   notes: string | null;
   derniere_note_closing?: string | null;
   statut: RendezVousStatut;
@@ -17,8 +21,26 @@ export interface RendezVous {
     id_prospect: number;
     nom: string;
     prenom: string | null;
+    nom_contact?: string | null;
+    email?: string | null;
     telephone: string;
+    telephone_contact?: string | null;
+    raison_sociale?: string | null;
+    decisionnaire_nom?: string | null;
+    decisionnaire_fonction?: string | null;
+    decisionnaire_email_pro?: string | null;
     statut?: string;
+  };
+  agent?: {
+    id_employe: number;
+    nom: string;
+    prenom: string | null;
+    email?: string | null;
+  };
+  campagne?: {
+    id_campagne: number;
+    nom_campagne: string;
+    type_campagne?: string | null;
   };
   appelsSource?: Array<{
     id_appel: number;
@@ -27,12 +49,17 @@ export interface RendezVous {
 }
 
 export interface CreateRendezVousData {
-  id_agent: number;
+  id_agent?: number;
   id_prospect: number;
   id_campagne: number;
   date_rdv: string;
   heure_rdv: string;
   motif?: string;
+  notes?: string;
+  interlocuteur_nom?: string;
+  interlocuteur_role?: string;
+  telephone_contact_snapshot?: string;
+  email_contact_snapshot?: string;
 }
 
 export interface UpdateRendezVousData {

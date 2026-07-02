@@ -72,10 +72,11 @@ export function validateOrderForm(formData: OrderFormData): OrderValidationError
 export function buildVentePayload(params: {
   prospectId: number;
   campagneId: number;
+  appelId?: number | null;
   formData: OrderFormData;
   items: CartItem[];
 }): CreateVenteData {
-  const { prospectId, campagneId, formData, items } = params;
+  const { prospectId, campagneId, appelId, formData, items } = params;
 
   // Déterminer l'adresse de livraison à utiliser
   const adresseLivraison = formData.meme_adresse
@@ -94,6 +95,7 @@ export function buildVentePayload(params: {
   return {
     id_prospect: prospectId,
     id_campagne: campagneId,
+    ...(appelId ? { id_appel: appelId } : {}),
     mode_paiement: formData.mode_paiement as ModePaiement,
     delais_livraison: formData.delais_livraison,
     notes: formData.notes.trim() || undefined,

@@ -1,7 +1,7 @@
-import { apiCalls } from '../APICalls';
-import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
+import { apiCalls } from '../APICalls.ts';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers.ts';
 import type { Vente, CreateVenteData } from '../../utils/types';
-import { buildQueryString } from '../../utils/scripts/utils';
+import { buildQueryString } from '../../utils/scripts/queryString.ts';
 
 export class VenteService {
   private static instance: VenteService;

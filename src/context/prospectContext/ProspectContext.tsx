@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Prospect, Appel, Vente, CreateVenteData, Pagination, UpdateProspectData } from '../../utils/types';
+import type { Prospect, Appel, Vente, RendezVous, CreateVenteData, Pagination, UpdateProspectData } from '../../utils/types';
 
 export interface ProspectContextType {
   // Prospect
@@ -19,6 +19,11 @@ export interface ProspectContextType {
   ventesLoading: boolean;
   ventesError: string | null;
 
+  // Rendez-vous
+  rendezVous: RendezVous[];
+  rendezVousLoading: boolean;
+  rendezVousError: string | null;
+
   // Prospect actions
   loadProspect: (id: number) => Promise<void>;
   loadProspectByPhone: (phone: string) => Promise<void>;
@@ -37,6 +42,10 @@ export interface ProspectContextType {
   loadVentes: () => Promise<void>;
   createVente: (data: CreateVenteData) => Promise<Vente>;
   clearVentesError: () => void;
+
+  // Rendez-vous actions
+  loadRendezVous: () => Promise<void>;
+  clearRendezVousError: () => void;
 
   // Computed properties
   fullName: string;

@@ -111,6 +111,7 @@
     display: flex;
     align-items: center;
     gap: vars.$spacing-md;
+    flex-wrap: wrap;
   }
 
   &__date {
@@ -134,25 +135,30 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 
-    &--confirme {
-      background: color.adjust(vars.$colorSuccess, $lightness: 45%);
-      color: color.adjust(vars.$colorSuccess, $lightness: -10%);
+    &--planifie {
+      background: color.adjust(vars.$colorPrimary, $lightness: 44%);
+      color: color.adjust(vars.$colorPrimary, $lightness: -14%);
     }
 
-    &--qualifie {
-      background: color.adjust(vars.$colorPrimary, $lightness: 45%);
-      color: color.adjust(vars.$colorPrimary, $lightness: -10%);
+    &--reporte {
+      background: color.adjust(#d97706, $lightness: 48%);
+      color: color.adjust(#d97706, $lightness: -12%);
     }
 
     &--effectue {
-      background: vars.$colorGray100;
-      color: vars.$colorGray700;
-      border: 1px solid vars.$colorGray200;
+      background: color.adjust(vars.$colorSuccess, $lightness: 45%);
+      color: color.adjust(vars.$colorSuccess, $lightness: -10%);
     }
 
     &--annule {
       background: color.adjust(vars.$colorDanger, $lightness: 45%);
       color: color.adjust(vars.$colorDanger, $lightness: -10%);
+    }
+
+    &--non-honore {
+      background: vars.$colorGray100;
+      color: vars.$colorGray700;
+      border: 1px solid vars.$colorGray200;
     }
   }
 
@@ -201,17 +207,6 @@
     display: flex;
     flex-direction: column;
     gap: vars.$spacing-lg;
-  }
-
-  &__section-title {
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorGray700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: vars.$spacing-lg 0 vars.$spacing-sm;
-    border-left: 3px solid vars.$colorPrimary;
-    padding-left: vars.$spacing-xs;
   }
 
   &__grid {

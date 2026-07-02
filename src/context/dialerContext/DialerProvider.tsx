@@ -6,9 +6,10 @@ import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService } from '../../API/services';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification, AgentRuntimeCampaign } from '../../utils/types';
-import { getApiBaseUrl } from '../../utils/scripts/utils';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
+import { getApiBaseUrl, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
+import { pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
 import { useToast } from '../../hooks';
 
 interface DialerProviderProps {
@@ -39,17 +40,6 @@ const getRecordingExtension = (mimeType: string): string => {
 
 const getErrorMessage = (error: unknown): string => {
   return error instanceof Error ? error.message : 'Erreur inconnue';
-};
-
-const pickRuntimeCampaign = (
-  campagnes: AgentRuntimeCampaign[],
-  currentCampagneId: number | null,
-  statusCampaignId?: number | null,
-): AgentRuntimeCampaign | null => {
-  return campagnes.find((campagne) => campagne.id_campagne === currentCampagneId)
-    ?? campagnes.find((campagne) => campagne.is_active_runtime)
-    ?? (statusCampaignId ? campagnes.find((campagne) => campagne.id_campagne === statusCampaignId) ?? null : null)
-    ?? (campagnes.length === 1 ? campagnes[0] : null);
 };
 
 export const DialerProvider = ({ children }: DialerProviderProps) => {
@@ -702,6 +692,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       return;
     }
 
+    if (shouldDisableLocalTwilio()) {
+      console.log('[TWILIO] Initialisation desactivee en mode e2e local');
+      setSipConnected(false);
+      return;
+    }
+
     // Initialiser Twilio SEULEMENT si pas déjà initialisé
     console.log('[TWILIO] useEffect - isAuthenticated:', isAuthenticated, ', deviceRef.current:', deviceRef.current);
     initializeTwilioDevice();
@@ -1138,6 +1134,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     const previousStatut = statut;
     const previousRaisonPause = raisonPause;
     console.groupCollapsed(`📞 [APPEL MANUEL] ${phoneNumber}`);
+    const origin = resolveManualCallOrigin(rendezVousSourceId);
 
     // Récupérer la campagne active si non fournie
     let targetCampagneId = campagneId;
@@ -1182,7 +1179,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         id_prospect: prospectId,
         id_campagne: targetCampagneId,
         statut_appel: 'en_cours',
-        origine_appel: rendezVousSourceId ? 'rappel' : 'manuel',
+        origine_appel: origin,
         numero_telephone: formattedNumber,
         id_rendez_vous_source: rendezVousSourceId,
       });
@@ -1190,15 +1187,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(targetCampagneId);
       setCurrentIdProspection(null);
-      setCurrentOrigineAppel(rendezVousSourceId ? 'rappel' : 'manuel');
-      currentOrigineAppelRef.current = rendezVousSourceId ? 'rappel' : 'manuel';
+      setCurrentOrigineAppel(origin);
+      currentOrigineAppelRef.current = origin;
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       // Lancer l'appel Twilio avec le numéro formaté
       await call(formattedNumber, targetCampagneId, prospectId, {
         skipCreateAppel: true,
         dbAppelId: appel.id_appel,
-        origin: rendezVousSourceId ? 'rappel' : 'manuel'
+        origin
       });
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');

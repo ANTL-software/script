@@ -1,5 +1,5 @@
-import { apiCalls } from '../APICalls';
-import { throwIfApiError } from '../apiHelpers';
+import { apiCalls } from '../APICalls.ts';
+import { throwIfApiError } from '../apiHelpers.ts';
 import type { RendezVous, CreateRendezVousData, UpdateRendezVousData, RendezVousStatut } from '../../utils/types';
 
 export class RendezVousService {

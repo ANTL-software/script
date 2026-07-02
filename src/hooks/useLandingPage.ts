@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
 import { closingService, type PendingClosing } from '../API/services';
 import { formatProspectName } from '../utils/scripts/formatters';
-import { getCampaignUiConfig } from '../utils/scripts/campaignVariants';
+import { getCampaignUiConfig, getCampaignVariant } from '../utils/scripts/campaignVariants';
 
 export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const navigate = useNavigate();
@@ -85,6 +85,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       prospectId: currentProspect.id_prospect,
       prospectName: formatProspectName({ nom: currentProspect.nom, prenom: currentProspect.prenom }),
       campagneId,
+      campaignVariant: getCampaignVariant(currentCampaign),
       appelId: currentAppelId,
       origineAppel: currentOrigineAppel,
       rendezVousSourceId: currentRendezVousSourceId,

@@ -38,7 +38,7 @@ export function useDashboardData() {
 
     const [rdvResult, statsResult, notifsResult] = await Promise.allSettled([
       rendezVousService.getRendezVousToday(user.id_employe, currentCampagneId ?? undefined),
-      statsService.getMyStatsDuJour(),
+      statsService.getMyStatsDuJour(currentCampagneId ?? undefined),
       notificationService.getMyNotifications(false),
     ]);
 

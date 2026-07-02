@@ -66,10 +66,7 @@ export default function Header({ props }: HeaderProps) {
       <figure className="logo-container">
         <img src={antlLogo} alt="ANTL" className="logo-antl" />
         {campaignLogoUrl && (
-          <>
-            <span className="logo-separator">/</span>
-            <img src={campaignLogoUrl} alt={currentCampaign?.nom_campagne || "Logo Campagne"} className="logo-campaign" />
-          </>
+          <img src={campaignLogoUrl} alt={currentCampaign?.nom_campagne || "Logo Campagne"} className="logo-campaign" />
         )}
       </figure>
       <h1 className="header-title">

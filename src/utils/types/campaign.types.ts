@@ -13,6 +13,8 @@ export interface Campaign {
   actif?: boolean;
   statut?: 'inactive' | 'active' | 'terminee';
   autoriser_mobile?: boolean;
+  logo_path?: string | null;
+  logo_file_name?: string | null;
   created_at: string;
   updated_at: string;
 }

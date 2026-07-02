@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getApiBaseUrl } from './runtimeEnvironment.ts';
 export {
   getApiBaseUrl,
   isProspectTestMode,
@@ -12,6 +13,29 @@ export function getGreetingName(prenom?: string, userId?: number): string | unde
   }
 
   return prenom;
+}
+
+/**
+ * Construit l'URL complète pour une image de logo de campagne
+ * @param logoPath - Chemin relatif du logo (ex: /uploads/campagne_logos/filename.png)
+ * @returns URL complète de l'image (ex: http://localhost:8800/uploads/campagne_logos/filename.png)
+ */
+export function getCampagneLogoUrl(logoPath: string | null | undefined): string | null {
+  if (!logoPath) return null;
+
+  // Si le chemin est déjà une URL complète, le retourner tel quel
+  if (logoPath.startsWith('http://') || logoPath.startsWith('https://')) {
+    return logoPath;
+  }
+
+  // Pour les chemins relatifs commençant par /uploads/, construire l'URL complète
+  if (logoPath.startsWith('/uploads/')) {
+    const apiBaseUrl = getApiBaseUrl();
+    const serverUrl = apiBaseUrl.replace(/\/api$/, '');
+    return `${serverUrl}${logoPath}`;
+  }
+
+  return logoPath;
 }
 
 /**

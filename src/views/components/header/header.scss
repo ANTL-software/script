@@ -21,6 +21,20 @@ header {
             width: auto;
             object-fit: contain;
         }
+
+        .logo-separator {
+            font-size: 1.5rem;
+            color: #d1d1d6;
+            margin: 0 0.75rem;
+            font-weight: 300;
+            user-select: none;
+        }
+
+        .logo-campaign {
+            max-height: 100%;
+            border-radius: 4px;
+            object-fit: contain;
+        }
     }
     background: linear-gradient(
         135deg,

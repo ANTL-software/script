@@ -10,7 +10,8 @@ import { useClosing } from "../../../hooks/useClosing";
 import DialerStatus from "../dialerStatus/DialerStatus";
 import DtmfPad from "../dtmfPad/DtmfPad";
 import Button from "../button/Button";
-import { isTestEnvironment } from "../../../utils/scripts/utils";
+import { isTestEnvironment, getCampagneLogoUrl } from "../../../utils/scripts/utils";
+import { useCampaign } from "../../../hooks";
 
 export interface HeaderProps {
   props: {
@@ -23,9 +24,12 @@ export default function Header({ props }: HeaderProps) {
   const { logout, isLoading } = useUser();
   const { showToast } = useToast();
   const { hasPending } = useClosing();
+  const { currentCampaign } = useCampaign();
   const navigate = useNavigate();
   const location = useLocation();
   const showTestBadge = isTestEnvironment();
+
+  const campaignLogoUrl = getCampagneLogoUrl(currentCampaign?.logo_path);
 
   // Masquer le bouton de déconnexion sur la vue prospect pour éviter la déconnexion pendant un appel
   // SAUF en mode test (paramètre ?test=true) où on affiche un bouton "Retour" à la place
@@ -59,8 +63,14 @@ export default function Header({ props }: HeaderProps) {
 
   return (
     <header>
-      <figure>
-        <img src={antlLogo} alt="ANTL" />
+      <figure className="logo-container">
+        <img src={antlLogo} alt="ANTL" className="logo-antl" />
+        {campaignLogoUrl && (
+          <>
+            <span className="logo-separator">/</span>
+            <img src={campaignLogoUrl} alt={currentCampaign?.nom_campagne || "Logo Campagne"} className="logo-campaign" />
+          </>
+        )}
       </figure>
       <h1 className="header-title">
         <span>{pageTitle ? pageTitle : ""}</span>

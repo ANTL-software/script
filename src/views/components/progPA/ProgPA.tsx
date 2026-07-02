@@ -1,27 +1,22 @@
 import { useProspect } from '../../../hooks/useProspect';
+import type { CampaignVariant } from '../../../utils/scripts/campaignVariants';
+import { getCampaignProgpaSteps } from '../../../utils/scripts/campaignVariants';
 import './progPA.scss';
-
-const STEP_DEFINITIONS = [
-  { value: 5, label: 'Commande' },
-  { value: 4, label: 'Proposition' },
-  { value: 3, label: 'Decouverte' },
-  { value: 2, label: 'Presentation' },
-  { value: 1, label: 'Identification' },
-  { value: 0, label: 'Aucun contact' },
-];
 
 interface ProgPAProps {
   compact?: boolean;
   disabled?: boolean;
+  campaignVariant?: CampaignVariant | null;
 }
 
-export default function ProgPA({ compact = false, disabled = false }: ProgPAProps) {
+export default function ProgPA({ compact = false, disabled = false, campaignVariant = null }: ProgPAProps) {
   const { currentProgpa, setCurrentProgpa } = useProspect();
+  const stepDefinitions = getCampaignProgpaSteps(campaignVariant);
   const activeStep = currentProgpa;
   const completedSteps = activeStep === null
     ? 0
-    : STEP_DEFINITIONS.filter((step) => step.value <= activeStep).length;
-  const fillHeight = `${(completedSteps / STEP_DEFINITIONS.length) * 100}%`;
+    : stepDefinitions.filter((step) => step.value <= activeStep).length;
+  const fillHeight = `${(completedSteps / stepDefinitions.length) * 100}%`;
 
   const handleStepChange = (value: number) => {
     if (disabled) {
@@ -48,15 +43,15 @@ export default function ProgPA({ compact = false, disabled = false }: ProgPAProp
             style={{ height: fillHeight }}
           />
 
-          {Array.from({ length: STEP_DEFINITIONS.length - 1 }, (_, index) => (
+          {Array.from({ length: stepDefinitions.length - 1 }, (_, index) => (
             <span
               key={`separator-${index}`}
               className="prog-pa__separator"
-              style={{ bottom: `${((index + 1) / STEP_DEFINITIONS.length) * 100}%` }}
+              style={{ bottom: `${((index + 1) / stepDefinitions.length) * 100}%` }}
             />
           ))}
 
-          {STEP_DEFINITIONS.map((step) => {
+          {stepDefinitions.map((step) => {
             return (
               <button
                 key={step.value}

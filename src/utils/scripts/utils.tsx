@@ -1,4 +1,10 @@
 import { useState, useEffect } from 'react';
+export {
+  getApiBaseUrl,
+  isProspectTestMode,
+  isTestEnvironment,
+  shouldDisableLocalTwilio,
+} from './runtimeEnvironment.ts';
 
 export function getGreetingName(prenom?: string, userId?: number): string | undefined {
   if (userId === 5) {

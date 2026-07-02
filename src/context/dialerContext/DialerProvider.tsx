@@ -7,7 +7,9 @@ import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
+import { getApiBaseUrl, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
+import { pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
 import { useToast } from '../../hooks';
 
 interface DialerProviderProps {
@@ -690,6 +692,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       return;
     }
 
+    if (shouldDisableLocalTwilio()) {
+      console.log('[TWILIO] Initialisation desactivee en mode e2e local');
+      setSipConnected(false);
+      return;
+    }
+
     // Initialiser Twilio SEULEMENT si pas déjà initialisé
     console.log('[TWILIO] useEffect - isAuthenticated:', isAuthenticated, ', deviceRef.current:', deviceRef.current);
     initializeTwilioDevice();
@@ -699,34 +707,36 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   // INITIALISATION AU MONTAGE (sans Twilio)
   // ============================================================
 
+  const resolveRuntimeCampaign = useCallback(async () => {
+    const status = await dialerService.getStatut();
+    setStatut(status.statut);
+    setRaisonPause(status.raison_pause ?? null);
+    if (status.debut_statut) {
+      setDepuisLe(new Date(status.debut_statut));
+    }
+
+    const campagnes = await dialerService.getCampagnesAgent();
+    const runtimeCampaign = pickRuntimeCampaign(campagnes, currentCampagneId, status.id_campagne_active);
+
+    if (runtimeCampaign) {
+      if (!runtimeCampaign.is_active_runtime && campagnes.length === 1) {
+        const runtimeStatus = await dialerService.setCampagneActive(runtimeCampaign.id_campagne);
+        setCurrentCampagneId(runtimeStatus.id_campagne_active ?? runtimeCampaign.id_campagne);
+      } else {
+        setCurrentCampagneId(runtimeCampaign.id_campagne);
+      }
+      return;
+    }
+
+    setCurrentCampagneId(status.id_campagne_active ?? null);
+  }, [currentCampagneId]);
+
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    // Récupérer le statut backend
-    const recoverStatus = async () => {
-      try {
-        const data = await dialerService.getStatut();
-        setStatut(data.statut);
-        setRaisonPause(data.raison_pause ?? null);
-        if (data.debut_statut) {
-          setDepuisLe(new Date(data.debut_statut));
-        }
-      } catch {}
-    };
-    recoverStatus();
-
-    // Charger la première campagne
-    const loadAgentCampaign = async () => {
-      try {
-        const campagnes = await dialerService.getCampagnesAgent();
-        if (campagnes && campagnes.length > 0) {
-          setCurrentCampagneId(campagnes[0].id_campagne);
-        }
-      } catch (err) {
-        console.error('[DIALER] Erreur chargement campagnes:', err);
-      }
-    };
-    loadAgentCampaign();
+    resolveRuntimeCampaign().catch((err) => {
+      console.error('[DIALER] Erreur chargement campagnes:', err);
+    });
 
     // Heartbeat
     const sendHeartbeat = () => {
@@ -737,7 +747,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     // Beforeunload
     const handleBeforeUnload = () => {
-      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8800/api';
+      const baseUrl = getApiBaseUrl();
       const token = localStorage.getItem('authToken');
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
@@ -777,7 +787,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [isAuthenticated]);
+  }, [isAuthenticated, resolveRuntimeCampaign]);
 
   // ============================================================
   // FONCTIONS D'APPEL
@@ -1061,11 +1071,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     const previousRaisonPause = raisonPause;
     try {
       const campagnes = await dialerService.getCampagnesAgent();
-      if (!campagnes || campagnes.length === 0) {
+      const campagne = pickRuntimeCampaign(campagnes, currentCampagneId, currentCampagneId);
+      if (!campagne) {
         console.warn('[DIALER] Aucune campagne active');
         return;
       }
-      const campagne = campagnes[0];
       const campagneId = campagne.id_campagne;
 
       if (prospectPhone && isMobilePhone(prospectPhone) && !campagne.autoriser_mobile) {
@@ -1108,7 +1118,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await dialerService.changerStatut(previousStatut, previousRaisonPause ?? undefined).catch(() => {});
       throw err;
     }
-  }, [call, raisonPause, showToast, statut]);
+  }, [call, currentCampagneId, raisonPause, showToast, statut]);
 
   // Appel manuel depuis la fiche prospect (boutons d'appel)
   const callFromManual = useCallback(async (
@@ -1124,6 +1134,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     const previousStatut = statut;
     const previousRaisonPause = raisonPause;
     console.groupCollapsed(`📞 [APPEL MANUEL] ${phoneNumber}`);
+    const origin = resolveManualCallOrigin(rendezVousSourceId);
 
     // Récupérer la campagne active si non fournie
     let targetCampagneId = campagneId;
@@ -1141,10 +1152,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     if (!targetCampagneId) {
       try {
         const campagnes = await dialerService.getCampagnesAgent();
-        if (!campagnes || campagnes.length === 0) {
+        const campagneActive = pickRuntimeCampaign(campagnes, currentCampagneId, currentCampagneId);
+        if (!campagneActive) {
           throw new Error('Aucune campagne active');
         }
-        targetCampagneId = campagnes[0].id_campagne;
+        targetCampagneId = campagneActive.id_campagne;
       } catch (err) {
         console.error('[APPEL MANUEL] Erreur récupération campagnes:', err);
         showToast('error', 'Impossible de récupérer les campagnes actives', 5000);
@@ -1167,7 +1179,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         id_prospect: prospectId,
         id_campagne: targetCampagneId,
         statut_appel: 'en_cours',
-        origine_appel: rendezVousSourceId ? 'rappel' : 'manuel',
+        origine_appel: origin,
         numero_telephone: formattedNumber,
         id_rendez_vous_source: rendezVousSourceId,
       });
@@ -1175,15 +1187,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentAppelId(appel.id_appel);
       setCurrentCampagneId(targetCampagneId);
       setCurrentIdProspection(null);
-      setCurrentOrigineAppel(rendezVousSourceId ? 'rappel' : 'manuel');
-      currentOrigineAppelRef.current = rendezVousSourceId ? 'rappel' : 'manuel';
+      setCurrentOrigineAppel(origin);
+      currentOrigineAppelRef.current = origin;
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       // Lancer l'appel Twilio avec le numéro formaté
       await call(formattedNumber, targetCampagneId, prospectId, {
         skipCreateAppel: true,
         dbAppelId: appel.id_appel,
-        origin: rendezVousSourceId ? 'rappel' : 'manuel'
+        origin
       });
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
@@ -1197,7 +1209,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     } finally {
       console.groupEnd();
     }
-  }, [call, raisonPause, showToast, statut]);
+  }, [call, currentCampagneId, raisonPause, showToast, statut]);
 
   // Clear prochain prospect
   const clearProchainProspect = useCallback(() => {

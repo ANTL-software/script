@@ -38,6 +38,31 @@ header {
         pointer-events: none;
     }
 
+    .header-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    .env-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 3.25rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        line-height: 1;
+        color: #fff;
+    }
+
+    .env-badge--test {
+        background: #c62828;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+
     .header-actions {
         display: flex;
         align-items: center;

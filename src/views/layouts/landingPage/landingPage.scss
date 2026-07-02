@@ -124,9 +124,33 @@
   }
 
   &__qui-est-ce,
-  &__historique {
+  &__historique,
+  &__historique-rendez-vous {
     flex: 1;
     overflow-y: auto;
+  }
+
+  &__placeholder-card {
+    max-width: 48rem;
+    padding: 1.5rem;
+    border: 1px dashed #d2d2d7;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7f7f8 100%);
+
+    h2 {
+      margin: 0 0 0.75rem;
+      color: #1d1d1f;
+    }
+
+    p {
+      margin: 0;
+      color: #6e6e73;
+      line-height: 1.6;
+    }
+
+    p + p {
+      margin-top: 0.75rem;
+    }
   }
 
   &__commande {

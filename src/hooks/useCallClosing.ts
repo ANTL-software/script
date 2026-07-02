@@ -51,7 +51,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
 
     if (selectedStatut === 'rdv_pris' || selectedStatut === 'rendez_vous_pris') {
       try {
-        const rdvs = await rendezVousService.getRendezVousByProspect(prospectId);
+        const rdvs = await rendezVousService.getRendezVousByProspect(prospectId, campagneId);
         const activeRdvs = rdvs.filter(r =>
           (r.statut === 'planifie' || r.statut === 'reporte') &&
           r.id_agent === user.id_employe &&

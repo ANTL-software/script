@@ -1,7 +1,7 @@
-import { apiCalls } from '../APICalls';
-import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
+import { apiCalls } from '../APICalls.ts';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers.ts';
 import type { Appel, CreateAppelData, TerminerAppelData, UpdateAppelData } from '../../utils/types';
-import { buildQueryString } from '../../utils/scripts/utils';
+import { buildQueryString } from '../../utils/scripts/queryString.ts';
 
 export class AppelService {
   private static instance: AppelService;
@@ -27,7 +27,7 @@ export class AppelService {
 
   public async getAppelsByProspect(
     prospectId: number,
-    params?: { page?: number; limit?: number }
+    params?: { page?: number; limit?: number; campagne?: number }
   ): Promise<{ appels: Appel[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<Appel[]>(`/prospects/${prospectId}/appels${queryString}`);

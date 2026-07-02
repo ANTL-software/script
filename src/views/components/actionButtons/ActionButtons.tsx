@@ -1,83 +1,58 @@
 import './actionButtons.scss';
+import { FaCalendarAlt, FaCertificate, FaCreditCard, FaPhone, FaShoppingCart, FaTag } from 'react-icons/fa';
+import type { ReactNode } from 'react';
+import type { ViewType } from '../../../context/appContext/AppContext';
+import type { ActionButtonId, CampaignActionConfig } from '../../../utils/scripts/campaignVariants';
 import Button from '../button/Button';
-import { FaPhone, FaShoppingCart, FaCreditCard, FaCalendarAlt, FaTag, FaCertificate } from 'react-icons/fa';
 
 interface ActionButtonsProps {
-  currentView: 'qui-est-ce' | 'qui-sommes-nous' | 'historique-appels' | 'historique-offres' | 'rendez-vous' | 'commande';
-  onTarifs?: () => void;
-  onAgrement?: () => void;
-  onHistoriqueAppels?: () => void;
-  onHistoriqueOffres?: () => void;
-  onRendezVous?: () => void;
-  onCommande?: () => void;
+  currentView: ViewType;
+  buttons: CampaignActionConfig[];
+  onAction: (actionId: ActionButtonId) => void;
 }
 
-export default function ActionButtons({
-  currentView,
-  onTarifs,
-  onAgrement,
-  onHistoriqueAppels,
-  onHistoriqueOffres,
-  onRendezVous,
-  onCommande,
-}: ActionButtonsProps) {
+const ICONS: Record<ActionButtonId, ReactNode> = {
+  tarifs: <FaTag />,
+  agrement: <FaCertificate />,
+  'historique-appels': <FaPhone />,
+  'historique-offres': <FaShoppingCart />,
+  'rendez-vous': <FaCalendarAlt />,
+  commande: <FaCreditCard />,
+};
+
+function renderButton(
+  currentView: ViewType,
+  button: CampaignActionConfig,
+  onAction: (actionId: ActionButtonId) => void,
+) {
+  const isActive = button.targetView === currentView;
+
+  return (
+    <Button
+      key={button.id}
+      variant="primary"
+      size="small"
+      onClick={() => onAction(button.id)}
+      disabled={isActive}
+      className={isActive ? 'btn-active' : ''}
+      type="button"
+    >
+      {ICONS[button.id]} {button.label}
+    </Button>
+  );
+}
+
+export default function ActionButtons({ currentView, buttons, onAction }: ActionButtonsProps) {
+  const leftButtons = buttons.filter((button) => button.group === 'left');
+  const rightButtons = buttons.filter((button) => button.group === 'right');
+
   return (
     <div className="action-buttons">
       <div className="action-buttons__group action-buttons__group--left">
-        <Button
-          variant="primary"
-          size="small"
-          onClick={onTarifs}
-          type="button"
-        >
-          <FaTag /> Tarifs
-        </Button>
-        <Button
-          variant="primary"
-          size="small"
-          onClick={onAgrement}
-          type="button"
-        >
-          <FaCertificate /> Agrément
-        </Button>
+        {leftButtons.map((button) => renderButton(currentView, button, onAction))}
       </div>
       <div className="action-buttons__group action-buttons__group--right">
-        <Button
-          variant="primary"
-          size="small"
-          onClick={onHistoriqueAppels}
-          disabled={currentView === 'historique-appels'}
-          className={currentView === 'historique-appels' ? 'btn-active' : ''}
-        >
-          <FaPhone /> Historique appels
-        </Button>
-        <Button
-          variant="primary"
-          size="small"
-          onClick={onHistoriqueOffres}
-          disabled={currentView === 'historique-offres'}
-          className={currentView === 'historique-offres' ? 'btn-active' : ''}
-        >
-          <FaShoppingCart /> Historique offres
-        </Button>
-        <Button
-          variant="primary"
-          size="small"
-          onClick={onRendezVous}
-          disabled={currentView === 'rendez-vous'}
-          className={currentView === 'rendez-vous' ? 'btn-active' : ''}
-        >
-          <FaCalendarAlt /> Rendez-vous
-        </Button>
-        <Button
-          variant="primary"
-          size="small"
-          onClick={onCommande}
-          disabled={currentView === 'commande'}
-          className={currentView === 'commande' ? 'btn-active' : ''}
-        >
-          <FaCreditCard /> Commande
-        </Button>
+        {rightButtons.map((button) => renderButton(currentView, button, onAction))}
       </div>
     </div>
   );

@@ -42,17 +42,14 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
       setIsLoading(true);
 
       const [agentData, prospectData] = await Promise.all([
-        rendezVousService.getRendezVousByAgent(agentId),
+        rendezVousService.getRendezVousByAgent(agentId, campagneId ?? undefined),
         prospectId
-          ? rendezVousService.getRendezVousByProspect(prospectId)
+          ? rendezVousService.getRendezVousByProspect(prospectId, campagneId ?? undefined)
           : Promise.resolve([]),
       ]);
 
       setAgentRdvList(agentData);
-      setOtherAgentRdvList(prospectData.filter(r =>
-        r.id_agent !== agentId &&
-        (!campagneId || r.id_campagne === campagneId)
-      ));
+      setOtherAgentRdvList(prospectData.filter((r) => r.id_agent !== agentId));
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
     } finally {

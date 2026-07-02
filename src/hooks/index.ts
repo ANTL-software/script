@@ -14,3 +14,4 @@ export { useCallClosing } from './useCallClosing';
 export { useOrderConfirmation } from './useOrderConfirmation';
 export { useLandingPage } from './useLandingPage';
 export { useForceClosing } from './useForceClosing';
+export { useProspectRendezVous } from './useProspectRendezVous';

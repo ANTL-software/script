@@ -10,6 +10,7 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import Input from '../input/Input';
 import Button from '../button/Button';
 import { FaList, FaSitemap, FaSearch } from 'react-icons/fa';
+import { getCampaignUiConfig } from '../../../utils/scripts/campaignVariants';
 
 type ViewMode = 'tree' | 'search';
 
@@ -33,6 +34,7 @@ export default function CatalogueProduits() {
 
   const [viewMode, setViewMode] = useState<ViewMode>('tree');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const campaignUi = getCampaignUiConfig(currentCampaign);
 
   useEffect(() => {
     loadProduitsGrouped();
@@ -138,7 +140,7 @@ export default function CatalogueProduits() {
 
       {viewMode === 'tree' || searchTerm.length < 3 ? (
         <div className="catalogue-produits__tree-view">
-          {currentCampaign?.id_campagne === 7 && (
+          {campaignUi.showPaniers && (
             <CataloguePaniers
               paniers={paniers}
               isLoading={paniersLoading}

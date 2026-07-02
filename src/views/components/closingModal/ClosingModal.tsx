@@ -3,7 +3,8 @@ import { FaPhoneAlt, FaCheck, FaSpinner, FaClock, FaStickyNote, FaExclamationTri
 import { useState, useEffect, useRef } from 'react';
 import { useCallClosing } from '../../../hooks/useCallClosing';
 import { useProspect } from '../../../hooks/useProspect';
-import { STATUT_APPEL_OPTIONS } from '../../../utils/constants';
+import type { CampaignVariant } from '../../../utils/scripts/campaignVariants';
+import { getCampaignClosingOptions, CAMPAIGN_VARIANTS } from '../../../utils/scripts/campaignVariants';
 import { formatDuration } from '../../../utils/scripts/formatters';
 import Button from '../button/Button';
 import AgentCalendar from '../agentCalendar/AgentCalendar';
@@ -15,6 +16,7 @@ interface ClosingModalProps {
   prospectId: number;
   prospectName: string;
   campagneId: number;
+  campaignVariant?: CampaignVariant | null;
   appelId?: number;
   origineAppel?: 'auto' | 'manuel' | 'rappel';
   rendezVousSourceId?: number;
@@ -28,6 +30,7 @@ export default function ClosingModal({
   prospectId,
   prospectName,
   campagneId,
+  campaignVariant = null,
   appelId,
   origineAppel,
   rendezVousSourceId,
@@ -35,6 +38,10 @@ export default function ClosingModal({
   onComplete,
   forceMode = false,
 }: ClosingModalProps) {
+  const closingOptions = getCampaignClosingOptions(
+    campaignVariant ? { type_campagne: campaignVariant } : null,
+  );
+  const isLeadB2B = campaignVariant === CAMPAIGN_VARIANTS.lead_b2b;
   const [isMinimized, setIsMinimized] = useState(false);
   const { currentProgpa, setCurrentProgpa } = useProspect();
   const unlockedProgpaBeforeVenteRef = useRef<number | null | undefined>(undefined);
@@ -48,6 +55,8 @@ export default function ClosingModal({
 
   const [showConfirm, setShowConfirm] = useState<'doublon' | null>(null);
   const isVenteConclue = selectedStatut === 'vente_conclue';
+  const isLeadValidated = isLeadB2B && selectedStatut === 'rendez_vous_pris';
+  const isAutoProgpaLockedStatus = isVenteConclue || isLeadValidated;
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +80,7 @@ export default function ClosingModal({
   }, [forceMode]);
 
   useEffect(() => {
-    if (selectedStatut === 'vente_conclue') {
+    if (isAutoProgpaLockedStatus) {
       if (currentProgpa !== 5) {
         unlockedProgpaBeforeVenteRef.current = currentProgpa;
         setCurrentProgpa(5);
@@ -83,7 +92,7 @@ export default function ClosingModal({
       setCurrentProgpa(unlockedProgpaBeforeVenteRef.current);
       unlockedProgpaBeforeVenteRef.current = undefined;
     }
-  }, [currentProgpa, selectedStatut, setCurrentProgpa]);
+  }, [currentProgpa, isAutoProgpaLockedStatus, setCurrentProgpa]);
 
   const handleMinimize = () => {
     if (forceMode) return;
@@ -140,7 +149,7 @@ export default function ClosingModal({
                 <div className="closing-modal__section">
                   <h3>Résultat de l'appel</h3>
                   <div className="closing-modal__statut-grid">
-                    {STATUT_APPEL_OPTIONS.map((option) => (
+                    {closingOptions.map((option) => (
                       <button
                         key={option.value}
                         type="button"
@@ -180,7 +189,7 @@ export default function ClosingModal({
                     type="submit"
                     variant="primary"
                     fullWidth
-                    disabled={isSubmitting || !selectedStatut || (!isVenteConclue && currentProgpa === null)}
+                    disabled={isSubmitting || !selectedStatut || (!isAutoProgpaLockedStatus && currentProgpa === null)}
                   >
                     {isSubmitting ? (
                       <><FaSpinner className="spinner" /> Enregistrement...</>
@@ -197,7 +206,7 @@ export default function ClosingModal({
                   prospectName={prospectName}
                   campagneId={campagneId}
                   selectedCallStatus={selectedStatut}
-                  isReadOnly={isVenteConclue}
+                  isReadOnly={isAutoProgpaLockedStatus}
                 />
               </div>
 
@@ -205,7 +214,7 @@ export default function ClosingModal({
                 <div className="closing-modal__progpa-header">
                   <h3>Progression du plan d'appel</h3>
                   <span className={`closing-modal__progpa-status${currentProgpa === null ? ' closing-modal__progpa-status--missing' : ''}`}>
-                    {isVenteConclue ? 'Auto 5/5' : (currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`)}
+                    {isAutoProgpaLockedStatus ? 'Auto 5/5' : (currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`)}
                   </span>
                 </div>
                 {isVenteConclue && (
@@ -213,8 +222,18 @@ export default function ClosingModal({
                     Vente conclue : relance automatique à +10 min, ProgPA verrouillé à 5.
                   </p>
                 )}
+                {isLeadValidated && (
+                  <p className="closing-modal__progpa-auto-note">
+                    Rendez-vous valide : la fiche est consideree comme finalisee pour cette etape, ProgPA verrouille a 5.
+                  </p>
+                )}
+                {isLeadB2B && !isAutoProgpaLockedStatus && (
+                  <p className="closing-modal__progpa-auto-note">
+                    Variante MMA : le statut Relance reutilise la mecanique historique de commande a etablir pour poser un rappel agenda avant validation.
+                  </p>
+                )}
                 <div className="closing-modal__progpa">
-                  <ProgPA compact disabled={isVenteConclue} />
+                  <ProgPA compact disabled={isAutoProgpaLockedStatus} campaignVariant={campaignVariant} />
                 </div>
               </aside>
 

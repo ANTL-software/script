@@ -17,6 +17,7 @@ export interface Prospect {
   prenom?: string;
   raison_sociale?: string;
   email?: string;
+  nom_contact?: string;
   telephone: string;
   adresse_facturation?: string;   // Renommé depuis 'adresse' (2026-06-02)
   adresse_livraison?: string;     // NOUVEAU (2026-06-02)
@@ -24,6 +25,8 @@ export interface Prospect {
   ville?: string;
   pays?: string;
   statut: ProspectStatut;
+  statut_global?: ProspectStatut;
+  statut_campagne?: ProspectStatut | null;
   notes?: string;
   siret?: string;
   code_naf?: string;
@@ -32,6 +35,9 @@ export interface Prospect {
   region?: string;
   civilite?: string;
   telephone_contact?: string;
+  decisionnaire_nom?: string;
+  decisionnaire_fonction?: string;
+  decisionnaire_email_pro?: string;
   max_progpa: number;
   grille_tarifaire_envoyee_at?: string | null;
   created_at: string;
@@ -64,4 +70,8 @@ export interface UpdateProspectData {
   region?: string;
   civilite?: string;
   telephone_contact?: string;
+  nom_contact?: string;
+  decisionnaire_nom?: string;
+  decisionnaire_fonction?: string;
+  decisionnaire_email_pro?: string;
 }

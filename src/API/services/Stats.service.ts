@@ -1,5 +1,5 @@
-import { apiCalls } from '../APICalls';
-import { throwIfApiError } from '../apiHelpers';
+import { apiCalls } from '../APICalls.ts';
+import { throwIfApiError } from '../apiHelpers.ts';
 import type { StatsDuJour } from '../../utils/types';
 
 export class StatsService {
@@ -14,8 +14,9 @@ export class StatsService {
     return StatsService.instance;
   }
 
-  public async getMyStatsDuJour(): Promise<StatsDuJour> {
-    const response = await apiCalls.get<StatsDuJour>('/employes/me/stats');
+  public async getMyStatsDuJour(campagneId?: number): Promise<StatsDuJour> {
+    const query = campagneId ? `?campagne=${campagneId}` : '';
+    const response = await apiCalls.get<StatsDuJour>(`/employes/me/stats${query}`);
     return throwIfApiError(response, 'Erreur lors de la récupération des stats');
   }
 }

@@ -1,0 +1,169 @@
+import type { ViewType } from '../../context/appContext/AppContext';
+import type { Campaign } from '../types/campaign.types';
+import type { StatutAppel } from '../types/appel.types';
+import { STATUT_APPEL_OPTIONS, type StatutAppelOption } from '../constants/appel.constants.ts';
+
+export const CAMPAIGN_VARIANTS = {
+  vente: 'vente',
+  lead_b2b: 'lead_b2b',
+} as const;
+
+export type CampaignVariant = keyof typeof CAMPAIGN_VARIANTS;
+
+export type ActionButtonId =
+  | 'tarifs'
+  | 'agrement'
+  | 'historique-appels'
+  | 'historique-offres'
+  | 'rendez-vous'
+  | 'commande';
+
+export interface CampaignActionConfig {
+  id: ActionButtonId;
+  label: string;
+  group: 'left' | 'right';
+  targetView?: ViewType;
+}
+
+export interface CampaignUiConfig {
+  variant: CampaignVariant;
+  actions: CampaignActionConfig[];
+  showPaniers: boolean;
+  commandeMode: 'sales' | 'placeholder';
+  closingStatuts: StatutAppel[];
+}
+
+export interface ProgpaStepDefinition {
+  value: number;
+  label: string;
+}
+
+const VENTE_CLOSING_STATUTS: StatutAppel[] = STATUT_APPEL_OPTIONS.map((option) => option.value);
+
+const LEAD_B2B_CLOSING_STATUTS: StatutAppel[] = [
+  'rendez_vous_pris',
+  'rdv_pris',
+  'abouti',
+  'pas_disponible',
+  'repondeur',
+  'non_abouti',
+  'refus_definitif',
+  'siege',
+  'faillite',
+  'pas_attribue',
+  'particulier',
+  'doublon',
+];
+
+const LEAD_B2B_CLOSING_OPTION_OVERRIDES: Partial<Record<StatutAppel, Partial<Pick<StatutAppelOption, 'label' | 'description' | 'icon'>>>> = {
+  rendez_vous_pris: {
+    label: 'Rendez-vous validé !',
+    description: 'Le rendez-vous client est validé',
+    icon: '✅',
+  },
+  rdv_pris: {
+    label: 'Relance',
+    description: "Rappel a planifier pour valider le rendez-vous client",
+    icon: '📞',
+  },
+  pas_disponible: {
+    icon: '🕒',
+  },
+};
+
+const VENTE_PROGPA_STEPS: ProgpaStepDefinition[] = [
+  { value: 5, label: 'Commande' },
+  { value: 4, label: 'Proposition' },
+  { value: 3, label: 'Decouverte' },
+  { value: 2, label: 'Presentation' },
+  { value: 1, label: 'Identification' },
+  { value: 0, label: 'Aucun contact' },
+];
+
+const LEAD_B2B_PROGPA_STEPS: ProgpaStepDefinition[] = [
+  { value: 5, label: 'Rendez-vous pris' },
+  { value: 4, label: 'Proposition' },
+  { value: 3, label: 'Decouverte' },
+  { value: 2, label: 'Presentation' },
+  { value: 1, label: 'Identification' },
+  { value: 0, label: 'Aucun contact' },
+];
+
+const VENTE_ACTIONS: CampaignActionConfig[] = [
+  { id: 'tarifs', label: 'Tarifs', group: 'left' },
+  { id: 'agrement', label: 'Agrément', group: 'left' },
+  { id: 'historique-appels', label: 'Historique appels', group: 'right', targetView: 'historique-appels' },
+  { id: 'historique-offres', label: 'Historique offres', group: 'right', targetView: 'historique-offres' },
+  { id: 'rendez-vous', label: 'Rendez-vous', group: 'right', targetView: 'rendez-vous' },
+  { id: 'commande', label: 'Commande', group: 'right', targetView: 'commande' },
+];
+
+const LEAD_B2B_ACTIONS: CampaignActionConfig[] = [
+  { id: 'historique-appels', label: 'Historique appels', group: 'right', targetView: 'historique-appels' },
+  { id: 'historique-offres', label: 'Historique rendez-vous', group: 'right', targetView: 'historique-rendez-vous' },
+  { id: 'rendez-vous', label: 'Agenda personnel', group: 'right', targetView: 'rendez-vous' },
+  { id: 'commande', label: 'Prise de rendez-vous client', group: 'right', targetView: 'commande' },
+];
+
+export function normalizeCampaignVariant(value: string | null | undefined): CampaignVariant {
+  if (value === CAMPAIGN_VARIANTS.lead_b2b) {
+    return CAMPAIGN_VARIANTS.lead_b2b;
+  }
+
+  return CAMPAIGN_VARIANTS.vente;
+}
+
+export function getCampaignVariant(campaign?: Pick<Campaign, 'type_campagne'> | null): CampaignVariant {
+  return normalizeCampaignVariant(campaign?.type_campagne);
+}
+
+export function getCampaignUiConfig(campaign?: Pick<Campaign, 'type_campagne'> | null): CampaignUiConfig {
+  const variant = getCampaignVariant(campaign);
+
+  if (variant === CAMPAIGN_VARIANTS.lead_b2b) {
+    return {
+      variant,
+      actions: LEAD_B2B_ACTIONS,
+      showPaniers: false,
+      commandeMode: 'placeholder',
+      closingStatuts: LEAD_B2B_CLOSING_STATUTS,
+    };
+  }
+
+  return {
+    variant,
+    actions: VENTE_ACTIONS,
+    showPaniers: true,
+    commandeMode: 'sales',
+    closingStatuts: VENTE_CLOSING_STATUTS,
+  };
+}
+
+export function getCampaignClosingOptions(campaign?: Pick<Campaign, 'type_campagne'> | null): StatutAppelOption[] {
+  const variant = getCampaignVariant(campaign);
+  const optionByValue = new Map(
+    STATUT_APPEL_OPTIONS.map((option) => [option.value, option] as const),
+  );
+
+  return getCampaignUiConfig(campaign).closingStatuts.flatMap((statut) => {
+    const option = optionByValue.get(statut);
+    if (!option) {
+      return [];
+    }
+
+    if (variant !== CAMPAIGN_VARIANTS.lead_b2b) {
+      return [option];
+    }
+
+    const overrides = LEAD_B2B_CLOSING_OPTION_OVERRIDES[statut];
+    return [overrides ? { ...option, ...overrides } : option];
+  });
+}
+
+export function getCampaignProgpaSteps(campaignVariant?: CampaignVariant | null): ProgpaStepDefinition[] {
+  if (campaignVariant === CAMPAIGN_VARIANTS.lead_b2b) {
+    return LEAD_B2B_PROGPA_STEPS;
+  }
+
+  return VENTE_PROGPA_STEPS;
+}

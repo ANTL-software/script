@@ -1,7 +1,7 @@
-import { apiCalls } from '../APICalls';
-import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
+import { apiCalls } from '../APICalls.ts';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers.ts';
 import type { Vente, CreateVenteData } from '../../utils/types';
-import { buildQueryString } from '../../utils/scripts/utils';
+import { buildQueryString } from '../../utils/scripts/queryString.ts';
 
 export class VenteService {
   private static instance: VenteService;
@@ -27,7 +27,7 @@ export class VenteService {
 
   public async getVentesByProspect(
     prospectId: number,
-    params?: { page?: number; limit?: number }
+    params?: { page?: number; limit?: number; campagne?: number }
   ): Promise<{ ventes: Vente[]; total: number; page: number; totalPages: number }> {
     const queryString = buildQueryString(params);
     const response = await apiCalls.get<Vente[]>(`/prospects/${prospectId}/ventes${queryString}`);

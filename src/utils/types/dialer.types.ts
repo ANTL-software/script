@@ -42,6 +42,16 @@ export interface StatutDialerResponse {
   statut: StatutDialer;
   raison_pause?: RaisonPause;
   debut_statut: string;
+  id_campagne_active?: number | null;
+}
+
+export interface AgentRuntimeCampaign {
+  id_campagne: number;
+  nom_campagne: string;
+  type_campagne: string;
+  statut: string;
+  autoriser_mobile: boolean;
+  is_active_runtime?: boolean;
 }
 
 // Prospect retourné par /agents/me/next-prospect

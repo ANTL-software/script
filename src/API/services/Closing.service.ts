@@ -1,3 +1,5 @@
+import type { CampaignVariant } from '../../utils/scripts/campaignVariants';
+
 const CLOSING_STORAGE_KEY = 'antl_pending_closing';
 
 /**
@@ -7,6 +9,7 @@ export interface PendingClosing {
   prospectId: number;
   prospectName: string;
   campagneId: number;
+  campaignVariant?: CampaignVariant | null;
   appelId?: number | null;
   origineAppel?: 'auto' | 'manuel' | 'rappel' | null;
   rendezVousSourceId?: number | null;

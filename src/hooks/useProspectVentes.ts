@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { venteService } from '../API/services';
 import type { Vente, CreateVenteData } from '../utils/types';
 
-export function useProspectVentes(prospectId: number | null) {
+export function useProspectVentes(prospectId: number | null, campagneId: number | null) {
   const [ventes, setVentes] = useState<Vente[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +17,9 @@ export function useProspectVentes(prospectId: number | null) {
     setError(null);
 
     try {
-      const response = await venteService.getVentesByProspect(prospectId);
+      const response = await venteService.getVentesByProspect(prospectId, {
+        campagne: campagneId ?? undefined,
+      });
       setVentes(response.ventes);
       console.log(`[PROSPECT] ${response.ventes.length} ventes chargees`);
     } catch (err) {
@@ -27,7 +29,7 @@ export function useProspectVentes(prospectId: number | null) {
     } finally {
       setLoading(false);
     }
-  }, [prospectId]);
+  }, [campagneId, prospectId]);
 
   const create = useCallback(async (data: CreateVenteData): Promise<Vente> => {
     setError(null);

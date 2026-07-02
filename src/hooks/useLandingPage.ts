@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
 import { closingService, type PendingClosing } from '../API/services';
 import { formatProspectName } from '../utils/scripts/formatters';
+import { getCampaignUiConfig, getCampaignVariant } from '../utils/scripts/campaignVariants';
 
 export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
@@ -50,8 +50,8 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     };
   }, [setView, clearCart]);
 
-  // Charge le prospect et la campagne associée à l'appel en cours
-  // currentCampagneId vient du DialerContext (renseigné par call())
+  // Charge le prospect et la campagne runtime de l'agent.
+  // La campagne active doit venir de la session dialer/affectation, pas de l'URL.
   useEffect(() => {
     const prospectId = id ? parseInt(id, 10) : NaN;
     if (isNaN(prospectId)) {
@@ -59,16 +59,10 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       return;
     }
     loadProspect(prospectId);
-    // Charger la campagne de l'agent (via le dialer ou le prospect assigné)
-    // Ne pas fallback à 1 — si aucune campagne, l'agent n'est pas assigné
-    const rawCampagneId = searchParams.get('campagneId') ?? searchParams.get('campagne');
-    const urlCampagneId = rawCampagneId ? Number.parseInt(rawCampagneId, 10) : NaN;
-    const campagneId = currentCampagneId ?? (Number.isNaN(urlCampagneId) ? null : urlCampagneId);
-
-    if (campagneId) {
-      loadCampaign(campagneId);
+    if (currentCampagneId) {
+      loadCampaign(currentCampagneId);
     }
-  }, [id, loadProspect, loadCampaign, navigate, currentCampagneId, searchParams]);
+  }, [id, loadProspect, loadCampaign, navigate, currentCampagneId]);
 
   // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
   // sans passer par une vente — garantit que chaque appel est enregistré en DB
@@ -91,6 +85,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       prospectId: currentProspect.id_prospect,
       prospectName: formatProspectName({ nom: currentProspect.nom, prenom: currentProspect.prenom }),
       campagneId,
+      campaignVariant: getCampaignVariant(currentCampaign),
       appelId: currentAppelId,
       origineAppel: currentOrigineAppel,
       rendezVousSourceId: currentRendezVousSourceId,
@@ -104,18 +99,28 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const handlePlanAppels = () => {
     const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
     if (!campagneId) return;
-    window.open(`/plan-appel?campagne=${campagneId}`, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
+    const params = new URLSearchParams({ campagne: String(campagneId) });
+    if (isTestMode) {
+      params.set('test', 'true');
+    }
+    window.open(`/plan-appel?${params.toString()}`, 'plan-appel', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleObjections = () => {
     const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
     if (!campagneId) return;
-    window.open(`/objections?campagne=${campagneId}`, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
+    const params = new URLSearchParams({ campagne: String(campagneId) });
+    if (isTestMode) {
+      params.set('test', 'true');
+    }
+    window.open(`/objections?${params.toString()}`, 'objections', 'width=900,height=700,menubar=no,toolbar=no,location=no,status=no');
   };
 
   const handleCommande = () => {
     setView('commande');
-    loadProduits();
+    if (getCampaignUiConfig(currentCampaign).commandeMode === 'sales') {
+      loadProduits();
+    }
   };
 
   const handleOrderSuccess = () => {

@@ -22,19 +22,33 @@ export function isProspectTestMode(): boolean {
 }
 
 export function getApiBaseUrl(): string {
-  const configuredProdUrl = import.meta.env.VITE_API_BASE_URL?.trim();
-  const configuredTestUrl = import.meta.env.VITE_API_TEST_BASE_URL?.trim();
+  const env = typeof import.meta.env !== 'undefined' ? import.meta.env : (globalThis as any)._mockEnv || {};
+  const configuredProdUrl = env.VITE_API_BASE_URL?.trim();
+  const configuredTestUrl = env.VITE_API_TEST_BASE_URL?.trim();
 
+  // En environnement de test local (localhost/127.0.0.1)
   if (isTestEnvironment()) {
-    return (configuredTestUrl || configuredProdUrl || 'http://localhost:8800/api').replace(/\/+$/, '');
+    // Si une URL de test est spécifiée, on l'utilise, sinon on fallback sur le port local par défaut 8800
+    // On n'utilise plus configuredProdUrl par défaut pour éviter d'attaquer la prod en local par accident
+    return (configuredTestUrl || 'http://localhost:8800/api').replace(/\/+$/, '');
   }
 
+  // En mode test hors localhost (ex: ?test=true sur la prod)
   if (isProspectTestMode()) {
-    if (!configuredTestUrl) {
-      throw new Error('VITE_API_TEST_BASE_URL est requis pour utiliser le mode test hors localhost.');
+    const isLocalTestUrl = configuredTestUrl && (configuredTestUrl.includes('localhost') || configuredTestUrl.includes('127.0.0.1'));
+    if (!configuredTestUrl || isLocalTestUrl) {
+      return 'https://api-test.antl.fr/api';
     }
     return configuredTestUrl.replace(/\/+$/, '');
   }
 
-  return (configuredProdUrl || 'https://api.antl.fr/api').replace(/\/+$/, '');
+  // En production
+  // Si l'URL de prod configurée contient localhost ou 127.0.0.1 (erreur fréquente de build avec le .env de dev),
+  // on l'ignore et on utilise l'URL de production réelle.
+  const isLocalProdUrl = configuredProdUrl && (configuredProdUrl.includes('localhost') || configuredProdUrl.includes('127.0.0.1'));
+  if (!configuredProdUrl || isLocalProdUrl) {
+    return 'https://api.antl.fr/api';
+  }
+
+  return configuredProdUrl.replace(/\/+$/, '');
 }

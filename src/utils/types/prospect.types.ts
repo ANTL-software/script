@@ -40,6 +40,7 @@ export interface Prospect {
   decisionnaire_email_pro?: string;
   max_progpa: number;
   grille_tarifaire_envoyee_at?: string | null;
+  id_campagne?: number | null;
   created_at: string;
   updated_at: string;
 }

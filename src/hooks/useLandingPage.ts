@@ -50,8 +50,7 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     };
   }, [setView, clearCart]);
 
-  // Charge le prospect et la campagne runtime de l'agent.
-  // La campagne active doit venir de la session dialer/affectation, pas de l'URL.
+  // Charge le prospect
   useEffect(() => {
     const prospectId = id ? parseInt(id, 10) : NaN;
     if (isNaN(prospectId)) {
@@ -59,10 +58,15 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
       return;
     }
     loadProspect(prospectId);
-    if (currentCampagneId) {
-      loadCampaign(currentCampagneId);
+  }, [id, loadProspect, navigate]);
+
+  // Charger la campagne à partir du dialer ou de la fiche prospect
+  useEffect(() => {
+    const campaignIdToLoad = currentCampagneId || currentProspect?.id_campagne;
+    if (campaignIdToLoad) {
+      loadCampaign(campaignIdToLoad);
     }
-  }, [id, loadProspect, loadCampaign, navigate, currentCampagneId]);
+  }, [currentCampagneId, currentProspect?.id_campagne, loadCampaign]);
 
   // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
   // sans passer par une vente — garantit que chaque appel est enregistré en DB

@@ -1,13 +1,17 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useContext, useRef } from 'react';
 import { CampaignContext } from './CampaignContext';
 import type { Campaign, Produit, CategorieProduit, CampaignPanier } from '../../utils/types';
 import { campaignService, produitService } from '../../API/services';
+import { UserContext } from '../userContext/UserContext';
 
 interface CampaignProviderProps {
   children: React.ReactNode;
 }
 
 export const CampaignProvider = ({ children }: CampaignProviderProps) => {
+  const userContext = useContext(UserContext);
+  const isAuthenticated = userContext?.isAuthenticated ?? false;
+
   const [currentCampaign, setCurrentCampaign] = useState<Campaign | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,22 +24,45 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
   const [paniers, setPaniers] = useState<CampaignPanier[]>([]);
   const [paniersLoading, setPaniersLoading] = useState<boolean>(false);
   const [paniersError, setPaniersError] = useState<string | null>(null);
+  const campaignRequestIdRef = useRef(0);
+
+  const resetCampaignCollections = useCallback(() => {
+    setProduits([]);
+    setCategories([]);
+    setCategoriesTree([]);
+    setPaniers([]);
+    setProduitsError(null);
+    setPaniersError(null);
+  }, []);
 
   const loadCampaign = useCallback(async (id: number) => {
+    const requestId = campaignRequestIdRef.current + 1;
+    campaignRequestIdRef.current = requestId;
+
     setIsLoading(true);
     setError(null);
+    resetCampaignCollections();
+
     try {
       console.log(`[CAMPAIGN] Chargement campagne ID: ${id}`);
       const campaignModel = await campaignService.getCampaignById(id);
+      if (campaignRequestIdRef.current !== requestId) {
+        return;
+      }
       setCurrentCampaign(campaignModel.toJSON());
     } catch (err) {
+      if (campaignRequestIdRef.current !== requestId) {
+        return;
+      }
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement de la campagne';
       setError(errorMessage);
       console.error('[CAMPAIGN] Erreur chargement:', errorMessage);
     } finally {
-      setIsLoading(false);
+      if (campaignRequestIdRef.current === requestId) {
+        setIsLoading(false);
+      }
     }
-  }, []);
+  }, [resetCampaignCollections]);
 
   const loadProduits = useCallback(async () => {
     if (!currentCampaign) {
@@ -161,15 +188,18 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
   }, [currentCampaign, loadProduitsGrouped, loadPaniers]);
 
   const clearCampaign = useCallback(() => {
+    campaignRequestIdRef.current += 1;
     setCurrentCampaign(null);
-    setProduits([]);
-    setCategories([]);
-    setCategoriesTree([]);
-    setPaniers([]);
+    resetCampaignCollections();
     setError(null);
-    setProduitsError(null);
-    setPaniersError(null);
-  }, []);
+    setIsLoading(false);
+  }, [resetCampaignCollections]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      clearCampaign();
+    }
+  }, [clearCampaign, isAuthenticated]);
 
   const clearError = useCallback(() => {
     setError(null);

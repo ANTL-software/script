@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { pickRuntimeCampaign, resolveManualCallOrigin, resolveRuntimeCampaignId } from '../../src/utils/scripts/runtimeCampaign.ts';
+import {
+  pickDialerBootstrapCampaign,
+  pickRuntimeCampaign,
+  resolveManualCallOrigin,
+  resolveRuntimeCampaignId,
+} from '../../src/utils/scripts/runtimeCampaign.ts';
 
 test('resolveRuntimeCampaignId priorise la campagne du contexte front', () => {
   assert.equal(
@@ -93,6 +98,32 @@ test('pickRuntimeCampaign tolère une campagne runtime obsolète et conserve le 
     ],
     null,
     99,
+  );
+
+  assert.equal(result?.id_campagne, 7);
+});
+
+test('pickDialerBootstrapCampaign priorise la campagne runtime backend avant un contexte local stale', () => {
+  const result = pickDialerBootstrapCampaign(
+    [
+      { id_campagne: 7, nom_campagne: 'Les Cigales', type_campagne: 'vente', statut: 'active', autoriser_mobile: false },
+      { id_campagne: 9, nom_campagne: 'MMA', type_campagne: 'lead_b2b', statut: 'active', autoriser_mobile: false, is_active_runtime: true },
+    ],
+    9,
+    7,
+  );
+
+  assert.equal(result?.id_campagne, 9);
+});
+
+test('pickDialerBootstrapCampaign retombe sur le contexte local seulement si le backend ne porte aucune runtime exploitable', () => {
+  const result = pickDialerBootstrapCampaign(
+    [
+      { id_campagne: 7, nom_campagne: 'Les Cigales', type_campagne: 'vente', statut: 'active', autoriser_mobile: false },
+      { id_campagne: 9, nom_campagne: 'MMA', type_campagne: 'lead_b2b', statut: 'active', autoriser_mobile: false },
+    ],
+    null,
+    7,
   );
 
   assert.equal(result?.id_campagne, 7);

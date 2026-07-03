@@ -2,7 +2,7 @@ import './dashboardPage.scss';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { useDashboardData } from '../../../hooks/useDashboardData';
-import { useDialer } from '../../../hooks';
+import { useCampaign, useDialer } from '../../../hooks';
 import { useToast } from '../../../hooks';
 import { formatEur, formatHeure, formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
 import type { RendezVous } from '../../../utils/types';
@@ -45,10 +45,22 @@ function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: numbe
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { statut, prochainProspect, clearProchainProspect, call, requestNextProspect } = useDialer();
+  const { statut, prochainProspect, clearProchainProspect, call, requestNextProspect, currentCampagneId } = useDialer();
+  const { loadCampaign, clearCampaign } = useCampaign();
   const { showToast } = useToast();
   const networkWarningShown = useRef(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!currentCampagneId) {
+      clearCampaign();
+      return;
+    }
+
+    loadCampaign(currentCampagneId).catch((error: unknown) => {
+      console.error('[DASHBOARD] Erreur synchronisation campagne runtime:', error);
+    });
+  }, [clearCampaign, currentCampagneId, loadCampaign]);
 
   // Vérification de la qualité de connexion réseau
   useEffect(() => {

@@ -6,6 +6,7 @@ import type { Objection, ObjectionsByCategorie } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 import { OBJECTION_CATEGORIES_ORDER } from '../utils/constants';
 import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
+import { CAMPAIGN_VARIANTS, isLeadB2BCampaign } from '../utils/scripts/campaignVariants';
 import { CIGALES_OBJECTIONS, MMA_OBJECTIONS } from '../utils/scripts/staticObjections';
 
 interface UseObjectionsReturn {
@@ -30,6 +31,7 @@ export function useObjections(): UseObjectionsReturn {
     currentDialerCampaignId: currentCampagneId,
     urlCampaignId: searchParams.get('campagne'),
   });
+  const matchedContextCampaign = currentCampaign?.id_campagne === campagneId ? currentCampaign : null;
 
   const [objections, setObjections] = useState<Objection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,19 +53,18 @@ export function useObjections(): UseObjectionsReturn {
         setError(null);
 
         // Charger la campagne pour avoir le nom et le type
-        let campaign;
         let name = '';
         let type = '';
         try {
-          campaign = await campaignService.getCampaignById(campagneId);
+          const campaign = await campaignService.getCampaignById(campagneId);
           const data = campaign.toJSON();
           name = data.nom_campagne || '';
           type = data.type_campagne || '';
           setCampagneName(name);
         } catch (err) {
           console.warn('Impossible de charger les infos de la campagne, fallback...', err);
-          name = currentCampaign?.nom_campagne || (campagneId === 7 ? 'Les Cigales' : 'MMA Planète Assurance') || '';
-          type = currentCampaign?.type_campagne || (campagneId === 7 ? 'social' : 'lead_b2b') || '';
+          name = matchedContextCampaign?.nom_campagne || (campagneId === 7 ? 'Les Cigales' : 'MMA Planète Assurance') || '';
+          type = matchedContextCampaign?.type_campagne || (campagneId === 7 ? CAMPAIGN_VARIANTS.vente : CAMPAIGN_VARIANTS.lead_b2b);
           setCampagneName(name);
         }
 
@@ -77,7 +78,10 @@ export function useObjections(): UseObjectionsReturn {
 
         // Fallback statique si la base de données est vide ou injoignable
         if (!objectionsData || objectionsData.length === 0) {
-          const isMMA = type === 'lead_b2b' || name.toLowerCase().includes('mma') || name.toLowerCase().includes('assurance');
+          const isMMA = isLeadB2BCampaign({
+            type_campagne: type === CAMPAIGN_VARIANTS.lead_b2b ? CAMPAIGN_VARIANTS.lead_b2b : CAMPAIGN_VARIANTS.vente,
+            nom_campagne: name,
+          });
           objectionsData = isMMA ? MMA_OBJECTIONS : CIGALES_OBJECTIONS;
           console.log(`[useObjections] Utilisation des objections statiques de fallback pour ${isMMA ? 'MMA' : 'Cigales'}`);
         }
@@ -91,7 +95,7 @@ export function useObjections(): UseObjectionsReturn {
     };
 
     loadObjections();
-  }, [campagneId, currentCampaign]);
+  }, [campagneId, matchedContextCampaign]);
 
   // Filtrer les objections par recherche
   const filteredObjections = useMemo(() => {

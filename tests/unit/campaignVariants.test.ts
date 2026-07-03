@@ -6,6 +6,7 @@ import {
   getCampaignClosingOptions,
   getCampaignProgpaSteps,
   getCampaignUiConfig,
+  isLeadB2BCampaign,
   normalizeCampaignVariant,
 } from '../../src/utils/scripts/campaignVariants.ts';
 
@@ -92,4 +93,19 @@ test('getCampaignClosingOptions retire les statuts purement vente pour MMA', () 
 test('getCampaignProgpaSteps adapte le libelle final pour MMA sans toucher Cigales', () => {
   assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.vente)[0]?.label, 'Commande');
   assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.lead_b2b)[0]?.label, 'Rendez-vous pris');
+});
+
+test('isLeadB2BCampaign n utilise plus de dependance aux ids de campagne', () => {
+  assert.equal(
+    isLeadB2BCampaign({ type_campagne: CAMPAIGN_VARIANTS.lead_b2b, nom_campagne: 'Campagne MMA' }),
+    true,
+  );
+  assert.equal(
+    isLeadB2BCampaign({ type_campagne: CAMPAIGN_VARIANTS.vente, nom_campagne: 'Les Cigales' }),
+    false,
+  );
+  assert.equal(
+    isLeadB2BCampaign({ type_campagne: CAMPAIGN_VARIANTS.vente, nom_campagne: 'MMA Planete Assurance' }),
+    true,
+  );
 });

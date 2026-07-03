@@ -44,6 +44,24 @@ export const pickRuntimeCampaign = (
     ?? (campagnes.length === 1 ? campagnes[0] : null);
 };
 
+export const pickDialerBootstrapCampaign = (
+  campagnes: AgentRuntimeCampaign[],
+  statusCampaignId?: number | null,
+  previousCampaignId?: number | null,
+): AgentRuntimeCampaign | null => {
+  const resolvedStatusCampaignId = parseCampaignId(statusCampaignId);
+  const resolvedPreviousCampaignId = parseCampaignId(previousCampaignId);
+
+  return (resolvedStatusCampaignId
+    ? campagnes.find((campagne) => campagne.id_campagne === resolvedStatusCampaignId) ?? null
+    : null)
+    ?? campagnes.find((campagne) => campagne.is_active_runtime)
+    ?? (resolvedPreviousCampaignId
+      ? campagnes.find((campagne) => campagne.id_campagne === resolvedPreviousCampaignId) ?? null
+      : null)
+    ?? (campagnes.length === 1 ? campagnes[0] : null);
+};
+
 export const resolveManualCallOrigin = (rendezVousSourceId?: number | null): 'manuel' | 'rappel' => {
   return parseCampaignId(rendezVousSourceId) ? 'rappel' : 'manuel';
 };

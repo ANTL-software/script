@@ -1,23 +1,11 @@
-import { useCampaign, useDialer } from '../../../hooks';
-import { resolveRuntimeCampaignId } from '../../../utils/scripts/runtimeCampaign';
+import { useCampaign } from '../../../hooks';
+import { isLeadB2BCampaign } from '../../../utils/scripts/campaignVariants';
 import './quiSommesNous.scss';
 import { FaBuilding, FaUsers, FaHandshake, FaShieldAlt, FaPhone, FaEnvelope, FaMapMarkerAlt, FaListOl } from 'react-icons/fa';
 
 export default function QuiSommesNous() {
   const { currentCampaign } = useCampaign();
-  const { currentCampagneId } = useDialer();
-
-  const campagneId = resolveRuntimeCampaignId({
-    currentCampaignId: currentCampaign?.id_campagne,
-    currentDialerCampaignId: currentCampagneId,
-    urlCampaignId: null,
-  });
-
-  const isMMA =
-    currentCampaign?.type_campagne === 'lead_b2b' ||
-    currentCampaign?.nom_campagne?.toLowerCase().includes('mma') ||
-    campagneId === 10 ||
-    campagneId === 8;
+  const isMMA = isLeadB2BCampaign(currentCampaign);
 
   if (isMMA) {
     return (

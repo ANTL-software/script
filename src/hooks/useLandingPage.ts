@@ -4,6 +4,7 @@ import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
 import { closingService, type PendingClosing } from '../API/services';
 import { formatProspectName } from '../utils/scripts/formatters';
 import { getCampaignUiConfig, getCampaignVariant } from '../utils/scripts/campaignVariants';
+import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
 
 export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const navigate = useNavigate();
@@ -62,9 +63,14 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
 
   // Charger la campagne à partir du dialer ou de la fiche prospect
   useEffect(() => {
-    const campaignIdToLoad = currentCampagneId || currentProspect?.id_campagne;
+    const campaignIdToLoad = resolveRuntimeCampaignId({
+      currentCampaignId: currentProspect?.id_campagne ?? null,
+      currentDialerCampaignId: currentCampagneId,
+      urlCampaignId: null,
+    });
+
     if (campaignIdToLoad) {
-      loadCampaign(campaignIdToLoad);
+      loadCampaign(campaignIdToLoad).catch(() => {});
     }
   }, [currentCampagneId, currentProspect?.id_campagne, loadCampaign]);
 

@@ -9,7 +9,7 @@ import { dialerService, appelService, closingService, twilioService, rendezVousS
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
 import { getApiBaseUrl, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
-import { pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
+import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
 import { useToast } from '../../hooks';
 
 interface DialerProviderProps {
@@ -689,6 +689,16 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         setSipConnected(false);
       }
       clearActiveCall();
+      setStatut('hors_ligne');
+      setRaisonPause(null);
+      setDepuisLe(new Date());
+      setIncomingCall(null);
+      setProchainProspect(null);
+      setCurrentCampagneId(null);
+      setCurrentAppelId(null);
+      setCurrentIdProspection(null);
+      setCurrentOrigineAppel(null);
+      setCurrentRendezVousSourceId(null);
       return;
     }
 
@@ -716,7 +726,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
 
     const campagnes = await dialerService.getCampagnesAgent();
-    const runtimeCampaign = pickRuntimeCampaign(campagnes, currentCampagneId, status.id_campagne_active);
+    const runtimeCampaign = pickDialerBootstrapCampaign(campagnes, status.id_campagne_active, currentCampagneId);
 
     if (runtimeCampaign) {
       if (!runtimeCampaign.is_active_runtime && campagnes.length === 1) {

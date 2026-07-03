@@ -117,6 +117,15 @@ export function getCampaignVariant(campaign?: Pick<Campaign, 'type_campagne'> | 
   return normalizeCampaignVariant(campaign?.type_campagne);
 }
 
+export function isLeadB2BCampaign(campaign?: Pick<Campaign, 'type_campagne' | 'nom_campagne'> | null): boolean {
+  if (getCampaignVariant(campaign) === CAMPAIGN_VARIANTS.lead_b2b) {
+    return true;
+  }
+
+  const campaignName = campaign?.nom_campagne?.toLowerCase() ?? '';
+  return campaignName.includes('mma') || campaignName.includes('planete assurance') || campaignName.includes('assurance');
+}
+
 export function getCampaignUiConfig(campaign?: Pick<Campaign, 'type_campagne'> | null): CampaignUiConfig {
   const variant = getCampaignVariant(campaign);
 

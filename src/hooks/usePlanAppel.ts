@@ -5,6 +5,7 @@ import { useCampaign, useDialer } from './index';
 import type { PlanAppelEtape } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
+import { CAMPAIGN_VARIANTS, isLeadB2BCampaign } from '../utils/scripts/campaignVariants';
 import { CIGALES_PLAN_APPEL, MMA_PLAN_APPEL } from '../utils/scripts/staticPlanAppel';
 
 interface UsePlanAppelReturn {
@@ -26,6 +27,7 @@ export function usePlanAppel(): UsePlanAppelReturn {
     currentDialerCampaignId: currentCampagneId,
     urlCampaignId: searchParams.get('campagne'),
   });
+  const matchedContextCampaign = currentCampaign?.id_campagne === campagneId ? currentCampaign : null;
 
   const [etapes, setEtapes] = useState<PlanAppelEtape[]>([]);
   const [currentEtapeIndex, setCurrentEtapeIndex] = useState(0);
@@ -45,11 +47,10 @@ export function usePlanAppel(): UsePlanAppelReturn {
       setError(null);
 
       // Charger la campagne pour avoir le nom et le type
-      let campaign;
       let name = '';
       let type = '';
       try {
-        campaign = await campaignService.getCampaignById(campagneId);
+        const campaign = await campaignService.getCampaignById(campagneId);
         const data = campaign.toJSON();
         name = data.nom_campagne || '';
         type = data.type_campagne || '';
@@ -57,8 +58,8 @@ export function usePlanAppel(): UsePlanAppelReturn {
       } catch (err) {
         console.warn('Impossible de charger les infos de la campagne, fallback...', err);
         // Si l'API échoue, on essaye de deviner ou d'utiliser le contexte local
-        name = currentCampaign?.nom_campagne || (campagneId === 7 ? 'Les Cigales' : 'MMA Planète Assurance') || '';
-        type = currentCampaign?.type_campagne || (campagneId === 7 ? 'social' : 'lead_b2b') || '';
+        name = matchedContextCampaign?.nom_campagne || (campagneId === 7 ? 'Les Cigales' : 'MMA Planète Assurance') || '';
+        type = matchedContextCampaign?.type_campagne || (campagneId === 7 ? CAMPAIGN_VARIANTS.vente : CAMPAIGN_VARIANTS.lead_b2b);
         setCampagneName(name);
       }
 
@@ -72,7 +73,10 @@ export function usePlanAppel(): UsePlanAppelReturn {
 
       // Fallback statique si la base de données est vide ou injoignable
       if (!planAppel || planAppel.length === 0) {
-        const isMMA = type === 'lead_b2b' || name.toLowerCase().includes('mma') || name.toLowerCase().includes('assurance');
+        const isMMA = isLeadB2BCampaign({
+          type_campagne: type === CAMPAIGN_VARIANTS.lead_b2b ? CAMPAIGN_VARIANTS.lead_b2b : CAMPAIGN_VARIANTS.vente,
+          nom_campagne: name,
+        });
         planAppel = isMMA ? MMA_PLAN_APPEL : CIGALES_PLAN_APPEL;
         console.log(`[usePlanAppel] Utilisation du plan d'appel statique de fallback pour ${isMMA ? 'MMA' : 'Cigales'}`);
       }
@@ -83,7 +87,7 @@ export function usePlanAppel(): UsePlanAppelReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [campagneId, currentCampaign]);
+  }, [campagneId, matchedContextCampaign]);
 
   useEffect(() => {
     loadPlanAppel();

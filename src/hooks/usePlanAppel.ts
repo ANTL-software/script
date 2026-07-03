@@ -6,7 +6,7 @@ import type { PlanAppelEtape } from '../utils/types';
 import { getErrorMessage } from '../utils/scripts/formatters';
 import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
 import { CAMPAIGN_VARIANTS, isLeadB2BCampaign } from '../utils/scripts/campaignVariants';
-import { CIGALES_PLAN_APPEL, MMA_PLAN_APPEL } from '../utils/scripts/staticPlanAppel';
+import { getStaticPlanAppelForCampaign, shouldForceLegacyStaticPlanAppel } from '../utils/scripts/planAppelSource';
 
 interface UsePlanAppelReturn {
   etapes: PlanAppelEtape[];
@@ -63,6 +63,18 @@ export function usePlanAppel(): UsePlanAppelReturn {
         setCampagneName(name);
       }
 
+      const campaignDescriptor = {
+        id_campagne: campagneId,
+        type_campagne: type === CAMPAIGN_VARIANTS.lead_b2b ? CAMPAIGN_VARIANTS.lead_b2b : CAMPAIGN_VARIANTS.vente,
+        nom_campagne: name,
+      };
+
+      if (shouldForceLegacyStaticPlanAppel(campaignDescriptor)) {
+        setEtapes(getStaticPlanAppelForCampaign(campaignDescriptor));
+        console.log('[usePlanAppel] Utilisation forcee du plan d\'appel hardcode historique pour Les Cigales');
+        return;
+      }
+
       // Charger le plan d'appel de l'API
       let planAppel: PlanAppelEtape[] = [];
       try {
@@ -73,11 +85,8 @@ export function usePlanAppel(): UsePlanAppelReturn {
 
       // Fallback statique si la base de données est vide ou injoignable
       if (!planAppel || planAppel.length === 0) {
-        const isMMA = isLeadB2BCampaign({
-          type_campagne: type === CAMPAIGN_VARIANTS.lead_b2b ? CAMPAIGN_VARIANTS.lead_b2b : CAMPAIGN_VARIANTS.vente,
-          nom_campagne: name,
-        });
-        planAppel = isMMA ? MMA_PLAN_APPEL : CIGALES_PLAN_APPEL;
+        const isMMA = isLeadB2BCampaign(campaignDescriptor);
+        planAppel = getStaticPlanAppelForCampaign(campaignDescriptor);
         console.log(`[usePlanAppel] Utilisation du plan d'appel statique de fallback pour ${isMMA ? 'MMA' : 'Cigales'}`);
       }
 

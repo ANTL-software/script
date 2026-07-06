@@ -23,7 +23,7 @@ test('le contrat MMA persiste et relit les snapshots de prise de rendez-vous cli
     });
 
     const historyCard = mapRendezVousToHistoryCardModel({
-      id_rendez_vous: 1,
+      id_lead: 1,
       id_agent: 7,
       id_prospect: 42,
       id_campagne: 7,

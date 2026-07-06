@@ -51,7 +51,7 @@ export default function ClosingModal({
     notes, setNotes,
     isSubmitting, error,
     handleSubmit,
-  } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, dureeAppel, onComplete });
+  } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, campaignVariant, dureeAppel, onComplete });
 
   const [showConfirm, setShowConfirm] = useState<'doublon' | null>(null);
   const isVenteConclue = selectedStatut === 'vente_conclue';

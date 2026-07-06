@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { Prospect, Appel, Vente, RendezVous, CreateVenteData, Pagination, UpdateProspectData } from '../../utils/types';
+import type { Prospect, Appel, Vente, LeadClient, CreateVenteData, Pagination, UpdateProspectData } from '../../utils/types';
 
 export interface ProspectContextType {
   // Prospect
@@ -20,7 +20,7 @@ export interface ProspectContextType {
   ventesError: string | null;
 
   // Rendez-vous
-  rendezVous: RendezVous[];
+  rendezVous: LeadClient[];
   rendezVousLoading: boolean;
   rendezVousError: string | null;
 

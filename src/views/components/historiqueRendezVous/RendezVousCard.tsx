@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import type { RendezVous } from '../../../utils/types';
+import type { LeadClient } from '../../../utils/types';
 import { mapRendezVousToHistoryCardModel } from '../../../utils/scripts/rendezVousHistory';
 
 interface RendezVousCardProps {
-  rdv: RendezVous;
+  rdv: LeadClient;
 }
 
 const getStatutClass = (statut: string): string => {

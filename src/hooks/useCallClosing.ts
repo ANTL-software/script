@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useUser, useToast, useDialer, useProspect } from './index';
-import { appelService, closingService, dialerService, rendezVousService } from '../API/services';
+import { appelService, closingService, dialerService, leadService, rendezVousService } from '../API/services';
 import type { StatutAppel } from '../utils/types';
+import type { CampaignVariant } from '../utils/scripts/campaignVariants';
+import { CAMPAIGN_VARIANTS } from '../utils/scripts/campaignVariants';
 import { getErrorMessage } from '../utils/scripts/formatters';
 
 interface UseCallClosingOptions {
@@ -11,11 +13,12 @@ interface UseCallClosingOptions {
   appelId?: number;
   origineAppel?: 'auto' | 'manuel' | 'rappel';
   rendezVousSourceId?: number;
+  campaignVariant?: CampaignVariant | null;
   onComplete: () => void;
   dureeAppel?: number;
 }
 
-export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, onComplete, dureeAppel }: UseCallClosingOptions) {
+export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, campaignVariant = null, onComplete, dureeAppel }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
   const { currentProgpa, resetCurrentProgpa } = useProspect();
@@ -49,7 +52,33 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
 
     setIsSubmitting(true);
 
-    if (selectedStatut === 'rdv_pris' || selectedStatut === 'rendez_vous_pris') {
+    const requiresLeadValidation = selectedStatut === 'rendez_vous_pris' && campaignVariant === CAMPAIGN_VARIANTS.lead_b2b;
+    const requiresAgendaValidation = selectedStatut === 'rdv_pris'
+      || (selectedStatut === 'rendez_vous_pris' && campaignVariant !== CAMPAIGN_VARIANTS.lead_b2b);
+
+    if (requiresLeadValidation) {
+      try {
+        const leads = await leadService.getLeadsByProspect(prospectId, campagneId);
+        const activeLeads = leads.filter((lead) =>
+          (lead.statut === 'planifie' || lead.statut === 'reporte')
+          && lead.id_agent === user.id_employe
+          && lead.id_campagne === campagneId
+        );
+        if (activeLeads.length === 0) {
+          showToast('warning', 'Veuillez enregistrer une prise de rendez-vous client avant de valider.');
+          setError('Planification du rendez-vous client obligatoire pour ce statut.');
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (err) {
+        console.error('Erreur lors de la validation du rendez-vous client MMA:', err);
+        setError('Impossible de vérifier la prise de rendez-vous client.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
+    if (requiresAgendaValidation) {
       try {
         const rdvs = await rendezVousService.getRendezVousByProspect(prospectId, campagneId);
         const activeRdvs = rdvs.filter(r =>
@@ -64,8 +93,8 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           return;
         }
       } catch (err) {
-        console.error("Erreur lors de la validation du rendez-vous:", err);
-        setError("Impossible de vérifier la planification du rendez-vous.");
+        console.error("Erreur lors de la validation du rendez-vous agenda:", err);
+        setError("Impossible de verifier la planification du rendez-vous.");
         setIsSubmitting(false);
         return;
       }

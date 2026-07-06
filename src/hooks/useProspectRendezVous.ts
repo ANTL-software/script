@@ -1,9 +1,9 @@
 import { useState, useCallback } from 'react';
-import { rendezVousService } from '../API/services';
-import type { RendezVous } from '../utils/types';
+import { leadService } from '../API/services';
+import type { LeadClient } from '../utils/types';
 
 export function useProspectRendezVous(prospectId: number | null, campagneId: number | null) {
-  const [rendezVous, setRendezVous] = useState<RendezVous[]>([]);
+  const [rendezVous, setRendezVous] = useState<LeadClient[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,13 +17,13 @@ export function useProspectRendezVous(prospectId: number | null, campagneId: num
     setError(null);
 
     try {
-      const response = await rendezVousService.getRendezVousByProspect(prospectId, campagneId);
+      const response = await leadService.getLeadsByProspect(prospectId, campagneId);
       setRendezVous(response);
-      console.log(`[PROSPECT] ${response.length} rendez-vous charges`);
+      console.log(`[PROSPECT] ${response.length} rendez-vous client charges`);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des rendez-vous';
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement des rendez-vous client';
       setError(errorMessage);
-      console.error('[PROSPECT] Erreur chargement rendez-vous:', errorMessage);
+      console.error('[PROSPECT] Erreur chargement rendez-vous client:', errorMessage);
     } finally {
       setLoading(false);
     }

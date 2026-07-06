@@ -1,4 +1,4 @@
-import type { RendezVous } from '../types/index.ts';
+import type { LeadClient } from '../types/index.ts';
 import { formatProspectName, formatHeure } from './formatters.ts';
 
 export interface RendezVousHistoryCardModel {
@@ -26,9 +26,9 @@ const STATUT_LABELS: Record<string, string> = {
   non_honore: 'Non honore',
 };
 
-const buildAgentLabel = (rendezVous: RendezVous): string => {
-  const firstName = rendezVous.agent?.prenom?.trim();
-  const lastName = rendezVous.agent?.nom?.trim();
+const buildAgentLabel = (lead: LeadClient): string => {
+  const firstName = lead.agent?.prenom?.trim();
+  const lastName = lead.agent?.nom?.trim();
 
   if (firstName && lastName) {
     return `${firstName} ${lastName}`;
@@ -37,53 +37,53 @@ const buildAgentLabel = (rendezVous: RendezVous): string => {
   return firstName || lastName || 'Agent inconnu';
 };
 
-const buildProspectFallbackName = (rendezVous: RendezVous): string => {
-  if (!rendezVous.prospect) {
+const buildProspectFallbackName = (lead: LeadClient): string => {
+  if (!lead.prospect) {
     return 'Prospect';
   }
 
-  if (rendezVous.prospect.raison_sociale?.trim()) {
-    return rendezVous.prospect.raison_sociale.trim();
+  if (lead.prospect.raison_sociale?.trim()) {
+    return lead.prospect.raison_sociale.trim();
   }
 
   return formatProspectName({
-    nom: rendezVous.prospect.nom,
-    prenom: rendezVous.prospect.prenom ?? undefined,
+    nom: lead.prospect.nom,
+    prenom: lead.prospect.prenom ?? undefined,
   });
 };
 
-export function mapRendezVousToHistoryCardModel(rendezVous: RendezVous): RendezVousHistoryCardModel {
-  const interlocuteurNom = rendezVous.interlocuteur_nom?.trim()
-    || rendezVous.prospect?.decisionnaire_nom?.trim()
-    || rendezVous.prospect?.nom_contact?.trim()
-    || buildProspectFallbackName(rendezVous);
+export function mapRendezVousToHistoryCardModel(lead: LeadClient): RendezVousHistoryCardModel {
+  const interlocuteurNom = lead.interlocuteur_nom?.trim()
+    || lead.prospect?.decisionnaire_nom?.trim()
+    || lead.prospect?.nom_contact?.trim()
+    || buildProspectFallbackName(lead);
 
-  const interlocuteurRole = rendezVous.interlocuteur_role?.trim()
-    || rendezVous.prospect?.decisionnaire_fonction?.trim()
+  const interlocuteurRole = lead.interlocuteur_role?.trim()
+    || lead.prospect?.decisionnaire_fonction?.trim()
     || null;
-  const telephone = rendezVous.telephone_contact_snapshot?.trim()
-    || rendezVous.prospect?.telephone_contact?.trim()
-    || rendezVous.prospect?.telephone?.trim()
+  const telephone = lead.telephone_contact_snapshot?.trim()
+    || lead.prospect?.telephone_contact?.trim()
+    || lead.prospect?.telephone?.trim()
     || null;
-  const email = rendezVous.email_contact_snapshot?.trim()
-    || rendezVous.prospect?.decisionnaire_email_pro?.trim()
-    || rendezVous.prospect?.email?.trim()
+  const email = lead.email_contact_snapshot?.trim()
+    || lead.prospect?.decisionnaire_email_pro?.trim()
+    || lead.prospect?.email?.trim()
     || null;
 
   return {
-    id: rendezVous.id_rendez_vous,
-    date: rendezVous.date_rdv,
-    heure: formatHeure(rendezVous.heure_rdv),
-    statut: rendezVous.statut,
-    statutLabel: STATUT_LABELS[rendezVous.statut] ?? rendezVous.statut,
-    campagneLabel: rendezVous.campagne?.nom_campagne || 'Campagne inconnue',
+    id: lead.id_lead,
+    date: lead.date_rdv,
+    heure: formatHeure(lead.heure_rdv),
+    statut: lead.statut,
+    statutLabel: STATUT_LABELS[lead.statut] ?? lead.statut,
+    campagneLabel: lead.campagne?.nom_campagne || 'Campagne inconnue',
     interlocuteurNom,
     interlocuteurRole,
     telephone,
     email,
-    agentLabel: buildAgentLabel(rendezVous),
-    motif: rendezVous.motif?.trim() || null,
-    notesPlanification: rendezVous.notes?.trim() || null,
-    closingNotes: rendezVous.derniere_note_closing?.trim() || null,
+    agentLabel: buildAgentLabel(lead),
+    motif: lead.motif?.trim() || null,
+    notesPlanification: lead.notes?.trim() || null,
+    closingNotes: lead.derniere_note_closing?.trim() || null,
   };
 }

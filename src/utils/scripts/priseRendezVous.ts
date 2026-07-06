@@ -1,4 +1,4 @@
-import type { CreateRendezVousData, Prospect } from '../types/index.ts';
+import type { CreateLeadData, Prospect } from '../types/index.ts';
 
 export interface LeadB2BRendezVousPrefill {
   interlocuteurNom: string;
@@ -10,6 +10,7 @@ export interface LeadB2BRendezVousPrefill {
 export interface BuildLeadB2BRendezVousPayloadArgs {
   prospectId: number;
   campagneId: number;
+  appelId?: number;
   dateRdv: string;
   timeValue: string;
   interlocuteurNom: string;
@@ -85,6 +86,7 @@ export function getLeadB2BRendezVousPrefill(prospect: Prospect | null): LeadB2BR
 export function buildLeadB2BRendezVousPayload({
   prospectId,
   campagneId,
+  appelId,
   dateRdv,
   timeValue,
   interlocuteurNom,
@@ -92,10 +94,11 @@ export function buildLeadB2BRendezVousPayload({
   telephone,
   email,
   notes,
-}: BuildLeadB2BRendezVousPayloadArgs): CreateRendezVousData {
+}: BuildLeadB2BRendezVousPayloadArgs): CreateLeadData {
   return {
     id_prospect: prospectId,
     id_campagne: campagneId,
+    ...(appelId ? { id_appel: appelId } : {}),
     date_rdv: dateRdv,
     heure_rdv: `${timeValue}:00`,
     motif: LEAD_B2B_RENDEZ_VOUS_MOTIF,

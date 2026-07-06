@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Select, { type SingleValue, type StylesConfig } from 'react-select';
 
-import { closingService, rendezVousService } from '../../../API/services';
+import { closingService, leadService } from '../../../API/services';
 import { useApp, useCampaign, useDialer, useProspect, useToast } from '../../../hooks';
 import { formatProspectName, getErrorMessage } from '../../../utils/scripts/formatters';
 import { getCampaignVariant } from '../../../utils/scripts/campaignVariants';
@@ -310,10 +310,11 @@ export default function PriseRendezVousPlaceholder() {
         notes: notes.trim(),
       };
 
-      await rendezVousService.createRendezVous(
+      await leadService.createLead(
         buildLeadB2BRendezVousPayload({
           prospectId: currentProspect.id_prospect,
           campagneId: currentCampaign.id_campagne,
+          appelId: currentAppelId ?? undefined,
           dateRdv,
           timeValue,
           interlocuteurNom,

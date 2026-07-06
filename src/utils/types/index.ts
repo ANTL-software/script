@@ -8,6 +8,7 @@ export * from './vente.types';
 export * from './planAppel.types';
 export * from './objection.types';
 export * from './rendezVous.types';
+export * from './lead.types';
 export * from './dialer.types';
 export * from './notification.types';
 export * from './stats.types';

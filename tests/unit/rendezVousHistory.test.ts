@@ -5,7 +5,7 @@ import { mapRendezVousToHistoryCardModel } from '../../src/utils/scripts/rendezV
 
 test('mapRendezVousToHistoryCardModel priorise les donnees decisionnaire pour l historique client', () => {
   const result = mapRendezVousToHistoryCardModel({
-    id_rendez_vous: 91,
+    id_lead: 91,
     id_agent: 7,
     id_prospect: 42,
     id_campagne: 12,
@@ -56,7 +56,7 @@ test('mapRendezVousToHistoryCardModel priorise les donnees decisionnaire pour l 
 
 test('mapRendezVousToHistoryCardModel priorise le snapshot du rendez-vous sur la fiche prospect courante', () => {
   const result = mapRendezVousToHistoryCardModel({
-    id_rendez_vous: 93,
+    id_lead: 93,
     id_agent: 7,
     id_prospect: 42,
     id_campagne: 12,
@@ -108,7 +108,7 @@ test('mapRendezVousToHistoryCardModel priorise le snapshot du rendez-vous sur la
 
 test('mapRendezVousToHistoryCardModel retombe sur les champs prospect historiques en fallback', () => {
   const result = mapRendezVousToHistoryCardModel({
-    id_rendez_vous: 92,
+    id_lead: 92,
     id_agent: 8,
     id_prospect: 43,
     id_campagne: 7,

@@ -107,6 +107,15 @@ test('RendezVousService sérialise la campagne pour l historique rendez-vous pro
   assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/rendez-vous/prospect/42?campagne=7');
 });
 
+test('LeadService sérialise la campagne pour l historique rendez-vous client prospect', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  const { leadService } = await import('../../src/API/services/Lead.service.ts');
+
+  await leadService.getLeadsByProspect(42, 7);
+
+  assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/leads/prospect/42?campagne=7');
+});
+
 test('RendezVousService sérialise agent et campagne pour le dashboard du jour', async () => {
   globalThis.capturedHistoryEndpoints = [];
   const { rendezVousService } = await import('../../src/API/services/RendezVous.service.ts');

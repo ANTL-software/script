@@ -80,7 +80,7 @@ export default function HistoriqueRendezVous() {
 
       <div className="historique-rendez-vous__list">
         {rendezVous.map((rdv) => (
-          <RendezVousCard key={rdv.id_rendez_vous} rdv={rdv} />
+          <RendezVousCard key={rdv.id_lead} rdv={rdv} />
         ))}
       </div>
     </div>

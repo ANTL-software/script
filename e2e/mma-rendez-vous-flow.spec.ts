@@ -81,9 +81,10 @@ interface CreateAppelPayload {
   progpa_atteint?: number;
 }
 
-interface CreateRendezVousPayload {
+interface CreateLeadPayload {
   id_prospect: number;
   id_campagne: number;
+  id_appel?: number;
   date_rdv: string;
   heure_rdv: string;
   motif?: string;
@@ -94,11 +95,12 @@ interface CreateRendezVousPayload {
   email_contact_snapshot?: string;
 }
 
-interface RendezVousFixture {
-  id_rendez_vous: number;
+interface LeadFixture {
+  id_lead: number;
   id_agent: number;
   id_prospect: number;
   id_campagne: number;
+  id_appel?: number | null;
   date_rdv: string;
   heure_rdv: string;
   motif: string | null;
@@ -271,18 +273,19 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   let lastProspectFetchAt = 0;
   let lastCampaignFetchAt = 0;
 
-  const createdRendezVousPayloads: CreateRendezVousPayload[] = [];
+  const createdRendezVousPayloads: CreateLeadPayload[] = [];
   const createdAppelPayloads: CreateAppelPayload[] = [];
   const patchedStatuts: Array<{ statut: string }> = [];
   const unhandledApiRequests: string[] = [];
 
-  const rendezVousState: RendezVousFixture[] = [];
+  const rendezVousState: LeadFixture[] = [];
 
-  const buildRendezVousFixture = (payload: CreateRendezVousPayload): RendezVousFixture => ({
-    id_rendez_vous: nextRendezVousId++,
+  const buildRendezVousFixture = (payload: CreateLeadPayload): LeadFixture => ({
+    id_lead: nextRendezVousId++,
     id_agent: employe.id_employe,
     id_prospect: payload.id_prospect,
     id_campagne: payload.id_campagne,
+    id_appel: payload.id_appel ?? null,
     date_rdv: payload.date_rdv,
     heure_rdv: payload.heure_rdv,
     motif: payload.motif ?? 'Prise de rendez-vous client',
@@ -310,17 +313,10 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     appelsSource: [],
   });
 
-  const currentProspectRendezVous = (): RendezVousFixture[] =>
+  const currentProspectRendezVous = (): LeadFixture[] =>
     rendezVousState.filter(
       (rdv) =>
         rdv.id_prospect === prospect.id_prospect &&
-        rdv.id_campagne === campagne.id_campagne,
-    );
-
-  const currentAgentRendezVous = (): RendezVousFixture[] =>
-    rendezVousState.filter(
-      (rdv) =>
-        rdv.id_agent === employe.id_employe &&
         rdv.id_campagne === campagne.id_campagne,
     );
 
@@ -428,7 +424,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
 
     if (
       request.method() === 'GET' &&
-      apiPath === `/rendez-vous/prospect/${prospect.id_prospect}`
+      apiPath === `/leads/prospect/${prospect.id_prospect}`
     ) {
       await fulfillJson(route, toApiResponse(currentProspectRendezVous()));
       return;
@@ -438,12 +434,20 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
       request.method() === 'GET' &&
       apiPath === `/rendez-vous/agent/${employe.id_employe}`
     ) {
-      await fulfillJson(route, toApiResponse(currentAgentRendezVous()));
+      await fulfillJson(route, toApiResponse([]));
       return;
     }
 
-    if (request.method() === 'POST' && apiPath === '/rendez-vous') {
-      const payload = request.postDataJSON() as CreateRendezVousPayload;
+    if (
+      request.method() === 'GET' &&
+      apiPath === `/rendez-vous/prospect/${prospect.id_prospect}`
+    ) {
+      await fulfillJson(route, toApiResponse([]));
+      return;
+    }
+
+    if (request.method() === 'POST' && apiPath === '/leads') {
+      const payload = request.postDataJSON() as CreateLeadPayload;
       createdRendezVousPayloads.push(payload);
       const createdRendezVous = buildRendezVousFixture(payload);
       rendezVousState.push(createdRendezVous);
@@ -553,7 +557,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(page.locator('#notes')).toHaveValue('Qualification MMA confirmee avec besoin de rappel de synthese.');
   const [createRendezVousResponse] = await Promise.all([
     page.waitForResponse((response) => {
-      return response.request().method() === 'POST' && response.url().includes('/api/rendez-vous');
+      return response.request().method() === 'POST' && response.url().includes('/api/leads');
     }),
     page.getByRole('button', { name: 'Valider la mise en relation' }).click(),
   ]);

@@ -1,5 +1,4 @@
 import type { CreateRendezVousData, Prospect } from '../types/index.ts';
-import { formatProspectName } from './formatters.ts';
 
 export interface LeadB2BRendezVousPrefill {
   interlocuteurNom: string;
@@ -69,17 +68,10 @@ export function getLeadB2BRendezVousPrefill(prospect: Prospect | null): LeadB2BR
     };
   }
 
-  const fallbackName = formatProspectName({
-    nom: prospect.nom,
-    prenom: prospect.prenom ?? null,
-    raison_sociale: prospect.raison_sociale ?? null,
-    type_prospect: prospect.type_prospect,
-  });
-
   return {
     interlocuteurNom: prospect.decisionnaire_nom?.trim()
       || prospect.nom_contact?.trim()
-      || fallbackName,
+      || '',
     interlocuteurRole: prospect.decisionnaire_fonction?.trim() || '',
     telephone: prospect.telephone_contact?.trim()
       || prospect.telephone?.trim()

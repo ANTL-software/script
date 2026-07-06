@@ -38,6 +38,34 @@ test('getLeadB2BRendezVousPrefill priorise les donnees decisionnaire pour le for
   });
 });
 
+test('getLeadB2BRendezVousPrefill ne reutilise pas la raison sociale comme interlocuteur par defaut', () => {
+  const prefill = getLeadB2BRendezVousPrefill({
+    id_prospect: 2,
+    type_prospect: 'Entreprise',
+    nom: 'Durand',
+    prenom: null,
+    raison_sociale: 'Durand Conseil',
+    telephone: '0102030405',
+    telephone_contact: null,
+    email: 'contact@durand.fr',
+    nom_contact: null,
+    decisionnaire_nom: null,
+    decisionnaire_fonction: null,
+    decisionnaire_email_pro: null,
+    statut: 'nouveau',
+    max_progpa: 0,
+    created_at: '2026-07-01T10:00:00.000Z',
+    updated_at: '2026-07-01T10:00:00.000Z',
+  });
+
+  assert.deepEqual(prefill, {
+    interlocuteurNom: '',
+    interlocuteurRole: '',
+    telephone: '0102030405',
+    email: 'contact@durand.fr',
+  });
+});
+
 test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour la prise de rendez-vous', () => {
   const payload = buildLeadB2BRendezVousPayload({
     prospectId: 42,

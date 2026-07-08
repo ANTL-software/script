@@ -51,6 +51,7 @@ export interface AgentRuntimeCampaign {
   type_campagne: string;
   statut: string;
   autoriser_mobile: boolean;
+  modes_paiement?: Array<'CB' | 'Prelevement' | 'Cheque' | 'Virement'>;
   is_active_runtime?: boolean;
 }
 

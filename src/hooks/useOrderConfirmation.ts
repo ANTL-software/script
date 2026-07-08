@@ -16,7 +16,7 @@ interface FormData {
   pays_facturation: string;
   pays_livraison: string;
   meme_adresse: boolean;
-  mode_paiement: ModePaiement;
+  mode_paiement: ModePaiement | '';
   notes: string;
   siret: string;
   email: string;
@@ -40,6 +40,10 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   const { user } = useUser();
   const { currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration } = useDialer();
 
+  const availableModesPaiement: ModePaiement[] = currentCampaign
+    ? (currentCampaign.modes_paiement ?? [])
+    : ['Prelevement', 'Cheque', 'Virement'];
+
   const [formData, setFormData] = useState<FormData>({
     adresse_facturation: currentProspect?.adresse_facturation || '',
     adresse_livraison: currentProspect?.adresse_livraison || '',
@@ -50,7 +54,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     pays_facturation: currentProspect?.pays || 'France',
     pays_livraison: currentProspect?.pays || 'France',
     meme_adresse: !currentProspect?.adresse_livraison || currentProspect?.adresse_livraison === currentProspect?.adresse_facturation,
-    mode_paiement: 'Prelevement',
+    mode_paiement: availableModesPaiement[0] || '',
     notes: '',
     siret: currentProspect?.siret || '',
     email: currentProspect?.email || '',
@@ -83,6 +87,19 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       }));
     }
   }, [currentProspect]);
+
+  useEffect(() => {
+    setFormData((prev) => {
+      if (prev.mode_paiement && availableModesPaiement.includes(prev.mode_paiement)) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        mode_paiement: availableModesPaiement[0] || '',
+      };
+    });
+  }, [availableModesPaiement]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -205,6 +222,11 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       return;
     }
 
+    if (!formData.mode_paiement) {
+      setError('Aucun mode de paiement n’est autorisé pour cette campagne');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -250,6 +272,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   return {
     items,
     total,
+    availableModesPaiement,
     formData,
     isSubmitting,
     error,

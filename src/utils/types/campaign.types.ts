@@ -1,4 +1,5 @@
 import type { CampaignVariant } from '../scripts/campaignVariants';
+import type { ModePaiement } from './vente.types';
 
 export interface Campaign {
   id_campagne: number;
@@ -13,6 +14,7 @@ export interface Campaign {
   actif?: boolean;
   statut?: 'inactive' | 'active' | 'terminee';
   autoriser_mobile?: boolean;
+  modes_paiement?: ModePaiement[];
   logo_path?: string | null;
   logo_file_name?: string | null;
   created_at: string;

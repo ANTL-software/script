@@ -6,6 +6,13 @@ import { useOrderConfirmation } from '../../../hooks/useOrderConfirmation';
 import Button from '../button/Button';
 import Select from 'react-select';
 
+const PAYMENT_LABELS: Record<ModePaiement, string> = {
+  CB: 'Carte bancaire (par téléphone)',
+  Prelevement: 'Prélèvement automatique',
+  Cheque: 'Chèque bancaire',
+  Virement: 'Virement bancaire',
+};
+
 const delaisOptions = [
   { value: 2, label: '2 semaines' },
   { value: 4, label: '4 semaines' },
@@ -19,7 +26,7 @@ interface ConfirmOrderModalProps {
 
 export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: ConfirmOrderModalProps) {
   const {
-    items, total,
+    items, total, availableModesPaiement,
     formData, isSubmitting, error, validationErrors,
     handleInputChange, handleSubmit,
   } = useOrderConfirmation({ onClose, onSuccess });
@@ -345,21 +352,27 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
 
               <div className="confirm-order-modal__section">
                 <h3><FaCreditCard /> Mode de paiement</h3>
-                <div className="confirm-order-modal__payment-options">
-                  {(['Prelevement', 'Cheque', 'Virement'] as ModePaiement[]).map((mode) => (
-                    <label key={mode} className="confirm-order-modal__payment-option">
-                      <input
-                        type="radio"
-                        name="mode_paiement"
-                        value={mode}
-                        checked={formData.mode_paiement === mode}
-                        onChange={(e) => handleInputChange('mode_paiement', e.target.value as ModePaiement)}
-                        disabled={isSubmitting}
-                      />
-                      <span>{mode}</span>
-                    </label>
-                  ))}
-                </div>
+                {availableModesPaiement.length === 0 ? (
+                  <div className="confirm-order-modal__error">
+                    Aucun mode de paiement n’est autorisé pour cette campagne.
+                  </div>
+                ) : (
+                  <div className="confirm-order-modal__payment-options">
+                    {availableModesPaiement.map((mode) => (
+                      <label key={mode} className="confirm-order-modal__payment-option">
+                        <input
+                          type="radio"
+                          name="mode_paiement"
+                          value={mode}
+                          checked={formData.mode_paiement === mode}
+                          onChange={(e) => handleInputChange('mode_paiement', e.target.value as ModePaiement)}
+                          disabled={isSubmitting}
+                        />
+                        <span>{PAYMENT_LABELS[mode]}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="confirm-order-modal__section">
@@ -379,7 +392,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
             <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Annuler
             </Button>
-            <Button type="submit" variant="primary" disabled={isSubmitting}>
+            <Button type="submit" variant="primary" disabled={isSubmitting || availableModesPaiement.length === 0}>
               {isSubmitting ? (
                 <><FaSpinner className="spinner" /> Envoi en cours...</>
               ) : (

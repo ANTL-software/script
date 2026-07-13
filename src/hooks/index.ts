@@ -11,6 +11,7 @@ export { useAgentCalendar } from './useAgentCalendar';
 export { useDashboardData } from './useDashboardData';
 export { useLoginForm } from './useLoginForm';
 export { useCallClosing } from './useCallClosing';
+export { useCallNotesDraft } from './useCallNotesDraft';
 export { useOrderConfirmation } from './useOrderConfirmation';
 export { useLandingPage } from './useLandingPage';
 export { useForceClosing } from './useForceClosing';

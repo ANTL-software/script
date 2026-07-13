@@ -6,6 +6,7 @@ import type { StatutAppel } from '../utils/types';
 import type { CampaignVariant } from '../utils/scripts/campaignVariants';
 import { CAMPAIGN_VARIANTS } from '../utils/scripts/campaignVariants';
 import { getErrorMessage } from '../utils/scripts/formatters';
+import { useCallNotesDraft } from './useCallNotesDraft';
 
 interface UseCallClosingOptions {
   prospectId: number;
@@ -25,7 +26,8 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
   const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
-  const [notes, setNotes] = useState('');
+  const draftAppelId = appelId ?? currentAppelId;
+  const { notes, setNotes, clearNotes } = useCallNotesDraft(draftAppelId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -134,6 +136,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
       }
 
       closingService.clearPending();
+      clearNotes();
       resetCurrentProgpa();
       showToast('success', "Resultat d'appel enregistre");
       onComplete();

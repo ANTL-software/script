@@ -325,9 +325,16 @@ export default function DashboardPage() {
       <button
         className="dashboard__test-btn"
         onClick={() => {
-          // Naviguer vers le prospect ID 1 avec le paramètre test
+          if (!currentCampagneId) {
+            showToast('warning', 'Chargement de votre campagne en cours. Reessayez dans un instant.');
+            return;
+          }
+
+          // Le contexte dialer conserve la campagne runtime de l'agent.
           navigate('/prospect/1?test=true');
         }}
+        disabled={!currentCampagneId}
+        title={currentCampagneId ? 'Ouvrir la fiche de formation dans votre campagne active' : 'Chargement de la campagne active'}
       >
         Utilisateur TEST
       </button>

@@ -4,6 +4,7 @@ export interface ResolveRuntimeCampaignIdParams {
   currentCampaignId?: number | null;
   currentDialerCampaignId?: number | null;
   urlCampaignId?: string | number | null;
+  preferDialerCampaign?: boolean;
 }
 
 const parseCampaignId = (value: string | number | null | undefined): number | null => {
@@ -23,10 +24,17 @@ export const resolveRuntimeCampaignId = ({
   currentCampaignId,
   currentDialerCampaignId,
   urlCampaignId,
+  preferDialerCampaign = false,
 }: ResolveRuntimeCampaignIdParams): number | null => {
-  return parseCampaignId(currentCampaignId)
-    ?? parseCampaignId(currentDialerCampaignId)
-    ?? parseCampaignId(urlCampaignId);
+  const contextCampaignId = parseCampaignId(currentCampaignId);
+  const dialerCampaignId = parseCampaignId(currentDialerCampaignId);
+  const fallbackUrlCampaignId = parseCampaignId(urlCampaignId);
+
+  if (preferDialerCampaign) {
+    return dialerCampaignId ?? contextCampaignId ?? fallbackUrlCampaignId;
+  }
+
+  return contextCampaignId ?? dialerCampaignId ?? fallbackUrlCampaignId;
 };
 
 export const pickRuntimeCampaign = (

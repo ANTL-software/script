@@ -63,16 +63,23 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
 
   // Charger la campagne à partir du dialer ou de la fiche prospect
   useEffect(() => {
-    const campaignIdToLoad = resolveRuntimeCampaignId({
-      currentCampaignId: currentProspect?.id_campagne ?? null,
-      currentDialerCampaignId: currentCampagneId,
-      urlCampaignId: null,
-    });
+    const campaignIdToLoad = isTestMode
+      ? resolveRuntimeCampaignId({
+        currentCampaignId: currentProspect?.id_campagne ?? null,
+        currentDialerCampaignId: currentCampagneId,
+        urlCampaignId: null,
+        preferDialerCampaign: true,
+      })
+      : resolveRuntimeCampaignId({
+        currentCampaignId: currentProspect?.id_campagne ?? null,
+        currentDialerCampaignId: currentCampagneId,
+        urlCampaignId: null,
+      });
 
     if (campaignIdToLoad) {
       loadCampaign(campaignIdToLoad).catch(() => {});
     }
-  }, [currentCampagneId, currentProspect?.id_campagne, loadCampaign]);
+  }, [currentCampagneId, currentProspect?.id_campagne, isTestMode, loadCampaign]);
 
   // Déclenche la closing modal dès que l'appel se termine (statut = pause_apres_appel)
   // sans passer par une vente — garantit que chaque appel est enregistré en DB

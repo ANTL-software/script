@@ -30,6 +30,18 @@ test('resolveRuntimeCampaignId utilise la campagne runtime dialer avant l URL', 
   );
 });
 
+test('le mode test priorise la campagne runtime agent sur celle portee par la fiche', () => {
+  assert.equal(
+    resolveRuntimeCampaignId({
+      currentCampaignId: 7,
+      currentDialerCampaignId: 10,
+      urlCampaignId: null,
+      preferDialerCampaign: true,
+    }),
+    10,
+  );
+});
+
 test('resolveRuntimeCampaignId conserve un fallback URL de compatibilite', () => {
   assert.equal(
     resolveRuntimeCampaignId({

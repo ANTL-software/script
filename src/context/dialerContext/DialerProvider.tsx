@@ -42,6 +42,16 @@ const getErrorMessage = (error: unknown): string => {
   return error instanceof Error ? error.message : 'Erreur inconnue';
 };
 
+const getTwilioEdgeConfiguration = (): string | string[] | undefined => {
+  const configuredEdges = (import.meta.env.VITE_TWILIO_EDGE || '')
+    .split(',')
+    .map((edge: string) => edge.trim())
+    .filter(Boolean);
+
+  if (configuredEdges.length === 0) return undefined;
+  return configuredEdges.length === 1 ? configuredEdges[0] : configuredEdges;
+};
+
 export const DialerProvider = ({ children }: DialerProviderProps) => {
   const userContext = useContext(UserContext);
   const isAuthenticated = userContext?.isAuthenticated ?? false;
@@ -359,6 +369,37 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       startRecording(call);
     });
 
+    // Ces événements ne modifient pas le cycle de vie de l'appel : ils rendent
+    // simplement visible une perte de média WebRTC et sa récupération éventuelle.
+    call.on('reconnecting', (error) => {
+      console.warn('[TWILIO] Reconnexion média en cours', {
+        callSid: getTwilioCallSid(call),
+        code: error.code,
+        message: error.message
+      });
+      showToast('warning', 'Connexion téléphonique instable — reconnexion en cours…', 10000);
+    });
+
+    call.on('reconnected', () => {
+      console.info('[TWILIO] Média reconnecté', { callSid: getTwilioCallSid(call) });
+      showToast('info', 'Connexion téléphonique rétablie', 4000);
+    });
+
+    call.on('warning', (name, data) => {
+      console.warn('[TWILIO] Alerte qualité appel', {
+        callSid: getTwilioCallSid(call),
+        warning: name,
+        data
+      });
+    });
+
+    call.on('warning-cleared', (name) => {
+      console.info('[TWILIO] Alerte qualité résolue', {
+        callSid: getTwilioCallSid(call),
+        warning: name
+      });
+    });
+
     call.on('disconnect', () => {
       stopRecording();
 
@@ -562,10 +603,20 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       console.groupCollapsed('🚀 [TWILIO] Initialisation Device v2.x (new Device())');
 
-      // Créer une NOUVELLE instance de Device (SDK v2.x API)
-      // SANS options pour éviter les problèmes de compatibilité
+      // Préserve le comportement d'edge par défaut (roaming) tant qu'aucun edge
+      // n'est explicitement configuré. La reconnexion de signalisation est, elle,
+      // activée pour permettre au SDK de récupérer une perte réseau brève en appel.
+      const configuredEdge = getTwilioEdgeConfiguration();
+      const deviceOptions = {
+        appName: import.meta.env.VITE_APP_NAME || 'ANTL Script Vendeur',
+        appVersion: import.meta.env.VITE_APP_VERSION || 'unknown',
+        maxCallSignalingTimeoutMs: 30000,
+        ...(configuredEdge ? { edge: configuredEdge } : {})
+      };
+
       console.log('[TWILIO] 📍 STEP 3.5: Création Device avec token (longueur:', accessToken.length, ')');
-      const device = new Device(accessToken);
+      console.log('[TWILIO] Edge:', configuredEdge || 'roaming (défaut)', '| reconnexion signalisation: 30s');
+      const device = new Device(accessToken, deviceOptions);
       console.log('[TWILIO] 📍 STEP 3.6: Device créé, type:', typeof device, 'état:', device.state);
 
       deviceRef.current = device;

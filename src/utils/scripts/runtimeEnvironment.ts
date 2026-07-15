@@ -1,3 +1,12 @@
+export interface RuntimeEnvironmentVariables {
+  VITE_API_BASE_URL?: string;
+  VITE_API_TEST_BASE_URL?: string;
+}
+
+type RuntimeGlobal = typeof globalThis & {
+  _mockEnv?: RuntimeEnvironmentVariables;
+};
+
 export function isTestEnvironment(): boolean {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const isDevPort = ['5173', '5174', '5175'].includes(window.location.port);
@@ -22,7 +31,10 @@ export function isProspectTestMode(): boolean {
 }
 
 export function getApiBaseUrl(): string {
-  const env = typeof import.meta.env !== 'undefined' ? import.meta.env : (globalThis as any)._mockEnv || {};
+  const runtimeGlobal = globalThis as RuntimeGlobal;
+  const env: RuntimeEnvironmentVariables = typeof import.meta.env !== 'undefined'
+    ? import.meta.env as unknown as RuntimeEnvironmentVariables
+    : runtimeGlobal._mockEnv ?? {};
   const configuredProdUrl = env.VITE_API_BASE_URL?.trim();
   const configuredTestUrl = env.VITE_API_TEST_BASE_URL?.trim();
 

@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test, { after } from 'node:test';
 
-import { isTestEnvironment, shouldDisableLocalTwilio, getApiBaseUrl } from '../../src/utils/scripts/runtimeEnvironment.ts';
+import {
+  isTestEnvironment,
+  shouldDisableLocalTwilio,
+  getApiBaseUrl,
+} from '../../src/utils/scripts/runtimeEnvironment.ts';
+import type { RuntimeEnvironmentVariables } from '../../src/utils/scripts/runtimeEnvironment.ts';
 
 interface WindowLike {
   location: {
@@ -16,10 +21,12 @@ interface WindowLike {
 
 type GlobalWithWindow = typeof globalThis & {
   window?: WindowLike;
+  _mockEnv?: RuntimeEnvironmentVariables;
 };
 
 const runtimeGlobal = globalThis as GlobalWithWindow;
 const originalWindow = runtimeGlobal.window;
+const originalMockEnv = runtimeGlobal._mockEnv;
 
 function setMockWindow(hostname: string, port: string, disableTwilioFlag: string | null, search: string = ''): void {
   runtimeGlobal.window = {
@@ -41,7 +48,7 @@ function setMockWindow(hostname: string, port: string, disableTwilioFlag: string
 }
 
 function setMockEnv(prodUrl: string | undefined, testUrl: string | undefined): void {
-  (globalThis as any)._mockEnv = {
+  runtimeGlobal._mockEnv = {
     VITE_API_BASE_URL: prodUrl,
     VITE_API_TEST_BASE_URL: testUrl,
   };
@@ -70,11 +77,6 @@ test('shouldDisableLocalTwilio reste strictement borne au flag local sur localho
 });
 
 test('getApiBaseUrl gère correctement les environnements et fallbacks', () => {
-  // @ts-ignore
-  const originalProdVal = import.meta.env?.VITE_API_BASE_URL;
-  // @ts-ignore
-  const originalTestVal = import.meta.env?.VITE_API_TEST_BASE_URL;
-
   // 1. En environnement de test local (localhost:5173)
   setMockWindow('localhost', '5173', null);
   
@@ -116,9 +118,10 @@ test('getApiBaseUrl gère correctement les environnements et fallbacks', () => {
   assert.equal(getApiBaseUrl(), 'https://custom-test.antl.fr/api');
 
   // Restauration
-  setMockEnv(originalProdVal, originalTestVal);
+  runtimeGlobal._mockEnv = originalMockEnv;
 });
 
 after(() => {
   runtimeGlobal.window = originalWindow;
+  runtimeGlobal._mockEnv = originalMockEnv;
 });

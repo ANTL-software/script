@@ -1,196 +1,164 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-@use 'sass:color';
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
+@use "sass:color";
 .appel-card {
   background: vars.$colorWhite;
   border: 1px solid vars.$colorGray200;
   border-radius: vars.$radius-lg;
   padding: vars.$spacing-lg;
   transition: all vars.$transition-base;
-
-  &:hover {
-    border-color: vars.$colorGray300;
-    box-shadow: vars.$shadow-sm;
-  }
-
-  &__header {
-    @include mix.flex-between;
-    margin-bottom: vars.$spacing-md;
-    padding-bottom: vars.$spacing-md;
-    border-bottom: 1px solid vars.$colorGray100;
-  }
-
-  &__date-time {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-md;
-  }
-
-  &__date {
-    font-size: vars.$fontSize-base;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorBlack;
-  }
-
-  &__time {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray500;
-  }
-
-  &__statut {
-    padding: vars.$spacing-xs vars.$spacing-md;
-    border-radius: vars.$radius-full;
-    font-size: vars.$fontSize-xs;
-    font-weight: vars.$fontWeight-medium;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    &--success {
-      background: color.scale(vars.$colorSuccess, $lightness: 45%);
-      color: color.scale(vars.$colorSuccess, $lightness: -10%);
-    }
-
-    &--warning {
-      background: color.scale(vars.$colorWarning, $lightness: 45%);
-      color: color.scale(vars.$colorWarning, $lightness: -10%);
-    }
-
-    &--danger {
-      background: color.scale(vars.$colorDanger, $lightness: 45%);
-      color: color.scale(vars.$colorDanger, $lightness: -10%);
-    }
-  }
-
-  &__body {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-md;
-  }
-
-  &__info {
-    display: flex;
-    gap: vars.$spacing-xl;
-  }
-
-  &__info-item {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-sm;
-
-    .info-label {
-      font-size: vars.$fontSize-sm;
-      color: vars.$colorGray500;
-      font-weight: vars.$fontWeight-medium;
-    }
-
-    .info-value {
-      font-size: vars.$fontSize-sm;
-      color: vars.$colorBlack;
-    }
-  }
-
-  &__notes {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-  }
-
-  &__notes-header {
-    @include mix.flex-between;
-    align-items: center;
-  }
-
-  &__edit-btn {
-    padding: vars.$spacing-xs vars.$spacing-sm;
-    font-size: vars.$fontSize-xs;
-    background: transparent;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    color: vars.$colorGray700;
-    cursor: pointer;
-    transition: all vars.$transition-fast;
-
-    &:hover {
-      background: vars.$colorGray100;
-      border-color: vars.$colorGray500;
-    }
-  }
-
-  &__notes-text {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray700;
-    line-height: vars.$lineHeight-relaxed;
-    margin: 0;
-    padding: vars.$spacing-sm;
-    background: vars.$colorGray100;
-    border-radius: vars.$radius-md;
-
-    em {
-      color: vars.$colorGray500;
-    }
-  }
-
-  &__notes-edit {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-  }
-
-  &__notes-textarea {
-    width: 100%;
-    padding: vars.$spacing-sm;
-    font-size: vars.$fontSize-sm;
-    font-family: inherit;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    resize: vertical;
-    transition: all vars.$transition-fast;
-
-    &:focus {
-      outline: none;
-      border-color: vars.$colorPrimary;
-      @include mix.focus-ring(vars.$colorPrimary);
-    }
-
-    &::placeholder {
-      color: vars.$colorGray500;
-    }
-  }
-
-  &__notes-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: vars.$spacing-sm;
-  }
-
-  .notes-action-btn {
-    @include mix.button-base;
-    padding: vars.$spacing-sm vars.$spacing-lg;
-    font-size: vars.$fontSize-sm;
-
-    &--cancel {
-      background: vars.$colorWhite;
-      border: 1px solid vars.$colorGray300;
-      color: vars.$colorGray700;
-
-      &:hover:not(:disabled) {
-        background: vars.$colorGray100;
-      }
-    }
-
-    &--save {
-      background: vars.$colorPrimary;
-      color: vars.$colorWhite;
-
-      &:hover:not(:disabled) {
-        background: vars.$colorPrimaryHover;
-      }
-    }
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
+}
+.appel-card:hover {
+  border-color: vars.$colorGray300;
+  box-shadow: vars.$shadow-sm;
+}
+.appel-card__header {
+  @include mix.flex-between;
+  margin-bottom: vars.$spacing-md;
+  padding-bottom: vars.$spacing-md;
+  border-bottom: 1px solid vars.$colorGray100;
+}
+.appel-card__date-time {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-md;
+}
+.appel-card__date {
+  font-size: vars.$fontSize-base;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+}
+.appel-card__time {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+}
+.appel-card__statut {
+  padding: vars.$spacing-xs vars.$spacing-md;
+  border-radius: vars.$radius-full;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-medium;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.appel-card__statut--success {
+  background: color.scale(vars.$colorSuccess, $lightness: 45%);
+  color: color.scale(vars.$colorSuccess, $lightness: -10%);
+}
+.appel-card__statut--warning {
+  background: color.scale(vars.$colorWarning, $lightness: 45%);
+  color: color.scale(vars.$colorWarning, $lightness: -10%);
+}
+.appel-card__statut--danger {
+  background: color.scale(vars.$colorDanger, $lightness: 45%);
+  color: color.scale(vars.$colorDanger, $lightness: -10%);
+}
+.appel-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+}
+.appel-card__info {
+  display: flex;
+  gap: vars.$spacing-xl;
+}
+.appel-card__info-item {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+}
+.appel-card__info-item .info-label {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+  font-weight: vars.$fontWeight-medium;
+}
+.appel-card__info-item .info-value {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorBlack;
+}
+.appel-card__notes {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+}
+.appel-card__notes-header {
+  @include mix.flex-between;
+  align-items: center;
+}
+.appel-card__edit-btn {
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  font-size: vars.$fontSize-xs;
+  background: transparent;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  color: vars.$colorGray700;
+  cursor: pointer;
+  transition: all vars.$transition-fast;
+}
+.appel-card__edit-btn:hover {
+  background: vars.$colorGray100;
+  border-color: vars.$colorGray500;
+}
+.appel-card__notes-text {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray700;
+  line-height: vars.$lineHeight-relaxed;
+  margin: 0;
+  padding: vars.$spacing-sm;
+  background: vars.$colorGray100;
+  border-radius: vars.$radius-md;
+}
+.appel-card__notes-text em {
+  color: vars.$colorGray500;
+}
+.appel-card__notes-edit {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+}
+.appel-card__notes-textarea {
+  width: 100%;
+  padding: vars.$spacing-sm;
+  font-size: vars.$fontSize-sm;
+  font-family: inherit;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  resize: vertical;
+  transition: all vars.$transition-fast;
+}
+.appel-card__notes-textarea:focus {
+  outline: none;
+  border-color: vars.$colorPrimary;
+  @include mix.focus-ring(vars.$colorPrimary);
+}
+.appel-card__notes-textarea::placeholder {
+  color: vars.$colorGray500;
+}
+.appel-card__notes-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: vars.$spacing-sm;
+}
+.appel-card .notes-action-btn {
+  @include mix.button-base(".appel-card .notes-action-btn");
+  padding: vars.$spacing-sm vars.$spacing-lg;
+  font-size: vars.$fontSize-sm;
+}
+.appel-card .notes-action-btn--cancel {
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray300;
+  color: vars.$colorGray700;
+}
+.appel-card .notes-action-btn--cancel:hover:not(:disabled) {
+  background: vars.$colorGray100;
+}
+.appel-card .notes-action-btn--save {
+  background: vars.$colorPrimary;
+  color: vars.$colorWhite;
+}
+.appel-card .notes-action-btn--save:hover:not(:disabled) {
+  background: vars.$colorPrimaryHover;
+}
+.appel-card .notes-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

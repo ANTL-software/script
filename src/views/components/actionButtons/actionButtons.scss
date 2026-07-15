@@ -1,5 +1,4 @@
-@use '../../../utils/styles/variables' as vars;
-
+@use "../../../utils/styles/variables" as vars;
 .action-buttons {
   display: flex;
   justify-content: space-between;
@@ -10,42 +9,33 @@
   background: white;
   border-bottom: 1px solid #e5e5e7;
   flex-shrink: 0;
-
-  &__group {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-
-    &--left {
-      flex-shrink: 0;
-    }
-
-    &--right {
-      flex: 1;
-      justify-content: flex-end;
-    }
-  }
-
-  button {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-
-    svg {
-      font-size: 0.875rem;
-    }
-  }
 }
-
+.action-buttons__group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.action-buttons__group--left {
+  flex-shrink: 0;
+}
+.action-buttons__group--right {
+  flex: 1;
+  justify-content: flex-end;
+}
+.action-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.action-buttons button svg {
+  font-size: 0.875rem;
+}
 @media (max-width: 1200px) {
-  .action-buttons {
-    &__group {
-      width: 100%;
-      flex-wrap: wrap;
-    }
-
-    &__group--right {
-      justify-content: flex-start;
-    }
+  .action-buttons__group {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .action-buttons__group--right {
+    justify-content: flex-start;
   }
 }

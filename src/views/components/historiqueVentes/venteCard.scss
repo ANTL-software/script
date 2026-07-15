@@ -1,266 +1,220 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-@use 'sass:color';
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
+@use "sass:color";
 .vente-card {
   background: vars.$colorWhite;
   border: 1px solid vars.$colorGray200;
   border-radius: vars.$radius-lg;
   overflow: hidden;
   transition: all vars.$transition-base;
-
-  &:hover {
-    border-color: vars.$colorGray300;
-    box-shadow: vars.$shadow-sm;
-  }
-
-  &__header {
-    @include mix.flex-between;
-    padding: vars.$spacing-lg;
-    gap: vars.$spacing-md;
-  }
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-    flex: 1;
-  }
-
-  &__date-statut {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-md;
-  }
-
-  &__date {
-    font-size: vars.$fontSize-base;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorBlack;
-  }
-
-  &__statut {
-    padding: vars.$spacing-xs vars.$spacing-md;
-    border-radius: vars.$radius-full;
-    font-size: vars.$fontSize-xs;
-    font-weight: vars.$fontWeight-medium;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    &--success {
-      background: color.adjust(vars.$colorSuccess, $lightness: 45%);
-      color: color.adjust(vars.$colorSuccess, $lightness: -10%);
-    }
-
-    &--warning {
-      background: color.adjust(vars.$colorWarning, $lightness: 45%);
-      color: color.adjust(vars.$colorWarning, $lightness: -10%);
-    }
-
-    &--danger {
-      background: color.adjust(vars.$colorDanger, $lightness: 45%);
-      color: color.adjust(vars.$colorDanger, $lightness: -10%);
-    }
-  }
-
-  &__montant {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-sm;
-
-    .montant-label {
-      font-size: vars.$fontSize-sm;
-      color: vars.$colorGray500;
-    }
-
-    .montant-value {
-      font-size: vars.$fontSize-lg;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorPrimary;
-    }
-  }
-
-  &__toggle {
-    @include mix.button-base;
-    padding: vars.$spacing-sm vars.$spacing-lg;
-    font-size: vars.$fontSize-sm;
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray300;
-    color: vars.$colorGray700;
-    white-space: nowrap;
-
-    &:hover {
-      background: vars.$colorGray100;
-      border-color: vars.$colorGray500;
-    }
-
-    &--expanded {
-      background: vars.$colorPrimaryLight;
-      border-color: vars.$colorPrimary;
-      color: vars.$colorPrimary;
-    }
-  }
-
-  &__details {
-    padding: 0 vars.$spacing-lg vars.$spacing-lg;
-    border-top: 1px solid vars.$colorGray200;
-    animation: slideDown 0.2s ease-in-out;
-  }
-
-  &__details-header {
-    @include mix.flex-between;
-    margin: vars.$spacing-lg 0 vars.$spacing-md;
-
-    h4 {
-      font-size: vars.$fontSize-lg;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorBlack;
-      margin: 0;
-    }
-  }
-
-  &__paiement {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray500;
-    background: vars.$colorGray100;
-    padding: vars.$spacing-xs vars.$spacing-md;
-    border-radius: vars.$radius-md;
-  }
-
-  &__details-actions {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-md;
-  }
-
-  &__send-to-cart {
-    @include mix.button-base;
-    display: inline-flex;
-    align-items: center;
-    gap: vars.$spacing-xs;
-    padding: vars.$spacing-xs vars.$spacing-md;
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-medium;
-    background: vars.$colorPrimaryLight;
-    border: 1px solid vars.$colorPrimary;
-    color: vars.$colorPrimary;
-    border-radius: vars.$radius-md;
-    transition: all vars.$transition-base;
-    white-space: nowrap;
-
-    svg {
-      flex-shrink: 0;
-      transition: transform vars.$transition-base;
-    }
-
-    &:hover {
-      background: vars.$colorPrimary;
-      color: vars.$colorWhite;
-
-      svg {
-        transform: scale(1.1);
-      }
-    }
-
-    &:active {
-      transform: scale(0.97);
-    }
-  }
-
-  &__products {
-    overflow-x: auto;
-  }
-
-  &__no-details {
-    text-align: center;
-    padding: vars.$spacing-lg;
-    color: vars.$colorGray500;
-    font-size: vars.$fontSize-sm;
-    font-style: italic;
-  }
 }
-
+.vente-card:hover {
+  border-color: vars.$colorGray300;
+  box-shadow: vars.$shadow-sm;
+}
+.vente-card__header {
+  @include mix.flex-between;
+  padding: vars.$spacing-lg;
+  gap: vars.$spacing-md;
+}
+.vente-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  flex: 1;
+}
+.vente-card__date-statut {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-md;
+}
+.vente-card__date {
+  font-size: vars.$fontSize-base;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+}
+.vente-card__statut {
+  padding: vars.$spacing-xs vars.$spacing-md;
+  border-radius: vars.$radius-full;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-medium;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.vente-card__statut--success {
+  background: color.adjust(vars.$colorSuccess, $lightness: 45%);
+  color: color.adjust(vars.$colorSuccess, $lightness: -10%);
+}
+.vente-card__statut--warning {
+  background: color.adjust(vars.$colorWarning, $lightness: 45%);
+  color: color.adjust(vars.$colorWarning, $lightness: -10%);
+}
+.vente-card__statut--danger {
+  background: color.adjust(vars.$colorDanger, $lightness: 45%);
+  color: color.adjust(vars.$colorDanger, $lightness: -10%);
+}
+.vente-card__montant {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+}
+.vente-card__montant .montant-label {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+}
+.vente-card__montant .montant-value {
+  font-size: vars.$fontSize-lg;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorPrimary;
+}
+.vente-card__toggle {
+  @include mix.button-base(".vente-card__toggle");
+  padding: vars.$spacing-sm vars.$spacing-lg;
+  font-size: vars.$fontSize-sm;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray300;
+  color: vars.$colorGray700;
+  white-space: nowrap;
+}
+.vente-card__toggle:hover {
+  background: vars.$colorGray100;
+  border-color: vars.$colorGray500;
+}
+.vente-card__toggle--expanded {
+  background: vars.$colorPrimaryLight;
+  border-color: vars.$colorPrimary;
+  color: vars.$colorPrimary;
+}
+.vente-card__details {
+  padding: 0 vars.$spacing-lg vars.$spacing-lg;
+  border-top: 1px solid vars.$colorGray200;
+  animation: slideDown 0.2s ease-in-out;
+}
+.vente-card__details-header {
+  @include mix.flex-between;
+  margin: vars.$spacing-lg 0 vars.$spacing-md;
+}
+.vente-card__details-header h4 {
+  font-size: vars.$fontSize-lg;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+  margin: 0;
+}
+.vente-card__paiement {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+  background: vars.$colorGray100;
+  padding: vars.$spacing-xs vars.$spacing-md;
+  border-radius: vars.$radius-md;
+}
+.vente-card__details-actions {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-md;
+}
+.vente-card__send-to-cart {
+  @include mix.button-base(".vente-card__send-to-cart");
+  display: inline-flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  padding: vars.$spacing-xs vars.$spacing-md;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  background: vars.$colorPrimaryLight;
+  border: 1px solid vars.$colorPrimary;
+  color: vars.$colorPrimary;
+  border-radius: vars.$radius-md;
+  transition: all vars.$transition-base;
+  white-space: nowrap;
+}
+.vente-card__send-to-cart svg {
+  flex-shrink: 0;
+  transition: transform vars.$transition-base;
+}
+.vente-card__send-to-cart:hover {
+  background: vars.$colorPrimary;
+  color: vars.$colorWhite;
+}
+.vente-card__send-to-cart:hover svg {
+  transform: scale(1.1);
+}
+.vente-card__send-to-cart:active {
+  transform: scale(0.97);
+}
+.vente-card__products {
+  overflow-x: auto;
+}
+.vente-card__no-details {
+  text-align: center;
+  padding: vars.$spacing-lg;
+  color: vars.$colorGray500;
+  font-size: vars.$fontSize-sm;
+  font-style: italic;
+}
 .products-table {
   width: 100%;
   border-collapse: collapse;
   font-size: vars.$fontSize-sm;
-
-  thead {
-    background: vars.$colorGray100;
-
-    th {
-      padding: vars.$spacing-sm vars.$spacing-md;
-      text-align: left;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorGray700;
-      border-bottom: 2px solid vars.$colorGray300;
-
-      &:last-child {
-        text-align: right;
-      }
-    }
-  }
-
-  tbody {
-    tr {
-      border-bottom: 1px solid vars.$colorGray200;
-
-      &:hover {
-        background: vars.$colorGray100;
-      }
-
-      td {
-        padding: vars.$spacing-md;
-        color: vars.$colorGray700;
-
-        &:last-child {
-          text-align: right;
-        }
-
-        &.product-name {
-          font-weight: vars.$fontWeight-medium;
-          color: vars.$colorBlack;
-          display: flex;
-          flex-direction: column;
-          gap: 0.125rem;
-
-          .product-code {
-            font-size: vars.$fontSize-xs;
-            color: vars.$colorGray500;
-            font-weight: vars.$fontWeight-normal;
-          }
-        }
-
-        &.product-total {
-          font-weight: vars.$fontWeight-semibold;
-        }
-      }
-    }
-  }
-
-  tfoot {
-    background: vars.$colorGray100;
-
-    tr {
-      border-top: 2px solid vars.$colorGray300;
-
-      td {
-        padding: vars.$spacing-md;
-        font-weight: vars.$fontWeight-semibold;
-
-        &.total-label {
-          text-align: right;
-          color: vars.$colorGray700;
-        }
-
-        &.total-value {
-          text-align: right;
-          font-size: vars.$fontSize-lg;
-          color: vars.$colorPrimary;
-        }
-      }
-    }
-  }
+}
+.products-table thead {
+  background: vars.$colorGray100;
+}
+.products-table thead th {
+  padding: vars.$spacing-sm vars.$spacing-md;
+  text-align: left;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray700;
+  border-bottom: 2px solid vars.$colorGray300;
+}
+.products-table thead th:last-child {
+  text-align: right;
+}
+.products-table tbody tr {
+  border-bottom: 1px solid vars.$colorGray200;
+}
+.products-table tbody tr:hover {
+  background: vars.$colorGray100;
+}
+.products-table tbody tr td {
+  padding: vars.$spacing-md;
+  color: vars.$colorGray700;
+}
+.products-table tbody tr td:last-child {
+  text-align: right;
+}
+.products-table tbody tr td.product-name {
+  font-weight: vars.$fontWeight-medium;
+  color: vars.$colorBlack;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.products-table tbody tr td.product-name .product-code {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  font-weight: vars.$fontWeight-normal;
+}
+.products-table tbody tr td.product-total {
+  font-weight: vars.$fontWeight-semibold;
+}
+.products-table tfoot {
+  background: vars.$colorGray100;
+}
+.products-table tfoot tr {
+  border-top: 2px solid vars.$colorGray300;
+}
+.products-table tfoot tr td {
+  padding: vars.$spacing-md;
+  font-weight: vars.$fontWeight-semibold;
+}
+.products-table tfoot tr td.total-label {
+  text-align: right;
+  color: vars.$colorGray700;
+}
+.products-table tfoot tr td.total-value {
+  text-align: right;
+  font-size: vars.$fontSize-lg;
+  color: vars.$colorPrimary;
 }
 
 @keyframes slideDown {

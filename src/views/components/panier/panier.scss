@@ -1,6 +1,5 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
 .panier {
   display: flex;
   flex-direction: column;
@@ -9,122 +8,107 @@
   background: vars.$colorWhite;
   border-left: 1px solid vars.$colorGray200;
   box-sizing: border-box;
-
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: vars.$spacing-xs;
-    border-bottom: 1px solid vars.$colorGray200;
-    width: 100%;
-    box-sizing: border-box;
-
-    h3 {
-      display: flex;
-      align-items: center;
-      gap: vars.$spacing-sm;
-      font-size: vars.$fontSize-lg;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorBlack;
-      margin: 0;
-    }
-  }
-
-  &__badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 vars.$spacing-xs;
-    background: vars.$colorPrimary;
-    border-radius: vars.$radius-full;
-    font-size: vars.$fontSize-xs;
-    font-weight: vars.$fontWeight-bold;
-    color: vars.$colorWhite;
-  }
-
-  &__empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: vars.$spacing-md;
-    padding: vars.$spacing-3xl vars.$spacing-lg;
-    flex: 1;
-    text-align: center;
-
-    svg {
-      font-size: 48px;
-      color: vars.$colorGray300;
-    }
-
-    p {
-      font-size: vars.$fontSize-base;
-      color: vars.$colorGray700;
-      margin: 0;
-    }
-  }
-
-  &__items {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-xs;
-  }
-
-  &__footer {
-    padding: vars.$spacing-xs;
-    border-top: 1px solid vars.$colorGray200;
-    background: vars.$colorGray100;
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-  &__total {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: vars.$spacing-md;
-    padding: vars.$spacing-xs 0;
-    margin-bottom: vars.$spacing-xs;
-  }
-
-  &__total-block {
-    display: flex;
-    align-items: baseline;
-    gap: vars.$spacing-sm;
-  }
-
-  &__total-label {
-    font-size: vars.$fontSize-base;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorBlack;
-  }
-
-  &__total-amount {
-    font-size: vars.$fontSize-lg;
-    font-weight: vars.$fontWeight-bold;
-    color: vars.$colorPrimary;
-  }
-
-  &__actions {
-    display: flex;
-    flex-direction: row;
-    gap: vars.$spacing-xs;
-
-    .btn {
-      padding: vars.$spacing-xs vars.$spacing-sm;
-      font-size: vars.$fontSize-xs;
-      gap: vars.$spacing-xs;
-    }
-  }
-
-  @media (max-width: vars.$breakpoint-sm) {
-    &__total {
-      flex-wrap: wrap;
-    }
+}
+.panier__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: vars.$spacing-xs;
+  border-bottom: 1px solid vars.$colorGray200;
+  width: 100%;
+  box-sizing: border-box;
+}
+.panier__header h3 {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+  font-size: vars.$fontSize-lg;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+  margin: 0;
+}
+.panier__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 vars.$spacing-xs;
+  background: vars.$colorPrimary;
+  border-radius: vars.$radius-full;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-bold;
+  color: vars.$colorWhite;
+}
+.panier__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: vars.$spacing-md;
+  padding: vars.$spacing-3xl vars.$spacing-lg;
+  flex: 1;
+  text-align: center;
+}
+.panier__empty svg {
+  font-size: 48px;
+  color: vars.$colorGray300;
+}
+.panier__empty p {
+  font-size: vars.$fontSize-base;
+  color: vars.$colorGray700;
+  margin: 0;
+}
+.panier__items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-xs;
+}
+.panier__footer {
+  padding: vars.$spacing-xs;
+  border-top: 1px solid vars.$colorGray200;
+  background: vars.$colorGray100;
+  width: 100%;
+  box-sizing: border-box;
+}
+.panier__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-md;
+  padding: vars.$spacing-xs 0;
+  margin-bottom: vars.$spacing-xs;
+}
+.panier__total-block {
+  display: flex;
+  align-items: baseline;
+  gap: vars.$spacing-sm;
+}
+.panier__total-label {
+  font-size: vars.$fontSize-base;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+}
+.panier__total-amount {
+  font-size: vars.$fontSize-lg;
+  font-weight: vars.$fontWeight-bold;
+  color: vars.$colorPrimary;
+}
+.panier__actions {
+  display: flex;
+  flex-direction: row;
+  gap: vars.$spacing-xs;
+}
+.panier__actions .btn {
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  font-size: vars.$fontSize-xs;
+  gap: vars.$spacing-xs;
+}
+@media (max-width: vars.$breakpoint-sm) {
+  .panier__total {
+    flex-wrap: wrap;
   }
 }

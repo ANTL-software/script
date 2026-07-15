@@ -1,6 +1,5 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
 .catalogue-produits {
   display: flex;
   flex-direction: column;
@@ -8,134 +7,117 @@
   height: 100%;
   overflow-y: auto;
   padding: vars.$spacing-xs;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: vars.$spacing-xs;
-    flex-wrap: wrap;
-  }
-
-  &__title-group {
-    flex: 1;
-    min-width: 200px;
-
-    h2 {
-      font-size: vars.$fontSize-2xl;
-      font-weight: vars.$fontWeight-bold;
-      color: vars.$colorBlack;
-      margin: 0;
-    }
-  }
-
-  &__subtitle {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray700;
-    margin: 0;
-  }
-
-  &__view-toggle {
-    display: flex;
-    gap: vars.$spacing-xs;
-  }
-
-  &__filters {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-xs;
-    padding: vars.$spacing-xs;
-    background: vars.$colorWhite;
-    border-radius: vars.$radius-lg;
-    box-shadow: vars.$shadow-sm;
-  }
-
-  &__search {
-    width: 100%;
-
-    .search-input-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-
-      .search-icon {
-        position: absolute;
-        left: vars.$spacing-sm;
-        color: vars.$colorGray500;
-        font-size: vars.$fontSize-sm;
-        pointer-events: none;
-      }
-
-      input {
-        padding-left: calc(vars.$spacing-md + vars.$spacing-sm);
-      }
-    }
-  }
-
-  &__search-hint {
-    display: block;
-    margin-top: 0;
-    font-size: vars.$fontSize-xs;
-    color: vars.$colorGray500;
-    font-style: italic;
-  }
-
-  &__tree-view {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  &__categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: vars.$spacing-xs;
-
-    .category-btn {
-      padding: vars.$spacing-xs;
-      background: vars.$colorWhite;
-      border: 1px solid vars.$colorGray300;
-      border-radius: vars.$radius-md;
-      font-size: vars.$fontSize-sm;
-      font-weight: vars.$fontWeight-medium;
-      color: vars.$colorGray700;
-      cursor: pointer;
-      transition: all vars.$transition-base;
-
-      &:hover {
-        background: vars.$colorGray100;
-        border-color: vars.$colorPrimary;
-        color: vars.$colorPrimary;
-      }
-
-      &.active {
-        background: vars.$colorPrimary;
-        border-color: vars.$colorPrimary;
-        color: vars.$colorWhite;
-      }
-    }
-  }
-
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: vars.$spacing-sm;
-  }
-
-  &__loader,
-  &__error,
-  &__empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: vars.$spacing-xs;
-    padding: vars.$spacing-md;
-    text-align: center;
-
-    p {
-      font-size: vars.$fontSize-base;
-      color: vars.$colorGray700;
-      margin: 0;
-    }
-  }
+}
+.catalogue-produits__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: vars.$spacing-xs;
+  flex-wrap: wrap;
+}
+.catalogue-produits__title-group {
+  flex: 1;
+  min-width: 200px;
+}
+.catalogue-produits__title-group h2 {
+  font-size: vars.$fontSize-2xl;
+  font-weight: vars.$fontWeight-bold;
+  color: vars.$colorBlack;
+  margin: 0;
+}
+.catalogue-produits__subtitle {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray700;
+  margin: 0;
+}
+.catalogue-produits__view-toggle {
+  display: flex;
+  gap: vars.$spacing-xs;
+}
+.catalogue-produits__filters {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-xs;
+  padding: vars.$spacing-xs;
+  background: vars.$colorWhite;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-sm;
+}
+.catalogue-produits__search {
+  width: 100%;
+}
+.catalogue-produits__search .search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.catalogue-produits__search .search-input-wrapper .search-icon {
+  position: absolute;
+  left: vars.$spacing-sm;
+  color: vars.$colorGray500;
+  font-size: vars.$fontSize-sm;
+  pointer-events: none;
+}
+.catalogue-produits__search .search-input-wrapper input {
+  padding-left: calc(vars.$spacing-md + vars.$spacing-sm);
+}
+.catalogue-produits__search-hint {
+  display: block;
+  margin-top: 0;
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  font-style: italic;
+}
+.catalogue-produits__tree-view {
+  flex: 1;
+  overflow-y: auto;
+}
+.catalogue-produits__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: vars.$spacing-xs;
+}
+.catalogue-produits__categories .category-btn {
+  padding: vars.$spacing-xs;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  color: vars.$colorGray700;
+  cursor: pointer;
+  transition: all vars.$transition-base;
+}
+.catalogue-produits__categories .category-btn:hover {
+  background: vars.$colorGray100;
+  border-color: vars.$colorPrimary;
+  color: vars.$colorPrimary;
+}
+.catalogue-produits__categories .category-btn.active {
+  background: vars.$colorPrimary;
+  border-color: vars.$colorPrimary;
+  color: vars.$colorWhite;
+}
+.catalogue-produits__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: vars.$spacing-sm;
+}
+.catalogue-produits__loader,
+.catalogue-produits__error,
+.catalogue-produits__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: vars.$spacing-xs;
+  padding: vars.$spacing-md;
+  text-align: center;
+}
+.catalogue-produits__loader p,
+.catalogue-produits__error p,
+.catalogue-produits__empty p {
+  font-size: vars.$fontSize-base;
+  color: vars.$colorGray700;
+  margin: 0;
 }

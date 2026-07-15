@@ -1,6 +1,5 @@
 @use "../../../utils/styles/variables" as vars;
 @use "sass:color";
-
 .alert-overlay {
   position: fixed;
   inset: 0;
@@ -13,7 +12,6 @@
   padding: 1rem;
   animation: alert-fade-in 180ms ease;
 }
-
 .alert {
   background: vars.$colorWhite;
   border-radius: 12px;
@@ -24,32 +22,27 @@
   overflow: hidden;
   position: relative;
   animation: alert-slide-in 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  @media (min-width: vars.$breakpoint-md) {
+}
+@media (min-width: vars.$breakpoint-md) {
+  .alert {
     max-width: 28rem;
   }
-
-  &--info {
-    border-top: 4px solid vars.$colorPrimary;
-  }
-
-  &--success {
-    border-top: 4px solid vars.$colorSuccess;
-  }
-
-  &--warning {
-    border-top: 4px solid vars.$colorWarning;
-  }
-
-  &--error {
-    border-top: 4px solid vars.$colorDanger;
-  }
-
-  &--confirm {
-    border-top: 4px solid vars.$colorWarning;
-  }
 }
-
+.alert--info {
+  border-top: 4px solid vars.$colorPrimary;
+}
+.alert--success {
+  border-top: 4px solid vars.$colorSuccess;
+}
+.alert--warning {
+  border-top: 4px solid vars.$colorWarning;
+}
+.alert--error {
+  border-top: 4px solid vars.$colorDanger;
+}
+.alert--confirm {
+  border-top: 4px solid vars.$colorWarning;
+}
 .alert__header {
   display: flex;
   align-items: flex-start;
@@ -57,40 +50,32 @@
   padding: 1.5rem 1.5rem 0;
   gap: 1rem;
 }
-
 .alert__header-content {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
   flex: 1;
 }
-
 .alert__icon {
   font-size: 1.5rem;
   flex-shrink: 0;
   margin-top: 0.125rem;
-
-  &--info {
-    color: vars.$colorPrimary;
-  }
-
-  &--success {
-    color: vars.$colorSuccess;
-  }
-
-  &--warning {
-    color: vars.$colorWarning;
-  }
-
-  &--error {
-    color: vars.$colorDanger;
-  }
-
-  &--confirm {
-    color: vars.$colorWarning;
-  }
 }
-
+.alert__icon--info {
+  color: vars.$colorPrimary;
+}
+.alert__icon--success {
+  color: vars.$colorSuccess;
+}
+.alert__icon--warning {
+  color: vars.$colorWarning;
+}
+.alert__icon--error {
+  color: vars.$colorDanger;
+}
+.alert__icon--confirm {
+  color: vars.$colorWarning;
+}
 .alert__title {
   margin: 0;
   font-size: 1.125rem;
@@ -98,7 +83,6 @@
   color: vars.$fontPrimaryColor;
   line-height: 1.4;
 }
-
 .alert__close {
   background: none;
   border: none;
@@ -109,17 +93,14 @@
   border-radius: 4px;
   transition: all 120ms ease;
   flex-shrink: 0;
-
-  &:hover {
-    background-color: vars.$colorGray100;
-    color: vars.$fontPrimaryColor;
-  }
 }
-
+.alert__close:hover {
+  background-color: vars.$colorGray100;
+  color: vars.$fontPrimaryColor;
+}
 .alert__body {
   padding: 1rem 1.5rem 1.5rem;
 }
-
 .alert__message {
   margin: 0;
   color: vars.$colorGray700;
@@ -127,18 +108,17 @@
   font-size: 0.95rem;
   white-space: pre-wrap;
 }
-
 .alert__actions {
   display: flex;
   gap: 0.75rem;
   padding: 0 1.5rem 1.5rem;
   justify-content: flex-end;
-
-  @media (max-width: calc(vars.$breakpoint-sm - 1px)) {
+}
+@media (max-width: calc(vars.$breakpoint-sm - 1px)) {
+  .alert__actions {
     flex-direction: column-reverse;
   }
 }
-
 .alert__button {
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -148,30 +128,27 @@
   transition: all 120ms ease;
   border: 1px solid transparent;
   min-width: 6rem;
-
-  @media (max-width: calc(vars.$breakpoint-sm - 1px)) {
+}
+@media (max-width: calc(vars.$breakpoint-sm - 1px)) {
+  .alert__button {
     width: 100%;
   }
-
-  &--cancel {
-    background: vars.$colorGray100;
-    color: vars.$fontPrimaryColor;
-    border-color: vars.$colorGray300;
-
-    &:hover {
-      background: rgba(vars.$colorGray700, 0.1);
-      border-color: vars.$colorGray700;
-    }
-  }
-
-  &--confirm {
-    background: vars.$colorWarning;
-    color: vars.$colorWhite;
-
-    &:hover {
-      background: color.adjust(vars.$colorWarning, $lightness: -10%);
-    }
-  }
+}
+.alert__button--cancel {
+  background: vars.$colorGray100;
+  color: vars.$fontPrimaryColor;
+  border-color: vars.$colorGray300;
+}
+.alert__button--cancel:hover {
+  background: rgba(vars.$colorGray700, 0.1);
+  border-color: vars.$colorGray700;
+}
+.alert__button--confirm {
+  background: vars.$colorWarning;
+  color: vars.$colorWhite;
+}
+.alert__button--confirm:hover {
+  background: color.adjust(vars.$colorWarning, $lightness: -10%);
 }
 
 @keyframes alert-fade-in {

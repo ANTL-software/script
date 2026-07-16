@@ -2,19 +2,8 @@ import './rendezVousRecapModal.scss';
 
 import { FaCalendarAlt, FaCheckCircle, FaPhoneAlt, FaStickyNote, FaTimes, FaUserTie } from 'react-icons/fa';
 
-import Button from '../button/Button';
-
-export interface RendezVousRecapData {
-  prospectLabel: string;
-  campaignLabel: string;
-  dateLabel: string;
-  heure: string;
-  interlocuteurNom: string;
-  interlocuteurRole: string;
-  telephone: string;
-  email: string;
-  notes: string;
-}
+import { Button } from '../button/index.ts';
+import type { RendezVousRecapData } from '../../../utils/types/index.ts';
 
 interface RendezVousRecapModalProps {
   isOpen: boolean;

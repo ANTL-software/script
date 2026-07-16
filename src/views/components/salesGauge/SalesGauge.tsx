@@ -1,5 +1,5 @@
 import './salesGauge.scss';
-import type { PrimeStats } from '../../../utils/types';
+import type { PrimeStats } from '../../../utils/types/index.ts';
 
 interface SalesGaugeProps {
   ventesMoisCount: number;

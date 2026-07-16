@@ -1,14 +1,11 @@
 import './historiqueAppels.scss';
 
 import { useEffect } from 'react';
-import { useDialer, useProspect } from '../../../hooks';
-import Loader from '../loader/Loader';
-import ErrorMessage from '../errorMessage/ErrorMessage';
+import { useCallNotesDraft, useCampaign, useDialer, useProspect } from '../../../hooks/index.ts';
+import { Loader } from '../loader/index.ts';
+import { ErrorMessage } from '../errorMessage/index.ts';
 import AppelCard from './AppelCard';
-import { formatDateTime } from '../../../utils/scripts/formatters';
-import { getCampaignVariant, CAMPAIGN_VARIANTS } from '../../../utils/scripts/campaignVariants';
-import { useCampaign } from '../../../hooks/useCampaign';
-import { useCallNotesDraft } from '../../../hooks/useCallNotesDraft';
+import { CAMPAIGN_VARIANTS, formatDateTime, getCampaignVariant } from '../../../utils/scripts/index.ts';
 
 export default function HistoriqueAppels() {
   const {

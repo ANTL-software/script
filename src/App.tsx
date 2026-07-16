@@ -2,25 +2,16 @@ import './utils/styles/global.scss'
 
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
 
-import { getGreetingName, getSalutation } from "./utils/scripts/utils";
-import { useUser, useApp, useForceClosing } from './hooks';
-import { closingService } from './API/services';
-import ClosingModal from './views/components/closingModal/ClosingModal';
-
-import Header from './views/components/header/Header'
-import ProtectedRoute from './views/components/protectedRoute/ProtectedRoute'
-import IncomingCallBanner from './views/components/incomingCallBanner/IncomingCallBanner'
-
-import DashboardPage from './views/layouts/dashboardPage/DashboardPage'
-import LandingPage from './views/layouts/landingPage/LandingPage'
-import LoginPage from './views/layouts/loginPage/LoginPage'
-import PlanAppelPage from './views/layouts/planAppelPage/PlanAppelPage'
-import ObjectionsPage from './views/layouts/objectionsPage/ObjectionsPage'
+import { getGreetingName, getSalutation } from './utils/scripts/index.ts';
+import { useUser, useApp, useClosing, useForceClosing } from './hooks';
+import { ClosingModal, Header, IncomingCallBanner, ProtectedRoute } from './views/components';
+import { DashboardPage, LandingPage, LoginPage, ObjectionsPage, PlanAppelPage } from './views/layouts';
 
 function AppRouter() {
   const { user } = useUser();
   const { currentView } = useApp();
   const { pendingClosing, forceMode } = useForceClosing();
+  const { clearPending } = useClosing();
   const navigate = useNavigate();
 
   const props = {
@@ -47,7 +38,7 @@ function AppRouter() {
           dureeAppel={pendingClosing.dureeAppel}
           forceMode={forceMode}
           onComplete={() => {
-            closingService.clearPending();
+            clearPending();
             navigate('/');
           }}
         />

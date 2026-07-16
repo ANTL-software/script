@@ -1,1 +1,1 @@
-export { default } from './CalendarModal';
+export { default, default as CalendarModal } from './CalendarModal.tsx';

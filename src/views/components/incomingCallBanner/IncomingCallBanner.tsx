@@ -1,6 +1,6 @@
 import './incomingCallBanner.scss';
 import { IoCall, IoCallSharp } from 'react-icons/io5';
-import { useDialer } from '../../../hooks';
+import { useDialer } from '../../../hooks/index.ts';
 
 export default function IncomingCallBanner() {
   const { incomingCall, answer, reject } = useDialer();

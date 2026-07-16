@@ -197,6 +197,8 @@ Le flux de données et les dépendances entre couches **DOIVENT** respecter cet 
 services → types → models → context → hooks → components → layouts
 ```
 
+`views` n'est **pas** une couche de cette chaîne : `src/views/` est uniquement le dossier conteneur de `components/` et `layouts/`.
+
 **Règle absolue** : une couche ne peut dépendre que des couches à sa gauche (ou de la sienne). Toute dépendance inverse est interdite.
 
 | Couche | Rôle | Peut importer | Ne peut PAS importer |
@@ -208,6 +210,14 @@ services → types → models → context → hooks → components → layouts
 | **hooks** | Logique réutilisable, abstraction des contexts | `types`, `models`, `services`, `context` | `components`, `layouts` |
 | **components** | UI réutilisable (boutons, cartes, modals) | `types`, `hooks` | `layouts`, `services` (accès API via hooks uniquement) |
 | **layouts** | Pages complètes (DashboardPage, LandingPage) | `types`, `hooks`, `components` | `services` (accès API via hooks uniquement), `context` (via hooks uniquement) |
+
+### Imports et exports centralisés
+
+- Chaque dossier architectural expose son API publique depuis son `index.ts` : services, types, models, context, hooks, components et layouts.
+- Tout import provenant d'un autre dossier passe par cet `index.ts`; les imports profonds vers un fichier d'implémentation sont interdits.
+- Chaque module public est réexporté une seule fois par le barrel de sa couche. Ne pas disperser les réexports dans des fichiers métier.
+- Les dossiers de composants et layouts suivent aussi cette règle : `index.ts` local au module, puis agrégation dans `src/views/components/index.ts` ou `src/views/layouts/index.ts`.
+- Un component ou un layout n'importe jamais un service, même indirectement par un chemin profond. Il consomme uniquement les hooks et contrats publics prévus par la chaîne d'architecture.
 
 ### Exemples concrets
 
@@ -233,7 +243,7 @@ const result = await prospectService.loadAppels(prospectId);
 
 #### 1. AUCUNE logique métier dans les views
 
-Les `components/` et `layouts/` sont des couches de **présentation pure**. Ils ne contiennent **aucune** logique métier — pas d'appels API, pas de calculs métier, pas de gestion d'état complexe. Toute logique doit être encapsulée dans un hook.
+Les `components/` et `layouts/` placés sous `src/views/` sont des couches de **présentation pure**. Ils ne contiennent **aucune** logique métier — pas d'appels API, pas de calculs, validations ou transformations métier, pas d'orchestration de workflow et pas de gestion d'état complexe. Toute logique doit être encapsulée dans un hook; les handlers de la vue se limitent à déléguer aux actions exposées par ce hook.
 
 ```typescript
 // ❌ INTERDIT — logique métier dans un component
@@ -257,7 +267,8 @@ const { search, searchQuery, isSearching, searchError } = useManualSearch();
 Un component/layout ne fait que :
 - Appeler des hooks pour récupérer données et actions
 - Rendre du JSX
-- Gérer de l'affichage conditionnel simple (`isLoading`, `error`)
+- Gérer de l'état et de l'affichage purement UI (`isOpen`, `isLoading`, `error`)
+- Déléguer les événements utilisateur aux actions fournies par les hooks
 
 #### 2. Principes SOLID
 

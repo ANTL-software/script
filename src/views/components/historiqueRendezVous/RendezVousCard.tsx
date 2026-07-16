@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { LeadClient } from '../../../utils/types';
-import { mapRendezVousToHistoryCardModel } from '../../../utils/scripts/rendezVousHistory';
+import type { LeadClient } from '../../../utils/types/index.ts';
+import { mapRendezVousToHistoryCardModel } from '../../../utils/scripts/index.ts';
 
 interface RendezVousCardProps {
   rdv: LeadClient;

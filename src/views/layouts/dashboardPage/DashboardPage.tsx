@@ -1,13 +1,9 @@
 import './dashboardPage.scss';
-import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { useDashboardData } from '../../../hooks/useDashboardData';
-import { useCampaign, useDialer } from '../../../hooks';
-import { useToast } from '../../../hooks';
-import { formatEur, formatHeure, formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
-import type { RendezVous } from '../../../utils/types';
-import SalesGauge from '../../components/salesGauge/SalesGauge';
-import CalendarModal from '../../components/calendarModal/CalendarModal';
+import { useCampaign, useDashboardData, useDialer, useNavigation, useToast } from '../../../hooks/index.ts';
+import { formatEur, formatHeure, formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import type { RendezVous } from '../../../utils/types/index.ts';
+import { CalendarModal, SalesGauge } from '../../components/index.ts';
 import { FaCalendarAlt } from 'react-icons/fa';
 
 function prospectLabel(rdv: RendezVous): string {
@@ -44,7 +40,7 @@ function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: numbe
 }
 
 export default function DashboardPage() {
-  const navigate = useNavigate();
+  const { navigateTo } = useNavigation();
   const { statut, prochainProspect, clearProchainProspect, call, requestNextProspect, currentCampagneId } = useDialer();
   const { loadCampaign, clearCampaign } = useCampaign();
   const { showToast } = useToast();
@@ -113,12 +109,12 @@ export default function DashboardPage() {
       id_rendez_vous_source
     } = prochainProspect;
     clearProchainProspect();
-    navigate(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source));
+    navigateTo(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source));
     if (distribution_mode === 'rappel') {
       return;
     }
     call(telephone, id_campagne_assignee ?? undefined, id_prospect);
-  }, [prochainProspect, clearProchainProspect, navigate, call]);
+  }, [prochainProspect, clearProchainProspect, navigateTo, call]);
 
   useEffect(() => {
     if (statut !== 'disponible' || prochainProspect) {
@@ -223,7 +219,7 @@ export default function DashboardPage() {
                     className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''} ${isCommande ? 'dashboard__rdv-item--commande' : ''} ${isRelanceVente ? 'dashboard__rdv-item--relance-vente' : ''}`}
                     onClick={() => {
                       const url = buildRappelUrl(rdv);
-                      if (url) navigate(url);
+                      if (url) navigateTo(url);
                     }}
                   >
                     <div className="dashboard__rdv-heure">{formatHeure(rdv.heure_rdv)}</div>
@@ -331,7 +327,7 @@ export default function DashboardPage() {
           }
 
           // Le contexte dialer conserve la campagne runtime de l'agent.
-          navigate('/prospect/1?test=true');
+          navigateTo('/prospect/1?test=true');
         }}
         disabled={!currentCampagneId}
         title={currentCampagneId ? 'Ouvrir la fiche de formation dans votre campagne active' : 'Chargement de la campagne active'}

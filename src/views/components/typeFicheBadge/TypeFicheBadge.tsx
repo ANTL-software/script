@@ -1,5 +1,5 @@
 import './typeFicheBadge.scss';
-import type { TypeFiche } from '../../../utils/types';
+import type { TypeFiche } from '../../../utils/types/index.ts';
 
 interface TypeFicheBadgeProps {
   typeFiche: TypeFiche;

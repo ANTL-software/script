@@ -1,2 +1,2 @@
-export { default } from './Panier';
-export { default as PanierItem } from './PanierItem';
+export { default, default as Panier } from './Panier.tsx';
+export { default as PanierItem } from './PanierItem.tsx';

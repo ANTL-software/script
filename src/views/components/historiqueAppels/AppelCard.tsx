@@ -1,7 +1,7 @@
 import './appelCard.scss';
 
-import type { Appel } from '../../../utils/types';
-import { formatDateShort, formatTime, formatDurationFromSeconds, getStatutAppelClass, getStatutAppelLabel } from '../../../utils/scripts/formatters';
+import type { Appel } from '../../../utils/types/index.ts';
+import { formatDateShort, formatTime, formatDurationFromSeconds, getStatutAppelClass, getStatutAppelLabel } from '../../../utils/scripts/index.ts';
 
 interface AppelCardProps {
   appel: Appel;

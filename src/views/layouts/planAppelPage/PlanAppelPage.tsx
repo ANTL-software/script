@@ -1,8 +1,7 @@
 import './planAppelPage.scss';
 import { useEffect, useRef } from 'react';
-import { usePlanAppel } from '../../../hooks/usePlanAppel';
-import Button from '../../components/button/Button';
-import Loader from '../../components/loader/Loader';
+import { usePlanAppel } from '../../../hooks/index.ts';
+import { Button, Loader } from '../../components/index.ts';
 import { FaChevronLeft, FaChevronRight, FaListOl } from 'react-icons/fa';
 
 function renderPlanParagraph(paragraph: string, index: number) {

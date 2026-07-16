@@ -1,17 +1,13 @@
 import "./header.scss";
 
-import { useNavigate, useLocation } from "react-router-dom";
 import antlLogo from "../../../assets/antlLogo.png";
 import { LuLogOut } from "react-icons/lu";
 import { FaArrowLeft } from "react-icons/fa";
-import { useUser } from "../../../hooks/useUser";
-import { useToast } from "../../../hooks/useToast";
-import { useClosing } from "../../../hooks/useClosing";
-import DialerStatus from "../dialerStatus/DialerStatus";
-import DtmfPad from "../dtmfPad/DtmfPad";
-import Button from "../button/Button";
-import { isTestEnvironment, isProspectTestMode, getCampagneLogoUrl } from "../../../utils/scripts/utils";
-import { useCampaign } from "../../../hooks";
+import { useCampaign, useClosing, useNavigation, useToast, useUser } from '../../../hooks/index.ts';
+import { DialerStatus } from '../dialerStatus/index.ts';
+import { DtmfPad } from '../dtmfPad/index.ts';
+import { Button } from '../button/index.ts';
+import { getCampagneLogoUrl, isProspectTestMode, isTestEnvironment } from '../../../utils/scripts/index.ts';
 
 export interface HeaderProps {
   props: {
@@ -25,8 +21,7 @@ export default function Header({ props }: HeaderProps) {
   const { showToast } = useToast();
   const { hasPending } = useClosing();
   const { currentCampaign } = useCampaign();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { navigateTo, pathname, searchParams } = useNavigation();
   const showTestBadge = isTestEnvironment() || isProspectTestMode();
 
   const campaignLogoUrl = getCampagneLogoUrl(currentCampaign?.logo_path);
@@ -34,8 +29,7 @@ export default function Header({ props }: HeaderProps) {
   // Masquer le bouton de déconnexion sur la vue prospect pour éviter la déconnexion pendant un appel
   // SAUF en mode test (paramètre ?test=true) où on affiche un bouton "Retour" à la place
   // Mais afficher un bouton "Retour" si c'est une recherche manuelle
-  const isProspectView = location.pathname.match(/^\/prospect\/\d+$/);
-  const searchParams = new URLSearchParams(location.search);
+  const isProspectView = pathname.match(/^\/prospect\/\d+$/);
   const isTestMode = searchParams.get('test') === 'true';
   const isManualSearch = searchParams.get('source') === 'manual';
   const isRappelSource = searchParams.get('source') === 'rappel';
@@ -51,14 +45,14 @@ export default function Header({ props }: HeaderProps) {
 
     try {
       await logout();
-      navigate("/login", { replace: true });
+      navigateTo('/login', { replace: true });
     } catch (error) {
       console.error("Logout error:", error);
     }
   };
 
   const handleBack = () => {
-    navigate("/");
+    navigateTo('/');
   };
 
   return (

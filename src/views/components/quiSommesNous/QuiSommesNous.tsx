@@ -1,5 +1,5 @@
-import { useCampaign } from '../../../hooks';
-import { isLeadB2BCampaign } from '../../../utils/scripts/campaignVariants';
+import { useCampaign } from '../../../hooks/index.ts';
+import { isLeadB2BCampaign } from '../../../utils/scripts/index.ts';
 import './quiSommesNous.scss';
 import { FaBuilding, FaUsers, FaHandshake, FaShieldAlt, FaPhone, FaEnvelope, FaMapMarkerAlt, FaListOl } from 'react-icons/fa';
 

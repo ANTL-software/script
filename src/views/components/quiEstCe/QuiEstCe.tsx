@@ -1,12 +1,11 @@
 import './quiEstCe.scss';
 import { useState, useEffect } from 'react';
-import { useProspect } from '../../../hooks/useProspect';
-import { useToast } from '../../../hooks/useToast';
-import Button from '../button/Button';
-import Input from '../input/Input';
+import { useProspect, useToast } from '../../../hooks/index.ts';
+import { Button } from '../button/index.ts';
+import { Input } from '../input/index.ts';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
-import type { UpdateProspectData } from '../../../utils/types';
-import { formatDateLong, getStatutProspectLabel } from '../../../utils/scripts/formatters';
+import type { UpdateProspectData } from '../../../utils/types/index.ts';
+import { formatDateLong, getStatutProspectLabel } from '../../../utils/scripts/index.ts';
 
 interface EditableFields {
   nom: string;

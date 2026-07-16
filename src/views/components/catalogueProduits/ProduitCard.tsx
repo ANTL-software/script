@@ -1,7 +1,7 @@
 import './produitCard.scss';
-import type { Produit } from '../../../utils/types';
-import { formatCurrency, getProductPrice, getProductPromoPrice } from '../../../utils/scripts/utils';
-import Button from '../button/Button';
+import type { Produit } from '../../../utils/types/index.ts';
+import { formatCurrency, getProductPrice, getProductPromoPrice } from '../../../utils/scripts/index.ts';
+import { Button } from '../button/index.ts';
 import { FaShoppingCart } from 'react-icons/fa';
 
 interface ProduitCardProps {

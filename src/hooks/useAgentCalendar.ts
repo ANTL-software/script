@@ -1,8 +1,15 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { startOfDay, addMinutes, parseISO } from 'date-fns';
-import { useUser, useToast, useDialer } from './index';
+import { startOfDay, addMinutes, format, isBefore, parseISO } from 'date-fns';
+import { useUser, useToast, useDialer, useCampaign } from './index';
 import { rendezVousService } from '../API/services';
-import type { RendezVous, CalendarEvent, CalendarEventType } from '../utils/types';
+import type {
+  CalendarEvent,
+  CalendarEventType,
+  CreateRendezVousData,
+  RendezVous,
+  RendezVousStatut,
+  UpdateRendezVousData,
+} from '../utils/types';
 import { getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
 
 export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): CalendarEvent {
@@ -27,8 +34,10 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
   const { user } = useUser();
   const { showToast } = useToast();
   const { currentOrigineAppel, currentRendezVousSourceId } = useDialer();
+  const { currentCampaign } = useCampaign();
+  const resolvedCampagneId = campagneId ?? currentCampaign?.id_campagne ?? null;
 
-  const today = startOfDay(new Date());
+  const today = useMemo(() => startOfDay(new Date()), []);
 
   const [agentRdvList, setAgentRdvList] = useState<RendezVous[]>([]);
   const [otherAgentRdvList, setOtherAgentRdvList] = useState<RendezVous[]>([]);
@@ -42,9 +51,9 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
       setIsLoading(true);
 
       const [agentData, prospectData] = await Promise.all([
-        rendezVousService.getRendezVousByAgent(agentId, campagneId ?? undefined),
+        rendezVousService.getRendezVousByAgent(agentId, resolvedCampagneId ?? undefined),
         prospectId
-          ? rendezVousService.getRendezVousByProspect(prospectId, campagneId ?? undefined)
+          ? rendezVousService.getRendezVousByProspect(prospectId, resolvedCampagneId ?? undefined)
           : Promise.resolve([]),
       ]);
 
@@ -55,7 +64,7 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     } finally {
       setIsLoading(false);
     }
-  }, [user?.id_employe, prospectId, campagneId, showToast]);
+  }, [user?.id_employe, prospectId, resolvedCampagneId, showToast]);
 
   useEffect(() => {
     loadRendezVous();
@@ -71,7 +80,7 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
       const isThisProspect = Boolean(
         prospectId &&
         rdv.id_prospect === prospectId &&
-        (!campagneId || rdv.id_campagne === campagneId)
+        (!resolvedCampagneId || rdv.id_campagne === resolvedCampagneId)
       );
       result.push(toCalendarEvent(rdv, isThisProspect ? 'mine-prospect' : 'mine-other'));
     }
@@ -83,17 +92,17 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     }
 
     return result;
-  }, [agentRdvList, otherAgentRdvList, prospectId, campagneId]);
+  }, [agentRdvList, otherAgentRdvList, prospectId, resolvedCampagneId]);
 
   const myProspectRdvs = useMemo(() =>
     agentRdvList.filter(rdv =>
       prospectId &&
       rdv.id_prospect === prospectId &&
-      (!campagneId || rdv.id_campagne === campagneId) &&
+      (!resolvedCampagneId || rdv.id_campagne === resolvedCampagneId) &&
       rdv.statut !== 'annule' &&
       rdv.statut !== 'effectue'
     ),
-    [agentRdvList, prospectId, campagneId]
+    [agentRdvList, prospectId, resolvedCampagneId]
   );
 
   const nextMyProspectRdv = useMemo(() => {
@@ -118,8 +127,97 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     ['planifie', 'reporte', 'non_honore'].includes(currentRendezVousSource.statut)
   );
 
+  const canSelectSlot = useCallback((start: Date, isReadOnly: boolean): boolean => {
+    if (isReadOnly || !prospectId) return false;
+    if (isBefore(startOfDay(start), today)) {
+      showToast('error', 'Impossible de prendre un rendez-vous dans le passé');
+      return false;
+    }
+    return true;
+  }, [prospectId, showToast, today]);
+
+  const createRendezVous = useCallback(async (date: Date): Promise<boolean> => {
+    if (!user?.id_employe || !prospectId) return false;
+    if (!resolvedCampagneId) {
+      showToast('error', 'Impossible de planifier sans campagne associée');
+      return false;
+    }
+
+    try {
+      const dateRdv = format(date, 'yyyy-MM-dd');
+      const heureRdv = format(date, 'HH:mm:ss');
+
+      if (shouldRescheduleSourceRendezVous && currentRendezVousSource) {
+        const updateData: UpdateRendezVousData = {
+          date_rdv: dateRdv,
+          heure_rdv: heureRdv,
+          statut: 'reporte',
+        };
+        await rendezVousService.updateRendezVous(currentRendezVousSource.id_rendez_vous, updateData);
+        showToast('success', 'Rendez-vous replanifie avec succès');
+      } else {
+        const createData: CreateRendezVousData = {
+          id_agent: user.id_employe,
+          id_prospect: prospectId,
+          id_campagne: resolvedCampagneId,
+          date_rdv: dateRdv,
+          heure_rdv: heureRdv,
+        };
+        await rendezVousService.createRendezVous(createData);
+        showToast('success', 'Rendez-vous planifié avec succès');
+      }
+
+      await loadRendezVous();
+      return true;
+    } catch (error) {
+      showToast('error', getErrorMessage(error, 'Erreur lors de la planification'));
+      return false;
+    }
+  }, [
+    currentRendezVousSource,
+    loadRendezVous,
+    prospectId,
+    resolvedCampagneId,
+    shouldRescheduleSourceRendezVous,
+    showToast,
+    user?.id_employe,
+  ]);
+
+  const updateRendezVous = useCallback(async (
+    idRendezVous: number,
+    date: Date,
+    statut: RendezVousStatut,
+  ): Promise<boolean> => {
+    try {
+      await rendezVousService.updateRendezVous(idRendezVous, {
+        date_rdv: format(date, 'yyyy-MM-dd'),
+        heure_rdv: format(date, 'HH:mm:ss'),
+        statut,
+      });
+      showToast('success', 'Rendez-vous modifié');
+      await loadRendezVous();
+      return true;
+    } catch (error) {
+      showToast('error', getErrorMessage(error, 'Erreur lors de la modification'));
+      return false;
+    }
+  }, [loadRendezVous, showToast]);
+
+  const deleteRendezVous = useCallback(async (idRendezVous: number): Promise<boolean> => {
+    try {
+      await rendezVousService.deleteRendezVous(idRendezVous);
+      showToast('success', 'Rendez-vous supprimé');
+      await loadRendezVous();
+      return true;
+    } catch (error) {
+      showToast('error', getErrorMessage(error, 'Erreur lors de la suppression'));
+      return false;
+    }
+  }, [loadRendezVous, showToast]);
+
   return {
     today,
+    resolvedCampagneId,
     events,
     isLoading,
     myProspectRdvs,
@@ -128,5 +226,9 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     currentRendezVousSource,
     shouldRescheduleSourceRendezVous,
     loadRendezVous,
+    canSelectSlot,
+    createRendezVous,
+    updateRendezVous,
+    deleteRendezVous,
   };
 }

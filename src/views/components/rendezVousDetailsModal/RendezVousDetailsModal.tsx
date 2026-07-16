@@ -2,11 +2,11 @@ import './rendezVousDetailsModal.scss';
 import { FaTimes, FaCalendarAlt, FaClock, FaUser, FaPhone, FaEdit, FaTrash } from 'react-icons/fa';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import type { RendezVous } from '../../../utils/types';
-import { formatProspectName, formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
-import Button from '../button/Button';
-import { useNavigate } from 'react-router-dom';
-import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants';
+import type { RendezVous } from '../../../utils/types/index.ts';
+import { formatProspectName, formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import { Button } from '../button/index.ts';
+import { useNavigation } from '../../../hooks/index.ts';
+import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants/index.ts';
 
 interface RendezVousDetailsModalProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ export default function RendezVousDetailsModal({
   showMonterFiche = false,
   isReadOnly = false,
 }: RendezVousDetailsModalProps) {
-  const navigate = useNavigate();
+  const { navigateTo } = useNavigation();
 
   if (!isOpen || !rendezVous) return null;
 
@@ -51,7 +51,7 @@ export default function RendezVousDetailsModal({
   const handleMonterFiche = () => {
     if (prospect) {
       onClose();
-      navigate(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}`);
+      navigateTo(`/prospect/${prospect.id_prospect}?source=rappel&rdvId=${rendezVous.id_rendez_vous}`);
     }
   };
   const isRelanceVente = checkIsRelanceVente(rendezVous.motif, rendezVous.appelsSource);

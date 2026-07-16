@@ -1,11 +1,9 @@
 import './venteCard.scss';
 
 import { useState } from 'react';
-import type { Vente } from '../../../utils/types';
-import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
-import { useCart } from '../../../hooks/useCart';
-import { useToast } from '../../../hooks/useToast';
-import { useCampaign } from '../../../hooks/useCampaign';
+import type { Vente } from '../../../utils/types/index.ts';
+import { calculateLineTotal, formatCurrency } from '../../../utils/scripts/index.ts';
+import { useCampaign, useCart, useToast } from '../../../hooks/index.ts';
 
 interface VenteCardProps {
   vente: Vente;

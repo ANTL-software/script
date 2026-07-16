@@ -1,2 +1,3 @@
-export { TwilioContext, TwilioProvider } from './TwilioProvider';
-export type { TwilioContextType } from './TwilioProvider';
+export { TwilioContext } from './TwilioContext';
+export type { TwilioContextType } from './TwilioContext';
+export { TwilioProvider } from './TwilioProvider';

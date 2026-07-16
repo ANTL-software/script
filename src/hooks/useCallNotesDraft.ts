@@ -12,7 +12,7 @@ export function useCallNotesDraft(appelId: number | null | undefined) {
   ));
 
   useEffect(() => {
-    setNotesState(appelId ? callNotesDraftService.get(appelId) : '');
+    queueMicrotask(() => setNotesState(appelId ? callNotesDraftService.get(appelId) : ''));
   }, [appelId]);
 
   useEffect(() => {

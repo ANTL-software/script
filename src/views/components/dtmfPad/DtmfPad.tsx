@@ -1,7 +1,7 @@
 import './dtmfPad.scss';
 import { useEffect, useMemo, useState } from 'react';
 import { LuKeyboard } from 'react-icons/lu';
-import { useDialer } from '../../../hooks';
+import { useDialer } from '../../../hooks/index.ts';
 
 const DTMF_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '#'] as const;
 
@@ -21,7 +21,7 @@ export default function DtmfPad() {
 
   useEffect(() => {
     if (!canSendDigits) {
-      setIsOpen(false);
+      queueMicrotask(() => setIsOpen(false));
     }
   }, [canSendDigits]);
 

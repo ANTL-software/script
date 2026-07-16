@@ -8,6 +8,7 @@ export {
 } from './runtimeEnvironment.ts';
 
 export function getGreetingName(prenom?: string, _userId?: number): string | undefined {
+  void _userId;
   return prenom;
 }
 

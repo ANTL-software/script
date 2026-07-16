@@ -9,37 +9,14 @@
  * PAS un singleton avec Device.setup() comme dans l'ancienne API v1.x
  */
 
-import { useState, useCallback, useRef, useEffect, useMemo, createContext } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { Device, Call } from '@twilio/voice-sdk';
 import { twilioService } from '../../API/services';
 import { useToast } from '../../hooks';
 import { formatPhoneE164 } from '../../utils/scripts/formatters';
-
-// Types pour le contexte Twilio
-export interface TwilioContextType {
-  // État de connexion
-  isTwilioReady: boolean;
-  twilioConnected: boolean;
-
-  // Appel
-  callDuration: number;
-  callDurationFormatted: string;
-  isCallActive: boolean;
-  activeCallSid: string | null;
-  incomingCall: Call | null;
-
-  // Fonctions
-  initializeTwilio: () => Promise<void>;
-  call: (phoneNumber: string) => Promise<string | null>;
-  hangup: () => void;
-  answer: () => void;
-  reject: () => void;
-  cleanup: () => Promise<void>;
-}
-
-// Contexte par défaut
-export const TwilioContext = createContext<TwilioContextType | null>(null);
+import { TwilioContext } from './TwilioContext.ts';
+import type { TwilioContextType } from './TwilioContext.ts';
 
 interface TwilioProviderProps {
   children: ReactNode;
@@ -58,6 +35,7 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deviceRef = useRef<Device | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const incomingCallRef = useRef<Call | null>(null);
 
   // Formatage de la durée d'appel en MM:SS
   const callDurationFormatted = useMemo(() => {
@@ -144,6 +122,7 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
         console.groupCollapsed('📞 [TWILIO] Appel entrant');
         console.log('From:', call.parameters.From);
         console.log('Call SID:', call.parameters.CallSid);
+        incomingCallRef.current = call;
         setIncomingCall(call);
         console.groupEnd();
         showToast('info', `Appel entrant de: ${call.parameters.From}`, 10000);
@@ -151,7 +130,8 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
 
       device.on('cancel', (call: Call) => {
         console.log('⚠️ [TWILIO] Appel annulé:', call.parameters.CallSid);
-        if (incomingCall?.parameters.CallSid === call.parameters.CallSid) {
+        if (incomingCallRef.current?.parameters.CallSid === call.parameters.CallSid) {
+          incomingCallRef.current = null;
           setIncomingCall(null);
         }
         showToast('warning', 'Appel annulé', 3000);
@@ -180,7 +160,7 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
       setTwilioConnected(false);
       setIsTwilioReady(false);
     }
-  }, [showToast, startCallTimer, stopCallTimer]);
+  }, [showToast]);
 
   // Passer un appel sortant
   const call = useCallback(async (phoneNumber: string): Promise<string | null> => {
@@ -272,6 +252,7 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
 
     console.groupCollapsed('📞 [TWILIO] Réponse à appel entrant');
     call.accept();
+    incomingCallRef.current = null;
     setIncomingCall(null);
     setIsCallActive(true);
     startCallTimer();
@@ -292,6 +273,7 @@ export const TwilioProvider = ({ children }: TwilioProviderProps) => {
 
     console.groupCollapsed('📞 [TWILIO] Rejet appel entrant');
     call.reject();
+    incomingCallRef.current = null;
     setIncomingCall(null);
     console.log('❌ Appel rejeté:', call.parameters.CallSid);
     console.groupEnd();

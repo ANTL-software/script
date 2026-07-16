@@ -2,11 +2,11 @@ import './rendezVousModal.scss';
 import { useState, useEffect } from 'react';
 import { FaTimes, FaCalendarAlt, FaClock, FaTrash, FaUser } from 'react-icons/fa';
 import { format, isBefore, startOfDay } from 'date-fns';
-import type { RendezVous, RendezVousStatut } from '../../../utils/types';
-import { STATUT_RENDEZ_VOUS_OPTIONS } from '../../../utils/constants';
-import { formatProspectName } from '../../../utils/scripts/formatters';
-import Button from '../button/Button';
-import Input from '../input/Input';
+import type { RendezVous, RendezVousStatut } from '../../../utils/types/index.ts';
+import { STATUT_RENDEZ_VOUS_OPTIONS } from '../../../utils/constants/index.ts';
+import { formatProspectName } from '../../../utils/scripts/index.ts';
+import { Button } from '../button/index.ts';
+import { Input } from '../input/index.ts';
 
 interface RendezVousModalProps {
   isOpen: boolean;

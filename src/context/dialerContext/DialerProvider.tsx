@@ -1014,7 +1014,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setDepuisLe(new Date());
     console.log('✅ Appel accepté');
     console.groupEnd();
-  }, [registerActiveCall, startCallTimer, setupCallEvents]);
+  }, [registerActiveCall, setupCallEvents]);
 
   // Rejeter
   const reject = useCallback(() => {
@@ -1120,7 +1120,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [requestNextProspect, sipConnected]);
+  }, [requestNextProspect, showToast, sipConnected]);
 
   // Ouvrir un prospect manuellement
   const openProspectManual = useCallback(async (prospectId: number, origin: 'manuel' | 'rappel', prospectPhone?: string, rendezVousSourceId?: number) => {

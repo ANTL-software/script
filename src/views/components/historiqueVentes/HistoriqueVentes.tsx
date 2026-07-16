@@ -1,9 +1,9 @@
 import './historiqueVentes.scss';
 
 import { useEffect } from 'react';
-import { useProspect } from '../../../hooks/useProspect';
-import Loader from '../loader/Loader';
-import ErrorMessage from '../errorMessage/ErrorMessage';
+import { useProspect } from '../../../hooks/index.ts';
+import { Loader } from '../loader/index.ts';
+import { ErrorMessage } from '../errorMessage/index.ts';
 import VenteCard from './VenteCard';
 
 export default function HistoriqueVentes() {

@@ -1,7 +1,7 @@
 import './categoryTree.scss';
 import { useState, useMemo, useCallback } from 'react';
-import type { CategorieProduit, Produit } from '../../../utils/types';
-import { filterNonEmptyCategories } from '../../../utils/scripts/utils';
+import type { CategorieProduit, Produit } from '../../../utils/types/index.ts';
+import { filterNonEmptyCategories } from '../../../utils/scripts/index.ts';
 import ProduitCard from './ProduitCard';
 import { FaChevronDown, FaChevronRight, FaFolder, FaFolderOpen, FaTag } from 'react-icons/fa';
 

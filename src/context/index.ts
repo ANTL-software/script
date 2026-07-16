@@ -1,27 +1,23 @@
-export { UserContext } from './userContext/UserContext';
-export { UserProvider } from './userContext/UserProvider';
-export type { UserContextType } from './userContext/UserContext';
+export { UserContext, UserProvider } from './userContext/index.ts';
+export type { UserContextType } from './userContext/index.ts';
 
-export { ProspectContext } from './prospectContext/ProspectContext';
-export { ProspectProvider } from './prospectContext/ProspectProvider';
-export type { ProspectContextType } from './prospectContext/ProspectContext';
+export { ProspectContext, ProspectProvider } from './prospectContext/index.ts';
+export type { ProspectContextType } from './prospectContext/index.ts';
 
-export { CampaignContext } from './campaignContext/CampaignContext';
-export { CampaignProvider } from './campaignContext/CampaignProvider';
-export type { CampaignContextType } from './campaignContext/CampaignContext';
+export { CampaignContext, CampaignProvider } from './campaignContext/index.ts';
+export type { CampaignContextType } from './campaignContext/index.ts';
 
-export { CartContext } from './cartContext/CartContext';
-export { CartProvider } from './cartContext/CartProvider';
-export type { CartContextType } from './cartContext/CartContext';
+export { CartContext, CartProvider } from './cartContext/index.ts';
+export type { CartContextType } from './cartContext/index.ts';
 
-export { AppContext } from './appContext/AppContext';
-export { AppProvider } from './appContext/AppProvider';
-export type { AppContextType, ModalType, ViewType, ToastNotification } from './appContext/AppContext';
+export { AppContext, AppProvider } from './appContext/index.ts';
+export type { AppContextType, ModalType, ViewType, ToastNotification } from './appContext/index.ts';
 
-export { ToastContext } from './toastContext/ToastContext';
-export { ToastProvider } from './toastContext/ToastProvider';
-export type { ToastContextType, Toast, ConfirmOptions } from './toastContext/ToastContext';
+export { ToastContext, ToastProvider } from './toastContext/index.ts';
+export type { ToastContextType, Toast, ConfirmOptions } from './toastContext/index.ts';
 
-export { DialerContext } from './dialerContext/DialerContext';
-export { DialerProvider } from './dialerContext/DialerProvider';
-export type { DialerContextType } from './dialerContext/DialerContext';
+export { DialerContext, DialerProvider } from './dialerContext/index.ts';
+export type { DialerContextType } from './dialerContext/index.ts';
+
+export { TwilioContext, TwilioProvider } from './twilioContext/index.ts';
+export type { TwilioContextType } from './twilioContext/index.ts';

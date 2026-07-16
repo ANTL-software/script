@@ -80,3 +80,20 @@ export interface CalendarEvent {
   resource: RendezVous;
   eventType: CalendarEventType;
 }
+
+export interface RendezVousTimeOption {
+  value: string;
+  label: string;
+}
+
+export interface RendezVousRecapData {
+  prospectLabel: string;
+  campaignLabel: string;
+  dateLabel: string;
+  heure: string;
+  interlocuteurNom: string;
+  interlocuteurRole: string;
+  telephone: string;
+  email: string;
+  notes: string;
+}

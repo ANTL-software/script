@@ -35,7 +35,14 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/A
             totalPages: 1,
           },
         };
-      }
+      },
+      post: async <T = unknown>(endpoint: string): Promise<ApiResponse<T>> => {
+        globalThis.capturedHistoryEndpoints?.push(endpoint);
+        return {
+          success: true,
+          data: { recipientEmail: 'prospect@example.com' } as T,
+        };
+      },
     }
   }
 });
@@ -55,6 +62,30 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/a
       totalPages: response.pagination?.totalPages ?? 1,
     }),
   }
+});
+
+mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/models/index.ts', {
+  namedExports: {
+    ProspectModel: class ProspectModelStub {
+      static fromJSON<T>(data: T): T {
+        return data;
+      }
+    },
+  },
+});
+
+mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/utils/scripts/index.ts', {
+  namedExports: {
+    buildQueryString: (params?: Record<string, string | number | boolean | undefined>) => {
+      if (!params) return '';
+      const searchParams = new URLSearchParams();
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) searchParams.set(key, String(value));
+      });
+      const query = searchParams.toString();
+      return query ? `?${query}` : '';
+    },
+  },
 });
 
 mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/utils/scripts/queryString.ts', {
@@ -123,4 +154,14 @@ test('RendezVousService sérialise agent et campagne pour le dashboard du jour',
   await rendezVousService.getRendezVousToday(15, 7);
 
   assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/rendez-vous/today?agent=15&campagne=7');
+});
+
+test('ProspectService conserve le endpoint catalogue et le destinataire retourné par le backend', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  const { prospectService } = await import('../../src/API/services/Prospect.service.ts');
+
+  const result = await prospectService.sendCatalogue(42);
+
+  assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/prospects/42/send-catalogue');
+  assert.deepEqual(result, { recipientEmail: 'prospect@example.com' });
 });

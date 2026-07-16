@@ -1,9 +1,7 @@
 import './loginPage.scss';
 import antlLogo from '../../../assets/antlLogo.png';
-import { useLoginForm } from '../../../hooks/useLoginForm';
-import Input from '../../components/input/Input';
-import Button from '../../components/button/Button';
-import ErrorMessage from '../../components/errorMessage/ErrorMessage';
+import { useLoginForm } from '../../../hooks/index.ts';
+import { Button, ErrorMessage, Input } from '../../components/index.ts';
 
 export default function LoginPage() {
   const {

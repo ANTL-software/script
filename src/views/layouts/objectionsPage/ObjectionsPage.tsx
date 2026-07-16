@@ -1,11 +1,9 @@
 import './objectionsPage.scss';
 import { useState } from 'react';
-import Button from '../../components/button/Button';
-import Input from '../../components/input/Input';
-import Loader from '../../components/loader/Loader';
+import { Button, Input, Loader } from '../../components/index.ts';
 import { FaCommentDots, FaChevronDown, FaChevronUp, FaSearch } from 'react-icons/fa';
-import { useObjections } from '../../../hooks/useObjections';
-import { pluralize } from '../../../utils/scripts/formatters';
+import { useObjections } from '../../../hooks/index.ts';
+import { pluralize } from '../../../utils/scripts/index.ts';
 
 export default function ObjectionsPage() {
   const {

@@ -1,177 +1,29 @@
 import './dashboardPage.scss';
-import { useEffect, useRef, useState, useMemo } from 'react';
-import { useCampaign, useDashboardData, useDialer, useNavigation, useToast } from '../../../hooks/index.ts';
-import { formatEur, formatHeure, formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
-import type { RendezVous } from '../../../utils/types/index.ts';
+import { useDashboardPage } from '../../../hooks/index.ts';
+import { formatEur } from '../../../utils/scripts/index.ts';
 import { CalendarModal, SalesGauge } from '../../components/index.ts';
 import { FaCalendarAlt } from 'react-icons/fa';
 
-function prospectLabel(rdv: RendezVous): string {
-  const p = rdv.prospect;
-  if (!p) return 'Prospect inconnu';
-  return formatProspectName({ nom: p.nom, prenom: p.prenom });
-}
-
-function getMinutesFromTimeStr(timeStr: string): number {
-  if (!timeStr) return 0;
-  const parts = timeStr.split(':');
-  const hours = parseInt(parts[0], 10) || 0;
-  const minutes = parseInt(parts[1], 10) || 0;
-  return hours * 60 + minutes;
-}
-
-function buildRappelUrl(rdv: RendezVous): string | null {
-  if (!rdv.prospect?.id_prospect) return null;
-  return `/prospect/${rdv.prospect.id_prospect}?source=rappel&rdvId=${rdv.id_rendez_vous}`;
-}
-
-function buildAssignedProspectUrl(idProspect: number, rendezVousSourceId?: number | null): string {
-  if (!rendezVousSourceId) {
-    return `/prospect/${idProspect}`;
-  }
-
-  const params = new URLSearchParams({
-    source: 'rappel',
-    rdvId: String(rendezVousSourceId),
-    autoReminder: '1',
-  });
-
-  return `/prospect/${idProspect}?${params.toString()}`;
-}
-
 export default function DashboardPage() {
-  const { navigateTo } = useNavigation();
-  const { statut, prochainProspect, clearProchainProspect, call, requestNextProspect, currentCampagneId } = useDialer();
-  const { loadCampaign, clearCampaign } = useCampaign();
-  const { showToast } = useToast();
-  const networkWarningShown = useRef(false);
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
-
-  useEffect(() => {
-    if (!currentCampagneId) {
-      clearCampaign();
-      return;
-    }
-
-    loadCampaign(currentCampagneId).catch((error: unknown) => {
-      console.error('[DASHBOARD] Erreur synchronisation campagne runtime:', error);
-    });
-  }, [clearCampaign, currentCampagneId, loadCampaign]);
-
-  // Vérification de la qualité de connexion réseau
-  useEffect(() => {
-    // Interface pour l'API Network Information (non standard)
-    interface NetworkConnection {
-      effectiveType?: string;
-      addEventListener?(event: string, listener: () => void): void;
-      removeEventListener?(event: string, listener: () => void): void;
-    }
-
-    interface NavigatorWithConnection extends Navigator {
-      connection?: NetworkConnection;
-      mozConnection?: NetworkConnection;
-      webkitConnection?: NetworkConnection;
-    }
-
-    const nav = navigator as NavigatorWithConnection;
-    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
-    if (!connection) return;
-
-    const checkConnection = () => {
-      const type = connection.effectiveType;
-      if ((type === 'slow-2g' || type === '2g') && !networkWarningShown.current) {
-        showToast('warning', 'Connexion internet faible — Qualité audio risque d\'être dégradée', 7000);
-        networkWarningShown.current = true;
-      } else if (type !== 'slow-2g' && type !== '2g') {
-        networkWarningShown.current = false;
-      }
-    };
-
-    checkConnection();
-    if (connection.addEventListener) {
-      connection.addEventListener('change', checkConnection);
-      return () => {
-        connection.removeEventListener?.('change', checkConnection);
-      };
-    }
-  }, [showToast]);
-
-  // Le pot commun déclenche un appel automatiquement.
-  // Les rappels privés remontés par la queue ouvrent seulement la fiche,
-  // pour laisser le commercial choisir le numéro comme sur un rappel manuel.
-  useEffect(() => {
-    if (!prochainProspect) return;
-    const {
-      id_prospect,
-      telephone,
-      id_campagne_assignee,
-      distribution_mode,
-      id_rendez_vous_source
-    } = prochainProspect;
-    clearProchainProspect();
-    navigateTo(buildAssignedProspectUrl(id_prospect, id_rendez_vous_source));
-    if (distribution_mode === 'rappel') {
-      return;
-    }
-    call(telephone, id_campagne_assignee ?? undefined, id_prospect);
-  }, [prochainProspect, clearProchainProspect, navigateTo, call]);
-
-  useEffect(() => {
-    if (statut !== 'disponible' || prochainProspect) {
-      return;
-    }
-
-    requestNextProspect({ showEmptyToast: false }).catch(() => {});
-
-    const intervalId = setInterval(() => {
-      requestNextProspect({ showEmptyToast: false }).catch(() => {});
-    }, 15000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [prochainProspect, requestNextProspect, statut]);
-
   const {
-    searchQuery, setSearchQuery,
-    isSearching, searchError,
-    rdvDuJour, rdvLoading,
-    stats, statsLoading,
+    searchQuery,
+    setSearchQuery,
+    isSearching,
+    searchError,
+    rendezVousItems,
+    rdvLoading,
+    stats,
+    statsLoading,
     handleSearch,
-  } = useDashboardData();
-
-  // Identifier le prochain rendez-vous de la journée pour l'auto-scroll
-  const nextRdv = useMemo(() => {
-    if (!rdvDuJour || rdvDuJour.length === 0) return null;
-
-    const now = new Date();
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-    const rdvWithMinutes = rdvDuJour.map(rdv => ({
-      rdv,
-      minutes: getMinutesFromTimeStr(rdv.heure_rdv)
-    }));
-
-    // Trier les rendez-vous par heure pour s'assurer du bon ordre
-    rdvWithMinutes.sort((a, b) => a.minutes - b.minutes);
-
-    // Trouver le premier rendez-vous dont l'heure est supérieure ou égale à l'heure actuelle
-    const upcoming = rdvWithMinutes.find(item => item.minutes >= currentMinutes);
-
-    return upcoming ? upcoming.rdv : null;
-  }, [rdvDuJour]);
-
-  const nextRdvRef = useRef<HTMLLIElement>(null);
-
-  // Auto-scroll vers le prochain rendez-vous
-  useEffect(() => {
-    if (nextRdvRef.current) {
-      nextRdvRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-      });
-    }
-  }, [nextRdv]);
+    isCalendarModalOpen,
+    openCalendar,
+    closeCalendar,
+    openRendezVous,
+    openTestProspect,
+    nextRendezVousRef,
+    isTestProspectDisabled,
+    testProspectTitle,
+  } = useDashboardPage();
 
   return (
     <main id="dashboardPage">
@@ -197,46 +49,41 @@ export default function DashboardPage() {
         <section className="dashboard__card dashboard__rdv">
           <h2 className="dashboard__section-title">
             Mes rappels du jour
-            {rdvDuJour.length > 0 && <span className="dashboard__badge">{rdvDuJour.length}</span>}
+            {rendezVousItems.length > 0 && <span className="dashboard__badge">{rendezVousItems.length}</span>}
           </h2>
 
           {rdvLoading ? (
             <p className="dashboard__loading">Chargement...</p>
-          ) : rdvDuJour.length === 0 ? (
+          ) : rendezVousItems.length === 0 ? (
             <div className="dashboard__empty-state">
               <p>Aucun rappel prévu aujourd'hui.</p>
             </div>
           ) : (
             <ul className="dashboard__rdv-list">
-              {rdvDuJour.map(rdv => {
-                const isNext = nextRdv && rdv.id_rendez_vous === nextRdv.id_rendez_vous;
-                const isRelanceVente = checkIsRelanceVente(rdv.motif, rdv.appelsSource);
-                const isCommande = !isRelanceVente && checkIsCommande(rdv.motif, rdv.appelsSource);
+              {rendezVousItems.map((item) => {
+                const { rendezVous } = item;
                 return (
                   <li
-                    key={rdv.id_rendez_vous}
-                    ref={isNext ? nextRdvRef : null}
-                    className={`dashboard__rdv-item ${isNext ? 'dashboard__rdv-item--next' : ''} ${isCommande ? 'dashboard__rdv-item--commande' : ''} ${isRelanceVente ? 'dashboard__rdv-item--relance-vente' : ''}`}
-                    onClick={() => {
-                      const url = buildRappelUrl(rdv);
-                      if (url) navigateTo(url);
-                    }}
+                    key={rendezVous.id_rendez_vous}
+                    ref={item.isNext ? nextRendezVousRef : null}
+                    className={`dashboard__rdv-item ${item.isNext ? 'dashboard__rdv-item--next' : ''} ${item.isCommande ? 'dashboard__rdv-item--commande' : ''} ${item.isRelanceVente ? 'dashboard__rdv-item--relance-vente' : ''}`}
+                    onClick={() => openRendezVous(item.url)}
                   >
-                    <div className="dashboard__rdv-heure">{formatHeure(rdv.heure_rdv)}</div>
+                    <div className="dashboard__rdv-heure">{item.heureLabel}</div>
                     <div className="dashboard__rdv-info">
                       <span className="dashboard__rdv-nom">
-                        {prospectLabel(rdv)}
-                        {isCommande && (
+                        {item.prospectLabel}
+                        {item.isCommande && (
                           <span className="dashboard__rdv-badge-commande">Commande à établir</span>
                         )}
-                        {isRelanceVente && (
+                        {item.isRelanceVente && (
                           <span className="dashboard__rdv-badge-relance">Relance vente conclue</span>
                         )}
                       </span>
-                      {rdv.prospect?.telephone && (
-                        <span className="dashboard__rdv-tel">{rdv.prospect.telephone}</span>
+                      {rendezVous.prospect?.telephone && (
+                        <span className="dashboard__rdv-tel">{rendezVous.prospect.telephone}</span>
                       )}
-                      {rdv.motif && <span className="dashboard__rdv-motif">{rdv.motif}</span>}
+                      {rendezVous.motif && <span className="dashboard__rdv-motif">{rendezVous.motif}</span>}
                     </div>
                   </li>
                 );
@@ -253,7 +100,7 @@ export default function DashboardPage() {
           </div>
           <button
             className="dashboard__calendar-btn"
-            onClick={() => setIsCalendarModalOpen(true)}
+            onClick={openCalendar}
           >
             Afficher le calendrier
           </button>
@@ -320,24 +167,16 @@ export default function DashboardPage() {
       {/* Bouton Utilisateur TEST en bas à gauche */}
       <button
         className="dashboard__test-btn"
-        onClick={() => {
-          if (!currentCampagneId) {
-            showToast('warning', 'Chargement de votre campagne en cours. Reessayez dans un instant.');
-            return;
-          }
-
-          // Le contexte dialer conserve la campagne runtime de l'agent.
-          navigateTo('/prospect/1?test=true');
-        }}
-        disabled={!currentCampagneId}
-        title={currentCampagneId ? 'Ouvrir la fiche de formation dans votre campagne active' : 'Chargement de la campagne active'}
+        onClick={openTestProspect}
+        disabled={isTestProspectDisabled}
+        title={testProspectTitle}
       >
         Utilisateur TEST
       </button>
 
       <CalendarModal
         isOpen={isCalendarModalOpen}
-        onClose={() => setIsCalendarModalOpen(false)}
+        onClose={closeCalendar}
       />
     </main>
   );

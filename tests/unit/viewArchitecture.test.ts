@@ -96,6 +96,16 @@ test('les views ne dépendent jamais directement des services contexts ou du rou
   assert.deepEqual(violations, []);
 });
 
+test('DashboardPage délègue toute son orchestration au hook dédié', async () => {
+  const dashboardPath = path.join(LAYOUTS_ROOT, 'dashboardPage', 'DashboardPage.tsx');
+  const source = await readFile(dashboardPath, 'utf8');
+
+  assert.equal(source.includes('useDashboardPage'), true);
+  assert.equal(/\buse(?:Effect|Memo|Ref|State)\b/.test(source), false);
+  assert.equal(/\b(?:useCampaign|useDialer|useNavigation|useToast|useDashboardData)\b/.test(source), false);
+  assert.equal(/\b(?:requestNextProspect|loadCampaign|clearProchainProspect)\b/.test(source), false);
+});
+
 test('les imports publics des views passent par leur index.ts', async () => {
   const files = (await listFiles(VIEWS_ROOT)).filter((file) => /\.tsx?$/.test(file));
   const publicLayerMarkers = ['/hooks/', '/utils/types/', '/utils/scripts/', '/utils/constants/'];

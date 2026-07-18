@@ -482,6 +482,7 @@ script/
 │   │   ├── useLoginForm.ts        # Login form logic (validation, rate limiting)
 │   │   ├── useRendezVous.ts       # Calendar events from RendezVous
 │   │   ├── useDashboardData.ts    # Dashboard data loading
+│   │   ├── useDashboardPage.ts    # Dashboard orchestration (runtime campaign, queue, navigation, UI state)
 │   │   ├── useLandingPage.ts      # Landing page orchestration
 │   │   ├── useCallClosing.ts      # Call closing flow
 │   │   ├── useOrderConfirmation.ts # Order confirmation flow
@@ -1089,6 +1090,20 @@ const {
 } = useDashboardData();
 ```
 
+### useDashboardPage()
+
+```typescript
+const {
+  rendezVousItems,
+  stats,
+  handleSearch,
+  openRendezVous,
+  openTestProspect,
+} = useDashboardPage();
+```
+
+Ce hook centralise l'orchestration du dashboard : synchronisation de la campagne runtime, consommation et polling de la queue, alerte de connexion faible, navigation des rappels et garde du prospect TEST. `DashboardPage.tsx` reste un layout de présentation pure.
+
 ---
 
 ## 🎨 Composants UI Réutilisables
@@ -1348,6 +1363,8 @@ class ClosingService {
 
 Stocké dans `localStorage` pour survivre à un refresh de page. Bloque le logout si un closing est en attente.
 
+Les notes de closing doivent aussi rester saisissables et conservées localement lorsqu'aucun `idAppel` n'est encore disponible (closing manuel ou état transitoire). L'absence d'identifiant interdit uniquement la persistance API immédiate ; elle ne doit jamais rendre le champ de notes inopérant ni effacer la saisie.
+
 ---
 
 ## ⚡ Performance et Optimisations
@@ -1461,6 +1478,8 @@ Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :
 
 | Date | Modification | Auteur |
 |------|--------------|--------|
+| 2026-07-18 | Correction et couverture du brouillon de notes pour les closings manuels sans idAppel | AI Agent |
+| 2026-07-17 | Extraction de l'orchestration de DashboardPage vers useDashboardPage et helpers testables | AI Agent |
 | 2026-04-25 | Contexte métier global : flux agent complet (dispo manuel, closing obligatoire, RDV manuel), vente sans CB | AI Agent |
 | 2026-04-23 | Ajout Sprint C : UX erreurs bloquantes, surveillance ICE, stats WebRTC, timeout SIP | AI Agent |
 | 2026-04-23 | Ajout services API complets, hooks, composants métier, flux vendeur, restrictions | AI Agent |
@@ -1596,4 +1615,4 @@ if (nouveauStatut === 'disponible' && !sipConnected) { // sipConnected représen
 
 ---
 
-*AGENTS.md v1.3 - Last updated: 2026-06-04*
+*AGENTS.md v1.4 - Last updated: 2026-07-18*

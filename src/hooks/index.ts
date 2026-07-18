@@ -9,6 +9,7 @@ export { useAlert } from './useAlert';
 export { useDialer } from './useDialer';
 export { useAgentCalendar } from './useAgentCalendar';
 export { useDashboardData } from './useDashboardData';
+export { useDashboardPage } from './useDashboardPage.ts';
 export { useLoginForm } from './useLoginForm';
 export { useCallClosing } from './useCallClosing';
 export { useCallNotesDraft } from './useCallNotesDraft';

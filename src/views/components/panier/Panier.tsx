@@ -1,8 +1,8 @@
 import './panier.scss';
-import { useCart, useToast } from '../../../hooks';
-import { formatCurrency } from '../../../utils/scripts/utils';
+import { useCart, useToast } from '../../../hooks/index.ts';
+import { formatCurrency } from '../../../utils/scripts/index.ts';
 import PanierItem from './PanierItem';
-import Button from '../button/Button';
+import { Button } from '../button/index.ts';
 import { FaShoppingCart, FaTrash, FaCheck } from 'react-icons/fa';
 
 interface PanierProps {

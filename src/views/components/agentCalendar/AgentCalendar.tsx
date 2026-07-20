@@ -1,24 +1,21 @@
 import './agentCalendar.scss';
 import { useState, useCallback, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import type { View, NavigateAction, SlotInfo } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay, startOfDay, isBefore, parseISO } from 'date-fns';
+import type { View, SlotInfo } from 'react-big-calendar';
+import { format, parse, startOfWeek, getDay, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTrash, FaUser, FaExclamationTriangle } from 'react-icons/fa';
-import type { CalendarEvent } from '../../../utils/types';
-import { CALENDAR_MESSAGES, RENDEZ_VOUS_KIND_COLORS, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants';
-import { rendezVousService } from '../../../API/services';
-import type { UpdateRendezVousData, CreateRendezVousData, RendezVousStatut } from '../../../utils/types/rendezVous.types';
-import { getErrorMessage, formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
-import Loader from '../loader/Loader';
-import CalendarTooltip from '../calendarTooltip/CalendarTooltip';
-import RendezVousDetailsModal from '../rendezVousDetailsModal/RendezVousDetailsModal';
-import RendezVousModal from '../rendezVousModal/RendezVousModal';
-import ConfirmModal from '../confirmModal/ConfirmModal';
+import type { CalendarEvent, RendezVousStatut } from '../../../utils/types/index.ts';
+import { CALENDAR_MESSAGES, RENDEZ_VOUS_KIND_COLORS, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants/index.ts';
+import { formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import { Loader } from '../loader/index.ts';
+import { CalendarTooltip } from '../calendarTooltip/index.ts';
+import { RendezVousDetailsModal } from '../rendezVousDetailsModal/index.ts';
+import { RendezVousModal } from '../rendezVousModal/index.ts';
+import { ConfirmModal } from '../confirmModal/index.ts';
 import { createPortal } from 'react-dom';
-import { useToast, useUser, useCampaign } from '../../../hooks';
-import { useAgentCalendar } from '../../../hooks/useAgentCalendar';
+import { useAgentCalendar } from '../../../hooks/index.ts';
 
 const locales = { 'fr': fr };
 
@@ -47,22 +44,18 @@ export default function AgentCalendar({
   isReadOnly = false,
   selectedCallStatus = null,
 }: AgentCalendarProps) {
-  const { user } = useUser();
-  const { currentCampaign } = useCampaign();
-  const { showToast } = useToast();
-  const resolvedCampagneId = campagneId ?? currentCampaign?.id_campagne ?? null;
-
   const {
-    today,
     events,
     isLoading,
     myProspectRdvs,
     otherAgentRdvList,
     nextMyProspectRdv,
-    currentRendezVousSource,
-    shouldRescheduleSourceRendezVous,
-    loadRendezVous,
-  } = useAgentCalendar(prospectId, resolvedCampagneId);
+    resolvedCampagneId,
+    canSelectSlot,
+    createRendezVous,
+    updateRendezVous,
+    deleteRendezVous,
+  } = useAgentCalendar(prospectId, campagneId ?? null);
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [currentView, setCurrentView] = useState<View>('week');
@@ -76,7 +69,7 @@ export default function AgentCalendar({
   const [calendarKey, setCalendarKey] = useState(0);
   const [confirmDelete, setConfirmDelete] = useState<{ event: CalendarEvent | null }>({ event: null });
 
-  const handleNavigate = useCallback((newDate: Date, _view: View, _action: NavigateAction) => {
+  const handleNavigate = useCallback((newDate: Date) => {
     setCurrentDate(newDate);
   }, []);
 
@@ -144,16 +137,11 @@ export default function AgentCalendar({
   }, []);
 
   const handleSelectSlot = useCallback(({ start, end }: SlotInfo) => {
-    if (isReadOnly || !prospectId) return;
-    // Ne pas permettre de prendre un rdv dans le passé
-    if (isBefore(startOfDay(start), today)) {
-      showToast('error', 'Impossible de prendre un rendez-vous dans le passé');
-      return;
-    }
+    if (!canSelectSlot(start, isReadOnly)) return;
     setSelectedSlot({ start, end });
     setSelectedRendezVous(null);
     setIsRdvModalOpen(true);
-  }, [isReadOnly, prospectId, today, showToast]);
+  }, [canSelectSlot, isReadOnly]);
 
   const handleCloseDetailsModal = useCallback(() => {
     setIsDetailsModalOpen(false);
@@ -171,77 +159,31 @@ export default function AgentCalendar({
   }, []);
 
   const handleCreateRendezVous = useCallback(async (data: { date: Date }) => {
-    if (!user?.id_employe || !prospectId) return;
-    if (!resolvedCampagneId) {
-      showToast('error', 'Impossible de planifier sans campagne associée');
-      return;
-    }
-    try {
-      const dateRdv = format(data.date, 'yyyy-MM-dd');
-      const heureRdv = format(data.date, 'HH:mm:ss');
-
-      if (shouldRescheduleSourceRendezVous && currentRendezVousSource) {
-        const updateData: UpdateRendezVousData = {
-          date_rdv: dateRdv,
-          heure_rdv: heureRdv,
-          statut: 'reporte',
-        };
-        await rendezVousService.updateRendezVous(currentRendezVousSource.id_rendez_vous, updateData);
-        showToast('success', 'Rendez-vous replanifie avec succès');
-      } else {
-        const createData: CreateRendezVousData = {
-          id_agent: user.id_employe,
-          id_prospect: prospectId,
-          id_campagne: resolvedCampagneId,
-          date_rdv: dateRdv,
-          heure_rdv: heureRdv,
-        };
-        await rendezVousService.createRendezVous(createData);
-        showToast('success', 'Rendez-vous planifié avec succès');
-      }
+    if (await createRendezVous(data.date)) {
       setIsRdvModalOpen(false);
       setSelectedSlot(null);
-      await loadRendezVous();
       setCalendarKey(prev => prev + 1);
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la planification'));
     }
-  }, [user?.id_employe, prospectId, resolvedCampagneId, showToast, loadRendezVous, shouldRescheduleSourceRendezVous, currentRendezVousSource]);
+  }, [createRendezVous]);
 
   const handleUpdateRendezVous = useCallback(async (data: { date: Date; statut: RendezVousStatut }) => {
     if (!selectedRendezVous) return;
-    try {
-      const updateData: UpdateRendezVousData = {
-        date_rdv: format(data.date, 'yyyy-MM-dd'),
-        heure_rdv: format(data.date, 'HH:mm:ss'),
-        statut: data.statut,
-      };
-
-      await rendezVousService.updateRendezVous(selectedRendezVous.id_rendez_vous, updateData);
-      showToast('success', 'Rendez-vous modifié');
+    if (await updateRendezVous(selectedRendezVous.id_rendez_vous, data.date, data.statut)) {
       setIsRdvModalOpen(false);
       setIsDetailsModalOpen(false);
       setSelectedRendezVous(null);
-      await loadRendezVous();
       setCalendarKey(prev => prev + 1);
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la modification'));
     }
-  }, [selectedRendezVous, showToast, loadRendezVous]);
+  }, [selectedRendezVous, updateRendezVous]);
 
   const handleDeleteRendezVous = useCallback(async () => {
     if (!selectedRendezVous) return;
-    try {
-      await rendezVousService.deleteRendezVous(selectedRendezVous.id_rendez_vous);
-      showToast('success', 'Rendez-vous supprimé');
+    if (await deleteRendezVous(selectedRendezVous.id_rendez_vous)) {
       setIsDetailsModalOpen(false);
       setSelectedRendezVous(null);
-      await loadRendezVous();
       setCalendarKey(prev => prev + 1);
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
     }
-  }, [selectedRendezVous, showToast, loadRendezVous]);
+  }, [deleteRendezVous, selectedRendezVous]);
 
   const handleQuickDelete = useCallback((event: CalendarEvent, e: React.MouseEvent) => {
     e.stopPropagation(); // Empêche l'ouverture du modal de détails
@@ -253,16 +195,11 @@ export default function AgentCalendar({
 
   const handleConfirmDelete = useCallback(async () => {
     if (!confirmDelete.event) return;
-    try {
-      await rendezVousService.deleteRendezVous(confirmDelete.event.resource.id_rendez_vous);
-      showToast('success', 'Rendez-vous supprimé');
+    if (await deleteRendezVous(confirmDelete.event.resource.id_rendez_vous)) {
       setConfirmDelete({ event: null });
-      await loadRendezVous();
       setCalendarKey(prev => prev + 1);
-    } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors de la suppression'));
     }
-  }, [confirmDelete, showToast, loadRendezVous]);
+  }, [confirmDelete, deleteRendezVous]);
 
   const handleCancelDelete = useCallback(() => {
     setConfirmDelete({ event: null });

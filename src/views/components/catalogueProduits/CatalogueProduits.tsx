@@ -1,16 +1,16 @@
 import './catalogueProduits.scss';
 import { useState, useMemo, useEffect } from 'react';
-import { useCampaign, useCart, useToast } from '../../../hooks';
-import type { Produit } from '../../../utils/types';
+import { useCampaign, useCart, useToast } from '../../../hooks/index.ts';
+import type { Produit } from '../../../utils/types/index.ts';
 import ProduitCard from './ProduitCard';
 import CataloguePaniers from './CataloguePaniers';
 import CategoryTree from './CategoryTree';
-import Loader from '../loader/Loader';
-import ErrorMessage from '../errorMessage/ErrorMessage';
-import Input from '../input/Input';
-import Button from '../button/Button';
+import { Loader } from '../loader/index.ts';
+import { ErrorMessage } from '../errorMessage/index.ts';
+import { Input } from '../input/index.ts';
+import { Button } from '../button/index.ts';
 import { FaList, FaSitemap, FaSearch } from 'react-icons/fa';
-import { getCampaignUiConfig } from '../../../utils/scripts/campaignVariants';
+import { getCampaignUiConfig } from '../../../utils/scripts/index.ts';
 
 type ViewMode = 'tree' | 'search';
 

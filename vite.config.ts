@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import { readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
@@ -40,14 +39,6 @@ const injectVersion = () => {
 export default defineConfig({
   plugins: [
     react(),
-    nodePolyfills({
-      include: ['events', 'util'],
-      globals: {
-        process: false,
-        global: false,
-        Buffer: false,
-      },
-    }),
     injectVersion(),
   ],
   base: "/",
@@ -65,7 +56,9 @@ export default defineConfig({
     assetsDir: 'assets',
   },
   server: {
-    port: 5173,
+    host: '127.0.0.1',
+    port: 5174,
+    strictPort: true,
   },
   define: {
     __DEV__: JSON.stringify(process.env.NODE_ENV === 'development'),

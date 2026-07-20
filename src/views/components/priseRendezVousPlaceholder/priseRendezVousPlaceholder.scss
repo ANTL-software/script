@@ -1,289 +1,272 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-@use 'sass:color';
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
+@use "sass:color";
 .prise-rdv-form {
   width: 100%;
   height: 100%;
   padding: vars.$spacing-md;
   overflow-y: auto;
-  @include mix.custom-scrollbar;
+  @include mix.custom-scrollbar(".prise-rdv-form");
   display: flex;
   flex-direction: column;
   gap: vars.$spacing-md;
-
-  &__header {
-    border-bottom: 1px solid vars.$colorGray200;
-    padding-bottom: vars.$spacing-sm;
-
-    h2 {
-      font-size: vars.$fontSize-lg;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorBlack;
-      margin: 0 0 2px 0;
-    }
-
-    p {
-      font-size: vars.$fontSize-xs;
-      color: vars.$colorGray500;
-      margin: 0;
-    }
-  }
-
-  &__form {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-  }
-
-  .form-card {
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray200;
-    border-radius: vars.$radius-md;
-    padding: vars.$spacing-md;
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-    transition: border-color vars.$transition-base, box-shadow vars.$transition-base;
-
-    &:hover {
-      border-color: vars.$colorGray300;
-      box-shadow: vars.$shadow-sm;
-    }
-
-    &__title {
-      font-size: vars.$fontSize-sm;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorPrimary;
-      margin: 0 0 2px 0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-left: 3px solid vars.$colorPrimary;
-      padding-left: vars.$spacing-xs;
-    }
-  }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: vars.$spacing-sm;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-
-    label {
-      font-size: vars.$fontSize-xs;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorGray700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-
-      .required {
-        color: vars.$colorDanger;
-        margin-left: 2px;
-      }
-    }
-
-    input, textarea {
-      font-family: vars.$fontFamilyPrimary;
-      font-size: vars.$fontSize-sm;
-      color: vars.$colorBlack;
-      padding: vars.$spacing-xs vars.$spacing-sm;
-      height: 32px;
-      background: vars.$colorGray100;
-      border: 1px solid vars.$colorGray200;
-      border-radius: vars.$radius-sm;
-      transition: all vars.$transition-base;
-      outline: none;
-
-      &:focus {
-        background: vars.$colorWhite;
-        border-color: vars.$colorPrimary;
-        box-shadow: 0 0 0 3px vars.$colorPrimaryFocus;
-      }
-
-      &::placeholder {
-        color: vars.$colorGray500;
-      }
-
-      &:disabled {
-        background: vars.$colorGray200;
-        color: vars.$colorGray500;
-        cursor: not-allowed;
-      }
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 80px;
-      height: 80px;
-    }
-
-    &--error {
-      input, textarea {
-        border-color: vars.$colorDanger;
-        background: color.adjust(vars.$colorDanger, $lightness: 48%);
-
-        &:focus {
-          border-color: vars.$colorDanger;
-          box-shadow: 0 0 0 3px rgba(vars.$colorDanger, 0.2);
-        }
-      }
-
-      .react-select-error-container > div {
-        border-color: vars.$colorDanger !important;
-        background-color: color.adjust(vars.$colorDanger, $lightness: 48%) !important;
-      }
-
-      .error-message {
-        font-size: 10px;
-        color: vars.$colorDanger;
-        font-weight: vars.$fontWeight-medium;
-        margin-top: 1px;
-      }
-    }
-  }
-
-  // Double sélecteur d'heures (Select slots + Saisie manuelle synchrone)
-  .time-picker-container {
-    display: flex;
-    align-items: flex-start;
-    gap: vars.$spacing-md;
-    width: 100%;
-
-    .select-wrapper {
-      flex: 1.5;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 130px;
-    }
-
-    .manual-time-wrapper {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 110px;
-
-      label {
-        font-size: vars.$fontSize-xs;
-        font-weight: vars.$fontWeight-semibold;
-        color: vars.$colorGray700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
-      
-      .inputs-row {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        
-        .time-num-input {
-          width: 45px;
-          text-align: center;
-          padding: 0;
-          height: 32px;
-          -moz-appearance: textfield;
-          
-          &::-webkit-outer-spin-button,
-          &::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-          }
-        }
-        
-        .separator {
-          font-weight: vars.$fontWeight-bold;
-          color: vars.$colorGray500;
-          font-size: vars.$fontSize-base;
-        }
-      }
-    }
-  }
-
-  &__actions {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: vars.$spacing-md;
-    border-top: 1px solid vars.$colorGray200;
-    padding-top: vars.$spacing-sm;
-    margin-top: 0;
-  }
-
-  .btn-submit {
-    @include mix.button-base;
-    display: inline-flex;
-    align-items: center;
-    gap: vars.$spacing-xs;
-    padding: vars.$spacing-xs vars.$spacing-md;
-    height: 32px;
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-semibold;
-    background: vars.$colorPrimary;
-    border: 1px solid vars.$colorPrimary;
-    color: vars.$colorWhite;
-    border-radius: vars.$radius-sm;
-    transition: all vars.$transition-base;
-
-    &:hover:not(:disabled) {
-      background: vars.$colorPrimaryHover;
-      border-color: vars.$colorPrimaryHover;
-      box-shadow: vars.$shadow-sm;
-    }
-
-    &:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    &:disabled {
-      background: vars.$colorPrimaryMuted;
-      border-color: vars.$colorPrimaryMuted;
-      color: rgba(vars.$colorWhite, 0.8);
-      cursor: not-allowed;
-    }
-
-    .spinner {
-      width: 12px;
-      height: 12px;
-      border: 2px solid rgba(vars.$colorWhite, 0.3);
-      border-top-color: vars.$colorWhite;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-  }
-
-  .btn-reset {
-    @include mix.button-base;
-    padding: vars.$spacing-xs vars.$spacing-md;
-    height: 32px;
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-semibold;
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray300;
-    color: vars.$colorGray700;
-    border-radius: vars.$radius-sm;
-    transition: all vars.$transition-base;
-
-    &:hover:not(:disabled) {
-      background: vars.$colorGray100;
-      border-color: vars.$colorGray500;
-      color: vars.$colorBlack;
-    }
-
-    &:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-  }
+}
+.prise-rdv-form__header {
+  border-bottom: 1px solid vars.$colorGray200;
+  padding-bottom: vars.$spacing-sm;
+}
+.prise-rdv-form__header h2 {
+  font-size: vars.$fontSize-lg;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+  margin: 0 0 2px 0;
+}
+.prise-rdv-form__header p {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  margin: 0;
+}
+.prise-rdv-form__form {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+}
+.prise-rdv-form .form-card {
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-md;
+  padding: vars.$spacing-md;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  transition:
+    border-color vars.$transition-base,
+    box-shadow vars.$transition-base;
+}
+.prise-rdv-form .form-card:hover {
+  border-color: vars.$colorGray300;
+  box-shadow: vars.$shadow-sm;
+}
+.prise-rdv-form .form-card__title {
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorPrimary;
+  margin: 0 0 2px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-left: 3px solid vars.$colorPrimary;
+  padding-left: vars.$spacing-xs;
+}
+.prise-rdv-form .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: vars.$spacing-sm;
+}
+.prise-rdv-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.prise-rdv-form .form-group label {
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.prise-rdv-form .form-group label .required {
+  color: vars.$colorDanger;
+  margin-left: 2px;
+}
+.prise-rdv-form .form-group input,
+.prise-rdv-form .form-group textarea {
+  font-family: vars.$fontFamilyPrimary;
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorBlack;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  height: 32px;
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-sm;
+  transition: all vars.$transition-base;
+  outline: none;
+}
+.prise-rdv-form .form-group input:focus,
+.prise-rdv-form .form-group textarea:focus {
+  background: vars.$colorWhite;
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 0 3px vars.$colorPrimaryFocus;
+}
+.prise-rdv-form .form-group input::placeholder,
+.prise-rdv-form .form-group textarea::placeholder {
+  color: vars.$colorGray500;
+}
+.prise-rdv-form .form-group input:disabled,
+.prise-rdv-form .form-group textarea:disabled {
+  background: vars.$colorGray200;
+  color: vars.$colorGray500;
+  cursor: not-allowed;
+}
+.prise-rdv-form .form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+  height: 80px;
+}
+.prise-rdv-form .form-group--error input,
+.prise-rdv-form .form-group--error textarea {
+  border-color: vars.$colorDanger;
+  background: color.adjust(vars.$colorDanger, $lightness: 48%);
+}
+.prise-rdv-form .form-group--error input:focus,
+.prise-rdv-form .form-group--error textarea:focus {
+  border-color: vars.$colorDanger;
+  box-shadow: 0 0 0 3px rgba(vars.$colorDanger, 0.2);
+}
+.prise-rdv-form .form-group--error .react-select-error-container > div {
+  border-color: vars.$colorDanger !important;
+  background-color: color.adjust(vars.$colorDanger, $lightness: 48%) !important;
+}
+.prise-rdv-form .form-group--error .error-message {
+  font-size: 10px;
+  color: vars.$colorDanger;
+  font-weight: vars.$fontWeight-medium;
+  margin-top: 1px;
+}
+// Double sélecteur d'heures (Select slots + Saisie manuelle synchrone)
+.prise-rdv-form .time-picker-container {
+  display: flex;
+  align-items: flex-start;
+  gap: vars.$spacing-md;
+  width: 100%;
+}
+.prise-rdv-form .time-picker-container .select-wrapper {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 130px;
+}
+.prise-rdv-form .time-picker-container .manual-time-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 110px;
+}
+.prise-rdv-form .time-picker-container .manual-time-wrapper label {
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.prise-rdv-form .time-picker-container .manual-time-wrapper .inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.prise-rdv-form
+  .time-picker-container
+  .manual-time-wrapper
+  .inputs-row
+  .time-num-input {
+  width: 45px;
+  text-align: center;
+  padding: 0;
+  height: 32px;
+  -moz-appearance: textfield;
+}
+.prise-rdv-form
+  .time-picker-container
+  .manual-time-wrapper
+  .inputs-row
+  .time-num-input::-webkit-outer-spin-button,
+.prise-rdv-form
+  .time-picker-container
+  .manual-time-wrapper
+  .inputs-row
+  .time-num-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.prise-rdv-form
+  .time-picker-container
+  .manual-time-wrapper
+  .inputs-row
+  .separator {
+  font-weight: vars.$fontWeight-bold;
+  color: vars.$colorGray500;
+  font-size: vars.$fontSize-base;
+}
+.prise-rdv-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: vars.$spacing-md;
+  border-top: 1px solid vars.$colorGray200;
+  padding-top: vars.$spacing-sm;
+  margin-top: 0;
+}
+.prise-rdv-form .btn-submit {
+  @include mix.button-base(".prise-rdv-form .btn-submit");
+  display: inline-flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  padding: vars.$spacing-xs vars.$spacing-md;
+  height: 32px;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-semibold;
+  background: vars.$colorPrimary;
+  border: 1px solid vars.$colorPrimary;
+  color: vars.$colorWhite;
+  border-radius: vars.$radius-sm;
+  transition: all vars.$transition-base;
+}
+.prise-rdv-form .btn-submit:hover:not(:disabled) {
+  background: vars.$colorPrimaryHover;
+  border-color: vars.$colorPrimaryHover;
+  box-shadow: vars.$shadow-sm;
+}
+.prise-rdv-form .btn-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.prise-rdv-form .btn-submit:disabled {
+  background: vars.$colorPrimaryMuted;
+  border-color: vars.$colorPrimaryMuted;
+  color: rgba(vars.$colorWhite, 0.8);
+  cursor: not-allowed;
+}
+.prise-rdv-form .btn-submit .spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(vars.$colorWhite, 0.3);
+  border-top-color: vars.$colorWhite;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+.prise-rdv-form .btn-reset {
+  @include mix.button-base(".prise-rdv-form .btn-reset");
+  padding: vars.$spacing-xs vars.$spacing-md;
+  height: 32px;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-semibold;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray300;
+  color: vars.$colorGray700;
+  border-radius: vars.$radius-sm;
+  transition: all vars.$transition-base;
+}
+.prise-rdv-form .btn-reset:hover:not(:disabled) {
+  background: vars.$colorGray100;
+  border-color: vars.$colorGray500;
+  color: vars.$colorBlack;
+}
+.prise-rdv-form .btn-reset:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.prise-rdv-form .btn-reset:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @keyframes spin {

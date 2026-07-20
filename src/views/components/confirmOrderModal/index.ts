@@ -1,1 +1,1 @@
-export { default } from './ConfirmOrderModal';
+export { default, default as ConfirmOrderModal } from './ConfirmOrderModal.tsx';

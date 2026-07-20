@@ -10,7 +10,11 @@ export { LeadService, leadService } from './Lead.service';
 export { RendezVousService, rendezVousService } from './RendezVous.service';
 export { ClosingService, closingService } from './Closing.service';
 export type { PendingClosing } from './Closing.service';
-export { CallNotesDraftService, callNotesDraftService } from './CallNotesDraft.service';
+export {
+  CALL_NOTES_DRAFT_CHANGED_EVENT,
+  CallNotesDraftService,
+  callNotesDraftService,
+} from './CallNotesDraft.service';
 export { DialerService, dialerService } from './Dialer.service';
 export { TwilioService, twilioService } from './Twilio.service';
 export type { TwilioAccessTokenResponse, TwilioCallLogRequest, TwilioCallLogResponse } from './Twilio.service';

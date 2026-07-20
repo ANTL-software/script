@@ -1,18 +1,35 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useProspect, useCampaign, useApp, useCart, useDialer } from './index';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useProspect, useCampaign, useApp, useCart, useDialer, useToast } from './index';
 import { closingService, type PendingClosing } from '../API/services';
+import { prospectService } from '../API/services/index.ts';
 import { formatProspectName } from '../utils/scripts/formatters';
-import { getCampaignUiConfig, getCampaignVariant } from '../utils/scripts/campaignVariants';
+import {
+  type ActionButtonId,
+  getCampaignUiConfig,
+  getCampaignVariant,
+} from '../utils/scripts/campaignVariants';
 import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
 
-export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
+export function useLandingPage() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { currentProspect, isLoading, error, loadProspect, clearError } = useProspect();
+  const [searchParams] = useSearchParams();
+  const {
+    currentProspect,
+    fullName: prospectFullName,
+    isLoading,
+    error,
+    loadProspect,
+    clearError,
+  } = useProspect();
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
   const { clearCart } = useCart();
   const { statut, callDuration, currentCampagneId, currentAppelId, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
+  const { showToast, confirm } = useToast();
+  const isTestMode = searchParams.get('test') === 'true';
+  const campaignUi = getCampaignUiConfig(currentCampaign);
 
   // Log le mode test pour débogage (sera utilisé pour désactiver le dialer si nécessaire)
   if (isTestMode) {
@@ -24,10 +41,11 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
   const previousProspectIdRef = useRef<number | null>(null);
   const wasCallActiveRef = useRef<boolean>(false);
 
-  // Détecter si un appel a été actif (sortant ou en cours) pendant la visite de cette fiche
-  if (statut === 'en_appel' || statut === 'appel_sortant' || statut === 'qualification_en_cours' || statut === 'svi_a_naviguer') {
-    wasCallActiveRef.current = true;
-  }
+  useEffect(() => {
+    if (['en_appel', 'appel_sortant', 'qualification_en_cours', 'svi_a_naviguer'].includes(statut)) {
+      wasCallActiveRef.current = true;
+    }
+  }, [statut]);
 
   // Réinitialise la vue et le panier à chaque changement de prospect
   useEffect(() => {
@@ -113,6 +131,40 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel
   }, [statut, currentProspect, currentCampaign, currentCampagneId, currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration]);
 
+  useEffect(() => {
+    if (
+      searchParams.get('test') === 'closing'
+      && currentProspect
+      && currentCampaign
+      && !closingService.hasPending()
+    ) {
+      closingService.savePending({
+        prospectId: currentProspect.id_prospect,
+        prospectName: `${currentProspect.nom} ${currentProspect.prenom || ''}`.trim(),
+        campagneId: currentCampaign.id_campagne,
+        campaignVariant: getCampaignUiConfig(currentCampaign).variant,
+        dureeAppel: 45,
+      });
+      console.log('[DEBUG] Closing modal test activé via URL');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [currentCampaign, currentProspect, searchParams]);
+
+  useEffect(() => {
+    const isAutoReminder = searchParams.get('autoReminder') === '1';
+    const isRappelSource = searchParams.get('source') === 'rappel';
+
+    if (!isAutoReminder || !isRappelSource || !currentProspect) return;
+
+    showToast('info', 'Rappel rendez-vous');
+    setView('historique-appels');
+
+    const nextParams = new URLSearchParams({ source: 'rappel' });
+    const rdvId = searchParams.get('rdvId');
+    if (rdvId) nextParams.set('rdvId', rdvId);
+    window.history.replaceState({}, '', `${window.location.pathname}?${nextParams.toString()}`);
+  }, [currentProspect, searchParams, setView, showToast]);
+
   const handlePlanAppels = () => {
     const campagneId = currentCampaign?.id_campagne ?? currentCampagneId;
     if (!campagneId) return;
@@ -144,9 +196,90 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     // Le closing est sauvegardé globalement lors de la confirmation de la commande.
   };
 
+  const sendCatalogue = async (): Promise<void> => {
+    if (!currentProspect) {
+      showToast('error', 'Aucun prospect chargé');
+      return;
+    }
+
+    if (!currentProspect.email) {
+      showToast('warning', "Le prospect n'a pas d'adresse email renseignee");
+      return;
+    }
+
+    try {
+      const result = await prospectService.sendCatalogue(currentProspect.id_prospect);
+      await loadProspect(currentProspect.id_prospect);
+      showToast('success', `Catalogue envoyé à ${result.recipientEmail}`);
+    } catch (sendError) {
+      showToast(
+        'error',
+        sendError instanceof Error ? sendError.message : "Erreur lors de l'envoi du catalogue",
+      );
+    }
+  };
+
+  const handleTarifsClick = async (): Promise<void> => {
+    const recipientEmail = currentProspect?.email?.trim();
+    const confirmed = await confirm({
+      title: 'Envoi du catalogue',
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer le catalogue par mail à ${recipientEmail} ?`
+        : 'Êtes-vous sûr de vouloir envoyer le catalogue par mail ?',
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (confirmed) await sendCatalogue();
+  };
+
+  const handleAgrementClick = async (): Promise<void> => {
+    const recipientEmail = currentProspect?.email?.trim();
+    const confirmed = await confirm({
+      title: "Envoi de l'agrément",
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer l'agrément par mail à ${recipientEmail} ?`
+        : "Êtes-vous sûr de vouloir envoyer l'agrément par mail ?",
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (confirmed) {
+      showToast('warning', "Aucun document d'agrément n'est encore configuré pour cet envoi");
+    }
+  };
+
+  const handleAction = (actionId: ActionButtonId): void => {
+    switch (actionId) {
+      case 'tarifs':
+        void handleTarifsClick();
+        break;
+      case 'agrement':
+        void handleAgrementClick();
+        break;
+      case 'historique-appels':
+        setView('historique-appels');
+        break;
+      case 'historique-offres':
+        setView(campaignUi.actions.find((action) => action.id === 'historique-offres')?.targetView ?? 'historique-offres');
+        break;
+      case 'rendez-vous':
+        setView('rendez-vous');
+        break;
+      case 'commande':
+        handleCommande();
+        break;
+    }
+  };
+
   return {
     currentProspect,
+    prospectFullName,
     currentCampaign,
+    campaignUi,
+    isTestMode,
     currentView,
     isLoading,
     error,
@@ -158,5 +291,6 @@ export function useLandingPage(id: string | undefined, isTestMode?: boolean) {
     handleObjections,
     handleCommande,
     handleOrderSuccess,
+    handleAction,
   };
 }

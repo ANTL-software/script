@@ -1,4 +1,4 @@
-@use '../../../utils/styles/variables' as vars;
+@use "../../../utils/styles/variables" as vars;
 
 .calendar-modal-overlay {
   position: fixed;
@@ -21,155 +21,157 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
 
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid vars.$colorGray200;
-    background: vars.$colorWhite;
+.calendar-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid vars.$colorGray200;
+  background: vars.$colorWhite;
+}
 
-    h2 {
-      margin: 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: vars.$colorGray900;
-    }
-  }
+.calendar-modal__header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: vars.$colorGray900;
+}
 
-  &__title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
+.calendar-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
 
-  &__icon {
-    color: vars.$colorPrimary;
-    font-size: 1.5rem;
-  }
+.calendar-modal__icon {
+  color: vars.$colorPrimary;
+  font-size: 1.5rem;
+}
 
-  &__close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border: none;
-    background: transparent;
-    color: vars.$colorGray500;
-    border-radius: vars.$radius-md;
-    cursor: pointer;
-    transition: all 0.15s ease;
+.calendar-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: vars.$colorGray500;
+  border-radius: vars.$radius-md;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
 
-    &:hover {
-      background: vars.$colorGray100;
-      color: vars.$colorGray700;
-    }
-  }
+.calendar-modal__close:hover {
+  background: vars.$colorGray100;
+  color: vars.$colorGray700;
+}
 
-  &__legend {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1.5rem;
-    border-bottom: 1px solid vars.$colorGray200;
-    background: vars.$colorGray100;
-    flex-wrap: wrap;
-  }
+.calendar-modal__legend {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid vars.$colorGray200;
+  background: vars.$colorGray100;
+  flex-wrap: wrap;
+}
 
-  &__legend-item {
-    padding: 0.25rem 0.75rem;
-    border-radius: vars.$radius-md;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: white;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+.calendar-modal__legend-item {
+  padding: 0.25rem 0.75rem;
+  border-radius: vars.$radius-md;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
 
-    &--planifie {
-      background: #3b82f6;
-    }
+.calendar-modal__legend-item--planifie {
+  background: #3b82f6;
+}
 
-    &--commande {
-      background: #E95420;
-    }
+.calendar-modal__legend-item--commande {
+  background: #e95420;
+}
 
-    &--relance {
-      background: #7c3aed;
-    }
+.calendar-modal__legend-item--relance {
+  background: #7c3aed;
+}
 
-    &--non-honore {
-      background: #6b7280;
-    }
-  }
+.calendar-modal__legend-item--non-honore {
+  background: #6b7280;
+}
 
-  &__legend-hint {
-    margin-left: auto;
-    font-size: 0.75rem;
-    color: vars.$colorGray500;
-    font-style: italic;
-  }
+.calendar-modal__legend-hint {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: vars.$colorGray500;
+  font-style: italic;
+}
 
-  &__loading {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    color: vars.$colorGray500;
+.calendar-modal__loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: vars.$colorGray500;
+}
 
-    p {
-      margin: 0;
-    }
-  }
+.calendar-modal__loading p {
+  margin: 0;
+}
 
-  &__calendar-wrapper {
-    flex: 1;
-    padding: 1rem 1.5rem 1.5rem;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    background: vars.$colorWhite;
+.calendar-modal__calendar-wrapper {
+  flex: 1;
+  padding: 1rem 1.5rem 1.5rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: vars.$colorWhite;
 
-    // Customisation des créneaux de 15 minutes
-    .rbc-time-view-resources .rbc-time-gutter,
-    .rbc-time-view .rbc-time-gutter {
-      width: 60px;
-    }
+  // Customisation des créneaux de 15 minutes
+}
 
-    .rbc-day-slot {
-      overflow-y: auto;
-    }
+.calendar-modal__calendar-wrapper .rbc-time-view-resources .rbc-time-gutter,
+.calendar-modal__calendar-wrapper .rbc-time-view .rbc-time-gutter {
+  width: 60px;
+}
 
-    // Amélioration de l'affichage des créneaux horaires
-    .rbc-time-slot {
-      min-height: 20px;
-    }
+.calendar-modal__calendar-wrapper .rbc-day-slot {
+  overflow-y: auto;
+}
+// Amélioration de l'affichage des créneaux horaires
 
-    // Légende plus visible pour les créneaux
-    .rbc-label {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-    }
+.calendar-modal__calendar-wrapper .rbc-time-slot {
+  min-height: 20px;
+}
+// Légende plus visible pour les créneaux
 
-    // Cacher le bouton de suppression par défaut
-    .cal-event-delete-btn {
-      display: none !important;
-    }
+.calendar-modal__calendar-wrapper .rbc-label {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+// Cacher le bouton de suppression par défaut
 
-    // Afficher le bouton uniquement dans la vue journalière
-    .rbc-day-view .cal-event-delete-btn {
-      display: flex !important;
-    }
-  }
+.calendar-modal__calendar-wrapper .cal-event-delete-btn {
+  display: none !important;
+}
+// Afficher le bouton uniquement dans la vue journalière
+
+.calendar-modal__calendar-wrapper .rbc-day-view .cal-event-delete-btn {
+  display: flex !important;
 }
 
 // Event styles
+
 .cal-event-wrapper {
   position: relative;
   display: flex !important;
@@ -209,44 +211,45 @@
   transition: background 0.15s ease;
   flex-shrink: 0;
   pointer-events: auto;
+}
 
-  &:hover {
-    background: rgb(185, 28, 28);
-  }
+.cal-event-delete-btn:hover {
+  background: rgb(185, 28, 28);
+}
 
-  &:active {
-    transform: scale(0.95);
-  }
+.cal-event-delete-btn:active {
+  transform: scale(0.95);
+}
 
-  svg {
-    font-size: 0.6rem;
-    width: 0.6rem;
-    height: 0.6rem;
-  }
+.cal-event-delete-btn svg {
+  font-size: 0.6rem;
+  width: 0.6rem;
+  height: 0.6rem;
 }
 
 .event {
   border-radius: vars.$radius-md;
+}
 
-  &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  }
+.event:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
 
-  &--planifie {
-    font-weight: 600;
-  }
+.event--planifie {
+  font-weight: 600;
+}
 
-  &--annule {
-    opacity: 0.4;
-    text-decoration: line-through;
-  }
+.event--annule {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
 
-  &--non_honore {
-    opacity: 0.85;
-  }
+.event--non_honore {
+  opacity: 0.85;
 }
 
 // Responsive
+
 @media (max-width: vars.$breakpoint-lg) {
   .calendar-modal {
     max-width: 95vw;

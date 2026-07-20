@@ -1,15 +1,13 @@
 import './closingModal.scss';
 import { FaPhoneAlt, FaCheck, FaSpinner, FaClock, FaStickyNote, FaExclamationTriangle, FaMinus } from 'react-icons/fa';
 import { useState, useEffect, useRef } from 'react';
-import { useCallClosing } from '../../../hooks/useCallClosing';
-import { useProspect } from '../../../hooks/useProspect';
-import type { CampaignVariant } from '../../../utils/scripts/campaignVariants';
-import { getCampaignClosingOptions, CAMPAIGN_VARIANTS } from '../../../utils/scripts/campaignVariants';
-import { formatDuration } from '../../../utils/scripts/formatters';
-import Button from '../button/Button';
-import AgentCalendar from '../agentCalendar/AgentCalendar';
-import ConfirmModal from '../confirmModal/ConfirmModal';
-import ProgPA from '../progPA/ProgPA';
+import { useCallClosing, useProspect } from '../../../hooks/index.ts';
+import type { CampaignVariant } from '../../../utils/scripts/index.ts';
+import { CAMPAIGN_VARIANTS, formatDuration, getCampaignClosingOptions } from '../../../utils/scripts/index.ts';
+import { Button } from '../button/index.ts';
+import { AgentCalendar } from '../agentCalendar/index.ts';
+import { ConfirmModal } from '../confirmModal/index.ts';
+import { ProgPA } from '../progPA/index.ts';
 
 interface ClosingModalProps {
   isOpen: boolean;
@@ -75,7 +73,7 @@ export default function ClosingModal({
   // Forcer la maximisation de la modale si on passe en mode forcé (navigation hors de la fiche)
   useEffect(() => {
     if (forceMode) {
-      setIsMinimized(false);
+      queueMicrotask(() => setIsMinimized(false));
     }
   }, [forceMode]);
 

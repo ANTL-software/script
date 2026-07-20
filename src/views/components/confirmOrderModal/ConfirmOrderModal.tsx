@@ -1,9 +1,9 @@
 import './confirmOrderModal.scss';
 import { FaTimes, FaCheck, FaSpinner, FaShoppingCart, FaMapMarkerAlt, FaCreditCard, FaStickyNote, FaBuilding, FaClock, FaUser } from 'react-icons/fa';
-import type { ModePaiement } from '../../../utils/types';
-import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
-import { useOrderConfirmation } from '../../../hooks/useOrderConfirmation';
-import Button from '../button/Button';
+import type { ModePaiement } from '../../../utils/types/index.ts';
+import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/index.ts';
+import { useOrderConfirmation } from '../../../hooks/index.ts';
+import { Button } from '../button/index.ts';
 import Select from 'react-select';
 
 const PAYMENT_LABELS: Record<ModePaiement, string> = {

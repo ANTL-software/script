@@ -1,20 +1,33 @@
-@use './variables' as vars;
-@use 'sass:color';
+@use "./variables" as vars;
+@use "sass:color";
+@use "sass:selector";
 
 // Responsive breakpoints
 @mixin responsive($breakpoint) {
   @if $breakpoint == xs {
-    @media (min-width: vars.$breakpoint-xs) { @content; }
+    @media (min-width: vars.$breakpoint-xs) {
+      @content;
+    }
   } @else if $breakpoint == sm {
-    @media (min-width: vars.$breakpoint-sm) { @content; }
+    @media (min-width: vars.$breakpoint-sm) {
+      @content;
+    }
   } @else if $breakpoint == md {
-    @media (min-width: vars.$breakpoint-md) { @content; }
+    @media (min-width: vars.$breakpoint-md) {
+      @content;
+    }
   } @else if $breakpoint == lg {
-    @media (min-width: vars.$breakpoint-lg) { @content; }
+    @media (min-width: vars.$breakpoint-lg) {
+      @content;
+    }
   } @else if $breakpoint == xl {
-    @media (min-width: vars.$breakpoint-xl) { @content; }
+    @media (min-width: vars.$breakpoint-xl) {
+      @content;
+    }
   } @else if $breakpoint == 2xl {
-    @media (min-width: vars.$breakpoint-2xl) { @content; }
+    @media (min-width: vars.$breakpoint-2xl) {
+      @content;
+    }
   }
 }
 
@@ -37,7 +50,7 @@
 }
 
 // Button base
-@mixin button-base {
+@mixin button-base($base-selector) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -48,7 +61,7 @@
   transition: all vars.$transition-base;
   border-radius: vars.$radius-md;
 
-  &:disabled {
+  @at-root #{selector.append($base-selector, ":disabled")} {
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -91,32 +104,37 @@
 }
 
 // Hide scrollbar
-@mixin hide-scrollbar {
+@mixin hide-scrollbar($base-selector) {
   -ms-overflow-style: none;
   scrollbar-width: none;
 
-  &::-webkit-scrollbar {
+  @at-root #{selector.append($base-selector, "::-webkit-scrollbar")} {
     display: none;
   }
 }
 
 // Custom scrollbar
-@mixin custom-scrollbar($width: 8px, $track-color: vars.$colorGray100, $thumb-color: vars.$colorGray300) {
-  &::-webkit-scrollbar {
+@mixin custom-scrollbar(
+  $base-selector,
+  $width: 8px,
+  $track-color: vars.$colorGray100,
+  $thumb-color: vars.$colorGray300
+) {
+  @at-root #{selector.append($base-selector, "::-webkit-scrollbar")} {
     width: $width;
   }
 
-  &::-webkit-scrollbar-track {
+  @at-root #{selector.append($base-selector, "::-webkit-scrollbar-track")} {
     background: $track-color;
   }
 
-  &::-webkit-scrollbar-thumb {
+  @at-root #{selector.append($base-selector, "::-webkit-scrollbar-thumb")} {
     background: $thumb-color;
     border-radius: vars.$radius-full;
+  }
 
-    &:hover {
-      background: color.adjust($thumb-color, $lightness: -10%);
-    }
+  @at-root #{selector.append($base-selector, "::-webkit-scrollbar-thumb:hover")} {
+    background: color.adjust($thumb-color, $lightness: -10%);
   }
 }
 

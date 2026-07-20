@@ -2,42 +2,42 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+}
 
-  .loader-spinner {
-    border-radius: 50%;
-    border-style: solid;
-    animation: spin 0.8s linear infinite;
-  }
+.loader .loader-spinner {
+  border-radius: 50%;
+  border-style: solid;
+  animation: spin 0.8s linear infinite;
+}
 
-  &.loader-small .loader-spinner {
-    width: 1rem;
-    height: 1rem;
-    border-width: 2px;
-  }
+.loader.loader-small .loader-spinner {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+}
 
-  &.loader-medium .loader-spinner {
-    width: 1.5rem;
-    height: 1.5rem;
-    border-width: 2px;
-  }
+.loader.loader-medium .loader-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-width: 2px;
+}
 
-  &.loader-large .loader-spinner {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-width: 3px;
-  }
+.loader.loader-large .loader-spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-width: 3px;
+}
 
-  &.loader-primary .loader-spinner {
-    border-color: #3b82f6 transparent #3b82f6 transparent;
-  }
+.loader.loader-primary .loader-spinner {
+  border-color: #3b82f6 transparent #3b82f6 transparent;
+}
 
-  &.loader-white .loader-spinner {
-    border-color: #ffffff transparent #ffffff transparent;
-  }
+.loader.loader-white .loader-spinner {
+  border-color: #ffffff transparent #ffffff transparent;
+}
 
-  &.loader-gray .loader-spinner {
-    border-color: #6b7280 transparent #6b7280 transparent;
-  }
+.loader.loader-gray .loader-spinner {
+  border-color: #6b7280 transparent #6b7280 transparent;
 }
 
 @keyframes spin {

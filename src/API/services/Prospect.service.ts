@@ -1,9 +1,9 @@
-import { apiCalls } from '../APICalls';
-import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
-import { ProspectModel } from '../models';
-import type { Prospect, UpdateProspectData } from '../../utils/types';
-import { buildQueryString } from '../../utils/scripts/utils';
-import { buildProspectOptoutPayload } from './prospectPayloads';
+import { apiCalls } from '../APICalls.ts';
+import { throwIfApiError, extractPaginatedData } from '../apiHelpers.ts';
+import { ProspectModel } from '../models/index.ts';
+import type { Prospect, UpdateProspectData } from '../../utils/types/index.ts';
+import { buildQueryString } from '../../utils/scripts/index.ts';
+import { buildProspectOptoutPayload } from './prospectPayloads.ts';
 
 export class ProspectService {
   private static instance: ProspectService;

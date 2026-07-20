@@ -1,5 +1,4 @@
-@use '../../../utils/styles/variables' as vars;
-
+@use "../../../utils/styles/variables" as vars;
 .rdv-modal-overlay {
   position: fixed;
   inset: 0;
@@ -10,7 +9,6 @@
   z-index: 1000;
   padding: 1rem;
 }
-
 .rdv-modal {
   background: vars.$colorWhite;
   border-radius: vars.$radius-lg;
@@ -19,178 +17,158 @@
   max-width: 480px;
   max-height: 90vh;
   overflow-y: auto;
-
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid vars.$colorGray200;
-
-    h2 {
-      margin: 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: vars.$colorGray900;
-    }
-  }
-
-  &__close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border: none;
-    background: transparent;
-    color: vars.$colorGray500;
-    border-radius: vars.$radius-md;
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      background: vars.$colorGray100;
-      color: vars.$colorGray700;
-    }
-  }
-
-  &__form {
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  &__prospect {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    background: vars.$colorGray100;
-    border-radius: vars.$radius-md;
-    font-weight: 500;
-    color: vars.$colorGray700;
-
-    &--autre-agent {
-      background: #fffbeb;
-      border: 1px solid #fcd34d;
-      color: #92400e;
-
-      .rdv-modal__prospect-icon {
-        color: #d97706;
-      }
-    }
-  }
-
-  &__prospect-icon {
-    color: #3b82f6;
-    flex-shrink: 0;
-  }
-
-  &__prospect-badge {
-    margin-left: auto;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    background: #d97706;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-
-  &__row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  &__field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-
-    label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: vars.$colorGray700;
-
-      svg {
-        color: vars.$colorGray500;
-      }
-    }
-
-    .input-wrapper {
-      margin: 0;
-    }
-  }
-
-  &__textarea {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    font-family: inherit;
-    font-size: 0.875rem;
-    resize: vertical;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    &::placeholder {
-      color: vars.$colorGray500;
-    }
-  }
-
-  &__select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    font-family: inherit;
-    font-size: 0.875rem;
-    background: vars.$colorWhite;
-    cursor: pointer;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-
-    &:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-  }
-
-  &__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid vars.$colorGray200;
-  }
-
-  &__actions-right {
-    display: flex;
-    gap: 0.75rem;
-    margin-left: auto;
-  }
-
-  &__delete-confirm {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex: 1;
-
-    span {
-      font-size: 0.875rem;
-      color: #dc2626;
-      font-weight: 500;
-    }
-  }
+}
+.rdv-modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid vars.$colorGray200;
+}
+.rdv-modal__header h2 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: vars.$colorGray900;
+}
+.rdv-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: vars.$colorGray500;
+  border-radius: vars.$radius-md;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.rdv-modal__close:hover {
+  background: vars.$colorGray100;
+  color: vars.$colorGray700;
+}
+.rdv-modal__form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.rdv-modal__prospect {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: vars.$colorGray100;
+  border-radius: vars.$radius-md;
+  font-weight: 500;
+  color: vars.$colorGray700;
+}
+.rdv-modal__prospect--autre-agent {
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  color: #92400e;
+}
+.rdv-modal__prospect--autre-agent .rdv-modal__prospect-icon {
+  color: #d97706;
+}
+.rdv-modal__prospect-icon {
+  color: #3b82f6;
+  flex-shrink: 0;
+}
+.rdv-modal__prospect-badge {
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #d97706;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rdv-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.rdv-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.rdv-modal__field label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: vars.$colorGray700;
+}
+.rdv-modal__field label svg {
+  color: vars.$colorGray500;
+}
+.rdv-modal__field .input-wrapper {
+  margin: 0;
+}
+.rdv-modal__textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  font-family: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.rdv-modal__textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.rdv-modal__textarea::placeholder {
+  color: vars.$colorGray500;
+}
+.rdv-modal__select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  font-family: inherit;
+  font-size: 0.875rem;
+  background: vars.$colorWhite;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.rdv-modal__select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.rdv-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid vars.$colorGray200;
+}
+.rdv-modal__actions-right {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+.rdv-modal__delete-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+.rdv-modal__delete-confirm span {
+  font-size: 0.875rem;
+  color: #dc2626;
+  font-weight: 500;
 }

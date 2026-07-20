@@ -1,159 +1,31 @@
 import './landingPage.scss';
-import { useParams, useSearchParams } from 'react-router-dom';
-import { useLandingPage, useProspect } from '../../../hooks';
-import { closingService } from '../../../API/services';
-import ProspectInfoHeader from '../../components/prospectInfoHeader/ProspectInfoHeader';
-import ActionButtons from '../../components/actionButtons/ActionButtons';
-import Loader from '../../components/loader/Loader';
-import ErrorMessage from '../../components/errorMessage/ErrorMessage';
-import QuiEstCe from '../../components/quiEstCe/QuiEstCe';
-import QuiSommesNous from '../../components/quiSommesNous/QuiSommesNous';
-import HistoriqueAppels from '../../components/historiqueAppels/HistoriqueAppels';
-import HistoriqueVentes from '../../components/historiqueVentes/HistoriqueVentes';
-import HistoriqueRendezVous from '../../components/historiqueRendezVous/HistoriqueRendezVous';
-import PriseRendezVousPlaceholder from '../../components/priseRendezVousPlaceholder/PriseRendezVousPlaceholder';
-import AgentCalendar from '../../components/agentCalendar/AgentCalendar';
-import CatalogueProduits from '../../components/catalogueProduits/CatalogueProduits';
-import Panier from '../../components/panier/Panier';
-import ConfirmOrderModal from '../../components/confirmOrderModal/ConfirmOrderModal';
-import { useEffect } from 'react';
-import { useToast } from '../../../hooks/useToast';
-import { prospectService } from '../../../API/services/Prospect.service';
-import { type ActionButtonId, getCampaignUiConfig } from '../../../utils/scripts/campaignVariants';
+import { useLandingPage } from '../../../hooks/index.ts';
+import {
+  ActionButtons,
+  AgentCalendar,
+  CatalogueProduits,
+  ConfirmOrderModal,
+  ErrorMessage,
+  HistoriqueAppels,
+  HistoriqueRendezVous,
+  HistoriqueVentes,
+  Loader,
+  Panier,
+  PriseRendezVousPlaceholder,
+  ProspectInfoHeader,
+  QuiEstCe,
+  QuiSommesNous,
+} from '../../components';
 
 export default function LandingPage() {
-  const { id } = useParams<{ id: string }>();
-  const [searchParams] = useSearchParams();
-  const { fullName: prospectFullName, loadProspect } = useProspect();
-  const { showToast, confirm } = useToast();
-
-  // Mode test : détecter le paramètre ?test=true
-  const isTestMode = searchParams.get('test') === 'true';
-
   const {
+    prospectFullName,
     currentProspect, currentView, isLoading, error, clearError,
     isModalOpen, setIsModalOpen,
-    handlePlanAppels, handleObjections, handleCommande,
+    handlePlanAppels, handleObjections,
     handleOrderSuccess,
-    setView, currentCampaign,
-  } = useLandingPage(id, isTestMode);
-  const campaignUi = getCampaignUiConfig(currentCampaign);
-
-  // DEBUG : Permettre de tester la closing modal via URL ?test=closing
-  useEffect(() => {
-    if (searchParams.get('test') === 'closing' && currentProspect && currentCampaign && !closingService.hasPending()) {
-      const testData = {
-        prospectId: currentProspect.id_prospect,
-        prospectName: `${currentProspect.nom} ${currentProspect.prenom || ''}`.trim(),
-        campagneId: currentCampaign.id_campagne,
-        campaignVariant: getCampaignUiConfig(currentCampaign).variant,
-        dureeAppel: 45,
-      };
-      closingService.savePending(testData);
-      console.log('[DEBUG] Closing modal test activé via URL');
-      // Nettoyer le paramètre URL pour éviter les déclenchements répétés
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, [searchParams, currentProspect, currentCampaign]);
-
-  useEffect(() => {
-    const isAutoReminder = searchParams.get('autoReminder') === '1';
-    const isRappelSource = searchParams.get('source') === 'rappel';
-
-    if (!isAutoReminder || !isRappelSource || !currentProspect) {
-      return;
-    }
-
-    showToast('info', 'Rappel rendez-vous');
-    setView('historique-appels');
-
-    const nextParams = new URLSearchParams();
-    nextParams.set('source', 'rappel');
-    const rdvId = searchParams.get('rdvId');
-    if (rdvId) {
-      nextParams.set('rdvId', rdvId);
-    }
-    const nextUrl = `${window.location.pathname}?${nextParams.toString()}`;
-    window.history.replaceState({}, '', nextUrl);
-  }, [currentProspect, searchParams, showToast, setView]);
-
-  const handleSendCatalogue = async () => {
-    if (!currentProspect) {
-      showToast('error', 'Aucun prospect chargé');
-      return;
-    }
-
-    if (!currentProspect.email) {
-      showToast('warning', 'Le prospect n\'a pas d\'adresse email renseignee');
-      return;
-    }
-
-    try {
-      const result = await prospectService.sendCatalogue(currentProspect.id_prospect);
-      await loadProspect(currentProspect.id_prospect);
-      showToast('success', `Catalogue envoyé à ${result.recipientEmail}`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erreur lors de l\'envoi du catalogue';
-      showToast('error', message);
-    }
-  };
-
-  const handleTarifsClick = async () => {
-    const recipientEmail = currentProspect?.email?.trim();
-    const confirmed = await confirm({
-      title: 'Envoi du catalogue',
-      message: recipientEmail
-        ? `Êtes-vous sûr de vouloir envoyer le catalogue par mail à ${recipientEmail} ?`
-        : 'Êtes-vous sûr de vouloir envoyer le catalogue par mail ?',
-      type: 'info',
-      confirmText: 'Envoyer',
-      cancelText: 'Annuler',
-    });
-
-    if (!confirmed) return;
-    await handleSendCatalogue();
-  };
-
-  const handleAgrementClick = async () => {
-    const recipientEmail = currentProspect?.email?.trim();
-    const confirmed = await confirm({
-      title: 'Envoi de l\'agrément',
-      message: recipientEmail
-        ? `Êtes-vous sûr de vouloir envoyer l\'agrément par mail à ${recipientEmail} ?`
-        : 'Êtes-vous sûr de vouloir envoyer l\'agrément par mail ?',
-      type: 'info',
-      confirmText: 'Envoyer',
-      cancelText: 'Annuler',
-    });
-
-    if (!confirmed) return;
-    showToast('warning', 'Aucun document d\'agrément n\'est encore configuré pour cet envoi');
-  };
-
-  const handleAction = (actionId: ActionButtonId) => {
-    switch (actionId) {
-      case 'tarifs':
-        void handleTarifsClick();
-        break;
-      case 'agrement':
-        void handleAgrementClick();
-        break;
-      case 'historique-appels':
-        setView('historique-appels');
-        break;
-      case 'historique-offres':
-        setView(campaignUi.actions.find((action) => action.id === 'historique-offres')?.targetView ?? 'historique-offres');
-        break;
-      case 'rendez-vous':
-        setView('rendez-vous');
-        break;
-      case 'commande':
-        handleCommande();
-        break;
-      default:
-        break;
-    }
-  };
+    setView, currentCampaign, campaignUi, isTestMode, handleAction,
+  } = useLandingPage();
 
   if (isLoading) {
     return (

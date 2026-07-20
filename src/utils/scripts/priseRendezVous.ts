@@ -1,4 +1,4 @@
-import type { CreateLeadData, Prospect } from '../types/index.ts';
+import type { CreateLeadData, Prospect, RendezVousTimeOption } from '../types/index.ts';
 
 export interface LeadB2BRendezVousPrefill {
   interlocuteurNom: string;
@@ -21,6 +21,41 @@ export interface BuildLeadB2BRendezVousPayloadArgs {
 }
 
 export const LEAD_B2B_RENDEZ_VOUS_MOTIF = 'Prise de rendez-vous client';
+
+const LEAD_B2B_TIME_CONFIG = {
+  morning: { start: '08:00', end: '12:00' },
+  afternoon: { start: '14:00', end: '17:00' },
+  intervalMinutes: 15,
+};
+
+function parseTimeInMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function formatTimeFromMinutes(minutesTotal: number): string {
+  const hours = Math.floor(minutesTotal / 60);
+  const minutes = minutesTotal % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+export function getLeadB2BTimeSlots(): RendezVousTimeOption[] {
+  const slots: RendezVousTimeOption[] = [];
+  const addRange = (start: string, end: string): void => {
+    let current = parseTimeInMinutes(start);
+    const endInMinutes = parseTimeInMinutes(end);
+
+    while (current <= endInMinutes) {
+      const value = formatTimeFromMinutes(current);
+      slots.push({ value, label: value });
+      current += LEAD_B2B_TIME_CONFIG.intervalMinutes;
+    }
+  };
+
+  addRange(LEAD_B2B_TIME_CONFIG.morning.start, LEAD_B2B_TIME_CONFIG.morning.end);
+  addRange(LEAD_B2B_TIME_CONFIG.afternoon.start, LEAD_B2B_TIME_CONFIG.afternoon.end);
+  return slots;
+}
 
 const trimToUndefined = (value: string): string | undefined => {
   const trimmed = value.trim();

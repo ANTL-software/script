@@ -1,6 +1,6 @@
-import { useProspect } from '../../../hooks/useProspect';
-import type { CampaignVariant } from '../../../utils/scripts/campaignVariants';
-import { getCampaignProgpaSteps } from '../../../utils/scripts/campaignVariants';
+import { useProspect } from '../../../hooks/index.ts';
+import type { CampaignVariant } from '../../../utils/scripts/index.ts';
+import { getCampaignProgpaSteps } from '../../../utils/scripts/index.ts';
 import './progPA.scss';
 
 interface ProgPAProps {

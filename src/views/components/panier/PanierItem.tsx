@@ -1,6 +1,6 @@
 import './panierItem.scss';
-import type { CartItem } from '../../../utils/types';
-import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/utils';
+import type { CartItem } from '../../../utils/types/index.ts';
+import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/index.ts';
 import { FaMinus, FaPlus, FaTrash } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
@@ -19,7 +19,7 @@ export default function PanierItem({ item, onUpdateQuantity, onRemove }: PanierI
 
   // Synchroniser l'input avec la quantité quand elle change de l'extérieur
   useEffect(() => {
-    setInputValue(item.quantite.toString());
+    queueMicrotask(() => setInputValue(item.quantite.toString()));
   }, [item.quantite]);
 
   const handleIncrement = () => {

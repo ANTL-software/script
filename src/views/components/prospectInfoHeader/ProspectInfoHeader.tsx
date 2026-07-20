@@ -1,15 +1,12 @@
 import { useEffect } from 'react';
 import './prospectInfoHeader.scss';
-import { useSearchParams } from 'react-router-dom';
-import { useProspect } from '../../../hooks/useProspect';
-import { useDialer } from '../../../hooks/useDialer';
-import { useToast } from '../../../hooks/useToast';
-import TypeFicheBadge from '../typeFicheBadge/TypeFicheBadge';
-import Button from '../button/Button';
-import Clock from '../clock/Clock';
-import PhoneNumberWithCallButton from '../phoneNumberWithCallButton/PhoneNumberWithCallButton';
+import { useDialer, useNavigation, useProspect, useToast } from '../../../hooks/index.ts';
+import { TypeFicheBadge } from '../typeFicheBadge/index.ts';
+import { Button } from '../button/index.ts';
+import { Clock } from '../clock/index.ts';
+import { PhoneNumberWithCallButton } from '../phoneNumberWithCallButton/index.ts';
 import { FaBuilding, FaListOl, FaCommentDots, FaUser, FaPhoneSlash } from 'react-icons/fa';
-import type { ViewType } from '../../../context/appContext/AppContext';
+import type { ViewType } from '../../../utils/types/index.ts';
 
 interface ProspectInfoHeaderProps {
   currentView: ViewType;
@@ -24,7 +21,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
   const { currentProspect, fullName, typeFiche, appels, loadAppels } = useProspect();
   const { statut, hangup, callFromManual } = useDialer();
   const { showToast } = useToast();
-  const [searchParams] = useSearchParams();
+  const { searchParams } = useNavigation();
 
   useEffect(() => {
     if (currentProspect) {

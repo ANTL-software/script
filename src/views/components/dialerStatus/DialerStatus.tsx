@@ -1,8 +1,8 @@
 import './dialerStatus.scss';
 import { useState, useEffect, useRef } from 'react';
-import { useDialer } from '../../../hooks';
-import type { StatutDialer, RaisonPause } from '../../../utils/types';
-import { formatTimerDuration } from '../../../utils/scripts/formatters';
+import { useDialer } from '../../../hooks/index.ts';
+import type { StatutDialer, RaisonPause } from '../../../utils/types/index.ts';
+import { formatTimerDuration } from '../../../utils/scripts/index.ts';
 
 const LABELS_STATUT: Record<StatutDialer, string> = {
   disponible: 'Disponible',

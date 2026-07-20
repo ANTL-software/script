@@ -1,9 +1,9 @@
 import './actionButtons.scss';
 import { FaCalendarAlt, FaCertificate, FaCreditCard, FaPhone, FaShoppingCart, FaTag } from 'react-icons/fa';
 import type { ReactNode } from 'react';
-import type { ViewType } from '../../../context/appContext/AppContext';
-import type { ActionButtonId, CampaignActionConfig } from '../../../utils/scripts/campaignVariants';
-import Button from '../button/Button';
+import type { ViewType } from '../../../utils/types/index.ts';
+import type { ActionButtonId, CampaignActionConfig } from '../../../utils/scripts/index.ts';
+import { Button } from '../button/index.ts';
 
 interface ActionButtonsProps {
   currentView: ViewType;

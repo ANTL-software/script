@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { CALL_NOTES_DRAFT_CHANGED_EVENT, callNotesDraftService } from '../API/services/CallNotesDraft.service';
+import { CALL_NOTES_DRAFT_CHANGED_EVENT, callNotesDraftService } from '../API/services';
+import { clearCallNotesDraft, updateCallNotesDraft } from '../utils/scripts';
 
 interface CallNotesDraftChangeDetail {
   appelId: number;
@@ -12,7 +13,7 @@ export function useCallNotesDraft(appelId: number | null | undefined) {
   ));
 
   useEffect(() => {
-    setNotesState(appelId ? callNotesDraftService.get(appelId) : '');
+    queueMicrotask(() => setNotesState(appelId ? callNotesDraftService.get(appelId) : ''));
   }, [appelId]);
 
   useEffect(() => {
@@ -28,13 +29,20 @@ export function useCallNotesDraft(appelId: number | null | undefined) {
   }, [appelId]);
 
   const setNotes = useCallback((nextNotes: string): void => {
-    if (!appelId) return;
-    callNotesDraftService.save(appelId, nextNotes);
+    updateCallNotesDraft(
+      appelId,
+      nextNotes,
+      setNotesState,
+      (id, value) => callNotesDraftService.save(id, value),
+    );
   }, [appelId]);
 
   const clearNotes = useCallback((): void => {
-    if (!appelId) return;
-    callNotesDraftService.clear(appelId);
+    clearCallNotesDraft(
+      appelId,
+      setNotesState,
+      (id) => callNotesDraftService.clear(id),
+    );
   }, [appelId]);
 
   return { notes, setNotes, clearNotes };

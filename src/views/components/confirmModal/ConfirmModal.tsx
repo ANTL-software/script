@@ -1,6 +1,6 @@
 import './confirmModal.scss';
 import { FaTimes, FaExclamationTriangle, FaInfoCircle, FaTrash } from 'react-icons/fa';
-import Button from '../button/Button';
+import { Button } from '../button/index.ts';
 
 export interface ConfirmModalProps {
   isOpen: boolean;

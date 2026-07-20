@@ -1,6 +1,5 @@
-@use '../../../utils/styles/variables' as vars;
-@use 'sass:color';
-
+@use "../../../utils/styles/variables" as vars;
+@use "sass:color";
 #dashboardPage {
   flex: 1;
   padding: vars.$spacing-xl;
@@ -11,493 +10,455 @@
   margin: 0 auto;
   width: 100%;
   overflow-y: auto;
-
-  .dashboard__section-title {
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorGray700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-bottom: vars.$spacing-md;
+}
+#dashboardPage .dashboard__section-title {
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: vars.$spacing-md;
+}
+// Recherche
+#dashboardPage .dashboard__search .dashboard__search-form {
+  display: flex;
+  gap: vars.$spacing-sm;
+}
+#dashboardPage .dashboard__search .dashboard__search-input {
+  flex: 1;
+  padding: vars.$spacing-sm vars.$spacing-md;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  font-size: vars.$fontSize-base;
+  background: vars.$colorWhite;
+  transition: border-color vars.$transition-fast;
+}
+#dashboardPage .dashboard__search .dashboard__search-input:focus {
+  outline: none;
+  border-color: vars.$colorPrimary;
+}
+#dashboardPage .dashboard__search .dashboard__search-input::placeholder {
+  color: vars.$colorGray500;
+}
+#dashboardPage .dashboard__search .dashboard__search-btn {
+  padding: vars.$spacing-sm vars.$spacing-lg;
+  background: vars.$colorPrimary;
+  color: vars.$colorWhite;
+  border: none;
+  border-radius: vars.$radius-md;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  cursor: pointer;
+  transition: background vars.$transition-fast;
+  white-space: nowrap;
+}
+#dashboardPage .dashboard__search .dashboard__search-btn:hover:not(:disabled) {
+  background: vars.$colorPrimaryHover;
+}
+#dashboardPage .dashboard__search .dashboard__search-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+#dashboardPage .dashboard__search .dashboard__search-error {
+  margin-top: vars.$spacing-sm;
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorDanger;
+}
+#dashboardPage .dashboard__search .dashboard__search-results {
+  list-style: none;
+  margin-top: vars.$spacing-sm;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-md;
+  overflow: hidden;
+}
+#dashboardPage .dashboard__search .dashboard__search-results li button {
+  display: block;
+  width: 100%;
+  padding: vars.$spacing-sm vars.$spacing-md;
+  text-align: left;
+  background: vars.$colorWhite;
+  border: none;
+  cursor: pointer;
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray900;
+}
+#dashboardPage .dashboard__search .dashboard__search-results li button:hover {
+  background: vars.$colorGray100;
+}
+// Grille RDV + Notifs
+#dashboardPage .dashboard__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: vars.$spacing-lg;
+}
+@media (max-width: vars.$breakpoint-md) {
+  #dashboardPage .dashboard__grid {
+    grid-template-columns: 1fr;
   }
-
-  // Recherche
-  .dashboard__search {
-    .dashboard__search-form {
-      display: flex;
-      gap: vars.$spacing-sm;
-    }
-
-    .dashboard__search-input {
-      flex: 1;
-      padding: vars.$spacing-sm vars.$spacing-md;
-      border: 1px solid vars.$colorGray300;
-      border-radius: vars.$radius-md;
-      font-size: vars.$fontSize-base;
-      background: vars.$colorWhite;
-      transition: border-color vars.$transition-fast;
-
-      &:focus {
-        outline: none;
-        border-color: vars.$colorPrimary;
-      }
-
-      &::placeholder {
-        color: vars.$colorGray500;
-      }
-    }
-
-    .dashboard__search-btn {
-      padding: vars.$spacing-sm vars.$spacing-lg;
-      background: vars.$colorPrimary;
-      color: vars.$colorWhite;
-      border: none;
-      border-radius: vars.$radius-md;
-      font-size: vars.$fontSize-sm;
-      font-weight: vars.$fontWeight-medium;
-      cursor: pointer;
-      transition: background vars.$transition-fast;
-      white-space: nowrap;
-
-      &:hover:not(:disabled) {
-        background: vars.$colorPrimaryHover;
-      }
-
-      &:disabled {
-        opacity: 0.5;
-        cursor: default;
-      }
-    }
-
-    .dashboard__search-error {
-      margin-top: vars.$spacing-sm;
-      font-size: vars.$fontSize-sm;
-      color: vars.$colorDanger;
-    }
-
-    .dashboard__search-results {
-      list-style: none;
-      margin-top: vars.$spacing-sm;
-      border: 1px solid vars.$colorGray200;
-      border-radius: vars.$radius-md;
-      overflow: hidden;
-
-      li button {
-        display: block;
-        width: 100%;
-        padding: vars.$spacing-sm vars.$spacing-md;
-        text-align: left;
-        background: vars.$colorWhite;
-        border: none;
-        cursor: pointer;
-        font-size: vars.$fontSize-sm;
-        color: vars.$colorGray900;
-
-        &:hover {
-          background: vars.$colorGray100;
-        }
-      }
-    }
-  }
-
-  // Grille RDV + Notifs
-  .dashboard__grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: vars.$spacing-lg;
-
-    @media (max-width: vars.$breakpoint-md) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  // Cards génériques
-  .dashboard__card {
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray200;
-    border-radius: vars.$radius-lg;
-    padding: vars.$spacing-lg;
-    box-shadow: vars.$shadow-sm;
-  }
-
-  // Empty state
-  .dashboard__empty-state {
-    color: vars.$colorGray500;
-    font-size: vars.$fontSize-sm;
-
-    p { margin: 0 0 vars.$spacing-xs; }
-
-    .dashboard__empty-hint {
-      font-size: vars.$fontSize-xs;
-      color: vars.$colorGray300;
-      font-style: italic;
-    }
-  }
-
-  // Stats
-  .dashboard__stats-grid {
-    display: flex;
-    gap: vars.$spacing-xl;
-    flex-wrap: wrap;
-  }
-
-  .dashboard__stat {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-xs;
-
-    .dashboard__stat-value {
-      font-size: vars.$fontSize-2xl;
-      font-weight: vars.$fontWeight-bold;
-      color: vars.$colorGray900;
-    }
-
-    .dashboard__stat-label {
-      font-size: vars.$fontSize-xs;
-      color: vars.$colorGray500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    &--highlight .dashboard__stat-value {
-      color: vars.$colorPrimary;
-    }
-  }
-
-  // Jauge mensuelle
-  .dashboard__gauge {
-    // La jauge prend toute la largeur disponible
-    width: 100%;
-  }
-
-  // Waiting indicator
-  .dashboard__waiting {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-sm;
-    padding: vars.$spacing-md vars.$spacing-lg;
-    background: vars.$colorPrimaryLight;
-    border-radius: vars.$radius-md;
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorPrimary;
-
-    .dashboard__waiting-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: vars.$colorPrimary;
-      flex-shrink: 0;
-      animation: pulse-blue 1.5s infinite;
-    }
-
-    p { margin: 0; }
-  }
-
-  // Badges compteurs
-  .dashboard__badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 vars.$spacing-xs;
-    background: vars.$colorGray300;
-    color: vars.$colorGray700;
-    border-radius: vars.$radius-full;
-    font-size: vars.$fontSize-xs;
-    font-weight: vars.$fontWeight-bold;
-    margin-left: vars.$spacing-xs;
-
-    &--alert {
-      background: vars.$colorDanger;
-      color: vars.$colorWhite;
-    }
-  }
-
-  // Loading
-  .dashboard__loading {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray500;
-    margin: 0;
-  }
-
-  // Bouton lien discret
-  .dashboard__link-btn {
-    background: none;
-    border: none;
-    color: vars.$colorPrimary;
-    font-size: vars.$fontSize-xs;
-    cursor: pointer;
-    padding: 0;
-    white-space: nowrap;
-
-    &:hover { text-decoration: underline; }
-  }
-
-  // Liste RDV
-  .dashboard__rdv-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-    max-height: 280px;
-    overflow-y: auto;
-    padding-right: vars.$spacing-xs;
-
-    /* Custom thin scrollbar */
-    &::-webkit-scrollbar {
-      width: 6px;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-      background-color: vars.$colorGray300;
-      border-radius: vars.$radius-full;
-      
-      &:hover {
-        background-color: vars.$colorGray500;
-      }
-    }
-  }
-
-  .dashboard__rdv-item {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-sm;
-    padding: vars.$spacing-sm;
-    border-radius: vars.$radius-md;
-    background: vars.$colorGray100;
-    border: 1.5px solid transparent;
-    transition: all vars.$transition-fast;
-
-    &--next {
-      background: vars.$colorPrimaryLight;
-      border-color: vars.$colorPrimary;
-      box-shadow: 0 0 8px rgba(vars.$colorPrimary, 0.15);
-    }
-
-    &--commande {
-      background: #fdf2e9;
-      border-color: #E95420;
-      box-shadow: 0 0 8px rgba(233, 84, 32, 0.15);
-
-      &:hover {
-        background: #fbe6d5;
-      }
-
-      .dashboard__rdv-heure {
-        color: #E95420;
-      }
-
-      .dashboard__rdv-nom {
-        color: #E95420;
-        font-weight: vars.$fontWeight-bold;
-      }
-    }
-
-    &--relance-vente {
-      background: #f5f0ff;
-      border-color: #7c3aed;
-      box-shadow: 0 0 8px rgba(124, 58, 237, 0.15);
-
-      &:hover {
-        background: #ede4ff;
-      }
-
-      .dashboard__rdv-heure,
-      .dashboard__rdv-nom {
-        color: #7c3aed;
-        font-weight: vars.$fontWeight-bold;
-      }
-    }
-
-    .dashboard__rdv-badge-commande {
-      margin-left: vars.$spacing-xs;
-      background: #E95420;
-      color: white;
-      font-size: 9px;
-      font-weight: vars.$fontWeight-bold;
-      padding: 1px 5px;
-      border-radius: vars.$radius-sm;
-      text-transform: uppercase;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    .dashboard__rdv-badge-relance {
-      margin-left: vars.$spacing-xs;
-      background: #7c3aed;
-      color: white;
-      font-size: 9px;
-      font-weight: vars.$fontWeight-bold;
-      padding: 1px 5px;
-      border-radius: vars.$radius-sm;
-      text-transform: uppercase;
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    .dashboard__rdv-heure {
-      font-size: vars.$fontSize-sm;
-      font-weight: vars.$fontWeight-bold;
-      font-family: vars.$fontFamilyMono;
-      color: vars.$colorGray900;
-      min-width: 42px;
-    }
-
-    .dashboard__rdv-info {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .dashboard__rdv-nom {
-      font-size: vars.$fontSize-sm;
-      font-weight: vars.$fontWeight-medium;
-      color: vars.$colorGray900;
-    }
-
-    .dashboard__rdv-tel {
-      font-size: vars.$fontSize-xs;
-      color: vars.$colorGray500;
-      font-family: vars.$fontFamilyMono;
-    }
-
-    .dashboard__rdv-motif {
-      font-size: vars.$fontSize-xs;
-      color: vars.$colorGray700;
-      font-style: italic;
-    }
-
-    .dashboard__rdv-btn {
-      padding: vars.$spacing-xs vars.$spacing-sm;
-      background: vars.$colorPrimary;
-      color: vars.$colorWhite;
-      border: none;
-      border-radius: vars.$radius-sm;
-      font-size: vars.$fontSize-xs;
-      font-weight: vars.$fontWeight-medium;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: background vars.$transition-fast;
-
-      &:hover:not(:disabled) { background: vars.$colorPrimaryHover; }
-      &:disabled { opacity: 0.4; cursor: default; }
-    }
-  }
-
-  // Notifications
-  .dashboard__notifications-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: vars.$spacing-md;
-
-    .dashboard__section-title { margin-bottom: 0; }
-  }
-
-  .dashboard__notif-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-xs;
-  }
-
-  .dashboard__notif-item {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: vars.$spacing-sm;
-    padding: vars.$spacing-sm;
-    border-radius: vars.$radius-md;
-    background: vars.$colorGray100;
-  }
-
-  .dashboard__notif-content {
-    display: flex;
-    align-items: flex-start;
-    gap: vars.$spacing-sm;
-    flex: 1;
-  }
-
-  .dashboard__notif-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 4px;
-
-    &--rdv_30min { background: vars.$colorWarning; }
-    &--rdv_10min { background: vars.$colorDanger; }
-    &--rdv_manque { background: vars.$colorGray500; }
-    &--info { background: vars.$colorInfo; }
-  }
-
-  .dashboard__notif-message {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray900;
-    margin: 0;
-    line-height: vars.$lineHeight-normal;
-  }
-
-  // Calendrier trigger
-  .dashboard__calendar-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: vars.$spacing-md;
-  }
-
-  .dashboard__calendar-trigger-content {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-xs;
-  }
-
-  .dashboard__calendar-icon {
-    font-size: 1.5rem;
-    color: vars.$colorPrimary;
-    margin-bottom: vars.$spacing-xs;
-  }
-
-  .dashboard__calendar-subtitle {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray500;
-    margin: 0;
-  }
-
-  .dashboard__calendar-btn {
-    padding: vars.$spacing-sm vars.$spacing-lg;
-    background: vars.$colorPrimary;
-    color: vars.$colorWhite;
-    border: none;
-    border-radius: vars.$radius-md;
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-medium;
-    cursor: pointer;
-    transition: background vars.$transition-fast;
-    white-space: nowrap;
-
-    &:hover {
-      background: vars.$colorPrimaryHover;
-      transform: translateY(-1px);
-      box-shadow: vars.$shadow-md;
-    }
-
-    &:active {
-      transform: translateY(0);
-    }
-  }
+}
+// Cards génériques
+#dashboardPage .dashboard__card {
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-lg;
+  padding: vars.$spacing-lg;
+  box-shadow: vars.$shadow-sm;
+}
+// Empty state
+#dashboardPage .dashboard__empty-state {
+  color: vars.$colorGray500;
+  font-size: vars.$fontSize-sm;
+}
+#dashboardPage .dashboard__empty-state p {
+  margin: 0 0 vars.$spacing-xs;
+}
+#dashboardPage .dashboard__empty-state .dashboard__empty-hint {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray300;
+  font-style: italic;
+}
+// Stats
+#dashboardPage .dashboard__stats-grid {
+  display: flex;
+  gap: vars.$spacing-xl;
+  flex-wrap: wrap;
+}
+#dashboardPage .dashboard__stat {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-xs;
+}
+#dashboardPage .dashboard__stat .dashboard__stat-value {
+  font-size: vars.$fontSize-2xl;
+  font-weight: vars.$fontWeight-bold;
+  color: vars.$colorGray900;
+}
+#dashboardPage .dashboard__stat .dashboard__stat-label {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+#dashboardPage .dashboard__stat--highlight .dashboard__stat-value {
+  color: vars.$colorPrimary;
+}
+// Jauge mensuelle
+#dashboardPage .dashboard__gauge {
+  // La jauge prend toute la largeur disponible
+  width: 100%;
+}
+// Waiting indicator
+#dashboardPage .dashboard__waiting {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+  padding: vars.$spacing-md vars.$spacing-lg;
+  background: vars.$colorPrimaryLight;
+  border-radius: vars.$radius-md;
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorPrimary;
+}
+#dashboardPage .dashboard__waiting .dashboard__waiting-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: vars.$colorPrimary;
+  flex-shrink: 0;
+  animation: pulse-blue 1.5s infinite;
+}
+#dashboardPage .dashboard__waiting p {
+  margin: 0;
+}
+// Badges compteurs
+#dashboardPage .dashboard__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 vars.$spacing-xs;
+  background: vars.$colorGray300;
+  color: vars.$colorGray700;
+  border-radius: vars.$radius-full;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-bold;
+  margin-left: vars.$spacing-xs;
+}
+#dashboardPage .dashboard__badge--alert {
+  background: vars.$colorDanger;
+  color: vars.$colorWhite;
+}
+// Loading
+#dashboardPage .dashboard__loading {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+  margin: 0;
+}
+// Bouton lien discret
+#dashboardPage .dashboard__link-btn {
+  background: none;
+  border: none;
+  color: vars.$colorPrimary;
+  font-size: vars.$fontSize-xs;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;
+}
+#dashboardPage .dashboard__link-btn:hover {
+  text-decoration: underline;
+}
+// Liste RDV
+#dashboardPage .dashboard__rdv-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: vars.$spacing-xs;
+
+  /* Custom thin scrollbar */
+}
+#dashboardPage .dashboard__rdv-list::-webkit-scrollbar {
+  width: 6px;
+}
+#dashboardPage .dashboard__rdv-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+#dashboardPage .dashboard__rdv-list::-webkit-scrollbar-thumb {
+  background-color: vars.$colorGray300;
+  border-radius: vars.$radius-full;
+}
+#dashboardPage .dashboard__rdv-list::-webkit-scrollbar-thumb:hover {
+  background-color: vars.$colorGray500;
+}
+#dashboardPage .dashboard__rdv-item {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+  padding: vars.$spacing-sm;
+  border-radius: vars.$radius-md;
+  background: vars.$colorGray100;
+  border: 1.5px solid transparent;
+  transition: all vars.$transition-fast;
+}
+#dashboardPage .dashboard__rdv-item--next {
+  background: vars.$colorPrimaryLight;
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 8px rgba(vars.$colorPrimary, 0.15);
+}
+#dashboardPage .dashboard__rdv-item--commande {
+  background: #fdf2e9;
+  border-color: #e95420;
+  box-shadow: 0 0 8px rgba(233, 84, 32, 0.15);
+}
+#dashboardPage .dashboard__rdv-item--commande:hover {
+  background: #fbe6d5;
+}
+#dashboardPage .dashboard__rdv-item--commande .dashboard__rdv-heure {
+  color: #e95420;
+}
+#dashboardPage .dashboard__rdv-item--commande .dashboard__rdv-nom {
+  color: #e95420;
+  font-weight: vars.$fontWeight-bold;
+}
+#dashboardPage .dashboard__rdv-item--relance-vente {
+  background: #f5f0ff;
+  border-color: #7c3aed;
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.15);
+}
+#dashboardPage .dashboard__rdv-item--relance-vente:hover {
+  background: #ede4ff;
+}
+#dashboardPage .dashboard__rdv-item--relance-vente .dashboard__rdv-heure,
+#dashboardPage .dashboard__rdv-item--relance-vente .dashboard__rdv-nom {
+  color: #7c3aed;
+  font-weight: vars.$fontWeight-bold;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-commande {
+  margin-left: vars.$spacing-xs;
+  background: #e95420;
+  color: white;
+  font-size: 9px;
+  font-weight: vars.$fontWeight-bold;
+  padding: 1px 5px;
+  border-radius: vars.$radius-sm;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-relance {
+  margin-left: vars.$spacing-xs;
+  background: #7c3aed;
+  color: white;
+  font-size: 9px;
+  font-weight: vars.$fontWeight-bold;
+  padding: 1px 5px;
+  border-radius: vars.$radius-sm;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-heure {
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-bold;
+  font-family: vars.$fontFamilyMono;
+  color: vars.$colorGray900;
+  min-width: 42px;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-nom {
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  color: vars.$colorGray900;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-tel {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  font-family: vars.$fontFamilyMono;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-motif {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray700;
+  font-style: italic;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-btn {
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  background: vars.$colorPrimary;
+  color: vars.$colorWhite;
+  border: none;
+  border-radius: vars.$radius-sm;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-medium;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background vars.$transition-fast;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-btn:hover:not(:disabled) {
+  background: vars.$colorPrimaryHover;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+// Notifications
+#dashboardPage .dashboard__notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: vars.$spacing-md;
+}
+#dashboardPage .dashboard__notifications-header .dashboard__section-title {
+  margin-bottom: 0;
+}
+#dashboardPage .dashboard__notif-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-xs;
+}
+#dashboardPage .dashboard__notif-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: vars.$spacing-sm;
+  padding: vars.$spacing-sm;
+  border-radius: vars.$radius-md;
+  background: vars.$colorGray100;
+}
+#dashboardPage .dashboard__notif-content {
+  display: flex;
+  align-items: flex-start;
+  gap: vars.$spacing-sm;
+  flex: 1;
+}
+#dashboardPage .dashboard__notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+#dashboardPage .dashboard__notif-dot--rdv_30min {
+  background: vars.$colorWarning;
+}
+#dashboardPage .dashboard__notif-dot--rdv_10min {
+  background: vars.$colorDanger;
+}
+#dashboardPage .dashboard__notif-dot--rdv_manque {
+  background: vars.$colorGray500;
+}
+#dashboardPage .dashboard__notif-dot--info {
+  background: vars.$colorInfo;
+}
+#dashboardPage .dashboard__notif-message {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray900;
+  margin: 0;
+  line-height: vars.$lineHeight-normal;
+}
+// Calendrier trigger
+#dashboardPage .dashboard__calendar-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-md;
+}
+#dashboardPage .dashboard__calendar-trigger-content {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-xs;
+}
+#dashboardPage .dashboard__calendar-icon {
+  font-size: 1.5rem;
+  color: vars.$colorPrimary;
+  margin-bottom: vars.$spacing-xs;
+}
+#dashboardPage .dashboard__calendar-subtitle {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+  margin: 0;
+}
+#dashboardPage .dashboard__calendar-btn {
+  padding: vars.$spacing-sm vars.$spacing-lg;
+  background: vars.$colorPrimary;
+  color: vars.$colorWhite;
+  border: none;
+  border-radius: vars.$radius-md;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  cursor: pointer;
+  transition: background vars.$transition-fast;
+  white-space: nowrap;
+}
+#dashboardPage .dashboard__calendar-btn:hover {
+  background: vars.$colorPrimaryHover;
+  transform: translateY(-1px);
+  box-shadow: vars.$shadow-md;
+}
+#dashboardPage .dashboard__calendar-btn:active {
+  transform: translateY(0);
 }
 
 @keyframes pulse-blue {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.3); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
 }
 
 // Bouton Utilisateur TEST
+
 .dashboard__test-btn {
   align-self: flex-start;
   padding: vars.$spacing-sm vars.$spacing-md;
@@ -511,14 +472,14 @@
   transition: all vars.$transition-fast;
   margin-top: vars.$spacing-lg;
   box-shadow: vars.$shadow-sm;
+}
 
-  &:hover {
-    background: color.adjust(vars.$colorWarning, $lightness: 5%);
-    transform: translateY(-1px);
-    box-shadow: vars.$shadow-md;
-  }
+.dashboard__test-btn:hover {
+  background: color.adjust(vars.$colorWarning, $lightness: 5%);
+  transform: translateY(-1px);
+  box-shadow: vars.$shadow-md;
+}
 
-  &:active {
-    transform: translateY(0);
-  }
+.dashboard__test-btn:active {
+  transform: translateY(0);
 }

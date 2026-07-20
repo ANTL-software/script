@@ -1,36 +1,36 @@
-@use '../../../utils/styles/variables' as vars;
+@use "../../../utils/styles/variables" as vars;
 
 .prospect-info-header {
   padding: 1rem 1.5rem;
   background: white;
   border-bottom: 2px solid #e5e5e7;
   flex-shrink: 0;
+}
 
-  &__top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
+.prospect-info-header__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
-  &__title {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
+.prospect-info-header__title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
 
-    h1 {
-      margin: 0;
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: #1d1d1f;
-    }
-  }
+.prospect-info-header__title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1d1d1f;
+}
 
-  &__actions {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-  }
+.prospect-info-header__actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .hangup-button {
@@ -41,30 +41,31 @@
 .prospect-info-table {
   width: 100%;
   border-collapse: collapse;
+}
 
-  td {
-    padding: 0.5rem 1rem;
-    border: 1px solid #e5e5e7;
+.prospect-info-table td {
+  padding: 0.5rem 1rem;
+  border: 1px solid #e5e5e7;
+}
 
-    &.label {
-      background-color: #f5f5f7;
-      font-weight: 600;
-      color: #1d1d1f;
-      width: 15%;
-    }
+.prospect-info-table td.label {
+  background-color: #f5f5f7;
+  font-weight: 600;
+  color: #1d1d1f;
+  width: 15%;
+}
 
-    &.value {
-      color: #424245;
-      width: 35%;
-    }
-  }
+.prospect-info-table td.value {
+  color: #424245;
+  width: 35%;
+}
 
-  tr:hover {
-    background-color: #fafafa;
-  }
+.prospect-info-table tr:hover {
+  background-color: #fafafa;
 }
 
 // Badge MODE TEST
+
 .test-mode-badge {
   padding: 0.25rem 0.75rem;
   background: vars.$colorWarning;
@@ -79,7 +80,8 @@
 }
 
 @keyframes pulse-warning {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

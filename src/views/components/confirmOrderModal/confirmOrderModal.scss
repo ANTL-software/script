@@ -1,6 +1,5 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
 .confirm-order-modal__overlay {
   position: fixed;
   top: 0;
@@ -14,7 +13,6 @@
   padding: vars.$spacing-lg;
   animation: fadeIn 0.2s ease-out;
 }
-
 .confirm-order-modal {
   background-color: vars.$colorWhite;
   border-radius: vars.$radius-xl;
@@ -26,20 +24,17 @@
   flex-direction: column;
   animation: slideUp 0.3s ease-out;
 }
-
 .confirm-order-modal__header {
   @include mix.flex-between;
   padding: vars.$spacing-xl;
   border-bottom: 1px solid vars.$colorGray300;
-
-  h2 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: vars.$colorBlack;
-  }
 }
-
+.confirm-order-modal__header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: vars.$colorBlack;
+}
 .confirm-order-modal__close {
   background: none;
   border: none;
@@ -52,37 +47,33 @@
   justify-content: center;
   border-radius: vars.$radius-full;
   transition: all vars.$transition-base;
-
-  &:hover:not(:disabled) {
-    background-color: vars.$colorGray100;
-    color: vars.$colorBlack;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
 }
-
+.confirm-order-modal__close:hover:not(:disabled) {
+  background-color: vars.$colorGray100;
+  color: vars.$colorBlack;
+}
+.confirm-order-modal__close:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 .confirm-order-modal__form {
   flex: 1;
   overflow-y: auto;
   padding: vars.$spacing-xl;
-  @include mix.custom-scrollbar(6px);
+  @include mix.custom-scrollbar(".confirm-order-modal__form", 6px);
 }
-
 .confirm-order-modal__two-columns {
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: vars.$spacing-xl;
   align-items: start;
-
-  @media (max-width: 900px) {
+}
+@media (max-width: 900px) {
+  .confirm-order-modal__two-columns {
     grid-template-columns: 1fr;
     gap: vars.$spacing-lg;
   }
 }
-
 .confirm-order-modal__error {
   background-color: rgba(vars.$colorDanger, 0.1);
   border: 1px solid vars.$colorDanger;
@@ -92,112 +83,94 @@
   color: vars.$colorDanger;
   font-size: 0.9rem;
 }
-
 .confirm-order-modal__section {
   margin-bottom: vars.$spacing-xl;
-
-  h3 {
-    margin: 0 0 vars.$spacing-md 0;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: vars.$colorBlack;
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-sm;
-
-    svg {
-      color: vars.$colorPrimary;
-    }
-  }
-
-  textarea {
-    width: 100%;
-    padding: vars.$spacing-lg;
-    border: 2px solid vars.$colorGray300;
-    border-radius: vars.$radius-lg;
-    font-size: 1rem;
-    line-height: 1.6;
-    font-family: inherit;
-    resize: vertical;
-    min-height: 120px;
-    transition: all vars.$transition-base;
-    background-color: vars.$colorGray100;
-
-    &::placeholder {
-      color: vars.$colorGray500;
-      font-style: italic;
-    }
-
-    &:focus {
-      outline: none;
-      border-color: vars.$colorPrimary;
-      background-color: vars.$colorWhite;
-      box-shadow: 0 0 0 4px rgba(vars.$colorPrimary, 0.1);
-      transform: translateY(-2px);
-    }
-
-    &:hover:not(:focus) {
-      border-color: vars.$colorGray500;
-      background-color: vars.$colorWhite;
-    }
-
-    &:disabled {
-      background-color: vars.$colorGray100;
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-  }
 }
-
+.confirm-order-modal__section h3 {
+  margin: 0 0 vars.$spacing-md 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: vars.$colorBlack;
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+}
+.confirm-order-modal__section h3 svg {
+  color: vars.$colorPrimary;
+}
+.confirm-order-modal__section textarea {
+  width: 100%;
+  padding: vars.$spacing-lg;
+  border: 2px solid vars.$colorGray300;
+  border-radius: vars.$radius-lg;
+  font-size: 1rem;
+  line-height: 1.6;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+  transition: all vars.$transition-base;
+  background-color: vars.$colorGray100;
+}
+.confirm-order-modal__section textarea::placeholder {
+  color: vars.$colorGray500;
+  font-style: italic;
+}
+.confirm-order-modal__section textarea:focus {
+  outline: none;
+  border-color: vars.$colorPrimary;
+  background-color: vars.$colorWhite;
+  box-shadow: 0 0 0 4px rgba(vars.$colorPrimary, 0.1);
+  transform: translateY(-2px);
+}
+.confirm-order-modal__section textarea:hover:not(:focus) {
+  border-color: vars.$colorGray500;
+  background-color: vars.$colorWhite;
+}
+.confirm-order-modal__section textarea:disabled {
+  background-color: vars.$colorGray100;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 .confirm-order-modal__cart-items {
   background-color: vars.$colorGray100;
   border-radius: vars.$radius-md;
   padding: vars.$spacing-md;
   margin-bottom: vars.$spacing-md;
 }
-
 .confirm-order-modal__cart-item {
   @include mix.flex-between;
   padding: vars.$spacing-sm 0;
-
-  &:not(:last-child) {
-    border-bottom: 1px solid vars.$colorGray300;
-    margin-bottom: vars.$spacing-sm;
-  }
 }
-
+.confirm-order-modal__cart-item:not(:last-child) {
+  border-bottom: 1px solid vars.$colorGray300;
+  margin-bottom: vars.$spacing-sm;
+}
 .confirm-order-modal__cart-item-info {
   display: flex;
   align-items: center;
   gap: vars.$spacing-md;
 }
-
 .confirm-order-modal__cart-item-name {
   font-weight: 500;
   color: vars.$colorBlack;
 }
-
 .confirm-order-modal__cart-item-quantity {
   color: vars.$colorGray700;
   font-size: 0.9rem;
 }
-
 .confirm-order-modal__cart-item-price {
   display: flex;
   align-items: center;
   gap: vars.$spacing-sm;
   font-weight: 600;
 }
-
 .confirm-order-modal__cart-item-remise {
   color: vars.$colorDanger;
   font-size: 0.9rem;
 }
-
 .confirm-order-modal__cart-item-total {
   color: vars.$colorBlack;
 }
-
 .confirm-order-modal__cart-total {
   padding: vars.$spacing-md;
   background-color: vars.$colorPrimary;
@@ -206,201 +179,184 @@
   display: grid;
   gap: vars.$spacing-xs;
 }
-
 .confirm-order-modal__cart-total-row {
   @include mix.flex-between;
   align-items: baseline;
   gap: vars.$spacing-md;
   font-size: 1rem;
-
-  strong {
-    font-size: 1.15rem;
-    font-weight: 700;
-  }
-
-  &--muted {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.84);
-  }
-
-  &--ttc {
-    padding-top: vars.$spacing-xs;
-    margin-top: vars.$spacing-xs;
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
-
-    strong {
-      font-size: 1.25rem;
-    }
-  }
 }
-
+.confirm-order-modal__cart-total-row strong {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.confirm-order-modal__cart-total-row--muted {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.84);
+}
+.confirm-order-modal__cart-total-row--ttc {
+  padding-top: vars.$spacing-xs;
+  margin-top: vars.$spacing-xs;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+.confirm-order-modal__cart-total-row--ttc strong {
+  font-size: 1.25rem;
+}
 .confirm-order-modal__form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: vars.$spacing-md;
 }
-
 .confirm-order-modal__form-group {
   display: flex;
   flex-direction: column;
   gap: vars.$spacing-xs;
-
-  &--full {
-    grid-column: 1 / -1;
-  }
-
-  label {
-    font-weight: 500;
-    color: vars.$colorBlack;
-    font-size: 0.9rem;
-  }
-
-  input {
-    padding: vars.$spacing-sm vars.$spacing-md;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    font-size: 1rem;
-    transition: all vars.$transition-base;
-
-    &:focus {
-      outline: none;
-      border-color: vars.$colorPrimary;
-      box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
-    }
-
-    &:disabled {
-      background-color: vars.$colorGray100;
-      cursor: not-allowed;
-    }
-
-    &.input-error {
-      border-color: vars.$colorDanger;
-
-      &:focus {
-        box-shadow: 0 0 0 3px rgba(vars.$colorDanger, 0.1);
-      }
-    }
-  }
-
-  select.confirm-order-modal__select-standard {
-    padding: vars.$spacing-sm vars.$spacing-md;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    font-size: 1rem;
-    background-color: vars.$colorWhite;
-    height: 44px;
-    transition: all vars.$transition-base;
-    cursor: pointer;
-
-    &:focus {
-      outline: none;
-      border-color: vars.$colorPrimary;
-      box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
-    }
-
-    &:disabled {
-      background-color: vars.$colorGray100;
-      cursor: not-allowed;
-    }
-
-    &.input-error {
-      border-color: vars.$colorDanger;
-
-      &:focus {
-        box-shadow: 0 0 0 3px rgba(vars.$colorDanger, 0.1);
-      }
-    }
-  }
-
-  .error-message {
-    color: vars.$colorDanger;
-    font-size: 0.85rem;
-    margin-top: vars.$spacing-xs;
-  }
+}
+.confirm-order-modal__form-group--full {
+  grid-column: 1 / -1;
+}
+.confirm-order-modal__form-group label {
+  font-weight: 500;
+  color: vars.$colorBlack;
+  font-size: 0.9rem;
+}
+.confirm-order-modal__form-group input {
+  padding: vars.$spacing-sm vars.$spacing-md;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  font-size: 1rem;
+  transition: all vars.$transition-base;
+}
+.confirm-order-modal__form-group input:focus {
+  outline: none;
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
+}
+.confirm-order-modal__form-group input:disabled {
+  background-color: vars.$colorGray100;
+  cursor: not-allowed;
+}
+.confirm-order-modal__form-group input.input-error {
+  border-color: vars.$colorDanger;
+}
+.confirm-order-modal__form-group input.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(vars.$colorDanger, 0.1);
+}
+.confirm-order-modal__form-group select.confirm-order-modal__select-standard {
+  padding: vars.$spacing-sm vars.$spacing-md;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  font-size: 1rem;
+  background-color: vars.$colorWhite;
+  height: 44px;
+  transition: all vars.$transition-base;
+  cursor: pointer;
+}
+.confirm-order-modal__form-group
+  select.confirm-order-modal__select-standard:focus {
+  outline: none;
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
+}
+.confirm-order-modal__form-group
+  select.confirm-order-modal__select-standard:disabled {
+  background-color: vars.$colorGray100;
+  cursor: not-allowed;
+}
+.confirm-order-modal__form-group
+  select.confirm-order-modal__select-standard.input-error {
+  border-color: vars.$colorDanger;
+}
+.confirm-order-modal__form-group
+  select.confirm-order-modal__select-standard.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(vars.$colorDanger, 0.1);
+}
+.confirm-order-modal__form-group .error-message {
+  color: vars.$colorDanger;
+  font-size: 0.85rem;
+  margin-top: vars.$spacing-xs;
 }
 
 // Styles pour react-select
-.confirm-order-modal__select {
-  &__control {
-    min-height: 44px;
-    background-color: vars.$colorWhite;
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    box-shadow: none;
-    transition: all vars.$transition-base;
 
-    &:hover {
-      border-color: vars.$colorGray500;
-    }
+.confirm-order-modal__select__control {
+  min-height: 44px;
+  background-color: vars.$colorWhite;
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  box-shadow: none;
+  transition: all vars.$transition-base;
+}
 
-    &:focus-within {
-      border-color: vars.$colorPrimary;
-      box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
-    }
-  }
+.confirm-order-modal__select__control:hover {
+  border-color: vars.$colorGray500;
+}
 
-  &__value-container {
-    padding: vars.$spacing-xs vars.$spacing-sm;
-  }
+.confirm-order-modal__select__control:focus-within {
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 0 3px rgba(vars.$colorPrimary, 0.1);
+}
 
-  &__placeholder {
-    color: vars.$colorGray500;
-    font-style: italic;
-  }
+.confirm-order-modal__select__value-container {
+  padding: vars.$spacing-xs vars.$spacing-sm;
+}
 
-  &__single-value {
-    color: vars.$colorBlack;
-  }
+.confirm-order-modal__select__placeholder {
+  color: vars.$colorGray500;
+  font-style: italic;
+}
 
-  &__indicator-separator {
-    display: none;
-  }
+.confirm-order-modal__select__single-value {
+  color: vars.$colorBlack;
+}
 
-  &__indicator {
-    color: vars.$colorGray500;
-    padding: vars.$spacing-xs;
+.confirm-order-modal__select__indicator-separator {
+  display: none;
+}
 
-    &:hover {
-      color: vars.$colorBlack;
-    }
-  }
+.confirm-order-modal__select__indicator {
+  color: vars.$colorGray500;
+  padding: vars.$spacing-xs;
+}
 
-  &__menu {
-    border: 1px solid vars.$colorGray300;
-    border-radius: vars.$radius-md;
-    box-shadow: vars.$shadow-md;
-    margin-top: 4px;
-    z-index: 2;
-  }
+.confirm-order-modal__select__indicator:hover {
+  color: vars.$colorBlack;
+}
 
-  &__option {
-    padding: vars.$spacing-sm vars.$spacing-md;
-    cursor: pointer;
-    background-color: vars.$colorWhite;
-    color: vars.$colorBlack;
+.confirm-order-modal__select__menu {
+  border: 1px solid vars.$colorGray300;
+  border-radius: vars.$radius-md;
+  box-shadow: vars.$shadow-md;
+  margin-top: 4px;
+  z-index: 2;
+}
 
-    &:hover {
-      background-color: vars.$colorGray100;
-    }
+.confirm-order-modal__select__option {
+  padding: vars.$spacing-sm vars.$spacing-md;
+  cursor: pointer;
+  background-color: vars.$colorWhite;
+  color: vars.$colorBlack;
+}
 
-    &--is-selected {
-      background-color: vars.$colorPrimary;
-      color: vars.$colorWhite;
+.confirm-order-modal__select__option:hover {
+  background-color: vars.$colorGray100;
+}
 
-      &:hover {
-        background-color: vars.$colorPrimary;
-      }
-    }
+.confirm-order-modal__select__option--is-selected {
+  background-color: vars.$colorPrimary;
+  color: vars.$colorWhite;
+}
 
-    &--is-focused {
-      background-color: vars.$colorGray100;
-    }
-  }
+.confirm-order-modal__select__option--is-selected:hover {
+  background-color: vars.$colorPrimary;
+}
 
-  &__input-container {
-    margin: 0;
-    padding: 0;
-  }
+.confirm-order-modal__select__option--is-focused {
+  background-color: vars.$colorGray100;
+}
+
+.confirm-order-modal__select__input-container {
+  margin: 0;
+  padding: 0;
 }
 
 .confirm-order-modal__checkbox-group {
@@ -411,29 +367,29 @@
   padding: vars.$spacing-sm;
   background: vars.$colorGray100;
   border-radius: vars.$radius-md;
+}
 
-  input[type='checkbox'] {
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-  }
+.confirm-order-modal__checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
 
-  label {
-    font-weight: 500;
-    color: vars.$colorBlack;
-    font-size: 0.9rem;
-    cursor: pointer;
-    margin: 0;
-  }
+.confirm-order-modal__checkbox-group label {
+  font-weight: 500;
+  color: vars.$colorBlack;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin: 0;
 }
 
 .confirm-order-modal__delivery-section {
   transition: all vars.$transition-base;
+}
 
-  &--disabled {
-    opacity: 0.6;
-    pointer-events: none;
-  }
+.confirm-order-modal__delivery-section--disabled {
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .confirm-order-modal__payment-options {
@@ -451,38 +407,38 @@
   border-radius: vars.$radius-md;
   cursor: pointer;
   transition: all vars.$transition-base;
+}
 
-  &:hover {
-    border-color: vars.$colorPrimary;
-    background-color: rgba(vars.$colorPrimary, 0.05);
-  }
+.confirm-order-modal__payment-option:hover {
+  border-color: vars.$colorPrimary;
+  background-color: rgba(vars.$colorPrimary, 0.05);
+}
 
-  input[type='radio'] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
+.confirm-order-modal__payment-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
 
-    &:checked + span {
-      color: vars.$colorPrimary;
-      font-weight: 600;
-    }
-  }
+.confirm-order-modal__payment-option input[type="radio"]:checked + span {
+  color: vars.$colorPrimary;
+  font-weight: 600;
+}
 
-  span {
-    font-size: 1rem;
-    color: vars.$colorBlack;
-    transition: all vars.$transition-base;
-  }
+.confirm-order-modal__payment-option span {
+  font-size: 1rem;
+  color: vars.$colorBlack;
+  transition: all vars.$transition-base;
+}
 
-  &:has(input:checked) {
-    border-color: vars.$colorPrimary;
-    background-color: rgba(vars.$colorPrimary, 0.1);
-  }
+.confirm-order-modal__payment-option:has(input:checked) {
+  border-color: vars.$colorPrimary;
+  background-color: rgba(vars.$colorPrimary, 0.1);
+}
 
-  &:has(input:disabled) {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.confirm-order-modal__payment-option:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .confirm-order-modal__footer {
@@ -531,11 +487,9 @@
   .confirm-order-modal {
     max-width: 100%;
   }
-
   .confirm-order-modal__form-grid {
     grid-template-columns: 1fr;
   }
-
   .confirm-order-modal__payment-options {
     grid-template-columns: 1fr;
   }

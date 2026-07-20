@@ -1,364 +1,394 @@
-@use '../../../utils/styles/variables' as vars;
+@use "../../../utils/styles/variables" as vars;
 
 .objections-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+}
 
-  &__loader,
-  &__error {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
+.objections-page__loader,
+.objections-page__error {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
 
-    p {
-      color: vars.$colorGray500;
-      font-size: 1rem;
-    }
-  }
+.objections-page__loader p,
+.objections-page__error p {
+  color: vars.$colorGray500;
+  font-size: 1rem;
+}
 
-  &__error {
-    h2 {
-      margin: 0;
-      color: vars.$colorGray900;
-    }
-  }
+.objections-page__error h2 {
+  margin: 0;
+  color: vars.$colorGray900;
+}
 
-  &__error-icon {
-    font-size: 3rem;
-    color: vars.$colorGray300;
-  }
+.objections-page__error-icon {
+  font-size: 3rem;
+  color: vars.$colorGray300;
+}
 
-  &__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-    background: vars.$colorWhite;
-    border-bottom: 1px solid vars.$colorGray200;
-    flex-shrink: 0;
+.objections-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: vars.$colorWhite;
+  border-bottom: 1px solid vars.$colorGray200;
+  flex-shrink: 0;
+}
 
-    @media print {
-      .print-button {
-        display: none;
-      }
-    }
-  }
-
-  &__title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-
-    h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: vars.$colorGray900;
-    }
-  }
-
-  &__icon {
-    font-size: 1.5rem;
-    color: vars.$colorPrimary;
-  }
-
-  &__campaign-name {
-    font-size: 0.875rem;
-    color: vars.$colorGray500;
-  }
-
-  &__header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
-
-  &__count {
-    font-size: 0.875rem;
-    color: vars.$colorGray500;
-  }
-
-  &__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 1.5rem;
-    background: vars.$colorWhite;
-    border-bottom: 1px solid vars.$colorGray200;
-    gap: 1rem;
-    flex-shrink: 0;
-
-    @media print {
-      display: none;
-    }
-  }
-
-  &__search {
-    position: relative;
-    flex: 1;
-    max-width: 400px;
-
-    .input-wrapper {
-      margin: 0;
-
-      input {
-        padding-left: 2.5rem;
-        font-size: 0.875rem;
-      }
-    }
-  }
-
-  &__search-icon {
-    position: absolute;
-    left: 0.875rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: vars.$colorGray500;
-    z-index: 1;
-  }
-
-
-  &__content {
-    flex: 1;
-    padding: 1.5rem;
-    overflow-y: auto;
-
-    // Flex wrap pour afficher les catégories côte à côte
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    align-items: flex-start;
-    align-content: flex-start;
-
-    @media print {
-      overflow: visible;
-      padding: 0;
-      display: block;
-    }
-  }
-
-  &__empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 200px;
-
-    p {
-      color: vars.$colorGray500;
-      font-style: italic;
-    }
-  }
-
-  &__category {
-    background: vars.$colorWhite;
-    border-radius: vars.$radius-lg;
-    box-shadow: vars.$shadow-md;
-    overflow: hidden;
-
-    // Quand fermée, la catégorie prend juste la place du header
-    &--closed {
-      flex: 0 0 auto;
-    }
-
-    // Quand ouverte, la catégorie prend toute la largeur
-    &--open {
-      flex: 1 1 100%;
-      order: -1; // Place la catégorie ouverte en premier
-    }
-
-    @media print {
-      box-shadow: none;
-      border: 1px solid vars.$colorGray300;
-      page-break-inside: avoid;
-    }
-  }
-
-  &__category-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    padding: 1rem 1.5rem;
-    background: linear-gradient(135deg, vars.$colorPrimary 0%, vars.$colorPrimaryHover 100%);
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s;
-
-    &:hover {
-      background: linear-gradient(135deg, vars.$colorPrimaryHover 0%, vars.$colorPrimaryDark 100%);
-    }
-
-    @media print {
-      background: vars.$colorGray100;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-  }
-
-  &__category-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  &__category-name {
-    font-size: 1rem;
-    font-weight: 600;
-    color: vars.$colorWhite;
-
-    @media print {
-      color: vars.$colorGray900;
-    }
-  }
-
-  &__category-count {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.125rem 0.5rem;
-    border-radius: vars.$radius-full;
-
-    @media print {
-      color: vars.$colorGray700;
-      background: vars.$colorGray200;
-    }
-  }
-
-  &__category-icon {
-    color: vars.$colorWhite;
-    font-size: 1rem;
-
-    @media print {
-      display: none;
-    }
-  }
-
-  &__category-content {
-    padding: 1.25rem;
-    background: #f8fafc;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  &__objection {
-    padding: 1.5rem;
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray200;
-    border-radius: vars.$radius-lg;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    transition: transform 0.2s, box-shadow 0.2s;
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
-    }
-
-    @media print {
-      page-break-inside: avoid;
-      box-shadow: none;
-      border: 1px solid vars.$colorGray300;
-      background: white;
-    }
-  }
-
-  &__objection-header {
-    margin-bottom: 0.75rem;
-  }
-
-  &__objection-title {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: vars.$colorGray900;
-  }
-
-  &__label {
-    display: block;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: vars.$colorGray500;
-    margin-bottom: 0.25rem;
-  }
-
-  &__objection-question {
-    margin-bottom: 0.75rem;
-    padding: 0.75rem;
-    background: #fef2f2;
-    border-left: 3px solid #ef4444;
-    border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
-
-    p {
-      margin: 0;
-      font-size: 0.875rem;
-      color: vars.$colorGray700;
-      font-style: italic;
-    }
-  }
-
-  &__objection-reformulation {
-    margin-bottom: 0.75rem;
-    padding: 0.75rem;
-    background: #fffbeb;
-    border-left: 3px solid #f59e0b;
-    border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
-
-    p {
-      margin: 0;
-      font-size: 0.875rem;
-      color: vars.$colorGray700;
-    }
-  }
-
-  &__objection-adaptation {
-    margin-bottom: 0.75rem;
-    padding: 0.75rem;
-    background: #eff6ff;
-    border-left: 3px solid #3b82f6;
-    border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
-
-    p {
-      margin: 0;
-      font-size: 0.875rem;
-      color: vars.$colorGray700;
-    }
-  }
-
-  &__objection-response {
-    padding: 0.75rem;
-    background: #f0fdf4;
-    border-left: 3px solid #22c55e;
-    border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
-
-    p {
-      margin: 0;
-      font-size: 0.9375rem;
-      color: vars.$colorGray900;
-      line-height: 1.6;
-    }
+@media print {
+  .objections-page__header .print-button {
+    display: none;
   }
 }
 
+.objections-page__title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.objections-page__title h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: vars.$colorGray900;
+}
+
+.objections-page__icon {
+  font-size: 1.5rem;
+  color: vars.$colorPrimary;
+}
+
+.objections-page__campaign-name {
+  font-size: 0.875rem;
+  color: vars.$colorGray500;
+}
+
+.objections-page__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.objections-page__count {
+  font-size: 0.875rem;
+  color: vars.$colorGray500;
+}
+
+.objections-page__toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: vars.$colorWhite;
+  border-bottom: 1px solid vars.$colorGray200;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+@media print {
+  .objections-page__toolbar {
+    display: none;
+  }
+}
+
+.objections-page__search {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+}
+
+.objections-page__search .input-wrapper {
+  margin: 0;
+}
+
+.objections-page__search .input-wrapper input {
+  padding-left: 2.5rem;
+  font-size: 0.875rem;
+}
+
+.objections-page__search-icon {
+  position: absolute;
+  left: 0.875rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: vars.$colorGray500;
+  z-index: 1;
+}
+
+.objections-page__content {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+
+  // Flex wrap pour afficher les catégories côte à côte
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+  align-content: flex-start;
+}
+
+@media print {
+  .objections-page__content {
+    overflow: visible;
+    padding: 0;
+    display: block;
+  }
+}
+
+.objections-page__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.objections-page__empty p {
+  color: vars.$colorGray500;
+  font-style: italic;
+}
+
+.objections-page__category {
+  background: vars.$colorWhite;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-md;
+  overflow: hidden;
+
+  // Quand fermée, la catégorie prend juste la place du header
+}
+
+.objections-page__category--closed {
+  flex: 0 0 auto;
+}
+// Quand ouverte, la catégorie prend toute la largeur
+
+.objections-page__category--open {
+  flex: 1 1 100%;
+  order: -1; // Place la catégorie ouverte en premier
+}
+
+@media print {
+  .objections-page__category {
+    box-shadow: none;
+    border: 1px solid vars.$colorGray300;
+    page-break-inside: avoid;
+  }
+}
+
+.objections-page__category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(
+    135deg,
+    vars.$colorPrimary 0%,
+    vars.$colorPrimaryHover 100%
+  );
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.objections-page__category-header:hover {
+  background: linear-gradient(
+    135deg,
+    vars.$colorPrimaryHover 0%,
+    vars.$colorPrimaryDark 100%
+  );
+}
+
+@media print {
+  .objections-page__category-header {
+    background: vars.$colorGray100;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+.objections-page__category-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.objections-page__category-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: vars.$colorWhite;
+}
+
+@media print {
+  .objections-page__category-name {
+    color: vars.$colorGray900;
+  }
+}
+
+.objections-page__category-count {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.125rem 0.5rem;
+  border-radius: vars.$radius-full;
+}
+
+@media print {
+  .objections-page__category-count {
+    color: vars.$colorGray700;
+    background: vars.$colorGray200;
+  }
+}
+
+.objections-page__category-icon {
+  color: vars.$colorWhite;
+  font-size: 1rem;
+}
+
+@media print {
+  .objections-page__category-icon {
+    display: none;
+  }
+}
+
+.objections-page__category-content {
+  padding: 1.25rem;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.objections-page__objection {
+  padding: 1.5rem;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-lg;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.objections-page__objection:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.08),
+    0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+@media print {
+  .objections-page__objection {
+    page-break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid vars.$colorGray300;
+    background: white;
+  }
+}
+
+.objections-page__objection-header {
+  margin-bottom: 0.75rem;
+}
+
+.objections-page__objection-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: vars.$colorGray900;
+}
+
+.objections-page__label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: vars.$colorGray500;
+  margin-bottom: 0.25rem;
+}
+
+.objections-page__objection-question {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: #fef2f2;
+  border-left: 3px solid #ef4444;
+  border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
+}
+
+.objections-page__objection-question p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: vars.$colorGray700;
+  font-style: italic;
+}
+
+.objections-page__objection-reformulation {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: #fffbeb;
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
+}
+
+.objections-page__objection-reformulation p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: vars.$colorGray700;
+}
+
+.objections-page__objection-adaptation {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: #eff6ff;
+  border-left: 3px solid #3b82f6;
+  border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
+}
+
+.objections-page__objection-adaptation p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: vars.$colorGray700;
+}
+
+.objections-page__objection-response {
+  padding: 0.75rem;
+  background: #f0fdf4;
+  border-left: 3px solid #22c55e;
+  border-radius: 0 vars.$radius-sm vars.$radius-sm 0;
+}
+
+.objections-page__objection-response p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: vars.$colorGray900;
+  line-height: 1.6;
+}
+
 // Print styles
+
 @media print {
   .objections-page {
     background: white;
     min-height: auto;
+  }
 
-    &__header {
-      border-bottom: 2px solid vars.$colorGray900;
-      padding: 0.5rem 0;
-    }
+  .objections-page__header {
+    border-bottom: 2px solid vars.$colorGray900;
+    padding: 0.5rem 0;
+  }
 
-    &__category-content {
-      display: block !important;
-    }
+  .objections-page__category-content {
+    display: block !important;
   }
 }

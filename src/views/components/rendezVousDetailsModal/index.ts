@@ -1,1 +1,1 @@
-export { default } from './RendezVousDetailsModal';
+export { default, default as RendezVousDetailsModal } from './RendezVousDetailsModal.tsx';

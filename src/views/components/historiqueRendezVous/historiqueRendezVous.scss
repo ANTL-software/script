@@ -1,296 +1,251 @@
-@use '../../../utils/styles/variables' as vars;
-@use '../../../utils/styles/mixins' as mix;
-@use 'sass:color';
-
+@use "../../../utils/styles/variables" as vars;
+@use "../../../utils/styles/mixins" as mix;
+@use "sass:color";
 .historique-rendez-vous {
   width: 100%;
   height: 100%;
   padding: vars.$spacing-lg;
   overflow-y: auto;
-  @include mix.custom-scrollbar;
-
-  &__loader {
-    @include mix.flex-center;
-    flex-direction: column;
-    gap: vars.$spacing-md;
-    height: 100%;
-    color: vars.$colorGray500;
-
-    p {
-      font-size: vars.$fontSize-sm;
-    }
-  }
-
-  &__empty {
-    @include mix.flex-center;
-    flex-direction: column;
-    gap: vars.$spacing-md;
-    height: 100%;
-    color: vars.$colorGray500;
-    text-align: center;
-
-    svg {
-      color: vars.$colorGray300;
-      margin-bottom: vars.$spacing-md;
-    }
-
-    h3 {
-      font-size: vars.$fontSize-xl;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorGray700;
-      margin: 0;
-    }
-
-    p {
-      font-size: vars.$fontSize-sm;
-      margin: 0;
-    }
-  }
-
-  &__header {
-    @include mix.flex-between;
-    margin-bottom: vars.$spacing-lg;
-    padding-bottom: vars.$spacing-md;
-    border-bottom: 1px solid vars.$colorGray200;
-
-    h2 {
-      font-size: vars.$fontSize-2xl;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorBlack;
-      margin: 0;
-    }
-  }
-
-  &__count {
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray500;
-    background: vars.$colorGray100;
-    padding: vars.$spacing-xs vars.$spacing-md;
-    border-radius: vars.$radius-full;
-  }
-
-  &__list {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-md;
-  }
+  @include mix.custom-scrollbar(".historique-rendez-vous");
 }
-
+.historique-rendez-vous__loader {
+  @include mix.flex-center;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+  height: 100%;
+  color: vars.$colorGray500;
+}
+.historique-rendez-vous__loader p {
+  font-size: vars.$fontSize-sm;
+}
+.historique-rendez-vous__empty {
+  @include mix.flex-center;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+  height: 100%;
+  color: vars.$colorGray500;
+  text-align: center;
+}
+.historique-rendez-vous__empty svg {
+  color: vars.$colorGray300;
+  margin-bottom: vars.$spacing-md;
+}
+.historique-rendez-vous__empty h3 {
+  font-size: vars.$fontSize-xl;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray700;
+  margin: 0;
+}
+.historique-rendez-vous__empty p {
+  font-size: vars.$fontSize-sm;
+  margin: 0;
+}
+.historique-rendez-vous__header {
+  @include mix.flex-between;
+  margin-bottom: vars.$spacing-lg;
+  padding-bottom: vars.$spacing-md;
+  border-bottom: 1px solid vars.$colorGray200;
+}
+.historique-rendez-vous__header h2 {
+  font-size: vars.$fontSize-2xl;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+  margin: 0;
+}
+.historique-rendez-vous__count {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray500;
+  background: vars.$colorGray100;
+  padding: vars.$spacing-xs vars.$spacing-md;
+  border-radius: vars.$radius-full;
+}
+.historique-rendez-vous__list {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-md;
+}
 .rendez-vous-card {
   background: vars.$colorWhite;
   border: 1px solid vars.$colorGray200;
   border-radius: vars.$radius-lg;
   overflow: hidden;
   transition: all vars.$transition-base;
-
-  &:hover {
-    border-color: vars.$colorGray300;
-    box-shadow: vars.$shadow-sm;
-  }
-
-  &__header {
-    @include mix.flex-between;
-    padding: vars.$spacing-lg;
-    gap: vars.$spacing-md;
-    transition: background-color vars.$transition-fast;
-    user-select: none;
-
-    &:hover {
-      background-color: vars.$colorGray100;
-    }
-  }
-
-  &__info {
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-sm;
-    flex: 1;
-  }
-
-  &__date-statut {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-md;
-    flex-wrap: wrap;
-  }
-
-  &__date {
-    font-size: vars.$fontSize-base;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorBlack;
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-xs;
-
-    svg {
-      color: vars.$colorPrimary;
-    }
-  }
-
-  &__statut {
-    padding: vars.$spacing-xs vars.$spacing-md;
-    border-radius: vars.$radius-full;
-    font-size: vars.$fontSize-xs;
-    font-weight: vars.$fontWeight-medium;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    &--planifie {
-      background: color.adjust(vars.$colorPrimary, $lightness: 44%);
-      color: color.adjust(vars.$colorPrimary, $lightness: -14%);
-    }
-
-    &--reporte {
-      background: color.adjust(#d97706, $lightness: 48%);
-      color: color.adjust(#d97706, $lightness: -12%);
-    }
-
-    &--effectue {
-      background: color.adjust(vars.$colorSuccess, $lightness: 45%);
-      color: color.adjust(vars.$colorSuccess, $lightness: -10%);
-    }
-
-    &--annule {
-      background: color.adjust(vars.$colorDanger, $lightness: 45%);
-      color: color.adjust(vars.$colorDanger, $lightness: -10%);
-    }
-
-    &--non-honore {
-      background: vars.$colorGray100;
-      color: vars.$colorGray700;
-      border: 1px solid vars.$colorGray200;
-    }
-  }
-
-  &__client-final {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-xs;
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray700;
-
-    .client-label {
-      color: vars.$colorGray500;
-    }
-
-    .client-value {
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorPrimary;
-    }
-  }
-
-  &__toggle {
-    @include mix.button-base;
-    padding: vars.$spacing-sm vars.$spacing-lg;
-    font-size: vars.$fontSize-sm;
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray300;
-    color: vars.$colorGray700;
-    white-space: nowrap;
-
-    &:hover {
-      background: vars.$colorGray100;
-      border-color: vars.$colorGray500;
-    }
-
-    &--expanded {
-      background: vars.$colorPrimaryLight;
-      border-color: vars.$colorPrimary;
-      color: vars.$colorPrimary;
-    }
-  }
-
-  &__details {
-    padding: 0 vars.$spacing-lg vars.$spacing-lg;
-    border-top: 1px solid vars.$colorGray200;
-    animation: slideDown 0.2s ease-in-out;
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-lg;
-  }
-
-  &__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: vars.$spacing-md;
-    margin-top: vars.$spacing-sm;
-  }
-
-  &__meta-block {
-    background: vars.$colorGray100;
-    padding: vars.$spacing-md;
-    border-radius: vars.$radius-md;
-    display: flex;
-    flex-direction: column;
-    gap: vars.$spacing-xs;
-
-    h5 {
-      font-size: vars.$fontSize-xs;
-      font-weight: vars.$fontWeight-semibold;
-      color: vars.$colorGray500;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
-    p {
-      font-size: vars.$fontSize-sm;
-      font-weight: vars.$fontWeight-medium;
-      color: vars.$colorBlack;
-      margin: 0;
-    }
-
-    .meta-link {
-      color: vars.$colorPrimary;
-      text-decoration: none;
-      font-weight: vars.$fontWeight-semibold;
-      display: inline-flex;
-      align-items: center;
-      gap: vars.$spacing-xs;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-
-  &__notes-block {
-    background: color.adjust(vars.$colorPrimary, $lightness: 48%);
-    border: 1px solid color.adjust(vars.$colorPrimary, $lightness: 40%);
-    padding: vars.$spacing-md vars.$spacing-lg;
-    border-radius: vars.$radius-md;
-
-    h5 {
-      font-size: vars.$fontSize-xs;
-      font-weight: vars.$fontWeight-semibold;
-      color: color.adjust(vars.$colorPrimary, $lightness: -15%);
-      margin: 0 0 vars.$spacing-xs 0;
-      text-transform: uppercase;
-    }
-
-    p {
-      font-size: vars.$fontSize-sm;
-      color: vars.$colorGray700;
-      line-height: 1.5;
-      margin: 0;
-      white-space: pre-wrap;
-    }
-  }
-
-  &__footer-info {
-    @include mix.flex-between;
-    font-size: vars.$fontSize-xs;
-    color: vars.$colorGray500;
-    border-top: 1px solid vars.$colorGray200;
-    padding-top: vars.$spacing-md;
-    margin-top: vars.$spacing-sm;
-
-    .agent-info {
-      strong {
-        color: vars.$colorGray700;
-        font-weight: vars.$fontWeight-medium;
-      }
-    }
-  }
+}
+.rendez-vous-card:hover {
+  border-color: vars.$colorGray300;
+  box-shadow: vars.$shadow-sm;
+}
+.rendez-vous-card__header {
+  @include mix.flex-between;
+  padding: vars.$spacing-lg;
+  gap: vars.$spacing-md;
+  transition: background-color vars.$transition-fast;
+  user-select: none;
+}
+.rendez-vous-card__header:hover {
+  background-color: vars.$colorGray100;
+}
+.rendez-vous-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  flex: 1;
+}
+.rendez-vous-card__date-statut {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-md;
+  flex-wrap: wrap;
+}
+.rendez-vous-card__date {
+  font-size: vars.$fontSize-base;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorBlack;
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+}
+.rendez-vous-card__date svg {
+  color: vars.$colorPrimary;
+}
+.rendez-vous-card__statut {
+  padding: vars.$spacing-xs vars.$spacing-md;
+  border-radius: vars.$radius-full;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-medium;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.rendez-vous-card__statut--planifie {
+  background: color.adjust(vars.$colorPrimary, $lightness: 44%);
+  color: color.adjust(vars.$colorPrimary, $lightness: -14%);
+}
+.rendez-vous-card__statut--reporte {
+  background: color.adjust(#d97706, $lightness: 48%);
+  color: color.adjust(#d97706, $lightness: -12%);
+}
+.rendez-vous-card__statut--effectue {
+  background: color.adjust(vars.$colorSuccess, $lightness: 45%);
+  color: color.adjust(vars.$colorSuccess, $lightness: -10%);
+}
+.rendez-vous-card__statut--annule {
+  background: color.adjust(vars.$colorDanger, $lightness: 45%);
+  color: color.adjust(vars.$colorDanger, $lightness: -10%);
+}
+.rendez-vous-card__statut--non-honore {
+  background: vars.$colorGray100;
+  color: vars.$colorGray700;
+  border: 1px solid vars.$colorGray200;
+}
+.rendez-vous-card__client-final {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray700;
+}
+.rendez-vous-card__client-final .client-label {
+  color: vars.$colorGray500;
+}
+.rendez-vous-card__client-final .client-value {
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorPrimary;
+}
+.rendez-vous-card__toggle {
+  @include mix.button-base(".rendez-vous-card__toggle");
+  padding: vars.$spacing-sm vars.$spacing-lg;
+  font-size: vars.$fontSize-sm;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray300;
+  color: vars.$colorGray700;
+  white-space: nowrap;
+}
+.rendez-vous-card__toggle:hover {
+  background: vars.$colorGray100;
+  border-color: vars.$colorGray500;
+}
+.rendez-vous-card__toggle--expanded {
+  background: vars.$colorPrimaryLight;
+  border-color: vars.$colorPrimary;
+  color: vars.$colorPrimary;
+}
+.rendez-vous-card__details {
+  padding: 0 vars.$spacing-lg vars.$spacing-lg;
+  border-top: 1px solid vars.$colorGray200;
+  animation: slideDown 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-lg;
+}
+.rendez-vous-card__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: vars.$spacing-md;
+  margin-top: vars.$spacing-sm;
+}
+.rendez-vous-card__meta-block {
+  background: vars.$colorGray100;
+  padding: vars.$spacing-md;
+  border-radius: vars.$radius-md;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-xs;
+}
+.rendez-vous-card__meta-block h5 {
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray500;
+  margin: 0;
+  text-transform: uppercase;
+}
+.rendez-vous-card__meta-block p {
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  color: vars.$colorBlack;
+  margin: 0;
+}
+.rendez-vous-card__meta-block .meta-link {
+  color: vars.$colorPrimary;
+  text-decoration: none;
+  font-weight: vars.$fontWeight-semibold;
+  display: inline-flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+}
+.rendez-vous-card__meta-block .meta-link:hover {
+  text-decoration: underline;
+}
+.rendez-vous-card__notes-block {
+  background: color.adjust(vars.$colorPrimary, $lightness: 48%);
+  border: 1px solid color.adjust(vars.$colorPrimary, $lightness: 40%);
+  padding: vars.$spacing-md vars.$spacing-lg;
+  border-radius: vars.$radius-md;
+}
+.rendez-vous-card__notes-block h5 {
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  color: color.adjust(vars.$colorPrimary, $lightness: -15%);
+  margin: 0 0 vars.$spacing-xs 0;
+  text-transform: uppercase;
+}
+.rendez-vous-card__notes-block p {
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray700;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-wrap;
+}
+.rendez-vous-card__footer-info {
+  @include mix.flex-between;
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  border-top: 1px solid vars.$colorGray200;
+  padding-top: vars.$spacing-md;
+  margin-top: vars.$spacing-sm;
+}
+.rendez-vous-card__footer-info .agent-info strong {
+  color: vars.$colorGray700;
+  font-weight: vars.$fontWeight-medium;
 }
 
 @keyframes slideDown {

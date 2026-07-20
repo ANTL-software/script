@@ -1,5 +1,5 @@
 import './button.scss';
-import Loader from '../loader/Loader';
+import { Loader } from '../loader/index.ts';
 import type { ButtonHTMLAttributes } from 'react';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

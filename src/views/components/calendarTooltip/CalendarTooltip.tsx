@@ -1,9 +1,9 @@
 import './calendarTooltip.scss';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/formatters';
-import type { CalendarEvent } from '../../../utils/types';
-import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants';
+import { formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import type { CalendarEvent } from '../../../utils/types/index.ts';
+import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants/index.ts';
 
 interface CalendarTooltipProps {
   event: CalendarEvent;

@@ -1,4 +1,4 @@
-@use '../../../utils/styles/variables' as vars;
+@use "../../../utils/styles/variables" as vars;
 
 // Couleurs par statut
 $color-disponible: vars.$colorSuccess;
@@ -9,158 +9,178 @@ $color-appel-sortant: #6366f1; // indigo
 $color-qualification: #7c3aed;
 $color-svi: #f97316;
 $color-hors-ligne: vars.$colorGray500;
-
 .dialer-status {
   position: relative;
-
-  &__trigger {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-xs;
-    padding: 0.375rem 0.75rem;
-    border: 1px solid vars.$colorGray200;
-    border-radius: vars.$radius-full;
-    background: vars.$colorWhite;
-    cursor: pointer;
-    font-size: vars.$fontSize-sm;
-    font-weight: vars.$fontWeight-medium;
-    color: vars.$colorGray900;
-    transition: background vars.$transition-fast, border-color vars.$transition-fast;
-    white-space: nowrap;
-
-    &:hover:not(:disabled) {
-      background: vars.$colorGray100;
-      border-color: vars.$colorGray300;
-    }
-
-    &:disabled {
-      cursor: default;
-    }
-  }
-
-  &__dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  &__timer {
-    font-size: vars.$fontSize-xs;
-    color: vars.$colorGray500;
-    font-family: vars.$fontFamilyMono;
-  }
-
-  &__arrow {
-    font-size: 10px;
-    color: vars.$colorGray500;
-    transition: transform vars.$transition-fast;
-
-    &--open {
-      transform: rotate(180deg);
-    }
-  }
-
-  &__insight {
-    margin: 0.35rem 0 0;
-    font-size: vars.$fontSize-xs;
-    color: vars.$colorGray500;
-    max-width: 18rem;
-  }
-
-  // Dot coloré selon statut courant dans le trigger
-  &--disponible .dialer-status__dot { background: $color-disponible; }
-  &--en_appel .dialer-status__dot { background: $color-en-appel; animation: pulse-red 1.5s infinite; }
-  &--qualification_en_cours .dialer-status__dot { background: $color-qualification; }
-  &--svi_a_naviguer .dialer-status__dot { background: $color-svi; }
-  &--appel_sortant .dialer-status__dot { background: $color-appel-sortant; }
-  &--pause_apres_appel .dialer-status__dot { background: $color-apres-appel; }
-  &--pause .dialer-status__dot { background: $color-pause; }
-  &--hors_ligne .dialer-status__dot { background: $color-hors-ligne; }
-
-  // Dropdown
-  &__dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    min-width: 200px;
-    background: vars.$colorWhite;
-    border: 1px solid vars.$colorGray200;
-    border-radius: vars.$radius-lg;
-    box-shadow: vars.$shadow-lg;
-    z-index: vars.$z-dropdown;
-    overflow: hidden;
-    animation: dropdown-in 150ms ease-out;
-  }
-
-  &__dropdown-section {
-    padding: vars.$spacing-xs;
-  }
-
-  &__dropdown-divider {
-    height: 1px;
-    background: vars.$colorGray200;
-    margin: 0;
-  }
-
-  &__dropdown-label {
-    font-size: vars.$fontSize-xs;
-    font-weight: vars.$fontWeight-semibold;
-    color: vars.$colorGray500;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: vars.$spacing-xs vars.$spacing-sm;
-    margin: 0;
-  }
-
-  &__option {
-    display: flex;
-    align-items: center;
-    gap: vars.$spacing-sm;
-    width: 100%;
-    padding: vars.$spacing-sm vars.$spacing-sm;
-    border: none;
-    border-radius: vars.$radius-md;
-    background: transparent;
-    cursor: pointer;
-    font-size: vars.$fontSize-sm;
-    color: vars.$colorGray900;
-    text-align: left;
-    transition: background vars.$transition-fast;
-
-    &:hover {
-      background: vars.$colorGray100;
-    }
-
-    &--active {
-      background: vars.$colorGray100;
-      font-weight: vars.$fontWeight-medium;
-    }
-
-    &--disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    // Dots colorés dans les options
-    &--disponible .dialer-status__dot { background: $color-disponible; }
-    &--pause_apres_appel .dialer-status__dot { background: $color-apres-appel; }
-    &--pause .dialer-status__dot { background: $color-pause; }
-  }
+}
+.dialer-status__trigger {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-full;
+  background: vars.$colorWhite;
+  cursor: pointer;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+  color: vars.$colorGray900;
+  transition:
+    background vars.$transition-fast,
+    border-color vars.$transition-fast;
+  white-space: nowrap;
+}
+.dialer-status__trigger:hover:not(:disabled) {
+  background: vars.$colorGray100;
+  border-color: vars.$colorGray300;
+}
+.dialer-status__trigger:disabled {
+  cursor: default;
+}
+.dialer-status__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dialer-status__timer {
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  font-family: vars.$fontFamilyMono;
+}
+.dialer-status__arrow {
+  font-size: 10px;
+  color: vars.$colorGray500;
+  transition: transform vars.$transition-fast;
+}
+.dialer-status__arrow--open {
+  transform: rotate(180deg);
+}
+.dialer-status__insight {
+  margin: 0.35rem 0 0;
+  font-size: vars.$fontSize-xs;
+  color: vars.$colorGray500;
+  max-width: 18rem;
+}
+// Dot coloré selon statut courant dans le trigger
+.dialer-status--disponible .dialer-status__dot {
+  background: $color-disponible;
+}
+.dialer-status--en_appel .dialer-status__dot {
+  background: $color-en-appel;
+  animation: pulse-red 1.5s infinite;
+}
+.dialer-status--qualification_en_cours .dialer-status__dot {
+  background: $color-qualification;
+}
+.dialer-status--svi_a_naviguer .dialer-status__dot {
+  background: $color-svi;
+}
+.dialer-status--appel_sortant .dialer-status__dot {
+  background: $color-appel-sortant;
+}
+.dialer-status--pause_apres_appel .dialer-status__dot {
+  background: $color-apres-appel;
+}
+.dialer-status--pause .dialer-status__dot {
+  background: $color-pause;
+}
+.dialer-status--hors_ligne .dialer-status__dot {
+  background: $color-hors-ligne;
+}
+// Dropdown
+.dialer-status__dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 200px;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-lg;
+  z-index: vars.$z-dropdown;
+  overflow: hidden;
+  animation: dropdown-in 150ms ease-out;
+}
+.dialer-status__dropdown-section {
+  padding: vars.$spacing-xs;
+}
+.dialer-status__dropdown-divider {
+  height: 1px;
+  background: vars.$colorGray200;
+  margin: 0;
+}
+.dialer-status__dropdown-label {
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  margin: 0;
+}
+.dialer-status__option {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+  width: 100%;
+  padding: vars.$spacing-sm vars.$spacing-sm;
+  border: none;
+  border-radius: vars.$radius-md;
+  background: transparent;
+  cursor: pointer;
+  font-size: vars.$fontSize-sm;
+  color: vars.$colorGray900;
+  text-align: left;
+  transition: background vars.$transition-fast;
+}
+.dialer-status__option:hover {
+  background: vars.$colorGray100;
+}
+.dialer-status__option--active {
+  background: vars.$colorGray100;
+  font-weight: vars.$fontWeight-medium;
+}
+.dialer-status__option--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+// Dots colorés dans les options
+.dialer-status__option--disponible .dialer-status__dot {
+  background: $color-disponible;
+}
+.dialer-status__option--pause_apres_appel .dialer-status__dot {
+  background: $color-apres-appel;
+}
+.dialer-status__option--pause .dialer-status__dot {
+  background: $color-pause;
 }
 
 @keyframes pulse-red {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(1.2); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
 }
 
 @keyframes dropdown-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // Badge de reconnexion SIP
+
 .dialer-status__reconnecting {
   animation: pulse 1s infinite;
   margin-left: vars.$spacing-xs;
@@ -168,6 +188,11 @@ $color-hors-ligne: vars.$colorGray500;
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

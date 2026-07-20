@@ -1,6 +1,6 @@
 import './phoneNumberWithCallButton.scss';
 import { FaPhoneAlt, FaMobileAlt } from 'react-icons/fa';
-import Button from '../button/Button';
+import { Button } from '../button/index.ts';
 
 interface PhoneNumberWithCallButtonProps {
   phoneNumber: string;

@@ -1,10 +1,9 @@
 import './historiqueRendezVous.scss';
 
 import { useEffect } from 'react';
-import { useProspect } from '../../../hooks/useProspect';
-import { useCampaign } from '../../../hooks/useCampaign';
-import Loader from '../loader/Loader';
-import ErrorMessage from '../errorMessage/ErrorMessage';
+import { useCampaign, useProspect } from '../../../hooks/index.ts';
+import { Loader } from '../loader/index.ts';
+import { ErrorMessage } from '../errorMessage/index.ts';
 import RendezVousCard from './RendezVousCard';
 
 export default function HistoriqueRendezVous() {

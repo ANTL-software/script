@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { FormEvent } from 'react';
 import { useCart, useProspect, useCampaign, useUser, useDialer } from './index';
-import type { ModePaiement, DelaisLivraison } from '../utils/types';
-import { closingService } from '../API/services';
-import { validateOrderForm, buildVentePayload } from '../utils/scripts/orderValidation';
-import { getCampaignVariant } from '../utils/scripts/campaignVariants';
+import type { ModePaiement, DelaisLivraison } from '../utils/types/index.ts';
+import { closingService } from '../API/services/index.ts';
+import { buildVentePayload, getCampaignVariant, validateOrderForm } from '../utils/scripts/index.ts';
 
 interface FormData {
   adresse_facturation: string;
@@ -40,9 +39,12 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   const { user } = useUser();
   const { currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration } = useDialer();
 
-  const availableModesPaiement: ModePaiement[] = currentCampaign
-    ? (currentCampaign.modes_paiement ?? [])
-    : ['Prelevement', 'Cheque', 'Virement'];
+  const availableModesPaiement = useMemo<ModePaiement[]>(
+    () => currentCampaign
+      ? (currentCampaign.modes_paiement ?? [])
+      : ['Prelevement', 'Cheque', 'Virement'],
+    [currentCampaign],
+  );
 
   const [formData, setFormData] = useState<FormData>({
     adresse_facturation: currentProspect?.adresse_facturation || '',

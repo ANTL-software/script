@@ -1,4 +1,4 @@
-@use '../../../utils/styles/variables' as vars;
+@use "../../../utils/styles/variables" as vars;
 
 .agent-calendar {
   flex: 1;
@@ -7,93 +7,95 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
+}
 
-  &__loading {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    color: vars.$colorGray500;
-    height: 100%;
+.agent-calendar__loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: vars.$colorGray500;
+  height: 100%;
+}
 
-    p {
-      margin: 0;
-    }
-  }
+.agent-calendar__loading p {
+  margin: 0;
+}
 
-  &__prospect-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem 1rem;
-    background-color: rgba(#007aff, 0.1);
-    border-left: 4px solid #007aff;
-    border-radius: vars.$radius-md;
-    font-size: 0.875rem;
-    color: #004085;
-    margin-bottom: 0.75rem;
+.agent-calendar__prospect-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background-color: rgba(#007aff, 0.1);
+  border-left: 4px solid #007aff;
+  border-radius: vars.$radius-md;
+  font-size: 0.875rem;
+  color: #004085;
+  margin-bottom: 0.75rem;
+}
 
-    &-icon {
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
+.agent-calendar__prospect-banner-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
 
-    &-next {
-      color: vars.$colorGray700;
-      font-size: 0.8125rem;
-    }
+.agent-calendar__prospect-banner-next {
+  color: vars.$colorGray700;
+  font-size: 0.8125rem;
+}
 
-    &--warning {
-      background-color: rgba(vars.$colorWarning, 0.1);
-      border-left-color: vars.$colorWarning;
-      color: #856404;
-    }
-  }
+.agent-calendar__prospect-banner--warning {
+  background-color: rgba(vars.$colorWarning, 0.1);
+  border-left-color: vars.$colorWarning;
+  color: #856404;
+}
 
-  &__calendar-wrapper {
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    background: vars.$colorWhite;
-    min-height: 0;
+.agent-calendar__calendar-wrapper {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: vars.$colorWhite;
+  min-height: 0;
 
-    // Customisation des créneaux de 15 minutes
-    .rbc-time-view-resources .rbc-time-gutter,
-    .rbc-time-view .rbc-time-gutter {
-      width: 60px;
-    }
+  // Customisation des créneaux de 15 minutes
+}
 
-    .rbc-day-slot {
-      overflow-y: auto;
-    }
+.agent-calendar__calendar-wrapper .rbc-time-view-resources .rbc-time-gutter,
+.agent-calendar__calendar-wrapper .rbc-time-view .rbc-time-gutter {
+  width: 60px;
+}
 
-    // Amélioration de l'affichage des créneaux horaires
-    .rbc-time-slot {
-      min-height: 20px;
-    }
+.agent-calendar__calendar-wrapper .rbc-day-slot {
+  overflow-y: auto;
+}
+// Amélioration de l'affichage des créneaux horaires
 
-    // Légende plus visible pour les créneaux
-    .rbc-label {
-      font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-    }
+.agent-calendar__calendar-wrapper .rbc-time-slot {
+  min-height: 20px;
+}
+// Légende plus visible pour les créneaux
 
-    // Cacher le bouton de suppression par défaut
-    .cal-event-delete-btn {
-      display: none !important;
-    }
+.agent-calendar__calendar-wrapper .rbc-label {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+}
+// Cacher le bouton de suppression par défaut
 
-    // Afficher le bouton uniquement dans la vue journalière
-    .rbc-day-view .cal-event-delete-btn {
-      display: flex !important;
-    }
-  }
+.agent-calendar__calendar-wrapper .cal-event-delete-btn {
+  display: none !important;
+}
+// Afficher le bouton uniquement dans la vue journalière
+
+.agent-calendar__calendar-wrapper .rbc-day-view .cal-event-delete-btn {
+  display: flex !important;
 }
 
 // Event styles
+
 .cal-event-wrapper {
   position: relative;
   display: flex !important;
@@ -133,9 +135,9 @@
   font-size: 0.75rem;
   z-index: 10;
   pointer-events: auto;
+}
 
-  &:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-  }
+.cal-event-delete-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
 }

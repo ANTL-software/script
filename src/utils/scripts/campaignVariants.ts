@@ -1,4 +1,4 @@
-import type { ViewType } from '../../context/appContext/AppContext';
+import type { ViewType } from '../types/index.ts';
 import type { Campaign } from '../types/campaign.types';
 import type { StatutAppel } from '../types/appel.types';
 import { STATUT_APPEL_OPTIONS, type StatutAppelOption } from '../constants/appel.constants.ts';

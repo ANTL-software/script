@@ -1,6 +1,5 @@
-import { Navigate } from 'react-router-dom';
-import { useUser } from '../../../hooks/useUser';
-import Loader from '../loader/Loader';
+import { useProtectedRoute } from '../../../hooks/index.ts';
+import { Loader } from '../loader/index.ts';
 import type { ReactNode } from 'react';
 
 export interface ProtectedRouteProps {
@@ -8,7 +7,7 @@ export interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useUser();
+  const { isAuthenticated, isLoading } = useProtectedRoute();
 
   if (isLoading) {
     return (
@@ -24,7 +23,7 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return null;
   }
 
   return <>{children}</>;

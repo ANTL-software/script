@@ -1,10 +1,10 @@
 import './cataloguePaniers.scss';
 import { useState } from 'react';
-import type { CampaignPanier } from '../../../utils/types';
-import { formatCurrency } from '../../../utils/scripts/utils';
-import Button from '../button/Button';
-import Loader from '../loader/Loader';
-import ErrorMessage from '../errorMessage/ErrorMessage';
+import type { CampaignPanier } from '../../../utils/types/index.ts';
+import { formatCurrency } from '../../../utils/scripts/index.ts';
+import { Button } from '../button/index.ts';
+import { Loader } from '../loader/index.ts';
+import { ErrorMessage } from '../errorMessage/index.ts';
 import { FaBoxesStacked, FaLayerGroup, FaPlus } from 'react-icons/fa6';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 

@@ -10,6 +10,8 @@ export type ProspectStatut =
 
 export type TypeFiche = 'jamais_appele' | 'deja_appele' | 'recycle' | 'client';
 
+export type ProspectMaturiteCommerciale = 'prospect' | 'client';
+
 export interface Prospect {
   id_prospect: number;
   type_prospect: ProspectType;
@@ -25,6 +27,7 @@ export interface Prospect {
   ville?: string;
   pays?: string;
   statut: ProspectStatut;
+  maturite_commerciale?: ProspectMaturiteCommerciale | null;
   statut_global?: ProspectStatut;
   statut_campagne?: ProspectStatut | null;
   notes?: string;

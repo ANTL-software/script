@@ -1,7 +1,7 @@
 import './calendarTooltip.scss';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { formatProspectName, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import { formatProspectName, checkIsCommande, checkIsRelanceVente, getProspectMaturityBadge } from '../../../utils/scripts/index.ts';
 import type { CalendarEvent } from '../../../utils/types/index.ts';
 import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants/index.ts';
 
@@ -33,6 +33,7 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   const dateLabel = format(parseISO(resource.date_rdv), 'EEE d MMM yyyy', { locale: fr });
   const timeLabel = resource.heure_rdv.substring(0, 5);
   const prospectName = resource.prospect ? formatProspectName(resource.prospect) : null;
+  const maturityBadge = getProspectMaturityBadge(resource.prospect?.maturite_commerciale);
 
   const left = x + 228 > window.innerWidth ? x - 228 - 8 : x + 12;
   const top  = y + 8;
@@ -64,6 +65,12 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
 
       {!isOtherAgent && prospectName && (
         <div className="cal-tooltip__prospect">{prospectName}</div>
+      )}
+
+      {resource.prospect && (
+        <span className="cal-tooltip__maturity" data-maturity={maturityBadge.variant}>
+          {maturityBadge.label}
+        </span>
       )}
 
       <div className="cal-tooltip__time">

@@ -5,7 +5,7 @@ import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types/index.ts';
-import { formatDateLong, getStatutProspectLabel } from '../../../utils/scripts/index.ts';
+import { formatDateLong, getProspectMaturityBadge, getStatutProspectLabel } from '../../../utils/scripts/index.ts';
 
 interface EditableFields {
   nom: string;
@@ -81,6 +81,8 @@ export default function QuiEstCe() {
       </div>
     );
   }
+
+  const maturityBadge = getProspectMaturityBadge(currentProspect.maturite_commerciale);
 
   const validateFields = (): boolean => {
     const newErrors: Partial<EditableFields> = {};
@@ -212,7 +214,15 @@ export default function QuiEstCe() {
   return (
     <div className="qui-est-ce">
       <div className="qui-est-ce__header">
-        <h2>Qui est-ce ?</h2>
+        <div className="qui-est-ce__heading">
+          <h2>Qui est-ce ?</h2>
+          <span
+            className="qui-est-ce__maturity-badge"
+            data-maturity={maturityBadge.variant}
+          >
+            {maturityBadge.label}
+          </span>
+        </div>
         <div className="qui-est-ce__actions">
           {!isEditing ? (
             <Button variant="primary" size="small" onClick={handleEdit}>

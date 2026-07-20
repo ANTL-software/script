@@ -39,6 +39,27 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+.cal-tooltip__maturity {
+  display: inline-flex;
+  align-items: center;
+  border-radius: vars.$radius-full;
+  padding: 0.15rem 0.45rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+.cal-tooltip__maturity[data-maturity="client"] {
+  background: #d1fae5;
+  color: #047857;
+}
+.cal-tooltip__maturity[data-maturity="prospect"] {
+  background: #fef3c7;
+  color: #b45309;
+}
+.cal-tooltip__maturity[data-maturity="unknown"] {
+  background: #f1f5f9;
+  color: #475569;
+}
 .cal-tooltip__time {
   font-size: 0.75rem;
   font-weight: 400;

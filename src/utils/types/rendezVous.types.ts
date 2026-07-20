@@ -29,6 +29,7 @@ export interface RendezVous {
     decisionnaire_nom?: string | null;
     decisionnaire_fonction?: string | null;
     decisionnaire_email_pro?: string | null;
+    maturite_commerciale?: 'prospect' | 'client' | null;
     statut?: string;
   };
   agent?: {

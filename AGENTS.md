@@ -219,6 +219,12 @@ services → types → models → context → hooks → components → layouts
 - Les dossiers de composants et layouts suivent aussi cette règle : `index.ts` local au module, puis agrégation dans `src/views/components/index.ts` ou `src/views/layouts/index.ts`.
 - Un component ou un layout n'importe jamais un service, même indirectement par un chemin profond. Il consomme uniquement les hooks et contrats publics prévus par la chaîne d'architecture.
 
+### Sécurité des dépendances et compatibilité dialer
+
+- Les mises à jour de sécurité doivent être validées par les tests unitaires, le build et les parcours Playwright du dialer; ne jamais utiliser `npm audit fix --force` sans analyser les ruptures proposées.
+- Le SDK Twilio dépend directement du paquet navigateur `events`. Vite le résout depuis cette dépendance explicite; ne pas réintroduire `vite-plugin-node-polyfills` sans démontrer un besoin runtime précis et sans réauditer sa chaîne cryptographique.
+- Conserver les dépendances navigateur explicites nécessaires au SDK et valider toute évolution sur les appels automatiques, manuels et de rappel.
+
 ### Exemples concrets
 
 **Correct** — un component appelle un hook :
@@ -1478,6 +1484,7 @@ Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :
 
 | Date | Modification | Auteur |
 |------|--------------|--------|
+| 2026-07-20 | Mise à jour des dépendances vulnérables et retrait du plugin de polyfills inutile après validation de la résolution `events` du SDK Twilio | AI Agent |
 | 2026-07-18 | Correction et couverture du brouillon de notes pour les closings manuels sans idAppel | AI Agent |
 | 2026-07-17 | Extraction de l'orchestration de DashboardPage vers useDashboardPage et helpers testables | AI Agent |
 | 2026-04-25 | Contexte métier global : flux agent complet (dispo manuel, closing obligatoire, RDV manuel), vente sans CB | AI Agent |
@@ -1615,4 +1622,4 @@ if (nouveauStatut === 'disponible' && !sipConnected) { // sipConnected représen
 
 ---
 
-*AGENTS.md v1.4 - Last updated: 2026-07-18*
+*AGENTS.md v1.5 - Last updated: 2026-07-20*

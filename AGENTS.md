@@ -225,6 +225,10 @@ services → types → models → context → hooks → components → layouts
 - Le SDK Twilio dépend directement du paquet navigateur `events`. Vite le résout depuis cette dépendance explicite; ne pas réintroduire `vite-plugin-node-polyfills` sans démontrer un besoin runtime précis et sans réauditer sa chaîne cryptographique.
 - Conserver les dépendances navigateur explicites nécessaires au SDK et valider toute évolution sur les appels automatiques, manuels et de rappel.
 
+### Serveurs de développement locaux
+
+- USV écoute de façon déterministe sur `127.0.0.1:5173` et Script sur `127.0.0.1:5174`; les deux configurations utilisent `strictPort: true` pour rendre tout conflit explicite.
+
 ### Exemples concrets
 
 **Correct** — un component appelle un hook :
@@ -1484,6 +1488,7 @@ Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :
 
 | Date | Modification | Auteur |
 |------|--------------|--------|
+| 2026-07-20 | Verrouillage du serveur Vite Script sur `127.0.0.1:5174` afin de coexister avec USV sur 5173 | AI Agent |
 | 2026-07-20 | Mise à jour des dépendances vulnérables et retrait du plugin de polyfills inutile après validation de la résolution `events` du SDK Twilio | AI Agent |
 | 2026-07-18 | Correction et couverture du brouillon de notes pour les closings manuels sans idAppel | AI Agent |
 | 2026-07-17 | Extraction de l'orchestration de DashboardPage vers useDashboardPage et helpers testables | AI Agent |

@@ -30,6 +30,14 @@ export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): 
   return { id: rdv.id_rendez_vous, title, start: startDate, end: endDate, resource: rdv, eventType };
 }
 
+export function isUpcomingActiveRendezVous(rendezVous: RendezVous, referenceDate = new Date()): boolean {
+  if (!['planifie', 'reporte'].includes(rendezVous.statut)) {
+    return false;
+  }
+
+  return !isBefore(parseISO(`${rendezVous.date_rdv}T${rendezVous.heure_rdv}`), referenceDate);
+}
+
 export function useAgentCalendar(prospectId: number | null = null, campagneId: number | null = null) {
   const { user } = useUser();
   const { showToast } = useToast();
@@ -58,7 +66,10 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
       ]);
 
       setAgentRdvList(agentData);
-      setOtherAgentRdvList(prospectData.filter((r) => r.id_agent !== agentId));
+      setOtherAgentRdvList(prospectData.filter((rendezVous) =>
+        Number(rendezVous.id_agent) !== Number(agentId)
+        && isUpcomingActiveRendezVous(rendezVous)
+      ));
     } catch (err) {
       showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
     } finally {

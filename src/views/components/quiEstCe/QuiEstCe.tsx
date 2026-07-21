@@ -5,7 +5,7 @@ import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types/index.ts';
-import { formatDateLong, getProspectMaturityBadge, getStatutProspectLabel } from '../../../utils/scripts/index.ts';
+import { formatDateLong, getProspectRelationBadge, getStatutProspectLabel } from '../../../utils/scripts/index.ts';
 
 interface EditableFields {
   nom: string;
@@ -82,7 +82,7 @@ export default function QuiEstCe() {
     );
   }
 
-  const maturityBadge = getProspectMaturityBadge(currentProspect.maturite_commerciale);
+  const maturityBadge = getProspectRelationBadge(currentProspect.relation_commerciale_campagne?.statut_relation);
 
   const validateFields = (): boolean => {
     const newErrors: Partial<EditableFields> = {};
@@ -218,7 +218,7 @@ export default function QuiEstCe() {
           <h2>Qui est-ce ?</h2>
           <span
             className="qui-est-ce__maturity-badge"
-            data-maturity={maturityBadge.variant}
+            data-relation={maturityBadge.variant}
           >
             {maturityBadge.label}
           </span>

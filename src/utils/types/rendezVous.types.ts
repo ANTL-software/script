@@ -29,7 +29,7 @@ export interface RendezVous {
     decisionnaire_nom?: string | null;
     decisionnaire_fonction?: string | null;
     decisionnaire_email_pro?: string | null;
-    maturite_commerciale?: 'prospect' | 'client' | null;
+    relation_commerciale_campagne?: import('./prospect.types.ts').ProspectRelationCommercialeCampagne;
     statut?: string;
   };
   agent?: {

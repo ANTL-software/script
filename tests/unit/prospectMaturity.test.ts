@@ -1,21 +1,25 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { getProspectMaturityBadge } from '../../src/utils/scripts/prospectMaturity.ts';
+import { getProspectRelationBadge } from '../../src/utils/scripts/prospectMaturity.ts';
 
-test('maps the USV maturity colors to script badge variants', () => {
-  assert.deepEqual(getProspectMaturityBadge('client'), {
+test('maps campaign-scoped commercial relations to script badge variants', () => {
+  assert.deepEqual(getProspectRelationBadge('client'), {
     label: 'Client',
     variant: 'client',
   });
-  assert.deepEqual(getProspectMaturityBadge('prospect'), {
+  assert.deepEqual(getProspectRelationBadge('lead_genere'), {
+    label: 'Lead généré',
+    variant: 'lead_genere',
+  });
+  assert.deepEqual(getProspectRelationBadge('prospect'), {
     label: 'Prospect',
     variant: 'prospect',
   });
 });
 
-test('keeps an explicit fallback when the prospect maturity is absent', () => {
-  assert.deepEqual(getProspectMaturityBadge(null), {
-    label: 'Non renseignée',
-    variant: 'unknown',
+test('keeps prospect as the default when no campaign relation exists', () => {
+  assert.deepEqual(getProspectRelationBadge(null), {
+    label: 'Prospect',
+    variant: 'prospect',
   });
 });

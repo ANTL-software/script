@@ -1,20 +1,20 @@
-import type { ProspectMaturiteCommerciale } from '../types/prospect.types.ts';
+import type { ProspectRelationCommercialeCampagneStatut } from '../types/prospect.types.ts';
 
 export interface ProspectMaturityBadge {
   label: string;
-  variant: 'client' | 'prospect' | 'unknown';
+  variant: ProspectRelationCommercialeCampagneStatut;
 }
 
-export const getProspectMaturityBadge = (
-  maturite: ProspectMaturiteCommerciale | string | null | undefined,
+export const getProspectRelationBadge = (
+  relation: ProspectRelationCommercialeCampagneStatut | null | undefined,
 ): ProspectMaturityBadge => {
-  if (maturite === 'client') {
+  if (relation === 'client') {
     return { label: 'Client', variant: 'client' };
   }
 
-  if (maturite === 'prospect') {
-    return { label: 'Prospect', variant: 'prospect' };
+  if (relation === 'lead_genere') {
+    return { label: 'Lead généré', variant: 'lead_genere' };
   }
 
-  return { label: 'Non renseignée', variant: 'unknown' };
+  return { label: 'Prospect', variant: 'prospect' };
 };

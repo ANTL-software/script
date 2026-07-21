@@ -10,7 +10,22 @@ export type ProspectStatut =
 
 export type TypeFiche = 'jamais_appele' | 'deja_appele' | 'recycle' | 'client';
 
-export type ProspectMaturiteCommerciale = 'prospect' | 'client';
+export type ProspectRelationCommercialeCampagneStatut = 'prospect' | 'client' | 'lead_genere';
+
+export interface ProspectRelationCommercialeCampagne {
+  id_relation?: number;
+  id_prospect?: number;
+  id_campagne?: number;
+  statut_relation: ProspectRelationCommercialeCampagneStatut;
+  origine: 'vente_validee' | 'lead_cree' | null;
+  id_source: number | null;
+  date_relation: string | null;
+  campagne?: {
+    id_campagne: number;
+    nom_campagne: string;
+    type_campagne?: string | null;
+  };
+}
 
 export interface Prospect {
   id_prospect: number;
@@ -27,7 +42,8 @@ export interface Prospect {
   ville?: string;
   pays?: string;
   statut: ProspectStatut;
-  maturite_commerciale?: ProspectMaturiteCommerciale | null;
+  relation_commerciale_campagne?: ProspectRelationCommercialeCampagne | null;
+  relations_commerciales?: ProspectRelationCommercialeCampagne[];
   statut_global?: ProspectStatut;
   statut_campagne?: ProspectStatut | null;
   notes?: string;

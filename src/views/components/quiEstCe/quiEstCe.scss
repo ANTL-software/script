@@ -32,17 +32,17 @@
   font-weight: 600;
   white-space: nowrap;
 }
-.qui-est-ce__maturity-badge[data-maturity="client"] {
+.qui-est-ce__maturity-badge[data-relation="client"] {
   background: #d1fae5;
   color: #047857;
 }
-.qui-est-ce__maturity-badge[data-maturity="prospect"] {
+.qui-est-ce__maturity-badge[data-relation="prospect"] {
   background: #fef3c7;
   color: #b45309;
 }
-.qui-est-ce__maturity-badge[data-maturity="unknown"] {
-  background: #f1f5f9;
-  color: #64748b;
+.qui-est-ce__maturity-badge[data-relation="lead_genere"] {
+  background: #ede9fe;
+  color: #6d28d9;
 }
 .qui-est-ce__actions {
   display: flex;

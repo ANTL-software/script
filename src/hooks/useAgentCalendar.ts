@@ -10,7 +10,7 @@ import type {
   RendezVousStatut,
   UpdateRendezVousData,
 } from '../utils/types';
-import { getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
+import { checkIsRelanceVente, getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
 
 export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): CalendarEvent {
   // Construire la date correctement en combinant date et heure pour éviter les problèmes de timezone
@@ -36,6 +36,14 @@ export function isUpcomingActiveRendezVous(rendezVous: RendezVous, referenceDate
   }
 
   return !isBefore(parseISO(`${rendezVous.date_rdv}T${rendezVous.heure_rdv}`), referenceDate);
+}
+
+export function canRescheduleSourceRendezVous(rendezVous: RendezVous | null): boolean {
+  if (!rendezVous || !['planifie', 'reporte', 'non_honore'].includes(rendezVous.statut)) {
+    return false;
+  }
+
+  return !checkIsRelanceVente(rendezVous.motif, rendezVous.appelsSource);
 }
 
 export function useAgentCalendar(prospectId: number | null = null, campagneId: number | null = null) {
@@ -134,8 +142,7 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
   const shouldRescheduleSourceRendezVous = Boolean(
     prospectId &&
     currentOrigineAppel === 'rappel' &&
-    currentRendezVousSource &&
-    ['planifie', 'reporte', 'non_honore'].includes(currentRendezVousSource.statut)
+    canRescheduleSourceRendezVous(currentRendezVousSource)
   );
 
   const canSelectSlot = useCallback((start: Date, isReadOnly: boolean): boolean => {

@@ -3,8 +3,11 @@ import test from 'node:test';
 
 import {
   buildLeadB2BRendezVousPayload,
+  filterAvailableLeadB2BTimeSlots,
   formatLeadB2BDateLabel,
   getLeadB2BRendezVousPrefill,
+  getLeadB2BTimeSlots,
+  isLeadB2BTimeSlotUnavailable,
   getTodayInputDateString,
   isLeadB2BDateAllowed,
   LEAD_B2B_RENDEZ_VOUS_MOTIF,
@@ -97,6 +100,17 @@ test('isLeadB2BDateAllowed n autorise que mardi et jeudi', () => {
   assert.equal(isLeadB2BDateAllowed('2026-07-07'), true);
   assert.equal(isLeadB2BDateAllowed('2026-07-09'), true);
   assert.equal(isLeadB2BDateAllowed('2026-07-08'), false);
+});
+
+test('les créneaux déjà réservés sont retirés sans bloquer les heures suivantes', () => {
+  const slots = getLeadB2BTimeSlots();
+  const availableSlots = filterAvailableLeadB2BTimeSlots(slots, ['09:00:00']);
+
+  assert.equal(availableSlots.some((slot) => slot.value === '09:00'), false);
+  assert.equal(availableSlots.some((slot) => slot.value === '09:15'), true);
+  assert.equal(availableSlots.some((slot) => slot.value === '10:00'), true);
+  assert.equal(isLeadB2BTimeSlotUnavailable('09:00', ['09:00:00']), true);
+  assert.equal(isLeadB2BTimeSlotUnavailable('10:00', ['09:00:00']), false);
 });
 
 test('les helpers de date gardent un format stable pour le formulaire MMA', () => {

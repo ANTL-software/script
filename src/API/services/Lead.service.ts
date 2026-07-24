@@ -19,6 +19,15 @@ export class LeadService {
     return throwIfApiError(response, 'Erreur lors de la creation du rendez-vous client');
   }
 
+  public async getUnavailableTimeSlots(campagneId: number, dateRdv: string): Promise<string[]> {
+    const query = new URLSearchParams({
+      campagne: String(campagneId),
+      date: dateRdv,
+    });
+    const response = await apiCalls.get<string[]>(`/leads/availability?${query.toString()}`);
+    return throwIfApiError(response, 'Erreur lors de la recuperation des disponibilites');
+  }
+
   public async getLeadById(id: number): Promise<LeadClient> {
     const response = await apiCalls.get<LeadClient>(`/leads/${id}`);
     return throwIfApiError(response, 'Erreur lors de la recuperation du rendez-vous client');

@@ -86,6 +86,7 @@ export default function PriseRendezVousPlaceholder() {
     isRecapOpen,
     todayStr,
     timeSlots,
+    isAvailabilityLoading,
     handleDateChange,
     handleSelectHeureChange,
     handleHeureInputChange,
@@ -130,7 +131,7 @@ export default function PriseRendezVousPlaceholder() {
                 <div className="time-picker-container">
                   <div className="select-wrapper">
                     <label htmlFor="heureRdvSelect">
-                      Créneaux <span className="required">*</span>
+                      Créneaux disponibles <span className="required">*</span>
                     </label>
                     <Select<RendezVousTimeOption, false>
                       inputId="heureRdvSelect"
@@ -138,7 +139,7 @@ export default function PriseRendezVousPlaceholder() {
                       value={heureRdv}
                       onChange={handleSelectHeureChange}
                       styles={selectStyles}
-                      isDisabled={isSaving}
+                      isDisabled={isSaving || isAvailabilityLoading}
                       placeholder="Choisir..."
                       isClearable
                     />
@@ -154,7 +155,7 @@ export default function PriseRendezVousPlaceholder() {
                         value={heureInput}
                         onChange={(event) => handleHeureInputChange(event.target.value)}
                         maxLength={2}
-                        disabled={isSaving}
+                        disabled={isSaving || isAvailabilityLoading}
                       />
                       <span className="separator">:</span>
                       <input
@@ -164,11 +165,12 @@ export default function PriseRendezVousPlaceholder() {
                         value={minuteInput}
                         onChange={(event) => handleMinuteInputChange(event.target.value)}
                         maxLength={2}
-                        disabled={isSaving}
+                        disabled={isSaving || isAvailabilityLoading}
                       />
                     </div>
                   </div>
                 </div>
+                {isAvailabilityLoading && <span className="form-help">Mise à jour des créneaux disponibles...</span>}
                 {errors.heureRdv && <span className="error-message">{errors.heureRdv}</span>}
               </div>
             </div>

@@ -57,6 +57,37 @@ export function getLeadB2BTimeSlots(): RendezVousTimeOption[] {
   return slots;
 }
 
+export function normalizeLeadB2BTimeSlot(value: string): string | null {
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!match) return null;
+
+  const hours = Number.parseInt(match[1], 10);
+  const minutes = Number.parseInt(match[2], 10);
+  if (hours > 23 || minutes > 59) return null;
+
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
+export function filterAvailableLeadB2BTimeSlots(
+  slots: RendezVousTimeOption[],
+  unavailableSlots: string[],
+): RendezVousTimeOption[] {
+  const unavailableSet = new Set(
+    unavailableSlots
+      .map((timeSlot) => normalizeLeadB2BTimeSlot(timeSlot))
+      .filter((timeSlot): timeSlot is string => timeSlot !== null),
+  );
+
+  return slots.filter((slot) => !unavailableSet.has(slot.value));
+}
+
+export function isLeadB2BTimeSlotUnavailable(timeSlot: string, unavailableSlots: string[]): boolean {
+  const normalizedTimeSlot = normalizeLeadB2BTimeSlot(timeSlot);
+  if (!normalizedTimeSlot) return false;
+
+  return unavailableSlots.some((unavailableSlot) => normalizeLeadB2BTimeSlot(unavailableSlot) === normalizedTimeSlot);
+}
+
 const trimToUndefined = (value: string): string | undefined => {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : undefined;

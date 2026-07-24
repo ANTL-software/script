@@ -6,11 +6,13 @@ import { getCampaignVariant } from '../utils/scripts/campaignVariants.ts';
 import { formatProspectName, getErrorMessage } from '../utils/scripts/formatters.ts';
 import {
   buildLeadB2BRendezVousPayload,
+  filterAvailableLeadB2BTimeSlots,
   formatLeadB2BDateLabel,
   getLeadB2BRendezVousPrefill,
   getLeadB2BTimeSlots,
   getTodayInputDateString,
   isLeadB2BDateAllowed,
+  isLeadB2BTimeSlotUnavailable,
 } from '../utils/scripts/priseRendezVous.ts';
 import type { RendezVousRecapData, RendezVousTimeOption } from '../utils/types/index.ts';
 
@@ -43,6 +45,10 @@ export function usePriseRendezVous() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [recap, setRecap] = useState<RendezVousRecapData | null>(null);
   const [isRecapOpen, setIsRecapOpen] = useState(false);
+  const [unavailableTimeSlots, setUnavailableTimeSlots] = useState<string[]>([]);
+  const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
+
+  const timeSlots = filterAvailableLeadB2BTimeSlots(TIME_SLOTS, unavailableTimeSlots);
 
   useEffect(() => {
     if (!currentProspect) return;
@@ -62,8 +68,56 @@ export function usePriseRendezVous() {
     });
   }, [currentProspect]);
 
+  useEffect(() => {
+    if (!currentCampaign?.id_campagne || !isLeadB2BDateAllowed(dateRdv)) {
+      setUnavailableTimeSlots([]);
+      setIsAvailabilityLoading(false);
+      return;
+    }
+
+    let isCurrentRequest = true;
+    setIsAvailabilityLoading(true);
+
+    leadService.getUnavailableTimeSlots(currentCampaign.id_campagne, dateRdv)
+      .then((slots) => {
+        if (isCurrentRequest) {
+          setUnavailableTimeSlots(slots);
+        }
+      })
+      .catch((availabilityError: unknown) => {
+        if (isCurrentRequest) {
+          console.error('[LEAD CLIENT] Erreur chargement disponibilites:', availabilityError);
+          setUnavailableTimeSlots([]);
+        }
+      })
+      .finally(() => {
+        if (isCurrentRequest) {
+          setIsAvailabilityLoading(false);
+        }
+      });
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, [currentCampaign?.id_campagne, dateRdv]);
+
+  useEffect(() => {
+    if (!heureRdv || !isLeadB2BTimeSlotUnavailable(heureRdv.value, unavailableTimeSlots)) {
+      return;
+    }
+
+    setHeureRdv(null);
+    setHeureInput('');
+    setMinuteInput('');
+    setErrors((previous) => ({
+      ...previous,
+      heureRdv: 'Ce créneau vient d etre réservé. Choisissez une autre heure.',
+    }));
+  }, [heureRdv, unavailableTimeSlots]);
+
   const handleDateChange = (value: string): void => {
     setDateRdv(value);
+    setUnavailableTimeSlots([]);
     setErrors((previous) => ({
       ...previous,
       dateRdv: value && !isLeadB2BDateAllowed(value)
@@ -132,6 +186,11 @@ export function usePriseRendezVous() {
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
     else if (!isLeadB2BDateAllowed(dateRdv)) nextErrors.dateRdv = 'Seuls les mardis et jeudis sont ouverts.';
     if (!heureRdv && (!heureInput || !minuteInput)) nextErrors.heureRdv = "L'heure est obligatoire.";
+    const selectedTime = heureRdv?.value
+      ?? (heureInput && minuteInput ? `${heureInput.padStart(2, '0')}:${minuteInput.padStart(2, '0')}` : '');
+    if (selectedTime && isLeadB2BTimeSlotUnavailable(selectedTime, unavailableTimeSlots)) {
+      nextErrors.heureRdv = 'Ce créneau est déjà pris. Choisissez une autre heure.';
+    }
     if (!interlocuteurNom.trim()) nextErrors.interlocuteurNom = 'Le nom est obligatoire.';
     if (!telephone.trim()) nextErrors.telephone = 'Le téléphone est obligatoire.';
     return nextErrors;
@@ -228,7 +287,8 @@ export function usePriseRendezVous() {
     recap,
     isRecapOpen,
     todayStr: getTodayInputDateString(),
-    timeSlots: TIME_SLOTS,
+    timeSlots,
+    isAvailabilityLoading,
     handleDateChange,
     handleSelectHeureChange,
     handleHeureInputChange,

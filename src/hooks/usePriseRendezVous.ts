@@ -120,9 +120,7 @@ export function usePriseRendezVous() {
     setUnavailableTimeSlots([]);
     setErrors((previous) => ({
       ...previous,
-      dateRdv: value && !isLeadB2BDateAllowed(value)
-        ? 'Seuls les mardis et jeudis sont ouverts.'
-        : '',
+      dateRdv: '',
     }));
   };
 
@@ -184,7 +182,6 @@ export function usePriseRendezVous() {
   const validateForm = (): FormErrors => {
     const nextErrors: FormErrors = {};
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
-    else if (!isLeadB2BDateAllowed(dateRdv)) nextErrors.dateRdv = 'Seuls les mardis et jeudis sont ouverts.';
     if (!heureRdv && (!heureInput || !minuteInput)) nextErrors.heureRdv = "L'heure est obligatoire.";
     const selectedTime = heureRdv?.value
       ?? (heureInput && minuteInput ? `${heureInput.padStart(2, '0')}:${minuteInput.padStart(2, '0')}` : '');

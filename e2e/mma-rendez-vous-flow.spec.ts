@@ -180,17 +180,8 @@ function formatDateForInput(date: Date): string {
 
 function getNextLeadB2BDate(): string {
   const baseDate = new Date();
-
-  for (let offset = 1; offset <= 21; offset += 1) {
-    const nextDate = new Date(baseDate);
-    nextDate.setDate(baseDate.getDate() + offset);
-    const day = nextDate.getDay();
-    if (day === 2 || day === 4) {
-      return formatDateForInput(nextDate);
-    }
-  }
-
-  throw new Error('Impossible de trouver un prochain mardi ou jeudi pour le test');
+  baseDate.setDate(baseDate.getDate() + 1);
+  return formatDateForInput(baseDate);
 }
 
 async function bootstrapAuthenticatedSession(page: Page, employe: EmployeFixture): Promise<void> {

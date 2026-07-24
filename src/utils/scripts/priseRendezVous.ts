@@ -106,13 +106,7 @@ export function getTodayInputDateString(referenceDate: Date = new Date()): strin
 }
 
 export function isLeadB2BDateAllowed(dateStr: string): boolean {
-  if (!dateStr) {
-    return false;
-  }
-
-  const date = parseDateInput(dateStr);
-  const day = date.getDay();
-  return day === 2 || day === 4;
+  return dateStr.trim().length > 0;
 }
 
 export function formatLeadB2BDateLabel(dateStr: string): string {

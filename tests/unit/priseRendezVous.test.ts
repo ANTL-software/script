@@ -96,10 +96,12 @@ test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour
   });
 });
 
-test('isLeadB2BDateAllowed n autorise que mardi et jeudi', () => {
+test('isLeadB2BDateAllowed accepte chaque jour pour la prise de rendez-vous MMA', () => {
   assert.equal(isLeadB2BDateAllowed('2026-07-07'), true);
   assert.equal(isLeadB2BDateAllowed('2026-07-09'), true);
-  assert.equal(isLeadB2BDateAllowed('2026-07-08'), false);
+  assert.equal(isLeadB2BDateAllowed('2026-07-08'), true);
+  assert.equal(isLeadB2BDateAllowed('2026-07-12'), true);
+  assert.equal(isLeadB2BDateAllowed(''), false);
 });
 
 test('les créneaux déjà réservés sont retirés sans bloquer les heures suivantes', () => {

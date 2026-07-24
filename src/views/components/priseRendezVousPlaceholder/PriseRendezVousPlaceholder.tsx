@@ -114,7 +114,7 @@ export default function PriseRendezVousPlaceholder() {
             <div className="form-row">
               <div className={`form-group ${errors.dateRdv ? 'form-group--error' : ''}`}>
                 <label htmlFor="dateRdv">
-                  Date (Mardi & Jeudi uniquement) <span className="required">*</span>
+                  Date <span className="required">*</span>
                 </label>
                 <input
                   id="dateRdv"

@@ -7,6 +7,7 @@ export const OBJECTION_CATEGORIES_ORDER = [
   'QUALITE',
   'BESOIN',
   'CONTACT',
+  'SIEGE',
   'Prix',
   'Concurrence',
   'Timing',

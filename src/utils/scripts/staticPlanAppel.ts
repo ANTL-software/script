@@ -136,7 +136,7 @@ export const MMA_PLAN_APPEL: PlanAppelEtape[] = [
     id_campagne: 8,
     etape: 1,
     titre: 'IDENTIFICATION - Obtenir le nom du décisionnaire',
-    contenu: `Bonjour, je suis Sophie LAGAGNE des Cigales, j’aimerais parler au responsable de l’établissement mais je n’ai pas son nom, c’est Madame…Monsieur… ? Vous pouvez me le/la passer s’il vous plait ?
+    contenu: `Bonjour, je suis Sophie LAGAGNE, j’aimerais parler au responsable de l’établissement mais je n’ai pas son nom, c’est Madame…Monsieur… ? Vous pouvez me le/la passer s’il vous plait ?
 
 « C’est Pourquoi ? » : C’est Planète Assurances l’agence de MMA.
 

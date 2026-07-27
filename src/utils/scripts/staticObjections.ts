@@ -129,5 +129,20 @@ export const MMA_OBJECTIONS: Objection[] = [
     actif: true,
     created_at: '2026-07-02T00:00:00.000Z',
     updated_at: '2026-07-02T00:00:00.000Z'
+  },
+  {
+    id_objection: 107,
+    id_campagne: 8,
+    categorie: 'SIEGE',
+    titre: 'Marché publics/siège',
+    texte_objection: 'Marché publics/siège',
+    reformulation: `Toutes les décisions concernant vos assurances sont prise par vôtre siège ?`,
+    adaptation: `Effectivement bon nombre de grandes entreprises et d’administrations fonctionnent ainsi ?`,
+    texte_reponse: `Pourriez-vous m’orienter vers votre siège ?`,
+    ordre_affichage: 7,
+    actif: true,
+    created_at: '2026-07-02T00:00:00.000Z',
+    updated_at: '2026-07-02T00:00:00.000Z'
   }
 ];
+

@@ -25,9 +25,9 @@
     "react-big-calendar": "^1.19.4",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
-    "react-router-dom": "^7.18.1",
+    "react-router-dom": "7.18.1",
     "react-select": "^5.10.2",
-    "sass-embedded": "^1.93.3",
+    "sass-embedded": "^1.100.0",
     "util": "^0.12.5"
   },
   "devDependencies": {
@@ -46,5 +46,8 @@
     "typescript-eslint": "^8.46.4",
     "vite": "^7.3.6",
     "vite-plugin-static-copy": "^4.1.0"
+  },
+  "overrides": {
+    "immutable": "^5.1.8"
   }
 }

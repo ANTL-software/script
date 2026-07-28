@@ -6,6 +6,7 @@ import type {
   AxiosResponse,
 } from "axios";
 import { getApiBaseUrl } from "../utils/scripts/utils";
+import { csrfService } from "./services/csrf";
 
 export interface ApiConfig {
   baseURL: string;
@@ -40,8 +41,21 @@ class ApiClient {
   private setupInterceptors(): void {
     // Pas d'injection de Bearer token — le cookie httpOnly est envoyé automatiquement
 
-    this.axiosInstance.interceptors.request.use((config) => {
+    this.axiosInstance.interceptors.request.use(async (config) => {
       config.baseURL = getApiBaseUrl();
+
+      const protectedMethods = new Set(['post', 'put', 'patch', 'delete']);
+      const method = config.method?.toLowerCase() || '';
+      const isLoginRoute = config.url?.includes('/auth/login') === true;
+      const isCSRFRoute = config.url?.includes('/csrf-token') === true;
+
+      if (protectedMethods.has(method) && !isLoginRoute && !isCSRFRoute) {
+        const csrfHeaders = await csrfService.getHeaders();
+        Object.entries(csrfHeaders).forEach(([name, value]) => {
+          config.headers.set(name, value);
+        });
+      }
+
       return config;
     });
 
@@ -76,6 +90,10 @@ class ApiClient {
           }
         }
 
+        if (error.response?.status === 403) {
+          csrfService.clearToken();
+        }
+
         return Promise.reject(error);
       }
     );
@@ -89,10 +107,14 @@ class ApiClient {
     this.refreshTokenPromise = (async () => {
       try {
         // Le refresh token httpOnly est envoyé automatiquement via withCredentials
+        const csrfHeaders = await csrfService.getHeaders();
         await axios.post(
           `${getApiBaseUrl()}/auth/refresh`,
           {},
-          { withCredentials: true }
+          {
+            withCredentials: true,
+            headers: csrfHeaders
+          }
         );
       } finally {
         this.refreshTokenPromise = null;
@@ -116,6 +138,7 @@ class ApiClient {
 
   /** Supprime les données de session côté client (les cookies httpOnly sont effacés par le serveur) */
   public clearSession(): void {
+    csrfService.clearToken();
     localStorage.removeItem("employe");
   }
 }

@@ -21,3 +21,4 @@ export type { TwilioAccessTokenResponse, TwilioCallLogRequest, TwilioCallLogResp
 export { NotificationService, notificationService } from './Notification.service';
 export { StatsService, statsService } from './Stats.service';
 export { EnregistrementService, enregistrementService } from './Enregistrement.service';
+export { csrfService } from './csrf';

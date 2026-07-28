@@ -11,7 +11,6 @@ import {
   getCampaignVariant,
   getProspectRelationBadge,
   getStatutProspectLabel,
-  shouldForceLegacyStaticPlanAppel,
 } from '../../../utils/scripts/index.ts';
 
 interface EditableFields {
@@ -231,12 +230,10 @@ export default function QuiEstCe() {
             {maturityBadge.label}
           </span>
         </div>
-        {shouldForceLegacyStaticPlanAppel(currentCampaign) && (
-          <ProgPAReadonly
-            value={currentProspect.max_progpa_campagne}
-            campaignVariant={getCampaignVariant(currentCampaign)}
-          />
-        )}
+        <ProgPAReadonly
+          value={currentProspect.max_progpa_campagne}
+          campaignVariant={getCampaignVariant(currentCampaign)}
+        />
         <div className="qui-est-ce__actions">
           {!isEditing ? (
             <Button variant="primary" size="small" onClick={handleEdit}>

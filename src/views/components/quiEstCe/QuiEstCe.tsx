@@ -1,11 +1,18 @@
 import './quiEstCe.scss';
 import { useState, useEffect } from 'react';
-import { useProspect, useToast } from '../../../hooks/index.ts';
+import { useCampaign, useProspect, useToast } from '../../../hooks/index.ts';
 import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
+import { ProgPAReadonly } from '../progPA/index.ts';
 import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types/index.ts';
-import { formatDateLong, getProspectRelationBadge, getStatutProspectLabel } from '../../../utils/scripts/index.ts';
+import {
+  formatDateLong,
+  getCampaignVariant,
+  getProspectRelationBadge,
+  getStatutProspectLabel,
+  shouldForceLegacyStaticPlanAppel,
+} from '../../../utils/scripts/index.ts';
 
 interface EditableFields {
   nom: string;
@@ -27,6 +34,7 @@ interface EditableFields {
 
 export default function QuiEstCe() {
   const { currentProspect, updateProspect, isLoading } = useProspect();
+  const { currentCampaign } = useCampaign();
   const { showToast } = useToast();
 
   const [isEditing, setIsEditing] = useState(false);
@@ -223,6 +231,12 @@ export default function QuiEstCe() {
             {maturityBadge.label}
           </span>
         </div>
+        {shouldForceLegacyStaticPlanAppel(currentCampaign) && (
+          <ProgPAReadonly
+            value={currentProspect.max_progpa}
+            campaignVariant={getCampaignVariant(currentCampaign)}
+          />
+        )}
         <div className="qui-est-ce__actions">
           {!isEditing ? (
             <Button variant="primary" size="small" onClick={handleEdit}>

@@ -11,6 +11,7 @@
   align-items: center;
   margin-bottom: 1rem;
   flex-shrink: 0;
+  gap: 1rem;
 }
 .qui-est-ce__header h2 {
   font-size: 1.5rem;
@@ -22,6 +23,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  flex-shrink: 0;
 }
 .qui-est-ce__maturity-badge {
   display: inline-flex;
@@ -47,6 +49,7 @@
 .qui-est-ce__actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 .qui-est-ce__content {
   display: flex;
@@ -159,6 +162,16 @@
   color: vars.$colorGray500;
 }
 @media (max-width: 768px) {
+  .qui-est-ce__header {
+    flex-wrap: wrap;
+    align-items: stretch;
+  }
+
+  .qui-est-ce__header .prog-pa-readonly {
+    order: 3;
+    flex-basis: 100%;
+  }
+
   .qui-est-ce__meta {
     flex-direction: column;
     gap: 0.25rem;

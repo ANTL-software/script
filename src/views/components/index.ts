@@ -25,6 +25,7 @@ export { Panier } from './panier/index.ts';
 export { PhoneNumberWithCallButton } from './phoneNumberWithCallButton/index.ts';
 export { PriseRendezVousPlaceholder } from './priseRendezVousPlaceholder/index.ts';
 export { ProgPA } from './progPA/index.ts';
+export { ProgPAReadonly } from './progPA/index.ts';
 export { ProspectInfoHeader } from './prospectInfoHeader/index.ts';
 export { ProtectedRoute } from './protectedRoute/index.ts';
 export { QuiEstCe } from './quiEstCe/index.ts';

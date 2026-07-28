@@ -233,7 +233,7 @@ export default function QuiEstCe() {
         </div>
         {shouldForceLegacyStaticPlanAppel(currentCampaign) && (
           <ProgPAReadonly
-            value={currentProspect.max_progpa}
+            value={currentProspect.max_progpa_campagne}
             campaignVariant={getCampaignVariant(currentCampaign)}
           />
         )}

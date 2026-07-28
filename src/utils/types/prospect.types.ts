@@ -58,6 +58,8 @@ export interface Prospect {
   decisionnaire_fonction?: string;
   decisionnaire_email_pro?: string;
   max_progpa: number;
+  max_progpa_campagne?: number;
+  max_progpa_commercial_campagne?: number;
   grille_tarifaire_envoyee_at?: string | null;
   id_campagne?: number | null;
   created_at: string;

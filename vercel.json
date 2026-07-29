@@ -10,6 +10,10 @@
       "source": "/(.*)",
       "headers": [
         {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://api.antl.fr https://api-test.antl.fr; connect-src 'self' https://api.antl.fr https://api-test.antl.fr https://fonts.googleapis.com https://*.twilio.com wss://*.twilio.com https://eventgw.twilio.com https://media.twiliocdn.com https://sdk.twilio.com wss://voice-js.roaming.twilio.com; frame-src 'self' https://api.antl.fr https://api-test.antl.fr blob:; object-src 'none'; worker-src 'self' blob:; media-src 'self' mediastream: https://api.antl.fr https://api-test.antl.fr https://media.twiliocdn.com https://sdk.twilio.com https://*.twiliocdn.com; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"
+        },
+        {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
         },

@@ -133,7 +133,13 @@ class ApiClient {
    * (le token JWT lui-même est httpOnly et inaccessible au JS)
    */
   public hasValidToken(): boolean {
-    return document.cookie.split(';').some(c => c.trim().startsWith('session_active='));
+    const markerName = (
+      typeof window !== 'undefined'
+      && new URLSearchParams(window.location.search).get('test') === 'true'
+    )
+      ? 'session_active_test'
+      : 'session_active';
+    return document.cookie.split(';').some(c => c.trim().startsWith(`${markerName}=`));
   }
 
   /** Supprime les données de session côté client (les cookies httpOnly sont effacés par le serveur) */

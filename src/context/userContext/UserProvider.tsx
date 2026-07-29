@@ -26,7 +26,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         const hasToken = userService.hasValidToken();
         console.log('[AUTH] storedUser:', !!storedUser);
         console.log('[AUTH] hasToken:', hasToken);
-        console.log('[AUTH] Cookies:', document.cookie);
 
         if (storedUser && hasToken) {
           try {
@@ -64,7 +63,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       setUser(userModel.toJSON());
       console.log('[LOGIN] User state set. Checking hasValidToken...');
       console.log('[LOGIN] hasValidToken:', userService.hasValidToken());
-      console.log('[LOGIN] Cookies:', document.cookie);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error
         ? error.message

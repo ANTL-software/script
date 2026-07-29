@@ -319,6 +319,15 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     const apiPath = url.pathname.startsWith('/api') ? url.pathname.slice(4) : url.pathname;
     const requestKey = `${request.method()} ${apiPath}${url.search}`;
 
+    if (request.method() === 'GET' && apiPath === '/csrf-token') {
+      await fulfillJson(route, {
+        success: true,
+        csrfToken: 'playwright-csrf-token',
+        headerName: 'x-csrf-token',
+      });
+      return;
+    }
+
     if (request.method() === 'GET' && apiPath === '/auth/me') {
       await fulfillJson(route, toApiResponse(employe));
       return;
@@ -418,6 +427,15 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
       apiPath === `/leads/prospect/${prospect.id_prospect}`
     ) {
       await fulfillJson(route, toApiResponse(currentProspectRendezVous()));
+      return;
+    }
+
+    if (
+      request.method() === 'GET'
+      && apiPath === '/leads/availability'
+      && url.searchParams.get('campagne') === String(campagne.id_campagne)
+    ) {
+      await fulfillJson(route, toApiResponse([]));
       return;
     }
 

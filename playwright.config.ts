@@ -1,5 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const browserPort = Number.parseInt(process.env.SCRIPT_BROWSER_PORT ?? '5173', 10);
+const browserBaseUrl = `http://127.0.0.1:${browserPort}`;
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -8,7 +11,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: browserBaseUrl,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
@@ -19,8 +22,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev -- --host 127.0.0.1',
-    url: 'http://localhost:5173',
+    command: `npm run dev -- --host 127.0.0.1 --port ${browserPort}`,
+    url: browserBaseUrl,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
   },

@@ -111,7 +111,6 @@ function escapeRegExp(value: string): string {
 async function bootstrapLocalSession(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.setItem('antl_disable_twilio', '1');
-    document.cookie = 'session_active=1; path=/';
   });
 }
 
@@ -133,7 +132,7 @@ async function openProspectFromManualSearch(page: Page, phone: string): Promise<
   await page.getByRole('button', { name: 'Rechercher' }).click();
 }
 
-test('le script se recale proprement sur la campagne runtime apres reconnexion et ne conserve pas le contexte precedent', async ({ page }) => {
+test('le script se recale proprement sur la campagne runtime apres reconnexion et ne conserve pas le contexte precedent', async ({ page, context }) => {
   const employe: EmployeFixture = {
     id_employe: 12,
     identifiant: 'marti001',
@@ -221,7 +220,7 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
 
   await bootstrapLocalSession(page);
 
-  await page.route('**/uploads/**', async (route) => {
+  await context.route('**/uploads/**', async (route) => {
     await route.fulfill({
       status: 200,
       contentType: 'image/svg+xml',
@@ -229,7 +228,7 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
     });
   });
 
-  await page.route('**/api/**', async (route) => {
+  await context.route('**/api/**', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const pathname = url.pathname;
@@ -240,12 +239,17 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
       throw new Error(`Campagne active inconnue: ${scenarioState.activeCampaignId}`);
     }
 
+    if (pathname.endsWith('/api/csrf-token') && method === 'GET') {
+      await fulfillJson(route, {
+        success: true,
+        csrfToken: 'playwright-csrf-token',
+        headerName: 'x-csrf-token',
+      });
+      return;
+    }
+
     if (pathname.endsWith('/api/auth/login') && method === 'POST') {
-      await fulfillJson(route, toApiResponse({
-        token: 'fake-token',
-        refreshToken: 'fake-refresh',
-        employe,
-      }));
+      await fulfillJson(route, toApiResponse({ employe }));
       return;
     }
 
@@ -492,13 +496,33 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
   await expect(page.getByRole('button', { name: 'Commande' })).toHaveCount(0);
   await expect.poll(() => scenarioState.prospectDetails.some((request) => request.prospectId === 202 && request.campagneId === 9)).toBe(true);
 
-  await page.goto('/plan-appel?campagne=9');
-  await expect(page.getByText('MMA Planete Assurance')).toBeVisible();
-  await expect(page.getByText('Les Cigales')).toHaveCount(0);
+  // Le marqueur lisible peut être absent dans une nouvelle fenêtre
+  // (localhost/127.0.0.1, domaine de cookie ou environnement test). Le cookie
+  // httpOnly reste la source d'autorité et `/auth/me` doit suffire à restaurer
+  // la session de la popup à partir du profil partagé en localStorage.
+  await context.clearCookies({ name: 'session_active' });
 
-  await page.goto('/objections?campagne=9');
-  await expect(page.getByText('MMA Planete Assurance')).toBeVisible();
-  await expect(page.getByText('Les Cigales')).toHaveCount(0);
+  const planAppelPopupPromise = context.waitForEvent('page');
+  await page.getByRole('button', { name: "Plan d'appels" }).click();
+  const planAppelPopup = await planAppelPopupPromise;
+  await expect(planAppelPopup).toHaveURL(/\/plan-appel\?campagne=9$/);
+  await expect(
+    planAppelPopup.getByRole('heading', { name: "Plan d'appel", exact: true }),
+  ).toBeVisible();
+  await expect(planAppelPopup.getByText('MMA Planete Assurance')).toBeVisible();
+  await expect(planAppelPopup).not.toHaveURL(/\/login/);
+  await planAppelPopup.close();
+
+  const objectionsPopupPromise = context.waitForEvent('page');
+  await page.getByRole('button', { name: 'Objections' }).click();
+  const objectionsPopup = await objectionsPopupPromise;
+  await expect(objectionsPopup).toHaveURL(/\/objections\?campagne=9$/);
+  await expect(
+    objectionsPopup.getByRole('heading', { name: 'Objections', exact: true }),
+  ).toBeVisible();
+  await expect(objectionsPopup.getByText('MMA Planete Assurance')).toBeVisible();
+  await expect(objectionsPopup).not.toHaveURL(/\/login/);
+  await objectionsPopup.close();
 
   await page.goto('/');
   await expectCampaignLogo(page, 'MMA Planete Assurance', 'mma-planete-assurance.png');

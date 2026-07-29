@@ -5,7 +5,10 @@ import type {
   InternalAxiosRequestConfig,
   AxiosResponse,
 } from "axios";
-import { getApiBaseUrl } from "../utils/scripts/utils";
+import {
+  getApiBaseUrl,
+  rememberCurrentAuthReturnPath,
+} from "../utils/scripts/index.ts";
 import { csrfService } from "./services/csrf";
 
 export interface ApiConfig {
@@ -85,7 +88,8 @@ class ApiClient {
             return this.axiosInstance(originalRequest);
           } catch (refreshError) {
             this.clearSession();
-            window.location.href = "/login";
+            rememberCurrentAuthReturnPath();
+            window.location.assign("/login");
             return Promise.reject(refreshError);
           }
         }

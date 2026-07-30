@@ -5,7 +5,7 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService } from '../../API/services';
+import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService, csrfService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
 import { getApiBaseUrl, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
@@ -809,9 +809,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     // Beforeunload
     const handleBeforeUnload = () => {
       const baseUrl = getApiBaseUrl();
-      const token = localStorage.getItem('authToken');
-      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (token) headers['Authorization'] = `Bearer ${token}`;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...csrfService.getCachedHeaders(),
+      };
       fetch(`${baseUrl}/agents/me/statut`, {
         method: 'PATCH',
         credentials: 'include',

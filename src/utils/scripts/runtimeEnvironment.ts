@@ -7,6 +7,25 @@ type RuntimeGlobal = typeof globalThis & {
   _mockEnv?: RuntimeEnvironmentVariables;
 };
 
+function alignLoopbackApiHostname(apiUrl: string): string {
+  try {
+    const parsedUrl = new URL(apiUrl);
+    const pageHostname = window.location.hostname;
+    const loopbackHostnames = new Set(['localhost', '127.0.0.1']);
+
+    if (
+      loopbackHostnames.has(parsedUrl.hostname)
+      && loopbackHostnames.has(pageHostname)
+    ) {
+      parsedUrl.hostname = pageHostname;
+    }
+
+    return parsedUrl.toString().replace(/\/+$/, '');
+  } catch {
+    return apiUrl.replace(/\/+$/, '');
+  }
+}
+
 export function isTestEnvironment(): boolean {
   const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
   const isDevPort = ['5173', '5174', '5175'].includes(window.location.port);
@@ -42,7 +61,9 @@ export function getApiBaseUrl(): string {
   if (isTestEnvironment()) {
     // Si une URL de test est spécifiée, on l'utilise, sinon on fallback sur le port local par défaut 8800
     // On n'utilise plus configuredProdUrl par défaut pour éviter d'attaquer la prod en local par accident
-    return (configuredTestUrl || 'http://localhost:8800/api').replace(/\/+$/, '');
+    // Le même hostname loopback est conservé pour que les cookies SameSite=Lax
+    // restent envoyés entre Vite et l'API locale.
+    return alignLoopbackApiHostname(configuredTestUrl || 'http://localhost:8800/api');
   }
 
   // En mode test hors localhost (ex: ?test=true sur la prod)

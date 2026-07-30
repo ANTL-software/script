@@ -24,8 +24,6 @@ dist-ssr
 *.sw?
 .env
 .claude
-package-lock.json
-
 # Playwright
 /test-results/
 /playwright-report/

@@ -1628,3 +1628,9 @@ if (nouveauStatut === 'disponible' && !sipConnected) { // sipConnected représen
 ---
 
 *AGENTS.md v1.5 - Last updated: 2026-07-20*
+
+---
+
+## Contrôle d'accès des menus USV
+
+Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu USV, ajouter simultanément le droit de poste et les contrôles de navigation et de route correspondants dans USV/Olympe. Le Script vendeur conserve son accès complet ; cette règle concerne les sous-applications USV.

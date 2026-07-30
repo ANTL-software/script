@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUser } from './useUser';
+import {
+  consumeAuthReturnPath,
+  getAuthReturnPathFromState,
+} from '../utils/scripts/index.ts';
 
 const BLOCK_DURATION_MS = 60000;
 const MAX_ATTEMPTS = 5;
@@ -19,6 +23,7 @@ function validatePassword(password: string): string {
 
 export function useLoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login, isLoading, error, clearError, isAuthenticated } = useUser();
 
   const [formData, setFormData] = useState({ identifiant: '', password: '' });
@@ -27,12 +32,14 @@ export function useLoginForm() {
   const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
-    console.log('[useLoginForm] isAuthenticated:', isAuthenticated);
     if (isAuthenticated) {
-      console.log('[useLoginForm] Redirecting to /');
-      navigate('/', { replace: true });
+      const locationState: unknown = location.state;
+      const returnTo = consumeAuthReturnPath(
+        getAuthReturnPathFromState(locationState),
+      );
+      navigate(returnTo, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, location.state, navigate]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

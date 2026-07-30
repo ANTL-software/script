@@ -92,6 +92,11 @@ test('getApiBaseUrl gère correctement les environnements et fallbacks', () => {
   setMockEnv('https://api.antl.fr/api', undefined);
   assert.equal(getApiBaseUrl(), 'http://localhost:8800/api');
 
+  // L'accès via 127.0.0.1 conserve ce hostname pour les cookies SameSite locaux
+  setMockWindow('127.0.0.1', '5174', null);
+  setMockEnv('http://localhost:8800/api', 'http://localhost:8800/api');
+  assert.equal(getApiBaseUrl(), 'http://127.0.0.1:8800/api');
+
   // 2. En production normale (hostname non dev)
   setMockWindow('script.antl.fr', '', null);
 

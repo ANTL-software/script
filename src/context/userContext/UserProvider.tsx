@@ -14,32 +14,28 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isAuthenticated = !!user && userService.hasValidToken();
+  // `user` n'est renseigné qu'après validation par `/auth/me` ou après un
+  // login réussi. Le cookie marqueur lisible aide au bootstrap, mais ne doit
+  // jamais être la preuve d'authentification : le vrai cookie est httpOnly.
+  const isAuthenticated = user !== null;
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
         setIsLoading(true);
-        console.log('[AUTH] Initializing auth...');
-
         const storedUser = userService.getStoredUser();
-        const hasToken = userService.hasValidToken();
-        console.log('[AUTH] storedUser:', !!storedUser);
-        console.log('[AUTH] hasToken:', hasToken);
-        console.log('[AUTH] Cookies:', document.cookie);
+        const hasSessionMarker = userService.hasValidToken();
 
-        if (storedUser && hasToken) {
+        if (storedUser || hasSessionMarker) {
           try {
             const userModel = await userService.getCurrentUser();
             setUser(userModel.toJSON());
-            console.log('[AUTH] User validated and set');
           } catch (error) {
             console.error('[AUTH] Failed to validate user session:', error);
             setUser(null);
             userService.clearSession();
           }
         } else {
-          console.log('[AUTH] No stored user or token, setting user to null');
           setUser(null);
         }
       } catch (error) {
@@ -57,14 +53,8 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log('[LOGIN] Starting login for:', credentials.identifiant);
-
       const userModel = await userService.login(credentials);
-      console.log('[LOGIN] UserModel received:', userModel.toJSON());
       setUser(userModel.toJSON());
-      console.log('[LOGIN] User state set. Checking hasValidToken...');
-      console.log('[LOGIN] hasValidToken:', userService.hasValidToken());
-      console.log('[LOGIN] Cookies:', document.cookie);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error
         ? error.message

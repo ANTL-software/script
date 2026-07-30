@@ -409,8 +409,10 @@ Backend API
 
 **Intercepteurs Request** :
 ```typescript
-// Ajoute automatiquement le token Bearer
-config.headers.Authorization = `Bearer ${accessToken}`;
+// Les cookies httpOnly sont envoyes automatiquement.
+// Un token CSRF est ajoute aux mutations authentifiees.
+config.withCredentials = true;
+config.headers.set('x-csrf-token', csrfToken);
 ```
 
 **Intercepteurs Response** :
@@ -418,14 +420,8 @@ config.headers.Authorization = `Bearer ${accessToken}`;
 - Queue des requetes pendant le refresh
 - Redirect vers `/login` si refresh echoue
 
-**Methodes** :
-```typescript
-getAccessToken(): string | null
-getRefreshToken(): string | null
-setTokens(accessToken: string, refreshToken: string): void
-clearTokens(): void
-hasValidToken(): boolean
-```
+Les JWT ne sont ni retournes dans les reponses JSON, ni stockes dans le
+`localStorage`. Le refresh utilise exclusivement le cookie `httpOnly`.
 
 ---
 

@@ -5,7 +5,11 @@ import type {
   InternalAxiosRequestConfig,
   AxiosResponse,
 } from "axios";
-import { getApiBaseUrl } from "../utils/scripts/utils";
+import {
+  getApiBaseUrl,
+  rememberCurrentAuthReturnPath,
+} from "../utils/scripts/index.ts";
+import { csrfService } from "./services/csrf";
 
 export interface ApiConfig {
   baseURL: string;
@@ -40,8 +44,21 @@ class ApiClient {
   private setupInterceptors(): void {
     // Pas d'injection de Bearer token — le cookie httpOnly est envoyé automatiquement
 
-    this.axiosInstance.interceptors.request.use((config) => {
+    this.axiosInstance.interceptors.request.use(async (config) => {
       config.baseURL = getApiBaseUrl();
+
+      const protectedMethods = new Set(['post', 'put', 'patch', 'delete']);
+      const method = config.method?.toLowerCase() || '';
+      const isLoginRoute = config.url?.includes('/auth/login') === true;
+      const isCSRFRoute = config.url?.includes('/csrf-token') === true;
+
+      if (protectedMethods.has(method) && !isLoginRoute && !isCSRFRoute) {
+        const csrfHeaders = await csrfService.getHeaders();
+        Object.entries(csrfHeaders).forEach(([name, value]) => {
+          config.headers.set(name, value);
+        });
+      }
+
       return config;
     });
 
@@ -71,9 +88,14 @@ class ApiClient {
             return this.axiosInstance(originalRequest);
           } catch (refreshError) {
             this.clearSession();
-            window.location.href = "/login";
+            rememberCurrentAuthReturnPath();
+            window.location.assign("/login");
             return Promise.reject(refreshError);
           }
+        }
+
+        if (error.response?.status === 403) {
+          csrfService.clearToken();
         }
 
         return Promise.reject(error);
@@ -89,10 +111,14 @@ class ApiClient {
     this.refreshTokenPromise = (async () => {
       try {
         // Le refresh token httpOnly est envoyé automatiquement via withCredentials
+        const csrfHeaders = await csrfService.getHeaders();
         await axios.post(
           `${getApiBaseUrl()}/auth/refresh`,
           {},
-          { withCredentials: true }
+          {
+            withCredentials: true,
+            headers: csrfHeaders
+          }
         );
       } finally {
         this.refreshTokenPromise = null;
@@ -111,11 +137,18 @@ class ApiClient {
    * (le token JWT lui-même est httpOnly et inaccessible au JS)
    */
   public hasValidToken(): boolean {
-    return document.cookie.split(';').some(c => c.trim().startsWith('session_active='));
+    const markerName = (
+      typeof window !== 'undefined'
+      && new URLSearchParams(window.location.search).get('test') === 'true'
+    )
+      ? 'session_active_test'
+      : 'session_active';
+    return document.cookie.split(';').some(c => c.trim().startsWith(`${markerName}=`));
   }
 
   /** Supprime les données de session côté client (les cookies httpOnly sont effacés par le serveur) */
   public clearSession(): void {
+    csrfService.clearToken();
     localStorage.removeItem("employe");
   }
 }

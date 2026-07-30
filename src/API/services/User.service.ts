@@ -8,8 +8,6 @@ import type {
 } from '../../utils/types';
 
 export interface LoginResponseData {
-  token: string;
-  refreshToken: string;
   employe: Employe;
 }
 

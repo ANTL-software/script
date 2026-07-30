@@ -21,6 +21,19 @@ test('uploadRecording envoie un FormData multipart au backend', async ({ page })
   await page.route('**/api/**', async (route) => {
     const request = route.request();
 
+    if (request.url().endsWith('/api/csrf-token')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          csrfToken: 'playwright-csrf-token',
+          headerName: 'x-csrf-token',
+        }),
+      });
+      return;
+    }
+
     if (request.url().endsWith('/api/enregistrements')) {
       capturedUpload = {
         method: request.method(),

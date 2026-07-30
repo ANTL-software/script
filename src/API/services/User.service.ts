@@ -1,10 +1,18 @@
+import axios from 'axios';
 import apiCalls from '../APICalls';
 import { throwIfApiError } from '../apiHelpers';
 import { apiClient } from '../config';
 import { UserModel } from '../models';
+import {
+  getTestApiBaseUrl,
+  isTestEnvironment,
+} from '../../utils/scripts/index.ts';
 import type {
+  ApiResponse,
   LoginCredentials,
   Employe,
+  TestSessionExchange,
+  TestSessionTicket,
 } from '../../utils/types';
 
 export interface LoginResponseData {
@@ -18,6 +26,8 @@ export class UserService {
     LOGOUT: '/auth/logout',
     ME: '/auth/me',
     REFRESH: '/auth/refresh',
+    TEST_SESSION_TICKET: '/auth/test-session/ticket',
+    TEST_SESSION_EXCHANGE: '/auth/test-session/exchange',
   };
 
   private constructor() {}
@@ -69,6 +79,48 @@ export class UserService {
   public async refreshToken(): Promise<void> {
     // Le refresh token httpOnly est envoyé automatiquement par le navigateur
     await apiCalls.post(this.AUTH_ENDPOINTS.REFRESH, {});
+  }
+
+  public async openTestSession(idCampagneActive: number): Promise<void> {
+    if (isTestEnvironment()) {
+      return;
+    }
+
+    const ticketResponse = await apiCalls.post<TestSessionTicket>(
+      this.AUTH_ENDPOINTS.TEST_SESSION_TICKET,
+      { id_campagne_active: idCampagneActive },
+    );
+    const { ticket } = throwIfApiError(
+      ticketResponse,
+      'Impossible de préparer la session de test',
+    );
+
+    try {
+      const exchangeResponse = await axios.post<ApiResponse<TestSessionExchange>>(
+        `${getTestApiBaseUrl()}${this.AUTH_ENDPOINTS.TEST_SESSION_EXCHANGE}`,
+        { ticket },
+        {
+          timeout: 10_000,
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      throwIfApiError(
+        exchangeResponse.data,
+        'Impossible d’ouvrir la session sur l’environnement de test',
+      );
+    } catch (error: unknown) {
+      if (axios.isAxiosError<ApiResponse<unknown>>(error)) {
+        throw new Error(
+          error.response?.data.message
+          || 'Impossible d’ouvrir la session sur l’environnement de test',
+        );
+      }
+
+      throw error;
+    }
   }
 
   public getStoredUser(): UserModel | null {

@@ -754,7 +754,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
 
     if (shouldDisableLocalTwilio()) {
-      console.log('[TWILIO] Initialisation desactivee en mode e2e local');
+      console.log('[TWILIO] Initialisation désactivée pour la fiche de formation');
       setSipConnected(false);
       return;
     }

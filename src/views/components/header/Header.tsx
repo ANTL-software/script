@@ -21,7 +21,7 @@ export default function Header({ props }: HeaderProps) {
   const { showToast } = useToast();
   const { hasPending } = useClosing();
   const { currentCampaign } = useCampaign();
-  const { navigateTo, pathname, searchParams } = useNavigation();
+  const { navigateTo, navigateToDashboard, pathname, searchParams } = useNavigation();
   const showTestBadge = isTestEnvironment() || isProspectTestMode();
 
   const campaignLogoUrl = getCampagneLogoUrl(currentCampaign?.logo_path);
@@ -52,7 +52,7 @@ export default function Header({ props }: HeaderProps) {
   };
 
   const handleBack = () => {
-    navigateTo('/');
+    navigateToDashboard();
   };
 
   return (

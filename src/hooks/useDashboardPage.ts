@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildDashboardRendezVousItems,
+  getErrorMessage,
   resolveAssignedProspectAction,
 } from '../utils/scripts/index.ts';
+import { userService } from '../API/services/index.ts';
 import { useCampaign } from './useCampaign.ts';
 import { useDashboardData } from './useDashboardData.ts';
 import { useDialer } from './useDialer.ts';
@@ -130,6 +132,7 @@ export function useDashboardPage() {
   const { currentCampagneId } = useDialer();
   const { showToast } = useToast();
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [isOpeningTestProspect, setIsOpeningTestProspect] = useState(false);
   const nextRendezVousRef = useRef<HTMLLIElement>(null);
   const {
     searchQuery,
@@ -169,14 +172,25 @@ export function useDashboardPage() {
     if (url) navigateTo(url);
   }, [navigateTo]);
 
-  const openTestProspect = useCallback((): void => {
+  const openTestProspect = useCallback(async (): Promise<void> => {
     if (!currentCampagneId) {
       showToast('warning', 'Chargement de votre campagne en cours. Reessayez dans un instant.');
       return;
     }
 
-    navigateTo(TEST_PROSPECT_URL);
-  }, [currentCampagneId, navigateTo, showToast]);
+    setIsOpeningTestProspect(true);
+    try {
+      await userService.openTestSession(currentCampagneId);
+      window.location.assign(TEST_PROSPECT_URL);
+    } catch (error: unknown) {
+      showToast(
+        'error',
+        getErrorMessage(error, 'Impossible d’ouvrir la fiche de test. Réessayez dans un instant.'),
+        7000,
+      );
+      setIsOpeningTestProspect(false);
+    }
+  }, [currentCampagneId, showToast]);
 
   return {
     searchQuery,
@@ -194,9 +208,12 @@ export function useDashboardPage() {
     openRendezVous,
     openTestProspect,
     nextRendezVousRef,
-    isTestProspectDisabled: !currentCampagneId,
-    testProspectTitle: currentCampagneId
+    isOpeningTestProspect,
+    isTestProspectDisabled: !currentCampagneId || isOpeningTestProspect,
+    testProspectTitle: currentCampagneId && !isOpeningTestProspect
       ? 'Ouvrir la fiche de formation dans votre campagne active'
-      : 'Chargement de la campagne active',
+      : isOpeningTestProspect
+        ? 'Ouverture sécurisée de l’environnement de test'
+        : 'Chargement de la campagne active',
   };
 }

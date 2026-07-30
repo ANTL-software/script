@@ -48,3 +48,14 @@ export interface AuthResponse {
   message: string;
   data?: Employe;
 }
+
+export interface TestSessionTicket {
+  ticket: string;
+  expires_in: number;
+  id_campagne_active: number;
+}
+
+export interface TestSessionExchange {
+  employe: Employe;
+  id_campagne_active: number;
+}

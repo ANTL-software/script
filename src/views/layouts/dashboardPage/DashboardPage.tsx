@@ -21,6 +21,7 @@ export default function DashboardPage() {
     openRendezVous,
     openTestProspect,
     nextRendezVousRef,
+    isOpeningTestProspect,
     isTestProspectDisabled,
     testProspectTitle,
   } = useDashboardPage();
@@ -171,7 +172,7 @@ export default function DashboardPage() {
         disabled={isTestProspectDisabled}
         title={testProspectTitle}
       >
-        Utilisateur TEST
+        {isOpeningTestProspect ? 'Ouverture...' : 'Utilisateur TEST'}
       </button>
 
       <CalendarModal

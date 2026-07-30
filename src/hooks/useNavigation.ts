@@ -9,9 +9,19 @@ export function useNavigation() {
   const navigateTo = useCallback((path: string, options?: NavigateOptions): void => {
     void navigate(path, options);
   }, [navigate]);
+  const navigateToDashboard = useCallback((): void => {
+    const isTestMode = new URLSearchParams(location.search).get('test') === 'true';
+    if (isTestMode) {
+      window.location.assign('/');
+      return;
+    }
+
+    void navigate('/');
+  }, [location.search, navigate]);
 
   return {
     navigateTo,
+    navigateToDashboard,
     pathname: location.pathname,
     searchParams,
   };

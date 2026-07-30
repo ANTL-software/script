@@ -37,7 +37,8 @@ export function shouldDisableLocalTwilio(): boolean {
     return false;
   }
 
-  return isTestEnvironment() && window.localStorage.getItem('antl_disable_twilio') === '1';
+  return isProspectTestMode()
+    || (isTestEnvironment() && window.localStorage.getItem('antl_disable_twilio') === '1');
 }
 
 export function isProspectTestMode(): boolean {
@@ -49,39 +50,57 @@ export function isProspectTestMode(): boolean {
   return params.get('test') === 'true';
 }
 
-export function getApiBaseUrl(): string {
+function getRuntimeEnvironmentVariables(): RuntimeEnvironmentVariables {
   const runtimeGlobal = globalThis as RuntimeGlobal;
-  const env: RuntimeEnvironmentVariables = typeof import.meta.env !== 'undefined'
+  return typeof import.meta.env !== 'undefined'
     ? import.meta.env as unknown as RuntimeEnvironmentVariables
     : runtimeGlobal._mockEnv ?? {};
-  const configuredProdUrl = env.VITE_API_BASE_URL?.trim();
-  const configuredTestUrl = env.VITE_API_TEST_BASE_URL?.trim();
+}
 
-  // En environnement de test local (localhost/127.0.0.1)
-  if (isTestEnvironment()) {
-    // Si une URL de test est spécifiée, on l'utilise, sinon on fallback sur le port local par défaut 8800
-    // On n'utilise plus configuredProdUrl par défaut pour éviter d'attaquer la prod en local par accident
-    // Le même hostname loopback est conservé pour que les cookies SameSite=Lax
-    // restent envoyés entre Vite et l'API locale.
-    return alignLoopbackApiHostname(configuredTestUrl || 'http://localhost:8800/api');
-  }
+function isLoopbackUrl(url: string | undefined): boolean {
+  return Boolean(url && (url.includes('localhost') || url.includes('127.0.0.1')));
+}
 
-  // En mode test hors localhost (ex: ?test=true sur la prod)
-  if (isProspectTestMode()) {
-    const isLocalTestUrl = configuredTestUrl && (configuredTestUrl.includes('localhost') || configuredTestUrl.includes('127.0.0.1'));
-    if (!configuredTestUrl || isLocalTestUrl) {
-      return 'https://api-test.antl.fr/api';
-    }
-    return configuredTestUrl.replace(/\/+$/, '');
-  }
+export function getProductionApiBaseUrl(): string {
+  const configuredProdUrl = getRuntimeEnvironmentVariables().VITE_API_BASE_URL?.trim();
 
-  // En production
-  // Si l'URL de prod configurée contient localhost ou 127.0.0.1 (erreur fréquente de build avec le .env de dev),
-  // on l'ignore et on utilise l'URL de production réelle.
-  const isLocalProdUrl = configuredProdUrl && (configuredProdUrl.includes('localhost') || configuredProdUrl.includes('127.0.0.1'));
-  if (!configuredProdUrl || isLocalProdUrl) {
+  if (!configuredProdUrl || isLoopbackUrl(configuredProdUrl)) {
     return 'https://api.antl.fr/api';
   }
 
   return configuredProdUrl.replace(/\/+$/, '');
+}
+
+export function getTestApiBaseUrl(): string {
+  const configuredTestUrl = getRuntimeEnvironmentVariables().VITE_API_TEST_BASE_URL?.trim();
+
+  if (isTestEnvironment()) {
+    return alignLoopbackApiHostname(configuredTestUrl || 'http://localhost:8800/api');
+  }
+
+  if (!configuredTestUrl || isLoopbackUrl(configuredTestUrl)) {
+    return 'https://api-test.antl.fr/api';
+  }
+
+  return configuredTestUrl.replace(/\/+$/, '');
+}
+
+export function getSessionMarkerName(): 'session_active' | 'session_active_test' {
+  return isProspectTestMode() && !isTestEnvironment()
+    ? 'session_active_test'
+    : 'session_active';
+}
+
+export function getApiBaseUrl(): string {
+  // En environnement de test local (localhost/127.0.0.1)
+  if (isTestEnvironment()) {
+    return getTestApiBaseUrl();
+  }
+
+  // En mode test hors localhost (ex: ?test=true sur la prod)
+  if (isProspectTestMode()) {
+    return getTestApiBaseUrl();
+  }
+
+  return getProductionApiBaseUrl();
 }

@@ -7,6 +7,7 @@ import type {
 } from "axios";
 import {
   getApiBaseUrl,
+  getSessionMarkerName,
   rememberCurrentAuthReturnPath,
 } from "../utils/scripts/index.ts";
 import { csrfService } from "./services/csrf";
@@ -137,12 +138,7 @@ class ApiClient {
    * (le token JWT lui-même est httpOnly et inaccessible au JS)
    */
   public hasValidToken(): boolean {
-    const markerName = (
-      typeof window !== 'undefined'
-      && new URLSearchParams(window.location.search).get('test') === 'true'
-    )
-      ? 'session_active_test'
-      : 'session_active';
+    const markerName = getSessionMarkerName();
     return document.cookie.split(';').some(c => c.trim().startsWith(`${markerName}=`));
   }
 

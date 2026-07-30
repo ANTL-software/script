@@ -5,6 +5,9 @@ import {
   isTestEnvironment,
   shouldDisableLocalTwilio,
   getApiBaseUrl,
+  getProductionApiBaseUrl,
+  getSessionMarkerName,
+  getTestApiBaseUrl,
 } from '../../src/utils/scripts/runtimeEnvironment.ts';
 import type { RuntimeEnvironmentVariables } from '../../src/utils/scripts/runtimeEnvironment.ts';
 
@@ -65,7 +68,7 @@ test('isTestEnvironment detecte uniquement localhost sur ports dev', () => {
   assert.equal(isTestEnvironment(), false);
 });
 
-test('shouldDisableLocalTwilio reste strictement borne au flag local sur localhost', () => {
+test('shouldDisableLocalTwilio désactive Twilio pour toute fiche de formation', () => {
   setMockWindow('localhost', '5173', '1');
   assert.equal(shouldDisableLocalTwilio(), true);
 
@@ -74,6 +77,9 @@ test('shouldDisableLocalTwilio reste strictement borne au flag local sur localho
 
   setMockWindow('app.antl.fr', '', '1');
   assert.equal(shouldDisableLocalTwilio(), false);
+
+  setMockWindow('script.antl.fr', '', null, '?test=true');
+  assert.equal(shouldDisableLocalTwilio(), true);
 });
 
 test('getApiBaseUrl gère correctement les environnements et fallbacks', () => {
@@ -121,9 +127,22 @@ test('getApiBaseUrl gère correctement les environnements et fallbacks', () => {
   // Si test URL valide spécifique configurée
   setMockEnv('https://api.antl.fr/api', 'https://custom-test.antl.fr/api');
   assert.equal(getApiBaseUrl(), 'https://custom-test.antl.fr/api');
+  assert.equal(getProductionApiBaseUrl(), 'https://api.antl.fr/api');
+  assert.equal(getTestApiBaseUrl(), 'https://custom-test.antl.fr/api');
 
   // Restauration
   runtimeGlobal._mockEnv = originalMockEnv;
+});
+
+test('getSessionMarkerName conserve le marqueur local et isole celui de test en production', () => {
+  setMockWindow('localhost', '5174', null, '?test=true');
+  assert.equal(getSessionMarkerName(), 'session_active');
+
+  setMockWindow('script.antl.fr', '', null, '?test=true');
+  assert.equal(getSessionMarkerName(), 'session_active_test');
+
+  setMockWindow('script.antl.fr', '', null);
+  assert.equal(getSessionMarkerName(), 'session_active');
 });
 
 after(() => {

@@ -932,9 +932,16 @@ class UserService {
   logout(): Promise<void>
   me(): Promise<Employe>
   refresh(): Promise<LoginResponse>
+  openTestSession(idCampagneActive: number): Promise<void>
   isAuthenticated(): boolean  // Vérifie session_active cookie
 }
 ```
+
+Le bouton `Utilisateur TEST` ne partage jamais les JWT entre `api.antl.fr` et
+`api-test.antl.fr`. Il échange un ticket production aléatoire, à usage unique et
+valable 60 secondes contre des cookies host-only propres à l'API de test, puis
+recharge `/prospect/1?test=true`. La campagne runtime validée en production est
+conservée et Twilio reste désactivé pendant ce parcours.
 
 ### Prospect.service.ts
 
@@ -1488,6 +1495,7 @@ Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :
 
 | Date | Modification | Auteur |
 |------|--------------|--------|
+| 2026-07-30 | Session isolée et sécurisée pour le parcours `Utilisateur TEST`, avec conservation de la campagne runtime et Twilio désactivé | AI Agent |
 | 2026-07-20 | Verrouillage du serveur Vite Script sur `127.0.0.1:5174` afin de coexister avec USV sur 5173 | AI Agent |
 | 2026-07-20 | Mise à jour des dépendances vulnérables et retrait du plugin de polyfills inutile après validation de la résolution `events` du SDK Twilio | AI Agent |
 | 2026-07-18 | Correction et couverture du brouillon de notes pour les closings manuels sans idAppel | AI Agent |

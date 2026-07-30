@@ -8,10 +8,16 @@ test('le Script distingue le marqueur de session production de celui de test', a
     path.join(process.cwd(), 'src/API/config.ts'),
     'utf8',
   );
+  const runtimeEnvironmentSource = await readFile(
+    path.join(process.cwd(), 'src/utils/scripts/runtimeEnvironment.ts'),
+    'utf8',
+  );
 
-  assert.match(apiClientSource, /session_active_test/);
-  assert.match(apiClientSource, /session_active/);
-  assert.match(apiClientSource, /window\.location\.search/);
+  assert.match(apiClientSource, /getSessionMarkerName/);
+  assert.match(runtimeEnvironmentSource, /session_active_test/);
+  assert.match(runtimeEnvironmentSource, /session_active/);
+  assert.match(runtimeEnvironmentSource, /isProspectTestMode/);
+  assert.match(runtimeEnvironmentSource, /!isTestEnvironment/);
 });
 
 test('le Script ne journalise jamais les cookies lisibles du navigateur', async () => {

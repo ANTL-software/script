@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { getApiBaseUrl } from './runtimeEnvironment.ts';
 export {
   getApiBaseUrl,
+  getProductionApiBaseUrl,
+  getSessionMarkerName,
+  getTestApiBaseUrl,
   isProspectTestMode,
   isTestEnvironment,
   shouldDisableLocalTwilio,

@@ -263,16 +263,16 @@
   font-weight: vars.$fontWeight-bold;
 }
 #dashboardPage .dashboard__rdv-item--relance-vente {
-  background: #f5f0ff;
-  border-color: #7c3aed;
-  box-shadow: 0 0 8px rgba(124, 58, 237, 0.15);
+  background: #f0fdf4;
+  border-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
 }
 #dashboardPage .dashboard__rdv-item--relance-vente:hover {
-  background: #ede4ff;
+  background: #dcfce7;
 }
 #dashboardPage .dashboard__rdv-item--relance-vente .dashboard__rdv-heure,
 #dashboardPage .dashboard__rdv-item--relance-vente .dashboard__rdv-nom {
-  color: #7c3aed;
+  color: #065f46;
   font-weight: vars.$fontWeight-bold;
 }
 #dashboardPage .dashboard__rdv-item--rdv-pris {

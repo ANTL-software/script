@@ -65,7 +65,7 @@ export default function RendezVousDetailsModal({
   let statutColor = STATUT_COLORS[statut] ?? '#6b7280';
 
   if (isRelanceVente) {
-    statutLabel = 'Relance vente';
+    statutLabel = 'Relance';
     statutColor = RENDEZ_VOUS_KIND_COLORS.relanceVente;
   } else if (isCommande) {
     statutLabel = 'Commande à établir';

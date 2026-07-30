@@ -78,7 +78,7 @@ export default function DashboardPage() {
                           <span className="dashboard__rdv-badge-commande">Commande à établir</span>
                         )}
                         {item.isRelanceVente && (
-                          <span className="dashboard__rdv-badge-relance-vente">Relance vente conclue</span>
+                          <span className="dashboard__rdv-badge-relance">Relance</span>
                         )}
                         {item.isRendezVousPris && (
                           <span className="dashboard__rdv-badge-rdv-pris">Rendez-vous pris</span>

@@ -51,7 +51,7 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
     headerLabel = 'Autre agent';
   } else if (isRelanceVente) {
     headerColor = RENDEZ_VOUS_KIND_COLORS.relanceVente;
-    headerLabel = 'Relance vente';
+    headerLabel = 'Relance';
   } else if (isCommande) {
     headerColor = RENDEZ_VOUS_KIND_COLORS.commande;
     headerLabel = 'Commande à établir';

@@ -257,3 +257,104 @@ Si oui… : J’en suis ravie ! C’est parfait, je vous laisse poursuivre avec 
     updated_at: '2026-07-02T00:00:00.000Z'
   }
 ];
+
+export const FGA_PLAN_APPEL: PlanAppelEtape[] = [
+  {
+    id_plan: 201,
+    id_campagne: 11,
+    etape: 1,
+    titre: 'IDENTIFICATION – Obtenir le nom du décisionnaire (seulement si secrétariat installé)',
+    contenu: `Bonjour, Sophie LAGAGNE pour FGA, j’aimerais parler au dirigeant s’il vous plait ?
+
+« C’est pour quoi ? » : FGA, experts en recrutement, J’aimerais échanger avec lui au sujet du poste de (fonction) à pourvoir.`,
+    ordre_affichage: 10,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_plan: 202,
+    id_campagne: 11,
+    etape: 2,
+    titre: 'PRESENTATION – Se faire accepter par le décisionnaire',
+    contenu: `Bonjour M/Mme Untel… Sophie LAGAGNE, je travaille pour FGA Consulting ; nous sommes spécialisés dans le recrutement sales pour les scale-ups.
+
+J’ai vu que vous recrutiez un [fonction], et la spécialité de Monsieur Gournay est d’accompagner les dirigeants dans leur recrutement, pour éviter les erreurs de casting sur ce type de postes. 
+
+Ayant lui-même dirigé des équipes commerciales pendant 25 ans, il sait précisément quel impact un recrutement raté peut avoir sur la croissance d’une entreprise.`,
+    ordre_affichage: 20,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_plan: 203,
+    id_campagne: 11,
+    etape: 3,
+    titre: 'DECOUVERTE – Comprendre l’environnement du client pour créer un lien',
+    contenu: `Je pense que vous en conviendrez, aujourd’hui, recruter n’est pas vraiment compliqué ; en revanche recruter le « Bon Profil » ça l’est un peu plus ;
+
+D’ailleurs depuis combien de temps êtes-vous en recherche de [fonction]
+
+Et Je peux vous demander comment vous procédez pour votre recherche ?
+
+A ce sujet, avez-vous d’autres postes ouverts ?`,
+    ordre_affichage: 30,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_plan: 204,
+    id_campagne: 11,
+    etape: 4,
+    titre: 'PROPOSITION – Obtenir un accord de principe',
+    contenu: `Ce que je vous propose, c’est un entretien de 30 à 45 minutes avec Monsieur GOURNAY pour comprendre vos enjeux et voir dans quelle mesure il peut vous accompagner.
+
+Il nous reste des créneaux Jeudi ou vendredi, qu’est-ce qui vous convient le mieux ?`,
+    ordre_affichage: 40,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_plan: 205,
+    id_campagne: 11,
+    etape: 5,
+    titre: 'COMMANDE – Transformer l’accord de principe en RDV ferme',
+    contenu: `Détection produit : 
+En matinée ou dans l’après-midi ?
+
+Validation des coordonnées client
+Sachant que Monsieur GOURNAY se déplacera directement dans vos locaux, je vais avoir besoin de vérifier votre adresse…`,
+    ordre_affichage: 50,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_plan: 206,
+    id_campagne: 11,
+    etape: 6,
+    titre: 'RETOUR DE COMMANDE – Seulement si pas dispo sur créneaux définis',
+    contenu: `Je vous propose de transmettre directement vos coordonnées à Monsieur GOURNAY pour convenir d’un rendez-vous. Il vous contactera en personne pour convenir d’une date avec vous, ce sera plus simple !`,
+    ordre_affichage: 60,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_plan: 207,
+    id_campagne: 11,
+    etape: 7,
+    titre: 'PRISE DE CONGES – Laisser une bonne image',
+    contenu: `Je vous remercie du temps que vous m’avez accordé Mr/Mme Untel, j’ai bien noté le rendez-vous pour le (jour/mois/heure). 
+
+Je demande à François GOURNAY de prendre contact avec vous afin de confirmer le rendez-vous.`,
+    ordre_affichage: 70,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  }
+];
+

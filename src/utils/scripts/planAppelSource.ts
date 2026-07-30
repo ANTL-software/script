@@ -1,7 +1,7 @@
 import type { CampaignVariant } from './campaignVariants.ts';
 import { CAMPAIGN_VARIANTS, isLeadB2BCampaign } from './campaignVariants.ts';
 import type { PlanAppelEtape } from '../types/index.ts';
-import { CIGALES_PLAN_APPEL, MMA_PLAN_APPEL } from './staticPlanAppel.ts';
+import { CIGALES_PLAN_APPEL, MMA_PLAN_APPEL, FGA_PLAN_APPEL } from './staticPlanAppel.ts';
 
 interface PlanAppelCampaignDescriptor {
   id_campagne?: number | null;
@@ -29,6 +29,12 @@ export function shouldForceLegacyStaticPlanAppel(
 export function getStaticPlanAppelForCampaign(
   campaign?: PlanAppelCampaignDescriptor | null,
 ): PlanAppelEtape[] {
+  const campaignName = campaign?.nom_campagne?.trim().toLowerCase() ?? '';
+
+  if (campaign?.id_campagne === 11 || campaignName.includes('fga')) {
+    return FGA_PLAN_APPEL;
+  }
+
   if (isLeadB2BCampaign({
     type_campagne: campaign?.type_campagne ?? CAMPAIGN_VARIANTS.vente,
     nom_campagne: campaign?.nom_campagne ?? '',

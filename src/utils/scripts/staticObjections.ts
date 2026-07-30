@@ -146,3 +146,105 @@ export const MMA_OBJECTIONS: Objection[] = [
   }
 ];
 
+export const FGA_OBJECTIONS: Objection[] = [
+  {
+    id_objection: 201,
+    id_campagne: 11,
+    categorie: 'PRESTATAIRE',
+    titre: 'Intérêt (Pas le temps)',
+    texte_objection: 'Intérêt (Pas le temps)',
+    reformulation: `Vous voulez dire que vous êtes occupé ou que votre projet de recrutement est pour plus tard ?`,
+    adaptation: `C’est compris.`,
+    texte_reponse: `(Si occupé) : Une dernière chose en 20 secondes : Si je vous envoie un point de 3 lignes sur ce que je vois de spécifique sur les marché des (fonction) à Paris en ce moment, vous le lisez ?\n\n(Si projet reporté) : Pour qu’on vous recontacte au bon moment, qu’est-ce qui aura changé d’ici là : un recrutement qui se précise, une levée ou un signal particulier ?`,
+    ordre_affichage: 1,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_objection: 202,
+    id_campagne: 11,
+    categorie: 'FOURNISSEURS',
+    titre: 'Engagé ailleurs',
+    texte_objection: 'Engagé ailleurs',
+    reformulation: `Vous me dites que vous avez déjà un partenaire de confiance qui gère le recrutement de votre entreprise c’est bien ça ?`,
+    adaptation: `Très bien, vous avez raison de sécuriser. L’objet de mon appel est sans engagement, je vous propose de comparer nos méthodes et nos résultats.`,
+    texte_reponse: `Monsieur GOURNAY peut vous envoyer sous 48H une analyse à froid qu’il voit de spécifique sur ce poste dans votre secteur. C’est bon pour vous ?`,
+    ordre_affichage: 2,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_objection: 203,
+    id_campagne: 11,
+    categorie: 'FIDELITE',
+    titre: 'Je ne travaille pas avec des indépendants',
+    texte_objection: 'Je ne travaille pas avec des indépendants',
+    reformulation: `Vous préférez passer exclusivement par des cabinets de recrutement ?`,
+    adaptation: `C’est une position cohérente, beaucoup de dirigeants la partagent. Souvent pour des raisons structurelles ou suite à une mauvaise une expérience. L’approche de Monsieur GOURNAY est différente des autres cabinets et vise à éviter les erreurs de casting.`,
+    texte_reponse: `C’est justamente la raison pour laquelle je vous propose un RDV sans engagement : c’est un entretien de 30 à 45 minutes pour comprendre vos enjeux et voir dans quelle mesure il peut vous accompagner.`,
+    ordre_affichage: 3,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_objection: 204,
+    id_campagne: 11,
+    categorie: 'SATURATION',
+    titre: 'Trop sollicité',
+    texte_objection: 'Trop sollicité',
+    reformulation: `Beaucoup de cabinets de recrutement vous proposent leurs services, c’est bien ça ?`,
+    adaptation: `La mission de François est effectivement celle d’un cabinet de recrutement, à la différence qu’il fait tout de A à Z. Un seul interlocuteur du début à la fin donc aucune perte d’information.`,
+    texte_reponse: `Aujourd’hui mon objectif est de vous proposer un rendez-vous avec François GOURNAY, afin d’échanger sur vos difficultés de recrutement et sur l’expertise qu’il peut mettre à votre disposition, de la prise de brief à la recherche, jusqu’à l’intégration du candidat.`,
+    ordre_affichage: 4,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_objection: 205,
+    id_campagne: 11,
+    categorie: 'SATURATION',
+    titre: 'Comment avez-vous eu mon numéro',
+    texte_objection: 'Comment avez-vous eu mon numéro',
+    reformulation: `Vous voulez savoir comment je vous ai trouvé ?`,
+    adaptation: `Aucune malice de ma part, je vous ai trouvé via un outil d’enrichissement de données pro qui agrège des sources publiques et professionnelles.`,
+    texte_reponse: `Si je vous appelle aujourd’hui c’est pour solliciter un rendez-vous afin de vous amener une solution face à votre recherche de (profil)`,
+    ordre_affichage: 5,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_objection: 206,
+    id_campagne: 11,
+    categorie: 'CONTACT',
+    titre: 'Par mail/catalogue',
+    texte_objection: 'Par mail/catalogue',
+    reformulation: `Vous souhaitez recevoir un descriptif écrit afin de pouvoir étudier nos solutions à tête reposée, c’est ça ?`,
+    adaptation: `Je comprends bien et c’est prévu suite à notre échange vous recevrez dans un délai de 48H un point de vue concret sur le marché des startup/scale up en IDF. Toutefois, chaque structure a des besoins spécifiques et une simple plaquette commerciale ne reflétera pas la réalité de votre entreprise.`,
+    texte_reponse: `En réalité je ne vous prends que 5 minutes. Je vous propose un RDV avec Monsieur GOURNAY afin d’échanger sur vos difficultés de recrutement et sur l’expertise qu’il peut mettre à votre disposition. Il nous reste des créneaux Jeudi xx et Vendredi xx, qu’est-ce qui vous convient le mieux ?`,
+    ordre_affichage: 6,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  },
+  {
+    id_objection: 207,
+    id_campagne: 11,
+    categorie: 'TARIFS',
+    titre: 'Quels sont vos tarifs',
+    texte_objection: 'Quels sont vos tarifs',
+    reformulation: `Vous souhaitez connaître nos honoraires?`,
+    adaptation: `C’est une question légitime à laquelle seul Monsieur GOURNAY pourra répondre en détail.`,
+    texte_reponse: `Il est préférable de comprendre votre contexte avant de vous proposer des profils et nos tarifs. C’est ce qu’il regarde avec vous en rendez-vous. Il nous reste des créneaux Jeudi xx et Vendredi xx, qu’est-ce qui vous convient le mieux ?`,
+    ordre_affichage: 7,
+    actif: true,
+    created_at: '2026-07-30T00:00:00.000Z',
+    updated_at: '2026-07-30T00:00:00.000Z'
+  }
+];
+
+

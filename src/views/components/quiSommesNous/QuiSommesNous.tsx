@@ -5,7 +5,80 @@ import { FaBuilding, FaUsers, FaHandshake, FaShieldAlt, FaPhone, FaEnvelope, FaM
 
 export default function QuiSommesNous() {
   const { currentCampaign } = useCampaign();
-  const isMMA = isLeadB2BCampaign(currentCampaign);
+  const campaignName = currentCampaign?.nom_campagne?.toLowerCase() ?? '';
+  const isFGA = currentCampaign?.id_campagne === 11 || campaignName.includes('fga');
+  const isMMA = !isFGA && (isLeadB2BCampaign(currentCampaign) || campaignName.includes('mma'));
+
+  if (isFGA) {
+    return (
+      <div className="qui-sommes-nous">
+        <div className="qui-sommes-nous__header">
+          <h2>Qui sommes-nous ?</h2>
+          <p className="qui-sommes-nous__subtitle">Présentation de FGA Consulting</p>
+        </div>
+
+        <div className="qui-sommes-nous__content">
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaBuilding className="qui-sommes-nous__icon" />
+              <h3>Notre cabinet</h3>
+            </div>
+            <p>
+              FGA Consulting est un cabinet de recrutement dont la différenciation réside dans le conseil.
+            </p>
+            <p>
+              François GOURNAY qui en est à la tête est recruteur exécutif indépendant, consultant au sein du réseau Le Mercato de l’Emploi. Ce dernier s’est spécialisé dans le placement de profils commerciaux seniors (Head of Sales, VP Sales, CRO) auprès de scale-ups en forte croissance.
+            </p>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaHandshake className="qui-sommes-nous__icon" />
+              <h3>Notre positionnement</h3>
+            </div>
+            <p>
+              Son positionnement n’est pas celui d’un cabinet de recrutement classique, il accompagne les dirigeants fondateurs dans leurs enjeux de structuration commerciale avec une approche de conseil et de coaching, pair à pair avec le CEO.
+            </p>
+          </section>
+
+          <section className="qui-sommes-nous__section qui-sommes-nous__section--contact">
+            <h3>Coordonnées de l'interlocuteur</h3>
+            <div className="qui-sommes-nous__contact-grid">
+              <div className="qui-sommes-nous__contact-item">
+                <FaPhone className="qui-sommes-nous__contact-icon" />
+                <div>
+                  <strong>Téléphone</strong>
+                  <span>06 65 58 71 11</span>
+                </div>
+              </div>
+              <div className="qui-sommes-nous__contact-item">
+                <FaEnvelope className="qui-sommes-nous__contact-icon" />
+                <div>
+                  <strong>Email</strong>
+                  <a href="mailto:francois.gournay@mercato-emploi.com" style={{ color: 'inherit', textDecoration: 'none' }}>
+                    francois.gournay@mercato-emploi.com
+                  </a>
+                </div>
+              </div>
+              <div className="qui-sommes-nous__contact-item">
+                <FaMapMarkerAlt className="qui-sommes-nous__contact-icon" />
+                <div>
+                  <strong>Adresse</strong>
+                  <span>12 Avenue du Bel Air, 75012 Paris</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="qui-sommes-nous__section qui-sommes-nous__section--legal">
+            <p className="qui-sommes-nous__legal">
+              FGA Consulting - Le Mercato de l'Emploi - SIRET : 94978710500012 - Paris
+            </p>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   if (isMMA) {
     return (

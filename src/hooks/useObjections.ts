@@ -7,7 +7,7 @@ import { getErrorMessage } from '../utils/scripts/formatters';
 import { OBJECTION_CATEGORIES_ORDER } from '../utils/constants';
 import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
 import { CAMPAIGN_VARIANTS, isLeadB2BCampaign } from '../utils/scripts/campaignVariants';
-import { CIGALES_OBJECTIONS, MMA_OBJECTIONS } from '../utils/scripts/staticObjections';
+import { CIGALES_OBJECTIONS, MMA_OBJECTIONS, FGA_OBJECTIONS } from '../utils/scripts/staticObjections';
 
 interface UseObjectionsReturn {
   objections: Objection[];
@@ -78,12 +78,17 @@ export function useObjections(): UseObjectionsReturn {
 
         // Fallback statique si la base de données est vide ou injoignable
         if (!objectionsData || objectionsData.length === 0) {
-          const isMMA = isLeadB2BCampaign({
-            type_campagne: type === CAMPAIGN_VARIANTS.lead_b2b ? CAMPAIGN_VARIANTS.lead_b2b : CAMPAIGN_VARIANTS.vente,
-            nom_campagne: name,
-          });
-          objectionsData = isMMA ? MMA_OBJECTIONS : CIGALES_OBJECTIONS;
-          console.log(`[useObjections] Utilisation des objections statiques de fallback pour ${isMMA ? 'MMA' : 'Cigales'}`);
+          if (campagneId === 11 || name.toLowerCase().includes('fga')) {
+            objectionsData = FGA_OBJECTIONS;
+            console.log('[useObjections] Utilisation des objections statiques de fallback pour FGA Consulting');
+          } else {
+            const isMMA = isLeadB2BCampaign({
+              type_campagne: type === CAMPAIGN_VARIANTS.lead_b2b ? CAMPAIGN_VARIANTS.lead_b2b : CAMPAIGN_VARIANTS.vente,
+              nom_campagne: name,
+            });
+            objectionsData = isMMA ? MMA_OBJECTIONS : CIGALES_OBJECTIONS;
+            console.log(`[useObjections] Utilisation des objections statiques de fallback pour ${isMMA ? 'MMA' : 'Cigales'}`);
+          }
         }
 
         setObjections(objectionsData);

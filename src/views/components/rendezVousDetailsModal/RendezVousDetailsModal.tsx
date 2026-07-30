@@ -19,7 +19,7 @@ interface RendezVousDetailsModalProps {
 }
 
 const STATUT_LABELS: Record<string, string> = {
-  planifie: 'Planifié',
+  planifie: 'Rappel',
   effectue: 'Effectué',
   reporte: 'Reporté',
   annule: 'Annulé',

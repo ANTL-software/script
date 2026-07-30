@@ -275,6 +275,32 @@
   color: #7c3aed;
   font-weight: vars.$fontWeight-bold;
 }
+#dashboardPage .dashboard__rdv-item--rdv-pris {
+  background: #fefce8;
+  border-color: #eab308;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.15);
+}
+#dashboardPage .dashboard__rdv-item--rdv-pris:hover {
+  background: #fef08a;
+}
+#dashboardPage .dashboard__rdv-item--rdv-pris .dashboard__rdv-heure,
+#dashboardPage .dashboard__rdv-item--rdv-pris .dashboard__rdv-nom {
+  color: #854d0e;
+  font-weight: vars.$fontWeight-bold;
+}
+#dashboardPage .dashboard__rdv-item--relance {
+  background: #f0fdf4;
+  border-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.15);
+}
+#dashboardPage .dashboard__rdv-item--relance:hover {
+  background: #dcfce7;
+}
+#dashboardPage .dashboard__rdv-item--relance .dashboard__rdv-heure,
+#dashboardPage .dashboard__rdv-item--relance .dashboard__rdv-nom {
+  color: #065f46;
+  font-weight: vars.$fontWeight-bold;
+}
 #dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-commande {
   margin-left: vars.$spacing-xs;
   background: #e95420;
@@ -287,9 +313,33 @@
   display: inline-block;
   vertical-align: middle;
 }
-#dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-relance {
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-relance-vente {
   margin-left: vars.$spacing-xs;
   background: #7c3aed;
+  color: white;
+  font-size: 9px;
+  font-weight: vars.$fontWeight-bold;
+  padding: 1px 5px;
+  border-radius: vars.$radius-sm;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-rdv-pris {
+  margin-left: vars.$spacing-xs;
+  background: #eab308;
+  color: #0f172a;
+  font-size: 9px;
+  font-weight: vars.$fontWeight-bold;
+  padding: 1px 5px;
+  border-radius: vars.$radius-sm;
+  text-transform: uppercase;
+  display: inline-block;
+  vertical-align: middle;
+}
+#dashboardPage .dashboard__rdv-item .dashboard__rdv-badge-relance {
+  margin-left: vars.$spacing-xs;
+  background: #10b981;
   color: white;
   font-size: 9px;
   font-weight: vars.$fontWeight-bold;

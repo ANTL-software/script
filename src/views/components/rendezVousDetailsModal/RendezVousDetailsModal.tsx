@@ -3,7 +3,7 @@ import { FaTimes, FaCalendarAlt, FaClock, FaUser, FaPhone, FaEdit, FaTrash } fro
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import type { RendezVous } from '../../../utils/types/index.ts';
-import { formatProspectName, formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import { formatProspectName, formatHeure, checkIsCommande, checkIsRelanceVente, checkIsRendezVousPris, checkIsRelance } from '../../../utils/scripts/index.ts';
 import { Button } from '../button/index.ts';
 import { useNavigation } from '../../../hooks/index.ts';
 import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants/index.ts';
@@ -57,11 +57,28 @@ export default function RendezVousDetailsModal({
   const isRelanceVente = checkIsRelanceVente(rendezVous.motif, rendezVous.appelsSource);
   const actionsLocked = isReadOnly || isRelanceVente;
   const isCommande = !isRelanceVente && checkIsCommande(rendezVous.motif, rendezVous.appelsSource);
+  const isRendezVousPris = !isRelanceVente && !isCommande && checkIsRendezVousPris(rendezVous.motif, rendezVous.appelsSource);
+  const isRelance = !isRelanceVente && !isCommande && !isRendezVousPris && checkIsRelance(rendezVous.motif, rendezVous.appelsSource);
+
   const statut = rendezVous.statut;
-  const statutLabel = isRelanceVente ? 'Relance vente' : (isCommande ? 'Commande à établir' : (STATUT_LABELS[statut] ?? statut));
-  const statutColor = isRelanceVente
-    ? RENDEZ_VOUS_KIND_COLORS.relanceVente
-    : (isCommande ? RENDEZ_VOUS_KIND_COLORS.commande : (STATUT_COLORS[statut] ?? '#6b7280'));
+  let statutLabel = STATUT_LABELS[statut] ?? statut;
+  let statutColor = STATUT_COLORS[statut] ?? '#6b7280';
+
+  if (isRelanceVente) {
+    statutLabel = 'Relance vente';
+    statutColor = RENDEZ_VOUS_KIND_COLORS.relanceVente;
+  } else if (isCommande) {
+    statutLabel = 'Commande à établir';
+    statutColor = RENDEZ_VOUS_KIND_COLORS.commande;
+  } else if (isRendezVousPris) {
+    statutLabel = 'Rendez-vous pris';
+    statutColor = RENDEZ_VOUS_KIND_COLORS.rendezVousPris;
+  } else if (isRelance) {
+    statutLabel = 'Relance';
+    statutColor = RENDEZ_VOUS_KIND_COLORS.relance;
+  }
+
+  const textColor = isRendezVousPris ? '#0f172a' : 'white';
 
   const rdvDate = parseISO(rendezVous.date_rdv);
   const formattedDate = format(rdvDate, 'EEEE d MMMM yyyy', { locale: fr });
@@ -92,7 +109,7 @@ export default function RendezVousDetailsModal({
 
         <div className="rdv-details-modal__content">
           {/* Statut badge */}
-          <div className="rdv-details-modal__statut-badge" style={{ backgroundColor: statutColor }}>
+          <div className="rdv-details-modal__statut-badge" style={{ backgroundColor: statutColor, color: textColor }}>
             {statutLabel}
           </div>
 

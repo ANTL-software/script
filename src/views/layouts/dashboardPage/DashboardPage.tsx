@@ -67,7 +67,7 @@ export default function DashboardPage() {
                   <li
                     key={rendezVous.id_rendez_vous}
                     ref={item.isNext ? nextRendezVousRef : null}
-                    className={`dashboard__rdv-item ${item.isNext ? 'dashboard__rdv-item--next' : ''} ${item.isCommande ? 'dashboard__rdv-item--commande' : ''} ${item.isRelanceVente ? 'dashboard__rdv-item--relance-vente' : ''}`}
+                    className={`dashboard__rdv-item ${item.isNext ? 'dashboard__rdv-item--next' : ''} ${item.isCommande ? 'dashboard__rdv-item--commande' : ''} ${item.isRelanceVente ? 'dashboard__rdv-item--relance-vente' : ''} ${item.isRendezVousPris ? 'dashboard__rdv-item--rdv-pris' : ''} ${item.isRelance ? 'dashboard__rdv-item--relance' : ''}`}
                     onClick={() => openRendezVous(item.url)}
                   >
                     <div className="dashboard__rdv-heure">{item.heureLabel}</div>
@@ -78,7 +78,13 @@ export default function DashboardPage() {
                           <span className="dashboard__rdv-badge-commande">Commande à établir</span>
                         )}
                         {item.isRelanceVente && (
-                          <span className="dashboard__rdv-badge-relance">Relance vente conclue</span>
+                          <span className="dashboard__rdv-badge-relance-vente">Relance vente conclue</span>
+                        )}
+                        {item.isRendezVousPris && (
+                          <span className="dashboard__rdv-badge-rdv-pris">Rendez-vous pris</span>
+                        )}
+                        {item.isRelance && (
+                          <span className="dashboard__rdv-badge-relance">Relance</span>
                         )}
                       </span>
                       {rendezVous.prospect?.telephone && (

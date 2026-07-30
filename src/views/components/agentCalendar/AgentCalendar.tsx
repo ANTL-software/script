@@ -8,7 +8,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTrash, FaUser, FaExclamationTriangle } from 'react-icons/fa';
 import type { CalendarEvent, RendezVousStatut } from '../../../utils/types/index.ts';
 import { CALENDAR_MESSAGES, RENDEZ_VOUS_KIND_COLORS, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants/index.ts';
-import { formatHeure, checkIsCommande, checkIsRelanceVente } from '../../../utils/scripts/index.ts';
+import { formatHeure, checkIsCommande, checkIsRelanceVente, checkIsRendezVousPris, checkIsRelance } from '../../../utils/scripts/index.ts';
 import { Loader } from '../loader/index.ts';
 import { CalendarTooltip } from '../calendarTooltip/index.ts';
 import { RendezVousDetailsModal } from '../rendezVousDetailsModal/index.ts';
@@ -100,9 +100,22 @@ export default function AgentCalendar({
         : null;
     const isRelanceVente = checkIsRelanceVente(motif, appelsSource, selectedStatusForEvent);
     const isCommande = !isRelanceVente && checkIsCommande(motif, appelsSource, selectedStatusForEvent);
-    const color = isRelanceVente
-      ? RENDEZ_VOUS_KIND_COLORS.relanceVente
-      : (isCommande ? RENDEZ_VOUS_KIND_COLORS.commande : (STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie));
+    const isRendezVousPris = !isRelanceVente && !isCommande && checkIsRendezVousPris(motif, appelsSource, selectedStatusForEvent);
+    const isRelance = !isRelanceVente && !isCommande && !isRendezVousPris && checkIsRelance(motif, appelsSource, selectedStatusForEvent);
+
+    let color = STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie;
+    if (isRelanceVente) {
+      color = RENDEZ_VOUS_KIND_COLORS.relanceVente;
+    } else if (isCommande) {
+      color = RENDEZ_VOUS_KIND_COLORS.commande;
+    } else if (isRendezVousPris) {
+      color = RENDEZ_VOUS_KIND_COLORS.rendezVousPris;
+    } else if (isRelance) {
+      color = RENDEZ_VOUS_KIND_COLORS.relance;
+    }
+
+    const textColor = isRendezVousPris ? '#0f172a' : 'white';
+    const isSpecialKind = isCommande || isRelanceVente || isRendezVousPris || isRelance;
 
     if (eventType === 'mine-prospect') {
       return {
@@ -111,10 +124,10 @@ export default function AgentCalendar({
           borderRadius: '0.375rem',
           border: 'none',
           boxShadow: `inset 0 0 0 2px white, 0 0 0 2px ${color}`,
-          color: 'white',
+          color: textColor,
           fontWeight: 600,
         },
-        className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}`,
+        className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}${isRendezVousPris ? ' event--rendez-vous-pris' : ''}${isRelance ? ' event--relance' : ''}`,
       };
     }
 
@@ -123,11 +136,11 @@ export default function AgentCalendar({
         backgroundColor: color,
         borderRadius: '0.375rem',
         border: 'none',
-        color: 'white',
-        opacity: statut === 'annule' ? 0.35 : (isCommande || isRelanceVente ? 0.9 : 0.65),
-        fontWeight: (statut === 'planifie' || isCommande || isRelanceVente) ? 600 : 400,
+        color: textColor,
+        opacity: statut === 'annule' ? 0.35 : (isSpecialKind ? 0.9 : 0.65),
+        fontWeight: (statut === 'planifie' || isSpecialKind) ? 600 : 400,
       },
-      className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}`,
+      className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}${isRendezVousPris ? ' event--rendez-vous-pris' : ''}${isRelance ? ' event--relance' : ''}`,
     };
   }, [resolvedCampagneId, selectedCallStatus]);
 

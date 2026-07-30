@@ -1,7 +1,7 @@
 import './calendarTooltip.scss';
 import { format, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { formatProspectName, checkIsCommande, checkIsRelanceVente, getProspectRelationBadge } from '../../../utils/scripts/index.ts';
+import { formatProspectName, checkIsCommande, checkIsRelanceVente, checkIsRendezVousPris, checkIsRelance, getProspectRelationBadge } from '../../../utils/scripts/index.ts';
 import type { CalendarEvent } from '../../../utils/types/index.ts';
 import { RENDEZ_VOUS_KIND_COLORS } from '../../../utils/constants/index.ts';
 
@@ -38,23 +38,39 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   const left = x + 228 > window.innerWidth ? x - 228 - 8 : x + 12;
   const top  = y + 8;
 
-  const isCommande = checkIsCommande(resource.motif, resource.appelsSource);
   const isRelanceVente = checkIsRelanceVente(resource.motif, resource.appelsSource);
-  const headerColor = isOtherAgent
-    ? '#d97706'
-    : (isRelanceVente
-      ? RENDEZ_VOUS_KIND_COLORS.relanceVente
-      : (isCommande ? RENDEZ_VOUS_KIND_COLORS.commande : (STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie)));
-  const headerLabel = isOtherAgent
-    ? 'Autre agent'
-    : (isRelanceVente ? 'Relance vente' : (isCommande ? 'Commande à établir' : (STATUT_LABELS[resource.statut] ?? resource.statut)));
+  const isCommande = !isRelanceVente && checkIsCommande(resource.motif, resource.appelsSource);
+  const isRendezVousPris = !isRelanceVente && !isCommande && checkIsRendezVousPris(resource.motif, resource.appelsSource);
+  const isRelance = !isRelanceVente && !isCommande && !isRendezVousPris && checkIsRelance(resource.motif, resource.appelsSource);
+
+  let headerColor = STATUT_COLORS[resource.statut] ?? STATUT_COLORS.planifie;
+  let headerLabel = STATUT_LABELS[resource.statut] ?? resource.statut;
+
+  if (isOtherAgent) {
+    headerColor = '#d97706';
+    headerLabel = 'Autre agent';
+  } else if (isRelanceVente) {
+    headerColor = RENDEZ_VOUS_KIND_COLORS.relanceVente;
+    headerLabel = 'Relance vente';
+  } else if (isCommande) {
+    headerColor = RENDEZ_VOUS_KIND_COLORS.commande;
+    headerLabel = 'Commande à établir';
+  } else if (isRendezVousPris) {
+    headerColor = RENDEZ_VOUS_KIND_COLORS.rendezVousPris;
+    headerLabel = 'Rendez-vous pris';
+  } else if (isRelance) {
+    headerColor = RENDEZ_VOUS_KIND_COLORS.relance;
+    headerLabel = 'Relance';
+  }
+
+  const textColor = isRendezVousPris && !isOtherAgent ? '#0f172a' : 'white';
 
   return (
     <div className="cal-tooltip" style={{ left, top }}>
       <div className="cal-tooltip__header">
         <span
           className="cal-tooltip__statut"
-          style={{ backgroundColor: headerColor }}
+          style={{ backgroundColor: headerColor, color: textColor }}
         >
           {headerLabel}
         </span>

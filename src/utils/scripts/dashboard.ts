@@ -2,6 +2,8 @@ import type { ProspectAssigne, RendezVous } from '../types/index.ts';
 import {
   checkIsCommande,
   checkIsRelanceVente,
+  checkIsRendezVousPris,
+  checkIsRelance,
   formatHeure,
   formatProspectName,
 } from './formatters.ts';
@@ -13,6 +15,8 @@ export interface DashboardRendezVousItem {
   isNext: boolean;
   isCommande: boolean;
   isRelanceVente: boolean;
+  isRendezVousPris: boolean;
+  isRelance: boolean;
   url: string | null;
 }
 
@@ -88,14 +92,19 @@ export function buildDashboardRendezVousItems(
 
   return rendezVous.map((item) => {
     const isRelanceVente = checkIsRelanceVente(item.motif, item.appelsSource);
+    const isCommande = !isRelanceVente && checkIsCommande(item.motif, item.appelsSource);
+    const isRendezVousPris = !isRelanceVente && !isCommande && checkIsRendezVousPris(item.motif, item.appelsSource);
+    const isRelance = !isRelanceVente && !isCommande && !isRendezVousPris && checkIsRelance(item.motif, item.appelsSource);
 
     return {
       rendezVous: item,
       prospectLabel: getProspectLabel(item),
       heureLabel: formatHeure(item.heure_rdv),
       isNext: item.id_rendez_vous === nextRendezVousId,
-      isCommande: !isRelanceVente && checkIsCommande(item.motif, item.appelsSource),
+      isCommande,
       isRelanceVente,
+      isRendezVousPris,
+      isRelance,
       url: buildDashboardRappelUrl(item),
     };
   });

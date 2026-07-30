@@ -266,22 +266,20 @@ export function checkIsCommande(
   appelsSource?: Array<{ statut_appel: string }> | null,
   selectedCallStatus?: string | null
 ): boolean {
-  // 1. Si on a un appel actif en cours de classification avec statut rdv_pris
   if (selectedCallStatus === 'rdv_pris') {
     return true;
   }
-  if (selectedCallStatus === 'rendez_vous_pris') {
+  if (selectedCallStatus === 'rendez_vous_pris' || selectedCallStatus === 'relance' || selectedCallStatus === 'vente_conclue') {
     return false;
   }
 
-  // 2. Si on a les appels sources associés en base de données
   if (appelsSource && appelsSource.length > 0) {
     return appelsSource.some(call => call.statut_appel === 'rdv_pris');
   }
 
-  // 3. Fallback de secours sur le motif (casse insensible, mots clés, etc.)
   if (!motif) return false;
   const m = motif.toLowerCase().trim();
+  if (m === 'relance vente conclue' || m.includes('relance vente conclue')) return false;
   return (
     m === 'cde' ||
     m === 'commande à établir' ||
@@ -309,4 +307,57 @@ export function checkIsRelanceVente(
   if (!motif) return false;
   const m = motif.toLowerCase().trim();
   return m === 'relance vente conclue' || (m.includes('relance') && m.includes('vente conclue'));
+}
+
+export function checkIsRendezVousPris(
+  motif?: string | null,
+  appelsSource?: Array<{ statut_appel: string }> | null,
+  selectedCallStatus?: string | null
+): boolean {
+  if (selectedCallStatus === 'rendez_vous_pris') {
+    return true;
+  }
+
+  if (appelsSource && appelsSource.length > 0) {
+    return appelsSource.some(call => call.statut_appel === 'rendez_vous_pris');
+  }
+
+  if (!motif) return false;
+  const m = motif.toLowerCase().trim();
+  return (
+    m === 'rendez-vous pris' ||
+    m === 'rendez vous pris' ||
+    m === 'rendez-vous valide !' ||
+    m === 'rendez vous valide !' ||
+    m === 'rendez-vous valide' ||
+    m === 'rendez vous valide' ||
+    m.includes('rendez-vous pris') ||
+    m.includes('rendez vous pris') ||
+    m.includes('rendez-vous valide') ||
+    m.includes('rendez vous valide') ||
+    m.includes('rdv pris') ||
+    m.includes('rdv valide')
+  );
+}
+
+export function checkIsRelance(
+  motif?: string | null,
+  appelsSource?: Array<{ statut_appel: string }> | null,
+  selectedCallStatus?: string | null
+): boolean {
+  if (checkIsRelanceVente(motif, appelsSource, selectedCallStatus)) {
+    return false;
+  }
+
+  if (selectedCallStatus === 'relance') {
+    return true;
+  }
+
+  if (appelsSource && appelsSource.length > 0) {
+    return appelsSource.some(call => call.statut_appel === 'relance');
+  }
+
+  if (!motif) return false;
+  const m = motif.toLowerCase().trim();
+  return m === 'relance' || m.startsWith('relance ') || m.endsWith(' relance') || m.includes('relance');
 }

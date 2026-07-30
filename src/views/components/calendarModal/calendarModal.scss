@@ -94,18 +94,32 @@
 
 .calendar-modal__legend-item--planifie {
   background: #3b82f6;
+  color: white;
 }
 
 .calendar-modal__legend-item--commande {
   background: #e95420;
+  color: white;
+}
+
+.calendar-modal__legend-item--rendez-vous-pris {
+  background: #eab308;
+  color: #0f172a;
 }
 
 .calendar-modal__legend-item--relance {
+  background: #10b981;
+  color: white;
+}
+
+.calendar-modal__legend-item--relance-vente {
   background: #7c3aed;
+  color: white;
 }
 
 .calendar-modal__legend-item--non-honore {
   background: #6b7280;
+  color: white;
 }
 
 .calendar-modal__legend-hint {

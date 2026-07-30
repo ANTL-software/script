@@ -166,5 +166,7 @@ export const STATUT_RENDEZ_VOUS_COLORS: Record<RendezVousStatut, string> = {
 
 export const RENDEZ_VOUS_KIND_COLORS = {
   commande: '#E95420',
+  rendezVousPris: '#eab308',
+  relance: '#10b981',
   relanceVente: '#7c3aed',
 } as const;

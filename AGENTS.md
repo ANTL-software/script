@@ -941,7 +941,9 @@ Le bouton `Utilisateur TEST` ne partage jamais les JWT entre `api.antl.fr` et
 `api-test.antl.fr`. Il échange un ticket production aléatoire, à usage unique et
 valable 60 secondes contre des cookies host-only propres à l'API de test, puis
 recharge `/prospect/1?test=true`. La campagne runtime validée en production est
-conservée et Twilio reste désactivé pendant ce parcours.
+conservée et Twilio reste désactivé pendant ce parcours. Sur la fiche de
+formation, cette campagne de session prime toujours sur les affectations de la
+base test et sur toute campagne historique portée par le prospect de formation.
 
 ### Prospect.service.ts
 
@@ -1495,6 +1497,7 @@ Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :
 
 | Date | Modification | Auteur |
 |------|--------------|--------|
+| 2026-08-03 | Priorité absolue à la campagne runtime certifiée pour `Utilisateur TEST`, même sans affectation locale identique dans la base test | AI Agent |
 | 2026-07-30 | Session isolée et sécurisée pour le parcours `Utilisateur TEST`, avec conservation de la campagne runtime et Twilio désactivé | AI Agent |
 | 2026-07-20 | Verrouillage du serveur Vite Script sur `127.0.0.1:5174` afin de coexister avec USV sur 5173 | AI Agent |
 | 2026-07-20 | Mise à jour des dépendances vulnérables et retrait du plugin de polyfills inutile après validation de la résolution `events` du SDK Twilio | AI Agent |

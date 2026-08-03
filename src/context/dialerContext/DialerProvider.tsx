@@ -7,7 +7,7 @@ import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService, csrfService } from '../../API/services';
 import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
-import { getApiBaseUrl, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
+import { getApiBaseUrl, isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
 import { useToast } from '../../hooks';
@@ -774,6 +774,11 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setRaisonPause(status.raison_pause ?? null);
     if (status.debut_statut) {
       setDepuisLe(new Date(status.debut_statut));
+    }
+
+    if (isProspectTestMode()) {
+      setCurrentCampagneId(status.id_campagne_active ?? null);
+      return;
     }
 
     const campagnes = await dialerService.getCampagnesAgent();

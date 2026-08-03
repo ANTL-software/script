@@ -82,12 +82,7 @@ export function useLandingPage() {
   // Charger la campagne à partir du dialer ou de la fiche prospect
   useEffect(() => {
     const campaignIdToLoad = isTestMode
-      ? resolveRuntimeCampaignId({
-        currentCampaignId: currentProspect?.id_campagne ?? null,
-        currentDialerCampaignId: currentCampagneId,
-        urlCampaignId: null,
-        preferDialerCampaign: true,
-      })
+      ? currentCampagneId
       : resolveRuntimeCampaignId({
         currentCampaignId: currentProspect?.id_campagne ?? null,
         currentDialerCampaignId: currentCampagneId,

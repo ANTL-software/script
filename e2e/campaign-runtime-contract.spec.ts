@@ -167,6 +167,36 @@ test('la variante vente conserve la matrice historique attendue', async ({ page 
   ]);
 });
 
+test('les relances Cigales et MMA exigent un rappel agenda sans confondre le rendez-vous client MMA', async ({ page }) => {
+  await page.goto('/');
+
+  const result = await page.evaluate(async () => {
+    const {
+      getCampaignAgendaRendezVousMotif,
+      requiresCampaignAgendaRendezVous,
+    } = await import('/src/utils/scripts/campaignVariants.ts');
+
+    return {
+      cigales: {
+        required: requiresCampaignAgendaRendezVous('vente', 'relance'),
+        motif: getCampaignAgendaRendezVousMotif('vente', 'relance'),
+      },
+      mmaRelance: {
+        required: requiresCampaignAgendaRendezVous('lead_b2b', 'rdv_pris'),
+        motif: getCampaignAgendaRendezVousMotif('lead_b2b', 'rdv_pris'),
+      },
+      mmaRendezVousClient: {
+        required: requiresCampaignAgendaRendezVous('lead_b2b', 'rendez_vous_pris'),
+        motif: getCampaignAgendaRendezVousMotif('lead_b2b', 'rendez_vous_pris'),
+      },
+    };
+  });
+
+  expect(result.cigales).toEqual({ required: true, motif: 'Relance' });
+  expect(result.mmaRelance).toEqual({ required: true, motif: 'Relance' });
+  expect(result.mmaRendezVousClient).toEqual({ required: false, motif: null });
+});
+
 test('le contrat de commande vente transporte id_appel sans casser le mode placeholder MMA', async ({ page }) => {
   await page.goto('/');
 

@@ -6,9 +6,10 @@ import { format, parse, startOfWeek, getDay, parseISO } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { FaTrash, FaUser, FaExclamationTriangle } from 'react-icons/fa';
-import type { CalendarEvent, RendezVousStatut } from '../../../utils/types/index.ts';
+import type { CalendarEvent, RendezVousStatut, StatutAppel } from '../../../utils/types/index.ts';
 import { CALENDAR_MESSAGES, RENDEZ_VOUS_KIND_COLORS, STATUT_RENDEZ_VOUS_COLORS } from '../../../utils/constants/index.ts';
-import { formatHeure, checkIsCommande, checkIsRelanceVente, checkIsRendezVousPris, checkIsRelance } from '../../../utils/scripts/index.ts';
+import type { CampaignVariant } from '../../../utils/scripts/index.ts';
+import { formatHeure, checkIsCommande, checkIsRelanceVente, checkIsRendezVousPris, checkIsRelance, getCampaignAgendaRendezVousMotif } from '../../../utils/scripts/index.ts';
 import { Loader } from '../loader/index.ts';
 import { CalendarTooltip } from '../calendarTooltip/index.ts';
 import { RendezVousDetailsModal } from '../rendezVousDetailsModal/index.ts';
@@ -33,14 +34,16 @@ interface AgentCalendarProps {
   prospectId?: number;
   prospectName?: string;
   campagneId?: number;
+  campaignVariant?: CampaignVariant | null;
   isReadOnly?: boolean;
-  selectedCallStatus?: string | null;
+  selectedCallStatus?: StatutAppel | null;
 }
 
 export default function AgentCalendar({
   prospectId = undefined,
   prospectName = undefined,
   campagneId = undefined,
+  campaignVariant = null,
   isReadOnly = false,
   selectedCallStatus = null,
 }: AgentCalendarProps) {
@@ -172,12 +175,13 @@ export default function AgentCalendar({
   }, []);
 
   const handleCreateRendezVous = useCallback(async (data: { date: Date }) => {
-    if (await createRendezVous(data.date)) {
+    const motif = getCampaignAgendaRendezVousMotif(campaignVariant, selectedCallStatus);
+    if (await createRendezVous(data.date, motif)) {
       setIsRdvModalOpen(false);
       setSelectedSlot(null);
       setCalendarKey(prev => prev + 1);
     }
-  }, [createRendezVous]);
+  }, [campaignVariant, createRendezVous, selectedCallStatus]);
 
   const handleUpdateRendezVous = useCallback(async (data: { date: Date; statut: RendezVousStatut }) => {
     if (!selectedRendezVous) return;

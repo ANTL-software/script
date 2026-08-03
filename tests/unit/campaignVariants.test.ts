@@ -4,11 +4,13 @@ import test from 'node:test';
 import {
   CAMPAIGN_VARIANTS,
   getCampaignClosingOptions,
+  getCampaignAgendaRendezVousMotif,
   getCommercialFollowupPresentation,
   getCampaignProgpaSteps,
   getCampaignUiConfig,
   isLeadB2BCampaign,
   normalizeCampaignVariant,
+  requiresCampaignAgendaRendezVous,
 } from '../../src/utils/scripts/campaignVariants.ts';
 
 test('normalizeCampaignVariant applique un fallback vente', () => {
@@ -94,6 +96,23 @@ test('getCampaignClosingOptions retire les statuts purement vente pour MMA', () 
 test('getCampaignProgpaSteps conserve les mêmes étapes dans toutes les campagnes', () => {
   assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.vente)[0]?.label, 'Commande');
   assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.lead_b2b)[0]?.label, 'Commande');
+});
+
+test('les statuts de relance exigent un rendez-vous agenda pour toutes les variantes', () => {
+  assert.equal(requiresCampaignAgendaRendezVous(CAMPAIGN_VARIANTS.vente, 'relance'), true);
+  assert.equal(requiresCampaignAgendaRendezVous(CAMPAIGN_VARIANTS.lead_b2b, 'rdv_pris'), true);
+  assert.equal(requiresCampaignAgendaRendezVous(CAMPAIGN_VARIANTS.vente, 'rdv_pris'), true);
+  assert.equal(requiresCampaignAgendaRendezVous(CAMPAIGN_VARIANTS.vente, 'rendez_vous_pris'), true);
+  assert.equal(requiresCampaignAgendaRendezVous(CAMPAIGN_VARIANTS.lead_b2b, 'rendez_vous_pris'), false);
+  assert.equal(requiresCampaignAgendaRendezVous(CAMPAIGN_VARIANTS.lead_b2b, 'abouti'), false);
+});
+
+test('le motif agenda distingue la relance du rendez-vous client MMA', () => {
+  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'relance'), 'Relance');
+  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.lead_b2b, 'rdv_pris'), 'Relance');
+  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'rdv_pris'), 'Commande à établir');
+  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'rendez_vous_pris'), 'Rendez-vous');
+  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.lead_b2b, 'rendez_vous_pris'), null);
 });
 
 test('getCommercialFollowupPresentation expose un état 5+ distinct du ProgPA numérique', () => {

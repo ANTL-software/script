@@ -160,6 +160,42 @@ export function getCampaignClosingOptions(campaign?: Pick<Campaign, 'type_campag
   });
 }
 
+export function requiresCampaignAgendaRendezVous(
+  campaignVariant: CampaignVariant | null | undefined,
+  statut: StatutAppel | null | undefined,
+): boolean {
+  if (!statut) {
+    return false;
+  }
+
+  if (statut === 'relance' || statut === 'rdv_pris') {
+    return true;
+  }
+
+  return statut === 'rendez_vous_pris'
+    && normalizeCampaignVariant(campaignVariant) !== CAMPAIGN_VARIANTS.lead_b2b;
+}
+
+export function getCampaignAgendaRendezVousMotif(
+  campaignVariant: CampaignVariant | null | undefined,
+  statut: StatutAppel | null | undefined,
+): string | null {
+  if (!requiresCampaignAgendaRendezVous(campaignVariant, statut)) {
+    return null;
+  }
+
+  if (statut === 'relance'
+    || (statut === 'rdv_pris' && normalizeCampaignVariant(campaignVariant) === CAMPAIGN_VARIANTS.lead_b2b)) {
+    return 'Relance';
+  }
+
+  if (statut === 'rdv_pris') {
+    return 'Commande à établir';
+  }
+
+  return 'Rendez-vous';
+}
+
 export function getCampaignProgpaSteps(_campaignVariant?: CampaignVariant | null): ProgpaStepDefinition[] {
   return PROGPA_STEPS;
 }

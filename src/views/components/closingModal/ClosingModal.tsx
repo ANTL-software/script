@@ -215,6 +215,7 @@ export default function ClosingModal({
                   prospectId={prospectId}
                   prospectName={prospectName}
                   campagneId={campagneId}
+                  campaignVariant={campaignVariant}
                   selectedCallStatus={selectedStatut}
                   isReadOnly={isAutoProgpaLockedStatus}
                 />

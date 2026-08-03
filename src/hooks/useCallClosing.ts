@@ -4,7 +4,7 @@ import { useUser, useToast, useDialer, useProspect } from './index';
 import { appelService, closingService, dialerService, leadService, rendezVousService } from '../API/services';
 import type { StatutAppel } from '../utils/types';
 import type { CampaignVariant } from '../utils/scripts/campaignVariants';
-import { CAMPAIGN_VARIANTS } from '../utils/scripts/campaignVariants';
+import { CAMPAIGN_VARIANTS, requiresCampaignAgendaRendezVous } from '../utils/scripts/campaignVariants';
 import { getCommercialFollowupPresentation, getErrorMessage } from '../utils/scripts/index';
 import { useCallNotesDraft } from './useCallNotesDraft';
 
@@ -59,8 +59,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
     setIsSubmitting(true);
 
     const requiresLeadValidation = selectedStatut === 'rendez_vous_pris' && campaignVariant === CAMPAIGN_VARIANTS.lead_b2b;
-    const requiresAgendaValidation = selectedStatut === 'rdv_pris'
-      || (selectedStatut === 'rendez_vous_pris' && campaignVariant !== CAMPAIGN_VARIANTS.lead_b2b);
+    const requiresAgendaValidation = requiresCampaignAgendaRendezVous(campaignVariant, selectedStatut);
 
     if (requiresLeadValidation) {
       try {

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { startOfDay, addMinutes, format, isBefore, parseISO } from 'date-fns';
-import { useUser, useToast, useDialer, useCampaign } from './index';
+import { useUser, useToast, useCampaign } from './index';
 import { rendezVousService } from '../API/services';
 import type {
   CalendarEvent,
@@ -8,9 +8,8 @@ import type {
   CreateRendezVousData,
   RendezVous,
   RendezVousStatut,
-  UpdateRendezVousData,
 } from '../utils/types';
-import { checkIsRelanceVente, getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
+import { getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
 
 export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): CalendarEvent {
   // Construire la date correctement en combinant date et heure pour éviter les problèmes de timezone
@@ -38,18 +37,9 @@ export function isUpcomingActiveRendezVous(rendezVous: RendezVous, referenceDate
   return !isBefore(parseISO(`${rendezVous.date_rdv}T${rendezVous.heure_rdv}`), referenceDate);
 }
 
-export function canRescheduleSourceRendezVous(rendezVous: RendezVous | null): boolean {
-  if (!rendezVous || !['planifie', 'reporte', 'non_honore'].includes(rendezVous.statut)) {
-    return false;
-  }
-
-  return !checkIsRelanceVente(rendezVous.motif, rendezVous.appelsSource);
-}
-
 export function useAgentCalendar(prospectId: number | null = null, campagneId: number | null = null) {
   const { user } = useUser();
   const { showToast } = useToast();
-  const { currentOrigineAppel, currentRendezVousSourceId } = useDialer();
   const { currentCampaign } = useCampaign();
   const resolvedCampagneId = campagneId ?? currentCampaign?.id_campagne ?? null;
 
@@ -131,20 +121,6 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     return futureRdvs[0] || null;
   }, [myProspectRdvs]);
 
-  const currentRendezVousSource = useMemo(() => {
-    if (!currentRendezVousSourceId) {
-      return null;
-    }
-
-    return agentRdvList.find((rdv) => rdv.id_rendez_vous === currentRendezVousSourceId) ?? null;
-  }, [agentRdvList, currentRendezVousSourceId]);
-
-  const shouldRescheduleSourceRendezVous = Boolean(
-    prospectId &&
-    currentOrigineAppel === 'rappel' &&
-    canRescheduleSourceRendezVous(currentRendezVousSource)
-  );
-
   const canSelectSlot = useCallback((start: Date, isReadOnly: boolean): boolean => {
     if (isReadOnly || !prospectId) return false;
     if (isBefore(startOfDay(start), today)) {
@@ -154,7 +130,7 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     return true;
   }, [prospectId, showToast, today]);
 
-  const createRendezVous = useCallback(async (date: Date): Promise<boolean> => {
+  const createRendezVous = useCallback(async (date: Date, motif: string | null = null): Promise<boolean> => {
     if (!user?.id_employe || !prospectId) return false;
     if (!resolvedCampagneId) {
       showToast('error', 'Impossible de planifier sans campagne associée');
@@ -165,25 +141,16 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
       const dateRdv = format(date, 'yyyy-MM-dd');
       const heureRdv = format(date, 'HH:mm:ss');
 
-      if (shouldRescheduleSourceRendezVous && currentRendezVousSource) {
-        const updateData: UpdateRendezVousData = {
-          date_rdv: dateRdv,
-          heure_rdv: heureRdv,
-          statut: 'reporte',
-        };
-        await rendezVousService.updateRendezVous(currentRendezVousSource.id_rendez_vous, updateData);
-        showToast('success', 'Rendez-vous replanifie avec succès');
-      } else {
-        const createData: CreateRendezVousData = {
-          id_agent: user.id_employe,
-          id_prospect: prospectId,
-          id_campagne: resolvedCampagneId,
-          date_rdv: dateRdv,
-          heure_rdv: heureRdv,
-        };
-        await rendezVousService.createRendezVous(createData);
-        showToast('success', 'Rendez-vous planifié avec succès');
-      }
+      const createData: CreateRendezVousData = {
+        id_agent: user.id_employe,
+        id_prospect: prospectId,
+        id_campagne: resolvedCampagneId,
+        date_rdv: dateRdv,
+        heure_rdv: heureRdv,
+        ...(motif ? { motif } : {}),
+      };
+      await rendezVousService.createRendezVous(createData);
+      showToast('success', 'Rendez-vous planifié avec succès');
 
       await loadRendezVous();
       return true;
@@ -192,11 +159,9 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
       return false;
     }
   }, [
-    currentRendezVousSource,
     loadRendezVous,
     prospectId,
     resolvedCampagneId,
-    shouldRescheduleSourceRendezVous,
     showToast,
     user?.id_employe,
   ]);
@@ -241,8 +206,6 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     myProspectRdvs,
     otherAgentRdvList,
     nextMyProspectRdv,
-    currentRendezVousSource,
-    shouldRescheduleSourceRendezVous,
     loadRendezVous,
     canSelectSlot,
     createRendezVous,

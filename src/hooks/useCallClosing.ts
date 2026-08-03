@@ -5,7 +5,7 @@ import { appelService, closingService, dialerService, leadService, rendezVousSer
 import type { StatutAppel } from '../utils/types';
 import type { CampaignVariant } from '../utils/scripts/campaignVariants';
 import { CAMPAIGN_VARIANTS } from '../utils/scripts/campaignVariants';
-import { getErrorMessage } from '../utils/scripts/formatters';
+import { getCommercialFollowupPresentation, getErrorMessage } from '../utils/scripts/index';
 import { useCallNotesDraft } from './useCallNotesDraft';
 
 interface UseCallClosingOptions {
@@ -22,7 +22,7 @@ interface UseCallClosingOptions {
 export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, campaignVariant = null, onComplete, dureeAppel }: UseCallClosingOptions) {
   const { user } = useUser();
   const { showToast } = useToast();
-  const { currentProgpa, resetCurrentProgpa } = useProspect();
+  const { currentProgpa, currentProspect, resetCurrentProgpa } = useProspect();
   const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
@@ -30,6 +30,8 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
   const { notes, setNotes, clearNotes } = useCallNotesDraft(draftAppelId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const commercialFollowup = currentProspect?.suivi_commercial_en_cours ?? null;
+  const commercialFollowupPresentation = getCommercialFollowupPresentation(commercialFollowup);
 
   const handleSubmit = async (e?: FormEvent) => {
     if (e) e.preventDefault();
@@ -45,9 +47,11 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
       return;
     }
 
-    const effectiveProgpa = selectedStatut === 'vente_conclue' ? 5 : currentProgpa;
+    const effectiveProgpa = commercialFollowup
+      ? null
+      : selectedStatut === 'vente_conclue' ? 5 : currentProgpa;
 
-    if (effectiveProgpa === null) {
+    if (!commercialFollowup && effectiveProgpa === null) {
       setError("Veuillez renseigner l'etape atteinte dans le plan d'appel");
       return;
     }
@@ -117,7 +121,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           abouti,
           duree_secondes: finalDuration > 0 ? finalDuration : undefined,
           id_prospection: currentIdProspection ?? undefined,
-          progpa_atteint: effectiveProgpa,
+          ...(effectiveProgpa === null ? {} : { progpa_atteint: effectiveProgpa }),
         });
       } else {
         // Mode manuel : créer l'appel directement (pas de session SIP tracée)
@@ -129,7 +133,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
           notes: notes.trim() || undefined,
           origine_appel: resolvedOrigineAppel,
           id_rendez_vous_source: resolvedRendezVousSourceId,
-          progpa_atteint: effectiveProgpa,
+          ...(effectiveProgpa === null ? {} : { progpa_atteint: effectiveProgpa }),
         });
         // Garde : s'assurer que le backend est bien en pause_apres_appel
         await dialerService.changerStatut('pause_apres_appel');
@@ -155,6 +159,8 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
     setNotes,
     isSubmitting,
     error,
+    commercialFollowup,
+    commercialFollowupPresentation,
     handleSubmit,
   };
 }

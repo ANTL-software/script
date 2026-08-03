@@ -233,6 +233,7 @@ export default function QuiEstCe() {
         <ProgPAReadonly
           value={currentProspect.max_progpa_campagne}
           campaignVariant={getCampaignVariant(currentCampaign)}
+          commercialFollowup={currentProspect.suivi_commercial_en_cours}
         />
         <div className="qui-est-ce__actions">
           {!isEditing ? (

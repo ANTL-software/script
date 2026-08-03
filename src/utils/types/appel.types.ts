@@ -1,3 +1,4 @@
+import type { CommercialFollowupType } from './prospect.types';
 import type { Employe } from './user.types';
 import type { AnsweredBy, CallClassification } from './dialer.types';
 
@@ -46,7 +47,10 @@ export interface Appel {
   bridged_to_agent_at?: string | null;
   ended_by_system?: boolean;
   end_reason?: string | null;
-  progpa_atteint: number;
+  progpa_atteint: number | null;
+  type_suivi_commercial?: CommercialFollowupType | null;
+  id_vente_suivie?: number | null;
+  id_lead_suivi?: number | null;
   created_at: string;
   updated_at: string;
   Employe?: Employe;

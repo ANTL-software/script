@@ -1,4 +1,4 @@
-import type { ViewType } from '../types/index.ts';
+import type { CommercialFollowup, ViewType } from '../types/index.ts';
 import type { Campaign } from '../types/campaign.types';
 import type { StatutAppel } from '../types/appel.types';
 import { STATUT_APPEL_OPTIONS, type StatutAppelOption } from '../constants/appel.constants.ts';
@@ -71,17 +71,8 @@ const LEAD_B2B_CLOSING_OPTION_OVERRIDES: Partial<Record<StatutAppel, Partial<Pic
   },
 };
 
-const VENTE_PROGPA_STEPS: ProgpaStepDefinition[] = [
+const PROGPA_STEPS: ProgpaStepDefinition[] = [
   { value: 5, label: 'Commande' },
-  { value: 4, label: 'Proposition' },
-  { value: 3, label: 'Decouverte' },
-  { value: 2, label: 'Presentation' },
-  { value: 1, label: 'Identification' },
-  { value: 0, label: 'Aucun contact' },
-];
-
-const LEAD_B2B_PROGPA_STEPS: ProgpaStepDefinition[] = [
-  { value: 5, label: 'Rendez-vous pris' },
   { value: 4, label: 'Proposition' },
   { value: 3, label: 'Decouverte' },
   { value: 2, label: 'Presentation' },
@@ -169,10 +160,34 @@ export function getCampaignClosingOptions(campaign?: Pick<Campaign, 'type_campag
   });
 }
 
-export function getCampaignProgpaSteps(campaignVariant?: CampaignVariant | null): ProgpaStepDefinition[] {
-  if (campaignVariant === CAMPAIGN_VARIANTS.lead_b2b) {
-    return LEAD_B2B_PROGPA_STEPS;
+export function getCampaignProgpaSteps(_campaignVariant?: CampaignVariant | null): ProgpaStepDefinition[] {
+  return PROGPA_STEPS;
+}
+
+export interface CommercialFollowupPresentation {
+  badge: string;
+  label: string;
+  note: string;
+}
+
+export function getCommercialFollowupPresentation(
+  followup?: CommercialFollowup | null,
+): CommercialFollowupPresentation | null {
+  if (!followup) {
+    return null;
   }
 
-  return VENTE_PROGPA_STEPS;
+  if (followup.type === 'lead') {
+    return {
+      badge: 'Suivi 5+',
+      label: 'Rendez-vous client en suivi',
+      note: "Le rendez-vous client est en attente de validation ou d'annulation. Le ProgPA est verrouillé pour cet appel de suivi.",
+    };
+  }
+
+  return {
+    badge: 'Suivi 5+',
+    label: 'Commande en suivi',
+    note: "La commande est en attente de validation ou d'annulation. Le ProgPA est verrouillé pour cet appel de suivi.",
+  };
 }

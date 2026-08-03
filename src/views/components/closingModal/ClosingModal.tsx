@@ -48,6 +48,8 @@ export default function ClosingModal({
     selectedStatut, setSelectedStatut,
     notes, setNotes,
     isSubmitting, error,
+    commercialFollowup,
+    commercialFollowupPresentation,
     handleSubmit,
   } = useCallClosing({ prospectId, campagneId, appelId, origineAppel, rendezVousSourceId, campaignVariant, dureeAppel, onComplete });
 
@@ -55,6 +57,8 @@ export default function ClosingModal({
   const isVenteConclue = selectedStatut === 'vente_conclue';
   const isLeadValidated = isLeadB2B && selectedStatut === 'rendez_vous_pris';
   const isAutoProgpaLockedStatus = isVenteConclue || isLeadValidated;
+  const isCommercialFollowupLocked = commercialFollowup !== null;
+  const isProgpaLocked = isAutoProgpaLockedStatus || isCommercialFollowupLocked;
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +76,14 @@ export default function ClosingModal({
 
   // Forcer la maximisation de la modale si on passe en mode forcé (navigation hors de la fiche)
   useEffect(() => {
+    if (isCommercialFollowupLocked) {
+      if (currentProgpa !== null) {
+        setCurrentProgpa(null);
+      }
+      unlockedProgpaBeforeVenteRef.current = undefined;
+      return;
+    }
+
     if (forceMode) {
       queueMicrotask(() => setIsMinimized(false));
     }
@@ -90,7 +102,7 @@ export default function ClosingModal({
       setCurrentProgpa(unlockedProgpaBeforeVenteRef.current);
       unlockedProgpaBeforeVenteRef.current = undefined;
     }
-  }, [currentProgpa, isAutoProgpaLockedStatus, setCurrentProgpa]);
+  }, [currentProgpa, isAutoProgpaLockedStatus, isCommercialFollowupLocked, setCurrentProgpa]);
 
   const handleMinimize = () => {
     if (forceMode) return;
@@ -187,7 +199,7 @@ export default function ClosingModal({
                     type="submit"
                     variant="primary"
                     fullWidth
-                    disabled={isSubmitting || !selectedStatut || (!isAutoProgpaLockedStatus && currentProgpa === null)}
+                    disabled={isSubmitting || !selectedStatut || (!isProgpaLocked && currentProgpa === null)}
                   >
                     {isSubmitting ? (
                       <><FaSpinner className="spinner" /> Enregistrement...</>
@@ -211,10 +223,15 @@ export default function ClosingModal({
               <aside className="closing-modal__aside">
                 <div className="closing-modal__progpa-header">
                   <h3>Progression du plan d'appel</h3>
-                  <span className={`closing-modal__progpa-status${currentProgpa === null ? ' closing-modal__progpa-status--missing' : ''}`}>
-                    {isAutoProgpaLockedStatus ? 'Auto 5/5' : (currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`)}
+                  <span className={`closing-modal__progpa-status${!isProgpaLocked && currentProgpa === null ? ' closing-modal__progpa-status--missing' : ''}`}>
+                    {commercialFollowupPresentation?.badge ?? (isAutoProgpaLockedStatus ? 'Auto 5/5' : (currentProgpa === null ? 'Saisie obligatoire' : `Etape ${currentProgpa}/5`))}
                   </span>
                 </div>
+                {commercialFollowupPresentation && (
+                  <p className="closing-modal__progpa-auto-note closing-modal__progpa-auto-note--followup">
+                    {commercialFollowupPresentation.note}
+                  </p>
+                )}
                 {isVenteConclue && (
                   <p className="closing-modal__progpa-auto-note">
                     Vente conclue : relance automatique à +10 min, ProgPA verrouillé à 5.
@@ -231,7 +248,12 @@ export default function ClosingModal({
                   </p>
                 )}
                 <div className="closing-modal__progpa">
-                  <ProgPA compact disabled={isAutoProgpaLockedStatus} campaignVariant={campaignVariant} />
+                  <ProgPA
+                    compact
+                    disabled={isProgpaLocked}
+                    campaignVariant={campaignVariant}
+                    commercialFollowup={commercialFollowup}
+                  />
                 </div>
               </aside>
 

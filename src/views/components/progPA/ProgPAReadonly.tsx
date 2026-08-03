@@ -1,9 +1,11 @@
 import type { CampaignVariant } from '../../../utils/scripts/index.ts';
-import { getCampaignProgpaSteps } from '../../../utils/scripts/index.ts';
+import { getCampaignProgpaSteps, getCommercialFollowupPresentation } from '../../../utils/scripts/index.ts';
+import type { CommercialFollowup } from '../../../utils/types/index.ts';
 
 interface ProgPAReadonlyProps {
   value: number | null | undefined;
   campaignVariant?: CampaignVariant | null;
+  commercialFollowup?: CommercialFollowup | null;
 }
 
 function normalizeProgpa(value: number | null | undefined): number {
@@ -14,16 +16,23 @@ function normalizeProgpa(value: number | null | undefined): number {
   return Math.max(0, Math.min(5, Math.round(value)));
 }
 
-export default function ProgPAReadonly({ value, campaignVariant = null }: ProgPAReadonlyProps) {
-  const activeStep = normalizeProgpa(value);
+export default function ProgPAReadonly({ value, campaignVariant = null, commercialFollowup = null }: ProgPAReadonlyProps) {
+  const commercialFollowupPresentation = getCommercialFollowupPresentation(commercialFollowup);
+  const activeStep = commercialFollowupPresentation ? 5 : normalizeProgpa(value);
   const stepDefinitions = [...getCampaignProgpaSteps(campaignVariant)].reverse();
   const currentStep = stepDefinitions.find((step) => step.value === activeStep);
 
   return (
-    <section className="prog-pa-readonly" aria-label={`Progression du plan d'appel : ${activeStep} sur 5`}>
+    <section
+      className={`prog-pa-readonly${commercialFollowupPresentation ? ' prog-pa-readonly--followup' : ''}`}
+      aria-label={commercialFollowupPresentation?.label ?? `Progression du plan d'appel : ${activeStep} sur 5`}
+    >
       <div className="prog-pa-readonly__summary">
         <span className="prog-pa-readonly__eyebrow">Max. progPA atteint</span>
-        <strong className="prog-pa-readonly__value">{activeStep}<span>/5</span></strong>
+        <strong className="prog-pa-readonly__value">
+          {commercialFollowupPresentation ? '5+' : activeStep}
+          {!commercialFollowupPresentation && <span>/5</span>}
+        </strong>
       </div>
 
       <div className="prog-pa-readonly__steps" role="list" aria-label="Étapes du plan d'appel">
@@ -48,7 +57,7 @@ export default function ProgPAReadonly({ value, campaignVariant = null }: ProgPA
 
       <p className="prog-pa-readonly__current-step">
         <span>Palier actuel</span>
-        {currentStep?.label ?? 'Aucun contact'}
+        {commercialFollowupPresentation?.label ?? currentStep?.label ?? 'Aucun contact'}
       </p>
     </section>
   );

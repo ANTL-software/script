@@ -12,6 +12,16 @@ export type TypeFiche = 'jamais_appele' | 'deja_appele' | 'recycle' | 'client';
 
 export type ProspectRelationCommercialeCampagneStatut = 'prospect' | 'client' | 'lead_genere';
 
+export type CommercialFollowupType = 'vente' | 'lead';
+
+export interface CommercialFollowup {
+  type: CommercialFollowupType;
+  id_source: number;
+  id_appel_source: number | null;
+  statut: string;
+  date_creation: string | null;
+}
+
 export interface ProspectRelationCommercialeCampagne {
   id_relation?: number;
   id_prospect?: number;
@@ -60,6 +70,7 @@ export interface Prospect {
   max_progpa: number;
   max_progpa_campagne?: number;
   max_progpa_commercial_campagne?: number;
+  suivi_commercial_en_cours?: CommercialFollowup | null;
   grille_tarifaire_envoyee_at?: string | null;
   id_campagne?: number | null;
   created_at: string;

@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   CAMPAIGN_VARIANTS,
   getCampaignClosingOptions,
+  getCommercialFollowupPresentation,
   getCampaignProgpaSteps,
   getCampaignUiConfig,
   isLeadB2BCampaign,
@@ -90,9 +91,30 @@ test('getCampaignClosingOptions retire les statuts purement vente pour MMA', () 
   assert.notEqual(options[1]?.icon, options.find((option) => option.value === 'pas_disponible')?.icon);
 });
 
-test('getCampaignProgpaSteps adapte le libelle final pour MMA sans toucher Cigales', () => {
+test('getCampaignProgpaSteps conserve les mêmes étapes dans toutes les campagnes', () => {
   assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.vente)[0]?.label, 'Commande');
-  assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.lead_b2b)[0]?.label, 'Rendez-vous pris');
+  assert.equal(getCampaignProgpaSteps(CAMPAIGN_VARIANTS.lead_b2b)[0]?.label, 'Commande');
+});
+
+test('getCommercialFollowupPresentation expose un état 5+ distinct du ProgPA numérique', () => {
+  const vente = getCommercialFollowupPresentation({
+    type: 'vente',
+    id_source: 73,
+    id_appel_source: 26477,
+    statut: 'en_attente',
+    date_creation: '2026-08-03T09:14:15.000Z',
+  });
+  const lead = getCommercialFollowupPresentation({
+    type: 'lead',
+    id_source: 12,
+    id_appel_source: 88,
+    statut: 'planifie',
+    date_creation: '2026-08-01T08:00:00.000Z',
+  });
+
+  assert.equal(vente?.badge, 'Suivi 5+');
+  assert.equal(vente?.label, 'Commande en suivi');
+  assert.equal(lead?.label, 'Rendez-vous client en suivi');
 });
 
 test('isLeadB2BCampaign n utilise plus de dependance aux ids de campagne', () => {

@@ -1,16 +1,24 @@
 import { useProspect } from '../../../hooks/index.ts';
 import type { CampaignVariant } from '../../../utils/scripts/index.ts';
-import { getCampaignProgpaSteps } from '../../../utils/scripts/index.ts';
+import { getCampaignProgpaSteps, getCommercialFollowupPresentation } from '../../../utils/scripts/index.ts';
+import type { CommercialFollowup } from '../../../utils/types/index.ts';
 import './progPA.scss';
 
 interface ProgPAProps {
   compact?: boolean;
   disabled?: boolean;
   campaignVariant?: CampaignVariant | null;
+  commercialFollowup?: CommercialFollowup | null;
 }
 
-export default function ProgPA({ compact = false, disabled = false, campaignVariant = null }: ProgPAProps) {
+export default function ProgPA({
+  compact = false,
+  disabled = false,
+  campaignVariant = null,
+  commercialFollowup = null,
+}: ProgPAProps) {
   const { currentProgpa, setCurrentProgpa } = useProspect();
+  const commercialFollowupPresentation = getCommercialFollowupPresentation(commercialFollowup);
   const stepDefinitions = getCampaignProgpaSteps(campaignVariant);
   const activeStep = currentProgpa;
   const completedSteps = activeStep === null
@@ -24,6 +32,21 @@ export default function ProgPA({ compact = false, disabled = false, campaignVari
     }
     setCurrentProgpa(value);
   };
+
+  if (commercialFollowupPresentation) {
+    return (
+      <aside className={`prog-pa prog-pa--followup${compact ? ' prog-pa--compact' : ''}`} aria-label={commercialFollowupPresentation.label}>
+        <div className="prog-pa__panel prog-pa__panel--followup">
+          <div className="prog-pa__followup-orbit" aria-hidden="true"><span>5+</span></div>
+          <div className="prog-pa__followup-copy">
+            <span className="prog-pa__eyebrow">Suivi commercial</span>
+            <strong>{commercialFollowupPresentation.label}</strong>
+            <small>Progression verrouillée pendant la relance</small>
+          </div>
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside

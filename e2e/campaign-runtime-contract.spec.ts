@@ -79,7 +79,7 @@ test('le contrat client priorise statut_campagne et expose la variante MMA atten
     'Rendez-vous validé !',
     'Relance',
   ]);
-  expect(result.mmaProgpaTopLabel).toBe('Rendez-vous pris');
+  expect(result.mmaProgpaTopLabel).toBe('Commande');
 });
 
 test('le contrat runtime du script preserve la priorite Cigales sans switch explicite', async ({ page }) => {

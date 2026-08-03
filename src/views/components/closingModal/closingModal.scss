@@ -237,6 +237,12 @@
   text-align: center;
 }
 
+.closing-modal__progpa-auto-note--followup {
+  border-color: rgba(vars.$colorPrimary, 0.24);
+  background: rgba(vars.$colorPrimary, 0.08);
+  color: vars.$colorPrimaryDark;
+}
+
 .closing-modal__progpa {
   flex: 1;
   min-height: 0;

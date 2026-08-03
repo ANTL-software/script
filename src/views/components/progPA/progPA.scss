@@ -39,6 +39,48 @@
 .prog-pa--disabled .prog-pa__step {
   cursor: not-allowed;
 }
+.prog-pa__panel--followup {
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(vars.$colorPrimaryMuted, 0.58), transparent 48%),
+    linear-gradient(180deg, rgba(vars.$colorPrimaryLight, 0.92), vars.$colorWhite);
+  border-color: rgba(vars.$colorPrimary, 0.28);
+  text-align: center;
+}
+.prog-pa__followup-orbit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.4rem;
+  height: 4.4rem;
+  border: 1px solid rgba(vars.$colorPrimary, 0.26);
+  border-radius: 50%;
+  background: linear-gradient(145deg, vars.$colorPrimary, vars.$colorPrimaryDark);
+  box-shadow: 0 0 0 0.55rem rgba(vars.$colorPrimary, 0.08), 0 14px 28px rgba(76, 29, 149, 0.22);
+  color: vars.$colorWhite;
+}
+.prog-pa__followup-orbit span {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+.prog-pa__followup-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+.prog-pa__followup-copy strong {
+  color: vars.$colorGray900;
+  font-size: 0.92rem;
+  line-height: 1.2;
+}
+.prog-pa__followup-copy small {
+  color: vars.$colorGray500;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
 .prog-pa__panel {
   display: flex;
   flex-direction: column;
@@ -240,6 +282,18 @@
     radial-gradient(circle at 100% 0, rgba(vars.$colorPrimaryMuted, 0.38), transparent 34%),
     linear-gradient(100deg, rgba(vars.$colorPrimaryLight, 0.64), rgba(vars.$colorWhite, 0.98));
   box-shadow: 0 8px 20px rgba(76, 29, 149, 0.08);
+}
+
+.prog-pa-readonly--followup {
+  border-color: rgba(vars.$colorPrimary, 0.34);
+  background:
+    radial-gradient(circle at 100% 0, rgba(vars.$colorPrimaryMuted, 0.62), transparent 38%),
+    linear-gradient(100deg, rgba(vars.$colorPrimaryLight, 0.86), rgba(vars.$colorWhite, 0.98));
+  box-shadow: 0 10px 24px rgba(76, 29, 149, 0.14);
+}
+
+.prog-pa-readonly--followup .prog-pa-readonly__value {
+  color: vars.$colorPrimary;
 }
 
 .prog-pa-readonly__summary {

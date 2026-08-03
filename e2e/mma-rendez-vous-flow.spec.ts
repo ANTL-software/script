@@ -51,6 +51,13 @@ interface ProspectFixture {
   decisionnaire_fonction?: string | null;
   decisionnaire_email_pro?: string | null;
   max_progpa: number;
+  suivi_commercial_en_cours?: {
+    type: 'lead';
+    id_source: number;
+    id_appel_source: number | null;
+    statut: 'planifie' | 'reporte' | 'non_honore';
+    date_creation: string;
+  } | null;
   created_at: string;
   updated_at: string;
 }
@@ -463,6 +470,13 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
       createdRendezVousPayloads.push(payload);
       const createdRendezVous = buildRendezVousFixture(payload);
       rendezVousState.push(createdRendezVous);
+      prospect.suivi_commercial_en_cours = {
+        type: 'lead',
+        id_source: createdRendezVous.id_lead,
+        id_appel_source: createdRendezVous.id_appel ?? null,
+        statut: createdRendezVous.statut,
+        date_creation: createdRendezVous.created_at,
+      };
       await fulfillJson(route, toApiResponse(createdRendezVous), 201);
       return;
     }
@@ -595,7 +609,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(closingModal.getByRole('button', { name: /Relance/ })).toBeVisible();
   await expect(closingModal.getByRole('button', { name: /Vente conclue/ })).toHaveCount(0);
   await expect(closingModal.getByRole('button', { name: /Commande à établir/ })).toHaveCount(0);
-  await expect(closingModal.getByRole('button', { name: /Rendez-vous pris/ })).toHaveCount(1);
+  await expect(closingModal.getByRole('button', { name: /Commande/ })).toHaveCount(1);
 
   await closingModal.getByRole('button', { name: /Rendez-vous validé !/ }).click();
   await closingModal.locator('.closing-modal__textarea').fill('Rendez-vous confirme avec decisionnaire disponible.');
@@ -635,4 +649,25 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   expect(createdAppelPayloads[0].id_rendez_vous_source).toBeUndefined();
 
   expect(patchedStatuts).toContainEqual({ statut: 'pause_apres_appel' });
+
+  await page.goto(`/prospect/${prospect.id_prospect}?test=closing`);
+
+  const followupClosingModal = page.locator('.closing-modal').first();
+  await expect(followupClosingModal).toBeVisible();
+  await expect(followupClosingModal.getByText('Suivi 5+')).toBeVisible();
+  await expect(followupClosingModal.getByText('Rendez-vous client en suivi')).toBeVisible();
+  await expect(followupClosingModal.locator('.prog-pa__panel--followup')).toContainText('Progression verrouillée');
+
+  await followupClosingModal.getByRole('button', { name: /Pas disponible/ }).click();
+  await followupClosingModal.getByRole('button', { name: 'Valider et continuer' }).click();
+
+  await expect(page).toHaveURL(/\/$/);
+  expect(createdAppelPayloads).toHaveLength(2);
+  expect(createdAppelPayloads[1]).toMatchObject({
+    id_prospect: prospect.id_prospect,
+    id_campagne: campagne.id_campagne,
+    statut_appel: 'pas_disponible',
+  });
+  expect(createdAppelPayloads[1].progpa_atteint).toBeUndefined();
+  expect(unhandledApiRequests).toEqual([]);
 });

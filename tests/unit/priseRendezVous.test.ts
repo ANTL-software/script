@@ -80,6 +80,7 @@ test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour
     telephone: ' 0555443322 ',
     email: ' claire.durand@durand.fr ',
     notes: ' A rappeler pour qualification MMA. ',
+    entreprisePlusDeCinqSalaries: true,
   });
 
   assert.deepEqual(payload, {
@@ -92,6 +93,7 @@ test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour
     interlocuteur_role: 'Directrice generale',
     telephone_contact_snapshot: '0555443322',
     email_contact_snapshot: 'claire.durand@durand.fr',
+    entreprise_plus_de_cinq_salaries: true,
     notes: 'A rappeler pour qualification MMA.',
   });
 });

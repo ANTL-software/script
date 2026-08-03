@@ -93,6 +93,7 @@ interface CreateLeadPayload {
   interlocuteur_role?: string;
   telephone_contact_snapshot?: string;
   email_contact_snapshot?: string;
+  entreprise_plus_de_cinq_salaries: boolean;
 }
 
 interface LeadFixture {
@@ -108,6 +109,7 @@ interface LeadFixture {
   interlocuteur_role?: string | null;
   telephone_contact_snapshot?: string | null;
   email_contact_snapshot?: string | null;
+  entreprise_plus_de_cinq_salaries: boolean;
   notes: string | null;
   derniere_note_closing?: string | null;
   statut: 'planifie' | 'effectue' | 'annule' | 'reporte' | 'non_honore';
@@ -284,6 +286,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     interlocuteur_role: payload.interlocuteur_role ?? null,
     telephone_contact_snapshot: payload.telephone_contact_snapshot ?? null,
     email_contact_snapshot: payload.email_contact_snapshot ?? null,
+    entreprise_plus_de_cinq_salaries: payload.entreprise_plus_de_cinq_salaries,
     notes: payload.notes ?? null,
     derniere_note_closing: null,
     statut: 'planifie',
@@ -558,6 +561,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await page.locator('#interlocuteurRole').fill('Directrice generale');
   await page.locator('#telephone').fill('0611223344');
   await page.locator('#email').fill('claire.durand@durand.fr');
+  await page.getByLabel('Entreprise avec plus de 5 salariés').check();
   await page.locator('#notes').fill('Qualification MMA confirmee avec besoin de rappel de synthese.');
   await expect(page.locator('#dateRdv')).toHaveValue(nextLeadDate);
   await expect(page.getByPlaceholder('HH')).toHaveValue('10');
@@ -615,6 +619,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     interlocuteur_role: 'Directrice generale',
     telephone_contact_snapshot: '0611223344',
     email_contact_snapshot: 'claire.durand@durand.fr',
+    entreprise_plus_de_cinq_salaries: true,
     notes: 'Qualification MMA confirmee avec besoin de rappel de synthese.',
   });
 

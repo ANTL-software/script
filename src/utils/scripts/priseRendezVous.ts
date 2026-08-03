@@ -18,6 +18,7 @@ export interface BuildLeadB2BRendezVousPayloadArgs {
   telephone: string;
   email: string;
   notes: string;
+  entreprisePlusDeCinqSalaries: boolean;
 }
 
 export const LEAD_B2B_RENDEZ_VOUS_MOTIF = 'Prise de rendez-vous client';
@@ -154,6 +155,7 @@ export function buildLeadB2BRendezVousPayload({
   telephone,
   email,
   notes,
+  entreprisePlusDeCinqSalaries,
 }: BuildLeadB2BRendezVousPayloadArgs): CreateLeadData {
   return {
     id_prospect: prospectId,
@@ -166,6 +168,7 @@ export function buildLeadB2BRendezVousPayload({
     telephone_contact_snapshot: telephone.trim(),
     interlocuteur_role: trimToUndefined(interlocuteurRole),
     email_contact_snapshot: trimToUndefined(email),
+    entreprise_plus_de_cinq_salaries: entreprisePlusDeCinqSalaries,
     notes: trimToUndefined(notes),
   };
 }

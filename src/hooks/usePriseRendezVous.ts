@@ -40,6 +40,7 @@ export function usePriseRendezVous() {
   const [interlocuteurRole, setInterlocuteurRole] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
+  const [entreprisePlusDeCinqSalaries, setEntreprisePlusDeCinqSalaries] = useState(false);
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -59,6 +60,7 @@ export function usePriseRendezVous() {
       setInterlocuteurRole(prefill.interlocuteurRole);
       setTelephone(prefill.telephone);
       setEmail(prefill.email);
+      setEntreprisePlusDeCinqSalaries(false);
       setDateRdv('');
       setHeureRdv(null);
       setHeureInput('');
@@ -240,6 +242,7 @@ export function usePriseRendezVous() {
         telephone,
         email,
         notes,
+        entreprisePlusDeCinqSalaries,
       }));
 
       setRecap(recapData);
@@ -278,6 +281,7 @@ export function usePriseRendezVous() {
     interlocuteurRole,
     telephone,
     email,
+    entreprisePlusDeCinqSalaries,
     notes,
     isSaving,
     errors,
@@ -294,6 +298,7 @@ export function usePriseRendezVous() {
     handleTelephoneChange,
     setInterlocuteurRole,
     setEmail,
+    setEntreprisePlusDeCinqSalaries,
     setNotes,
     handleSubmit,
     handleRecapClose,

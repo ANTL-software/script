@@ -57,6 +57,7 @@ export interface LeadClient {
   interlocuteur_role?: string | null;
   telephone_contact_snapshot?: string | null;
   email_contact_snapshot?: string | null;
+  entreprise_plus_de_cinq_salaries: boolean;
   notes: string | null;
   derniere_note_closing?: string | null;
   statut: LeadClientStatut;
@@ -81,4 +82,5 @@ export interface CreateLeadData {
   interlocuteur_role?: string;
   telephone_contact_snapshot?: string;
   email_contact_snapshot?: string;
+  entreprise_plus_de_cinq_salaries: boolean;
 }

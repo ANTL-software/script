@@ -79,6 +79,7 @@ export default function PriseRendezVousPlaceholder() {
     interlocuteurRole,
     telephone,
     email,
+    entreprisePlusDeCinqSalaries,
     notes,
     isSaving,
     errors,
@@ -95,6 +96,7 @@ export default function PriseRendezVousPlaceholder() {
     handleTelephoneChange,
     setInterlocuteurRole,
     setEmail,
+    setEntreprisePlusDeCinqSalaries,
     setNotes,
     handleSubmit,
     handleRecapClose,
@@ -235,6 +237,17 @@ export default function PriseRendezVousPlaceholder() {
                 />
               </div>
             </div>
+
+            <label className="prise-rdv-form__checkbox-field" htmlFor="entreprisePlusDeCinqSalaries">
+              <input
+                id="entreprisePlusDeCinqSalaries"
+                type="checkbox"
+                checked={entreprisePlusDeCinqSalaries}
+                onChange={(event) => setEntreprisePlusDeCinqSalaries(event.target.checked)}
+                disabled={isSaving}
+              />
+              Entreprise avec plus de 5 salariés
+            </label>
           </div>
 
           <div className="form-card">

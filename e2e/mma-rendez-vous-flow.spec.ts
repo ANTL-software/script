@@ -562,6 +562,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(page.getByRole('button', { name: 'Prise de rendez-vous client' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Historique rendez-vous' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Agenda personnel' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Plaquette' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Tarifs' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Agrément' })).toHaveCount(0);
 

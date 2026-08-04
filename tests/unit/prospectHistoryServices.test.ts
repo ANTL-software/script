@@ -165,3 +165,13 @@ test('ProspectService conserve le endpoint catalogue et le destinataire retournÃ
   assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/prospects/42/send-catalogue');
   assert.deepEqual(result, { recipientEmail: 'prospect@example.com' });
 });
+
+test('ProspectService utilise le endpoint plaquette et conserve le destinataire retournÃ© par le backend', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  const { prospectService } = await import('../../src/API/services/Prospect.service.ts');
+
+  const result = await prospectService.sendPlaquette(42);
+
+  assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/prospects/42/send-plaquette');
+  assert.deepEqual(result, { recipientEmail: 'prospect@example.com' });
+});

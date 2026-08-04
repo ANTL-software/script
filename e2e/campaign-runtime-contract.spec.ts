@@ -141,6 +141,7 @@ test('la variante vente conserve la matrice historique attendue', async ({ page 
   });
 
   expect(result.labels).toEqual([
+    'Plaquette',
     'Tarifs',
     'Agrément',
     'Historique appels',

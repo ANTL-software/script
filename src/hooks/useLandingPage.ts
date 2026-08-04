@@ -214,6 +214,43 @@ export function useLandingPage() {
     }
   };
 
+  const sendPlaquette = async (): Promise<void> => {
+    if (!currentProspect) {
+      showToast('error', 'Aucun prospect chargé');
+      return;
+    }
+
+    if (!currentProspect.email) {
+      showToast('warning', "Le prospect n'a pas d'adresse email renseignee");
+      return;
+    }
+
+    try {
+      const result = await prospectService.sendPlaquette(currentProspect.id_prospect);
+      showToast('success', `Plaquette envoyée à ${result.recipientEmail}`);
+    } catch (sendError) {
+      showToast(
+        'error',
+        sendError instanceof Error ? sendError.message : "Erreur lors de l'envoi de la plaquette",
+      );
+    }
+  };
+
+  const handlePlaquetteClick = async (): Promise<void> => {
+    const recipientEmail = currentProspect?.email?.trim();
+    const confirmed = await confirm({
+      title: 'Envoi de la plaquette',
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer la plaquette par mail à ${recipientEmail} ?`
+        : 'Êtes-vous sûr de vouloir envoyer la plaquette par mail ?',
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (confirmed) await sendPlaquette();
+  };
+
   const handleTarifsClick = async (): Promise<void> => {
     const recipientEmail = currentProspect?.email?.trim();
     const confirmed = await confirm({
@@ -248,6 +285,9 @@ export function useLandingPage() {
 
   const handleAction = (actionId: ActionButtonId): void => {
     switch (actionId) {
+      case 'plaquette':
+        void handlePlaquetteClick();
+        break;
       case 'tarifs':
         void handleTarifsClick();
         break;

@@ -54,6 +54,11 @@ export class ProspectService {
     return throwIfApiError(response, 'Erreur lors de l\'envoi du catalogue');
   }
 
+  public async sendPlaquette(id: number): Promise<{ recipientEmail: string }> {
+    const response = await apiCalls.post<{ recipientEmail: string }>(`/prospects/${id}/send-plaquette`);
+    return throwIfApiError(response, 'Erreur lors de l\'envoi de la plaquette');
+  }
+
   public async updateProspect(id: number, data: UpdateProspectData): Promise<ProspectModel> {
     const response = await apiCalls.put<Prospect>(`/prospects/${id}`, data);
     const updatedProspect = throwIfApiError(response, 'Erreur lors de la mise a jour du prospect');

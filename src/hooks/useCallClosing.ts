@@ -25,15 +25,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
   const { currentProgpa, currentProspect, resetCurrentProgpa } = useProspect();
   const { currentAppelId, currentIdProspection, callDuration, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
 
-  const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(() => {
-    if (campaignVariant === CAMPAIGN_VARIANTS.lead_b2b) {
-      return 'rendez_vous_pris';
-    }
-    if (campaignVariant === CAMPAIGN_VARIANTS.vente) {
-      return 'vente_conclue';
-    }
-    return null;
-  });
+  const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
   const draftAppelId = appelId ?? currentAppelId;
   const { notes, setNotes, clearNotes } = useCallNotesDraft(draftAppelId);
   const [isSubmitting, setIsSubmitting] = useState(false);

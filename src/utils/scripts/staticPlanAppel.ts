@@ -264,58 +264,52 @@ export const FGA_PLAN_APPEL: PlanAppelEtape[] = [
     id_campagne: 11,
     etape: 1,
     titre: 'IDENTIFICATION – Obtenir le nom du décisionnaire (seulement si secrétariat installé)',
-    contenu: `Bonjour, Sophie LAGAGNE pour FGA, j’aimerais parler au dirigeant s’il vous plait ?
+    contenu: `Bonjour, Sophie LAGAGNE de la part de François GOURNAY, j’aimerais parler au dirigeant s’il vous plait ?
 
-« C’est pour quoi ? » : FGA, experts en recrutement, J’aimerais échanger avec lui au sujet du poste de (fonction) à pourvoir.`,
+« C’est pour quoi ? » : Je représente François GOURNAY, expert en recrutement, J’aimerais échanger avec le dirigeant au sujet du poste de (fonction) à pourvoir.`,
     ordre_affichage: 10,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   },
   {
     id_plan: 202,
     id_campagne: 11,
     etape: 2,
     titre: 'PRESENTATION – Se faire accepter par le décisionnaire',
-    contenu: `Bonjour M/Mme Untel… Sophie LAGAGNE, je travaille pour FGA Consulting ; nous sommes spécialisés dans le recrutement sales pour les scale-ups.
+    contenu: `Bonjour M/Mme Untel… Sophie LAGAGNE, je travaille pour François GOURNAY
 
-J’ai vu que vous recrutiez un [fonction], et la spécialité de Monsieur Gournay est d’accompagner les dirigeants dans leur recrutement, pour éviter les erreurs de casting sur ce type de postes. 
+J’ai vu que vous recrutiez un [fonction], et la spécialité de Monsieur Gournay est justement d’accompagner les dirigeants dans leur recrutement, pour éviter les erreurs de casting sur ce type de postes.
 
 Ayant lui-même dirigé des équipes commerciales pendant 25 ans, il sait précisément quel impact un recrutement raté peut avoir sur la croissance d’une entreprise.`,
     ordre_affichage: 20,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   },
   {
     id_plan: 203,
     id_campagne: 11,
     etape: 3,
     titre: 'DECOUVERTE – Comprendre l’environnement du client pour créer un lien',
-    contenu: `Je pense que vous en conviendrez, aujourd’hui, recruter n’est pas vraiment compliqué ; en revanche recruter le « Bon Profil » ça l’est un peu plus ;
-
-D’ailleurs depuis combien de temps êtes-vous en recherche de [fonction]
-
-Et Je peux vous demander comment vous procédez pour votre recherche ?
-
-A ce sujet, avez-vous d’autres postes ouverts ?`,
+    contenu: `Recruter des compétences ça n’est pas vraiment compliqué ; en revanche trouver un candidat qui partage vos valeurs et qui souhaite s’impliquer pleinement dans vos projets ça l’est plus.`,
     ordre_affichage: 30,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   },
   {
     id_plan: 204,
     id_campagne: 11,
     etape: 4,
     titre: 'PROPOSITION – Obtenir un accord de principe',
-    contenu: `Ce que je vous propose, c’est un entretien de 30 à 45 minutes avec Monsieur GOURNAY pour comprendre vos enjeux et voir dans quelle mesure il peut vous accompagner.
+    contenu: `Ce que je vous propose, c’est de rencontrer Monsieur GOURNAY.
 
 Il nous reste des créneaux Jeudi ou vendredi, qu’est-ce qui vous convient le mieux ?`,
     ordre_affichage: 40,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   },
   {
     id_plan: 205,
@@ -326,11 +320,11 @@ Il nous reste des créneaux Jeudi ou vendredi, qu’est-ce qui vous convient le 
 En matinée ou dans l’après-midi ?
 
 Validation des coordonnées client
-Sachant que Monsieur GOURNAY se déplacera directement dans vos locaux, je vais avoir besoin de vérifier votre adresse…`,
+Sachant que Monsieur GOURNAY se déplacera directement dans vos locaux, je vais avoir besoin de vérifier votre adresse ainsi que votre numéro de téléphone et votre adresse mail.`,
     ordre_affichage: 50,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   },
   {
     id_plan: 206,
@@ -340,8 +334,8 @@ Sachant que Monsieur GOURNAY se déplacera directement dans vos locaux, je vais 
     contenu: `Je vous propose de transmettre directement vos coordonnées à Monsieur GOURNAY pour convenir d’un rendez-vous. Il vous contactera en personne pour convenir d’une date avec vous, ce sera plus simple !`,
     ordre_affichage: 60,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   },
   {
     id_plan: 207,
@@ -353,8 +347,8 @@ Sachant que Monsieur GOURNAY se déplacera directement dans vos locaux, je vais 
 Je demande à François GOURNAY de prendre contact avec vous afin de confirmer le rendez-vous.`,
     ordre_affichage: 70,
     actif: true,
-    created_at: '2026-07-30T00:00:00.000Z',
-    updated_at: '2026-07-30T00:00:00.000Z'
+    created_at: '2026-08-05T00:00:00.000Z',
+    updated_at: '2026-08-05T00:00:00.000Z'
   }
 ];
 

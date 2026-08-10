@@ -306,10 +306,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
                 console.log(`[RECORDING] Upload de l'enregistrement pour l'appel #${activeAppelId}...`);
                 await enregistrementService.uploadRecording(activeAppelId, file, callDurationRef.current);
                 console.log(`[RECORDING] Enregistrement uploadé avec succès`);
-                showToast('success', 'Enregistrement de l\'appel sauvegardé', 3000);
               } catch (err) {
                 console.error('[RECORDING] Échec de l\'upload:', err);
-                showToast('error', 'Échec de la sauvegarde de l\'enregistrement', 5000);
               }
             } else {
               console.warn('[RECORDING] Fichier trop petit ou ID appel manquant:', activeAppelId);

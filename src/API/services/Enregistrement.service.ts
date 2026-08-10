@@ -1,6 +1,6 @@
 import { apiCalls } from '../APICalls.ts';
 import { throwIfApiError } from '../apiHelpers.ts';
-import type { EnregistrementAppel } from '../../utils/types';
+import type { CallRecordingConfiguration, EnregistrementAppel } from '../../utils/types';
 
 export class EnregistrementService {
   private static instance: EnregistrementService;
@@ -12,6 +12,11 @@ export class EnregistrementService {
       EnregistrementService.instance = new EnregistrementService();
     }
     return EnregistrementService.instance;
+  }
+
+  public async getConfiguration(): Promise<CallRecordingConfiguration> {
+    const response = await apiCalls.get<CallRecordingConfiguration>('/enregistrements/configuration');
+    return throwIfApiError(response, 'Impossible de vérifier la configuration des enregistrements');
   }
 
   /**

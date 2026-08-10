@@ -287,7 +287,17 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             }
 
             const activeAppelId = currentAppelIdRef.current;
-            if (activeAppelId && recordedBlob.size > 1000) {
+            let uploadEnabled = false;
+            try {
+              const configuration = await enregistrementService.getConfiguration();
+              uploadEnabled = configuration.enabled;
+            } catch (configurationError) {
+              console.warn('[RECORDING] Upload annulé : configuration indisponible.', configurationError);
+            }
+
+            if (!uploadEnabled) {
+              console.info('[RECORDING] Upload ignoré : enregistrements désactivés.');
+            } else if (activeAppelId && recordedBlob.size > 1000) {
               try {
                 const ext = getRecordingExtension(recordingMimeType);
                 const filename = `recording_${activeAppelId}_${Date.now()}.${ext}`;
@@ -304,6 +314,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             } else {
               console.warn('[RECORDING] Fichier trop petit ou ID appel manquant:', activeAppelId);
             }
+            audioChunksRef.current = [];
+            mediaRecorderRef.current = null;
             isRecordingRef.current = false;
           };
 
@@ -339,6 +351,23 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
+  const startRecordingIfEnabled = useCallback((call: Call) => {
+    void enregistrementService.getConfiguration()
+      .then((configuration) => {
+        if (!configuration.enabled) {
+          console.info('[RECORDING] Capture ignorée : enregistrements désactivés.');
+          return;
+        }
+
+        if (isCallActiveRef.current) {
+          startRecording(call);
+        }
+      })
+      .catch((configurationError: unknown) => {
+        console.warn('[RECORDING] Capture annulée : configuration indisponible.', configurationError);
+      });
+  }, [startRecording]);
+
   // Configuration commune des événements d'un appel (appel entrant ou sortant)
   const setupCallEvents = useCallback((call: Call, effectiveOrigin: OrigineAppel, resolvedAppelId: number | null) => {
     const associerCallSid = () => {
@@ -365,8 +394,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       if (effectiveOrigin === 'manuel' || effectiveOrigin === 'rappel' || !resolvedAppelId) {
         setStatut('en_appel');
       }
-      // Démarrer l'enregistrement de l'appel dès qu'il est connecté
-      startRecording(call);
+      // Vérifier le kill switch serveur avant toute capture audio locale.
+      startRecordingIfEnabled(call);
     });
 
     // Ces événements ne modifient pas le cycle de vie de l'appel : ils rendent
@@ -447,7 +476,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     call.on('reject', () => handleAbort('rejeté'));
     call.on('cancel', () => handleAbort('annulé'));
-  }, [clearActiveCall, startCallTimer, stopCallTimer, startRecording, stopRecording, showToast]);
+  }, [clearActiveCall, startCallTimer, stopCallTimer, startRecordingIfEnabled, stopRecording, showToast]);
 
 
   const sendDigits = useCallback((digits: string) => {

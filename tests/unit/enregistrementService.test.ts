@@ -16,11 +16,16 @@ interface CapturedPost {
   config?: RequestConfig;
 }
 
+interface CapturedGet {
+  endpoint: string;
+}
+
 interface RecordingResponse {
   id_enregistrement: number;
 }
 
 declare global {
+  var capturedGet: CapturedGet | undefined;
   var capturedPost: CapturedPost | undefined;
 }
 
@@ -28,6 +33,10 @@ declare global {
 mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/APICalls.ts', {
   namedExports: {
     apiCalls: {
+      get: async <T = unknown>(endpoint: string): Promise<ApiResponse<T>> => {
+        globalThis.capturedGet = { endpoint };
+        return { success: true, data: { enabled: false } as T };
+      },
       post: async <T = unknown>(endpoint: string, data?: unknown, config?: RequestConfig): Promise<ApiResponse<T>> => {
         globalThis.capturedPost = { endpoint, data, config };
         return { success: true, data: { id_enregistrement: 123 } as T };
@@ -52,6 +61,15 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/a
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
+
+test('EnregistrementService.getConfiguration reads the server kill switch', async () => {
+  const { enregistrementService } = await import('../../src/API/services/Enregistrement.service.ts');
+
+  const configuration = await enregistrementService.getConfiguration();
+
+  assert.deepEqual(configuration, { enabled: false });
+  assert.equal(globalThis.capturedGet?.endpoint, '/enregistrements/configuration');
+});
 
 test('EnregistrementService.uploadRecording builds FormData and posts to endpoint', async () => {
   // Dynamically import the service to ensure mocks are registered before resolution

@@ -11,6 +11,11 @@ export interface AsteriskBrowserClientCallbacks {
   onCallHangup: () => void;
 }
 
+export interface AsteriskOutgoingCallMetadata {
+  appelId: number;
+  providerCallId: string;
+}
+
 const normalizeDestination = (phoneNumber: string, domain: string): string => {
   const normalized = phoneNumber.replace(/[\s().-]/g, '');
 
@@ -91,13 +96,23 @@ export class AsteriskBrowserClient {
     return this.simpleUser?.isConnected() ?? false;
   }
 
-  public async call(phoneNumber: string): Promise<void> {
+  public async call(phoneNumber: string, metadata: AsteriskOutgoingCallMetadata): Promise<void> {
     if (!this.simpleUser || !this.session || !this.simpleUser.isConnected()) {
       throw new Error('Client Asterisk non connecté');
+    }
+    if (!Number.isInteger(metadata.appelId) || metadata.appelId <= 0) {
+      throw new Error('Identifiant d’appel applicatif invalide');
+    }
+    if (!/^[A-Za-z0-9_-]{8,100}$/.test(metadata.providerCallId)) {
+      throw new Error('Identifiant d’appel fournisseur invalide');
     }
 
     await this.simpleUser.call(normalizeDestination(phoneNumber, this.session.sip.domain), {
       earlyMedia: true,
+      extraHeaders: [
+        `X-ANTL-Appel-Id: ${metadata.appelId}`,
+        `X-ANTL-Provider-Call-Id: ${metadata.providerCallId}`,
+      ],
       sessionDescriptionHandlerOptions: {
         constraints: { audio: true, video: false },
       },

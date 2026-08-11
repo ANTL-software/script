@@ -1,6 +1,6 @@
 import { apiCalls } from '../APICalls.ts';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers.ts';
-import type { Appel, CreateAppelData, TerminerAppelData, UpdateAppelData } from '../../utils/types';
+import type { Appel, CreateAppelData, TerminerAppelData, UpdateAppelData, UpdateTelephonyStateData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/queryString.ts';
 
 export class AppelService {
@@ -54,6 +54,11 @@ export class AppelService {
   public async updateCallSid(id: number, callSid: string): Promise<Appel> {
     const response = await apiCalls.post<Appel>(`/appels/${id}/call-sid`, { call_sid: callSid });
     return throwIfApiError(response, 'Erreur lors de la mise à jour du CallSid');
+  }
+
+  public async updateTelephonyState(id: number, data: UpdateTelephonyStateData): Promise<Appel> {
+    const response = await apiCalls.patch<Appel>(`/appels/${id}/telephony-state`, data);
+    return throwIfApiError(response, 'Erreur lors de la synchronisation Asterisk');
   }
 }
 

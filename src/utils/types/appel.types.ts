@@ -25,6 +25,7 @@ export type StatutAppel =
   | 'amd_machine_start_auto';
 
 export type OrigineAppel = 'auto' | 'manuel' | 'rappel';
+export type TelephonyCallState = 'ringing' | 'answered' | 'ended' | 'failed';
 
 export interface Appel {
   id_appel: number;
@@ -37,6 +38,8 @@ export interface Appel {
   statut_appel: StatutAppel;
   notes?: string | null;
   abouti: boolean;
+  telephony_provider?: 'twilio' | 'asterisk';
+  provider_call_id?: string | null;
   answered_by?: AnsweredBy | null;
   amd_mode?: string | null;
   amd_status?: string | null;
@@ -63,6 +66,7 @@ export interface CreateAppelData {
   notes?: string;
   id_prospection?: number;
   origine_appel?: OrigineAppel;
+  telephony_provider?: 'twilio' | 'asterisk';
   numero_telephone?: string;
   id_rendez_vous_source?: number;
   progpa_atteint?: number;
@@ -83,4 +87,10 @@ export interface UpdateAppelData {
   notes?: string;
   abouti?: boolean;
   progpa_atteint?: number;
+}
+
+export interface UpdateTelephonyStateData {
+  state: TelephonyCallState;
+  provider_call_id: string;
+  reason?: string;
 }

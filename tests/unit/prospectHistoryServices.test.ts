@@ -16,6 +16,7 @@ interface ApiResponse<T> {
 
 declare global {
   var capturedHistoryEndpoints: string[] | undefined;
+  var capturedTelephonyStatePayload: unknown;
 }
 
 globalThis.capturedHistoryEndpoints = [];
@@ -41,6 +42,14 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/A
         return {
           success: true,
           data: { recipientEmail: 'prospect@example.com' } as T,
+        };
+      },
+      patch: async <T = unknown>(endpoint: string, payload: unknown): Promise<ApiResponse<T>> => {
+        globalThis.capturedHistoryEndpoints?.push(endpoint);
+        globalThis.capturedTelephonyStatePayload = payload;
+        return {
+          success: true,
+          data: { id_appel: 42 } as T,
         };
       },
     }
@@ -118,6 +127,22 @@ test('AppelService sérialise la campagne pour l historique des appels prospect'
     globalThis.capturedHistoryEndpoints?.at(-1),
     '/prospects/42/appels?campagne=7&page=2&limit=20'
   );
+});
+
+test('AppelService synchronise le cycle technique Asterisk sans clôturer le statut métier', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  globalThis.capturedTelephonyStatePayload = undefined;
+  const { appelService } = await import('../../src/API/services/Appel.service.ts');
+  const payload = {
+    state: 'answered' as const,
+    provider_call_id: 'ast_12345678',
+  };
+
+  await appelService.updateTelephonyState(42, payload);
+
+  assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/appels/42/telephony-state');
+  assert.deepEqual(globalThis.capturedTelephonyStatePayload, payload);
+  assert.equal('statut_appel' in payload, false);
 });
 
 test('VenteService sérialise la campagne pour l historique des ventes prospect', async () => {

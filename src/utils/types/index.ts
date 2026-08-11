@@ -14,3 +14,4 @@ export * from './notification.types';
 export * from './stats.types';
 export * from './enregistrement.types';
 export * from './app.types';
+export * from './telephony.types';

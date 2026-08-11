@@ -5,8 +5,9 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { dialerService, appelService, closingService, twilioService, rendezVousService, enregistrementService, csrfService } from '../../API/services';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification } from '../../utils/types';
+import { loadAsteriskBrowserClient, dialerService, appelService, closingService, twilioService, telephonyService, rendezVousService, enregistrementService, csrfService } from '../../API/services';
+import type { AsteriskBrowserClient } from '../../API/services';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification, TelephonyProvider } from '../../utils/types';
 import { getApiBaseUrl, isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
@@ -63,10 +64,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [raisonPause, setRaisonPause] = useState<RaisonPause | null>(null);
   const [depuisLe, setDepuisLe] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState(false);
+  const [telephonyProvider, setTelephonyProvider] = useState<TelephonyProvider>('twilio');
+  const [telephonyConfigured, setTelephonyConfigured] = useState(false);
   const [sipConnected, setSipConnected] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [lastSentDigits, setLastSentDigits] = useState('');
-  const [hasActiveTwilioCall, setHasActiveTwilioCall] = useState(false);
+  const [hasActiveProviderCall, setHasActiveProviderCall] = useState(false);
   const [isCallConnected, setIsCallConnected] = useState(false);
 
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
@@ -90,6 +93,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const dtmfResetTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const recordingStartIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const deviceRef = useRef<Device | null>(null);
+  const asteriskClientRef = useRef<AsteriskBrowserClient | null>(null);
   const activeCallRef = useRef<Call | null>(null);
   const incomingCallRef = useRef<Call | null>(null);
   const isClosingRef = useRef<boolean>(false);
@@ -174,7 +178,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     activeCallRef.current = null;
     incomingCallRef.current = null;
     callAcceptedAtRef.current = null;
-    setHasActiveTwilioCall(false);
+    setHasActiveProviderCall(false);
     setIsCallConnected(false);
     setLastSentDigits('');
 
@@ -196,7 +200,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   const registerActiveCall = useCallback((call: Call) => {
     activeCallRef.current = call;
-    setHasActiveTwilioCall(true);
+    setHasActiveProviderCall(true);
   }, []);
 
   // Références pour le mixage et l'enregistrement audio WebRTC
@@ -334,7 +338,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         }
       }
     }, 200);
-  }, [showToast]);
+  }, []);
 
   // Arrêter l'enregistrement
   const stopRecording = useCallback(() => {
@@ -476,19 +480,117 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     call.on('cancel', () => handleAbort('annulé'));
   }, [clearActiveCall, startCallTimer, stopCallTimer, startRecordingIfEnabled, stopRecording, showToast]);
 
+  const finishAsteriskCall = useCallback(() => {
+    const hadActiveCall = isCallActiveRef.current;
+    stopCallTimer();
+    isCallActiveRef.current = false;
+    setIncomingCall(null);
+    clearActiveCall();
+
+    if (!hadActiveCall) {
+      return;
+    }
+
+    setStatut('pause_apres_appel');
+    setDepuisLe(new Date());
+    void dialerService.changerStatut('pause_apres_appel').catch((error) => {
+      console.error('[ASTERISK] Erreur synchronisation statut:', error);
+    });
+    void dialerService.endSession().catch((error) => {
+      console.error('[ASTERISK] Erreur fin de session:', error);
+    });
+    showToast('info', 'Appel terminé', 3000);
+  }, [clearActiveCall, showToast, stopCallTimer]);
+
+  const initializeAsteriskClient = useCallback(async () => {
+    if (isInitializingRef.current || asteriskClientRef.current) {
+      return;
+    }
+
+    const remoteAudio = remoteAudioRef.current;
+    if (!remoteAudio) {
+      throw new Error('Élément audio distant indisponible');
+    }
+
+    isInitializingRef.current = true;
+    let client: AsteriskBrowserClient | null = null;
+
+    try {
+      const { AsteriskBrowserClient } = await loadAsteriskBrowserClient();
+      client = new AsteriskBrowserClient();
+      asteriskClientRef.current = client;
+      const session = await telephonyService.getAsteriskSession();
+      await client.connect(session, remoteAudio, {
+        onRegistered: () => {
+          console.info('[ASTERISK] Client SIP enregistré');
+          setSipConnected(true);
+        },
+        onUnregistered: () => {
+          console.warn('[ASTERISK] Client SIP désenregistré');
+          setSipConnected(false);
+        },
+        onServerDisconnect: (error) => {
+          console.error('[ASTERISK] Signalisation WSS déconnectée', error);
+          setSipConnected(false);
+        },
+        onIncomingCall: () => {
+          setIncomingCall({
+            from: 'Appel entrant',
+            displayName: 'Appel entrant Asterisk',
+          });
+          showToast('info', 'Appel entrant Asterisk', 10000);
+        },
+        onCallCreated: () => {
+          setHasActiveProviderCall(true);
+        },
+        onCallAnswered: () => {
+          isCallActiveRef.current = true;
+          setHasActiveProviderCall(true);
+          setIsCallConnected(true);
+          setIncomingCall(null);
+          setStatut('en_appel');
+          setDepuisLe(new Date());
+          startCallTimer();
+        },
+        onCallHangup: finishAsteriskCall,
+      });
+    } catch (error) {
+      asteriskClientRef.current = null;
+      setSipConnected(false);
+      await client?.disconnect();
+      throw error;
+    } finally {
+      isInitializingRef.current = false;
+    }
+  }, [finishAsteriskCall, showToast, startCallTimer]);
+
 
   const sendDigits = useCallback((digits: string) => {
     if (!digits || !/^[0-9*#w]+$/i.test(digits)) {
       return false;
     }
 
-    const activeCall = activeCallRef.current;
-    if (!activeCall || !isCallActiveRef.current) {
+    if (!isCallActiveRef.current) {
       return false;
     }
 
     try {
-      activeCall.sendDigits(digits);
+      if (telephonyProvider === 'asterisk') {
+        const client = asteriskClientRef.current;
+        if (!client) {
+          return false;
+        }
+        void client.sendDigits(digits).catch((error) => {
+          console.error('[DTMF] Erreur envoi tonalités Asterisk:', error);
+          showToast('error', 'Impossible d’envoyer la tonalité', 3000);
+        });
+      } else {
+        const activeCall = activeCallRef.current;
+        if (!activeCall) {
+          return false;
+        }
+        activeCall.sendDigits(digits);
+      }
       setLastSentDigits((prev) => {
         const next = `${prev}${digits}`.slice(-24);
         return next;
@@ -500,7 +602,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       showToast('error', 'Impossible d’envoyer la tonalité', 3000);
       return false;
     }
-  }, [scheduleDtmfReset, showToast]);
+  }, [scheduleDtmfReset, showToast, telephonyProvider]);
 
   // ============================================================
   // INITIALISATION TWILIO
@@ -751,12 +853,50 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, [clearActiveCall, fetchTwilioToken, forceLogoutForTwilioFailure, recoverDeviceRegistration, refreshDeviceToken, showToast]);
 
+  const initializeConfiguredTelephony = useCallback(async () => {
+    try {
+      const configuration = await telephonyService.getConfiguration();
+      setTelephonyProvider(configuration.provider);
+      setTelephonyConfigured(configuration.configured);
+
+      if (!configuration.configured) {
+        setSipConnected(false);
+        showToast('error', `Configuration ${configuration.provider} incomplète`, 8000);
+        return;
+      }
+
+      if (!configuration.browserClientAvailable) {
+        setSipConnected(false);
+        showToast('error', `Client navigateur ${configuration.provider} indisponible`, 8000);
+        return;
+      }
+
+      if (configuration.provider === 'asterisk') {
+        await initializeAsteriskClient();
+        return;
+      }
+
+      await initializeTwilioDevice();
+    } catch (error) {
+      console.error('[TELEPHONY] Erreur initialisation du fournisseur:', error);
+      setSipConnected(false);
+      setTelephonyConfigured(false);
+      showToast('error', 'Impossible de charger la configuration téléphonie', 8000);
+    }
+  }, [initializeAsteriskClient, initializeTwilioDevice, showToast]);
+
   // ============================================================
   // INITIALISATION TWILIO (useEffect séparé pour éviter les re-créations)
   // ============================================================
 
   useEffect(() => {
     if (!isAuthenticated) {
+      const asteriskClient = asteriskClientRef.current;
+      if (asteriskClient) {
+        asteriskClientRef.current = null;
+        void asteriskClient.disconnect();
+      }
+
       // Nettoyer Twilio si déconnexion
       const device = deviceRef.current;
       if (device) {
@@ -777,19 +917,22 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentIdProspection(null);
       setCurrentOrigineAppel(null);
       setCurrentRendezVousSourceId(null);
+      setTelephonyProvider('twilio');
+      setTelephonyConfigured(false);
       return;
     }
 
     if (shouldDisableLocalTwilio()) {
       console.log('[TWILIO] Initialisation désactivée pour la fiche de formation');
       setSipConnected(false);
+      setTelephonyProvider('twilio');
+      setTelephonyConfigured(false);
       return;
     }
 
-    // Initialiser Twilio SEULEMENT si pas déjà initialisé
-    console.log('[TWILIO] useEffect - isAuthenticated:', isAuthenticated, ', deviceRef.current:', deviceRef.current);
-    initializeTwilioDevice();
-  }, [clearActiveCall, initializeTwilioDevice, isAuthenticated]);
+    console.log('[TELEPHONY] Initialisation du fournisseur configuré');
+    void initializeConfiguredTelephony();
+  }, [clearActiveCall, initializeConfiguredTelephony, isAuthenticated]);
 
   // ============================================================
   // INITIALISATION AU MONTAGE (sans Twilio)
@@ -898,10 +1041,15 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
 
     const device = deviceRef.current;
-    if (!device || device.state !== 'registered') {
-      console.error('❌ Impossible d\'appeler — Twilio Device non prêt (state:', device?.state, ')');
+    const asteriskClient = asteriskClientRef.current;
+    const providerReady = telephonyProvider === 'asterisk'
+      ? Boolean(asteriskClient?.isConnected())
+      : Boolean(device && device.state === 'registered');
+
+    if (!providerReady) {
+      console.error(`❌ Impossible d'appeler — ${telephonyProvider} non prêt`);
       console.groupEnd();
-      showToast('error', 'Twilio non prêt - Veuillez réessayer', 5000);
+      showToast('error', 'Téléphonie non prête - Veuillez réessayer', 5000);
       return;
     }
 
@@ -942,7 +1090,33 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
       // Formater le numéro
       const formattedNumber = formatPhoneE164(phoneNumber);
-      console.log('📤 [TWILIO] Appel vers:', formattedNumber);
+      console.log(`📤 [${telephonyProvider.toUpperCase()}] Appel vers:`, formattedNumber);
+
+      if (telephonyProvider === 'asterisk') {
+        if (!asteriskClient) {
+          throw new Error('Client Asterisk indisponible');
+        }
+
+        setHasActiveProviderCall(true);
+        setIsCallConnected(false);
+        setStatut(effectiveOrigin === 'auto' ? 'qualification_en_cours' : 'appel_sortant');
+        setDepuisLe(new Date());
+        await asteriskClient.call(formattedNumber);
+
+        if (prospectId && campagneId) {
+          void dialerService.startSession(prospectId, campagneId).catch((error) => {
+            console.error('[Session] Erreur startSession:', error);
+          });
+        }
+
+        console.log('✅ [ASTERISK] Invitation SIP envoyée');
+        console.groupEnd();
+        return;
+      }
+
+      if (!device) {
+        throw new Error('Device Twilio indisponible');
+      }
 
       // Passer l'appel via Twilio (SDK v2.x - Promise)
       const connectParams: Record<string, string> = { To: formattedNumber };
@@ -981,10 +1155,24 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       console.groupEnd();
       showToast('error', 'Échec de l\'appel — Vérifiez votre connexion', 5000);
     }
-  }, [clearActiveCall, currentIdProspection, prochainProspect, registerActiveCall, setupCallEvents, showToast]);
+  }, [clearActiveCall, currentIdProspection, prochainProspect, registerActiveCall, setupCallEvents, showToast, telephonyProvider]);
 
   // Raccrocher
   const hangup = useCallback(() => {
+    if (telephonyProvider === 'asterisk') {
+      const client = asteriskClientRef.current;
+      if (!client || !isCallActiveRef.current) {
+        console.warn('⚠️ [HANGUP] Aucun appel Asterisk actif à raccrocher');
+        return;
+      }
+
+      void client.hangup().catch((error) => {
+        console.error('[ASTERISK] Échec du raccrochage SIP:', error);
+      });
+      finishAsteriskCall();
+      return;
+    }
+
     const device = deviceRef.current;
     if (!device) {
       console.warn('⚠️ [HANGUP] Aucun device disponible');
@@ -1023,10 +1211,25 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     console.log('✅ [HANGUP] Hangup terminé');
     console.groupEnd();
-  }, [clearActiveCall, stopCallTimer, stopRecording]);
+  }, [clearActiveCall, finishAsteriskCall, stopCallTimer, stopRecording, telephonyProvider]);
 
   // Répondre
   const answer = useCallback(() => {
+    if (telephonyProvider === 'asterisk') {
+      const client = asteriskClientRef.current;
+      if (!client || !incomingCall) {
+        console.warn('⚠️ Aucun appel Asterisk à répondre');
+        return;
+      }
+
+      void client.answer().catch((error) => {
+        console.error('[ASTERISK] Échec de la réponse:', error);
+        finishAsteriskCall();
+        showToast('error', 'Impossible de répondre à l’appel', 3000);
+      });
+      return;
+    }
+
     const call = incomingCallRef.current;
     if (!call) {
       console.warn('⚠️ Aucune connexion à répondre');
@@ -1047,10 +1250,24 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     setDepuisLe(new Date());
     console.log('✅ Appel accepté');
     console.groupEnd();
-  }, [registerActiveCall, setupCallEvents]);
+  }, [finishAsteriskCall, incomingCall, registerActiveCall, setupCallEvents, showToast, telephonyProvider]);
 
   // Rejeter
   const reject = useCallback(() => {
+    if (telephonyProvider === 'asterisk') {
+      const client = asteriskClientRef.current;
+      if (!client || !incomingCall) {
+        console.warn('⚠️ Aucun appel Asterisk à rejeter');
+        return;
+      }
+
+      void client.decline().catch((error) => {
+        console.error('[ASTERISK] Échec du rejet:', error);
+      });
+      setIncomingCall(null);
+      return;
+    }
+
     const call = incomingCallRef.current;
     if (!call) {
       console.warn('⚠️ Aucune connexion à rejeter');
@@ -1061,7 +1278,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     incomingCallRef.current = null;
     setIncomingCall(null);
     console.log('❌ Appel rejeté');
-  }, []);
+  }, [incomingCall, telephonyProvider]);
 
   const requestNextProspect = useCallback(async (options?: { showEmptyToast?: boolean }) => {
       if (isFetchingNextProspectRef.current || isCallActiveRef.current || prochainProspect) {
@@ -1131,8 +1348,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
 
     if (nouveauStatut === 'disponible' && !sipConnected) {
-      console.warn('[DIALER] Impossible de passer disponible : Twilio non connecté');
-      showToast('error', 'Twilio non connecté — Impossible de passer disponible', 5000);
+      console.warn('[DIALER] Impossible de passer disponible : téléphonie non connectée');
+      showToast('error', 'Téléphonie non connectée — Impossible de passer disponible', 5000);
       return;
     }
 
@@ -1312,7 +1529,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, []);
 
   useEffect(() => {
-    if (!currentAppelId || !hasActiveTwilioCall) {
+    if (telephonyProvider !== 'twilio' || !currentAppelId || !hasActiveProviderCall) {
       return;
     }
 
@@ -1376,7 +1593,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [currentAppelId, hasActiveTwilioCall, startCallTimer, stopCallTimer]);
+  }, [currentAppelId, hasActiveProviderCall, startCallTimer, stopCallTimer, telephonyProvider]);
 
   // Contexte à retourner
   return (
@@ -1385,8 +1602,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       raisonPause,
       depuisLe,
       isLoading,
+      telephonyProvider,
+      telephonyConfigured,
       sipConnected,
-      canSendDigits: hasActiveTwilioCall && isCallConnected && (statut === 'en_appel' || statut === 'svi_a_naviguer' || currentCallInsights.sviDetecte),
+      canSendDigits: hasActiveProviderCall && isCallConnected && (statut === 'en_appel' || statut === 'svi_a_naviguer' || currentCallInsights.sviDetecte),
       callDuration,
       callDurationFormatted,
       incomingCall,

@@ -145,20 +145,6 @@ export class TwilioService {
     }
   }
 
-  /**
-   * Récupère la configuration Twilio depuis le backend
-   *
-   * @returns Promise<Record<string, unknown>>
-   */
-  public async getConfig(): Promise<Record<string, unknown>> {
-    try {
-      const response = await apiCalls.get<Record<string, unknown>>('/twilio/config');
-      return throwIfApiError(response, 'Erreur lors de la récupération de la configuration');
-    } catch (error) {
-      console.error('❌ [TWILIO] Erreur récupération config:', error);
-      return {}; // Retourne un objet vide en cas d'erreur
-    }
-  }
 }
 
 // Instance singleton

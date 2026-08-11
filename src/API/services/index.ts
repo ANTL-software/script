@@ -18,6 +18,9 @@ export {
 export { DialerService, dialerService } from './Dialer.service';
 export { TwilioService, twilioService } from './Twilio.service';
 export type { TwilioAccessTokenResponse, TwilioCallLogRequest, TwilioCallLogResponse } from './Twilio.service';
+export { TelephonyService, telephonyService } from './Telephony.service';
+export type { AsteriskBrowserClient, AsteriskBrowserClientCallbacks } from './Asterisk.service';
+export const loadAsteriskBrowserClient = () => import('./Asterisk.service');
 export { NotificationService, notificationService } from './Notification.service';
 export { StatsService, statsService } from './Stats.service';
 export { EnregistrementService, enregistrementService } from './Enregistrement.service';

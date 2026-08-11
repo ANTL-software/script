@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights } from '../../utils/types';
+import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, TelephonyProvider } from '../../utils/types';
 
 export interface IncomingCall {
   from: string;
@@ -11,6 +11,8 @@ export interface DialerContextType {
   raisonPause: RaisonPause | null;
   depuisLe: Date;
   isLoading: boolean;
+  telephonyProvider: TelephonyProvider;
+  telephonyConfigured: boolean;
   sipConnected: boolean;
   canSendDigits: boolean;
   callDuration: number;

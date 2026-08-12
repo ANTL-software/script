@@ -468,11 +468,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         warning: name,
         data
       });
-      const hadWarnings = twilioMediaWarningsRef.current.size > 0;
       twilioMediaWarningsRef.current.add(name);
-      if (!hadWarnings) {
-        showToast('warning', 'Qualité audio téléphonique dégradée — surveillance en cours…', 10000);
-      }
+      // Les notifications toast de qualité audio Twilio sont désactivées pour éviter les faux positifs en boucle.
     });
 
     call.on('warning-cleared', (name) => {
@@ -480,10 +477,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         callSid: getTwilioCallSid(call),
         warning: name
       });
-      const warningWasActive = twilioMediaWarningsRef.current.delete(name);
-      if (warningWasActive && twilioMediaWarningsRef.current.size === 0) {
-        showToast('info', 'Qualité audio téléphonique rétablie', 4000);
-      }
+      twilioMediaWarningsRef.current.delete(name);
     });
 
     call.on('disconnect', () => {

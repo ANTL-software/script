@@ -58,13 +58,13 @@ test('la bascule provider est reprise à chaud sans couper un appel actif', asyn
   assert.match(source, /Service téléphonique[\s\S]*rétabli/);
 });
 
-test('les alertes qualité Twilio sont visibles mais dédupliquées', async () => {
+test('les alertes qualité Twilio sont enregistrées en log sans notification toast utilisateur', async () => {
   const source = await readFile(
     path.join(process.cwd(), 'src/context/dialerContext/DialerProvider.tsx'),
     'utf8',
   );
 
   assert.match(source, /twilioMediaWarningsRef\.current\.add\(name\)/);
-  assert.match(source, /Qualité audio téléphonique dégradée/);
-  assert.match(source, /Qualité audio téléphonique rétablie/);
+  assert.doesNotMatch(source, /showToast\('warning', 'Qualité audio téléphonique dégradée/);
+  assert.doesNotMatch(source, /showToast\('info', 'Qualité audio téléphonique rétablie/);
 });

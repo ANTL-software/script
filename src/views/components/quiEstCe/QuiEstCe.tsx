@@ -156,50 +156,50 @@ export default function QuiEstCe() {
       const dataToUpdate: UpdateProspectData = {};
 
       // Champs modifiables (seulement ceux qui ont changé)
-      if (editedFields.nom !== (currentProspect.nom || '')) {
-        dataToUpdate.nom = editedFields.nom || undefined;
+      if (editedFields.nom.trim() !== (currentProspect.nom || '').trim()) {
+        dataToUpdate.nom = editedFields.nom.trim();
       }
-      if (editedFields.prenom !== (currentProspect.prenom || '')) {
-        dataToUpdate.prenom = editedFields.prenom || undefined;
+      if (editedFields.prenom.trim() !== (currentProspect.prenom || '').trim()) {
+        dataToUpdate.prenom = editedFields.prenom.trim();
       }
-      if (editedFields.siret !== (currentProspect.siret || '')) {
-        dataToUpdate.siret = editedFields.siret || undefined;
+      if (editedFields.siret.trim() !== (currentProspect.siret || '').trim()) {
+        dataToUpdate.siret = editedFields.siret.trim();
       }
-      if (editedFields.code_naf !== (currentProspect.code_naf || '')) {
-        dataToUpdate.code_naf = editedFields.code_naf || undefined;
+      if (editedFields.code_naf.trim() !== (currentProspect.code_naf || '').trim()) {
+        dataToUpdate.code_naf = editedFields.code_naf.trim();
       }
-      if (editedFields.activite !== (currentProspect.activite || '')) {
-        dataToUpdate.activite = editedFields.activite || undefined;
+      if (editedFields.activite.trim() !== (currentProspect.activite || '').trim()) {
+        dataToUpdate.activite = editedFields.activite.trim();
       }
-      if (editedFields.secteur !== (currentProspect.secteur || '')) {
-        dataToUpdate.secteur = editedFields.secteur || undefined;
+      if (editedFields.secteur.trim() !== (currentProspect.secteur || '').trim()) {
+        dataToUpdate.secteur = editedFields.secteur.trim();
       }
-      if (editedFields.region !== (currentProspect.region || '')) {
-        dataToUpdate.region = editedFields.region || undefined;
+      if (editedFields.region.trim() !== (currentProspect.region || '').trim()) {
+        dataToUpdate.region = editedFields.region.trim();
       }
-      if (editedFields.civilite !== (currentProspect.civilite || '')) {
-        dataToUpdate.civilite = editedFields.civilite || undefined;
+      if (editedFields.civilite.trim() !== (currentProspect.civilite || '').trim()) {
+        dataToUpdate.civilite = editedFields.civilite.trim();
       }
-      if (editedFields.email !== (currentProspect.email || '')) {
-        dataToUpdate.email = editedFields.email || undefined;
+      if (editedFields.email.trim() !== (currentProspect.email || '').trim()) {
+        dataToUpdate.email = editedFields.email.trim();
       }
-      if (editedFields.telephone_contact !== (currentProspect.telephone_contact || '')) {
-        dataToUpdate.telephone_contact = editedFields.telephone_contact || undefined;
+      if (editedFields.telephone_contact.trim() !== (currentProspect.telephone_contact || '').trim()) {
+        dataToUpdate.telephone_contact = editedFields.telephone_contact.trim();
       }
-      if (editedFields.adresse_facturation !== (currentProspect.adresse_facturation || '')) {
-        dataToUpdate.adresse_facturation = editedFields.adresse_facturation || undefined;
+      if (editedFields.adresse_facturation.trim() !== (currentProspect.adresse_facturation || '').trim()) {
+        dataToUpdate.adresse_facturation = editedFields.adresse_facturation.trim();
       }
-      if (editedFields.adresse_livraison !== (currentProspect.adresse_livraison || '')) {
-        dataToUpdate.adresse_livraison = editedFields.adresse_livraison || undefined;
+      if (editedFields.adresse_livraison.trim() !== (currentProspect.adresse_livraison || '').trim()) {
+        dataToUpdate.adresse_livraison = editedFields.adresse_livraison.trim();
       }
-      if (editedFields.code_postal !== (currentProspect.code_postal || '')) {
-        dataToUpdate.code_postal = editedFields.code_postal || undefined;
+      if (editedFields.code_postal.trim() !== (currentProspect.code_postal || '').trim()) {
+        dataToUpdate.code_postal = editedFields.code_postal.trim();
       }
-      if (editedFields.ville !== (currentProspect.ville || '')) {
-        dataToUpdate.ville = editedFields.ville || undefined;
+      if (editedFields.ville.trim() !== (currentProspect.ville || '').trim()) {
+        dataToUpdate.ville = editedFields.ville.trim();
       }
-      if (editedFields.pays !== (currentProspect.pays || 'France')) {
-        dataToUpdate.pays = editedFields.pays || undefined;
+      if (editedFields.pays.trim() !== (currentProspect.pays || 'France').trim()) {
+        dataToUpdate.pays = editedFields.pays.trim();
       }
 
       if (Object.keys(dataToUpdate).length === 0) {

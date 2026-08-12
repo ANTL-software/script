@@ -175,21 +175,21 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     } = {};
 
     // Mapper les champs du form vers les champs du prospect
-    if (updatedFields.siret !== undefined) prospectUpdates.siret = updatedFields.siret;
-    if (updatedFields.email !== undefined) prospectUpdates.email = updatedFields.email;
-    if (updatedFields.raison_sociale !== undefined) prospectUpdates.raison_sociale = updatedFields.raison_sociale;
-    if (updatedFields.adresse_facturation !== undefined) prospectUpdates.adresse_facturation = updatedFields.adresse_facturation;
-    if (updatedFields.adresse_livraison !== undefined) prospectUpdates.adresse_livraison = updatedFields.adresse_livraison;
-    if (updatedFields.code_postal_facturation !== undefined) prospectUpdates.code_postal = updatedFields.code_postal_facturation;
-    if (updatedFields.ville_facturation !== undefined) prospectUpdates.ville = updatedFields.ville_facturation;
-    if (updatedFields.pays_facturation !== undefined) prospectUpdates.pays = updatedFields.pays_facturation;
-    if (updatedFields.civilite !== undefined) prospectUpdates.civilite = updatedFields.civilite;
+    if (updatedFields.siret !== undefined) prospectUpdates.siret = updatedFields.siret.trim();
+    if (updatedFields.email !== undefined) prospectUpdates.email = updatedFields.email.trim();
+    if (updatedFields.raison_sociale !== undefined) prospectUpdates.raison_sociale = updatedFields.raison_sociale.trim();
+    if (updatedFields.adresse_facturation !== undefined) prospectUpdates.adresse_facturation = updatedFields.adresse_facturation.trim();
+    if (updatedFields.adresse_livraison !== undefined) prospectUpdates.adresse_livraison = updatedFields.adresse_livraison.trim();
+    if (updatedFields.code_postal_facturation !== undefined) prospectUpdates.code_postal = updatedFields.code_postal_facturation.trim();
+    if (updatedFields.ville_facturation !== undefined) prospectUpdates.ville = updatedFields.ville_facturation.trim();
+    if (updatedFields.pays_facturation !== undefined) prospectUpdates.pays = updatedFields.pays_facturation.trim();
+    if (updatedFields.civilite !== undefined) prospectUpdates.civilite = updatedFields.civilite.trim();
     if (updatedFields.nom_contact !== undefined) {
       const nameParts = updatedFields.nom_contact.trim().split(/\s+/);
       const prenom = nameParts.length > 1 ? nameParts[0] : '';
       const nom = nameParts.length > 1 ? nameParts.slice(1).join(' ') : nameParts[0];
       prospectUpdates.nom = nom;
-      prospectUpdates.prenom = prenom || undefined;
+      prospectUpdates.prenom = prenom;
     }
 
     // Ne mettre à jour que si il y a des changements

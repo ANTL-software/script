@@ -88,23 +88,23 @@ export interface ProspectInfos {
 
 export interface UpdateProspectData {
   nom?: string;
-  prenom?: string;
-  email?: string;
-  adresse_facturation?: string;    // Renommé depuis 'adresse' (2026-06-02)
-  adresse_livraison?: string;       // NOUVEAU (2026-06-02)
-  code_postal?: string;
-  ville?: string;
-  pays?: string;
-  notes?: string;
-  siret?: string;
-  code_naf?: string;
-  activite?: string;
-  secteur?: string;
-  region?: string;
-  civilite?: string;
-  telephone_contact?: string;
-  nom_contact?: string;
-  decisionnaire_nom?: string;
-  decisionnaire_fonction?: string;
-  decisionnaire_email_pro?: string;
+  prenom?: string | null;
+  email?: string | null;
+  adresse_facturation?: string | null;    // Renommé depuis 'adresse' (2026-06-02)
+  adresse_livraison?: string | null;       // NOUVEAU (2026-06-02)
+  code_postal?: string | null;
+  ville?: string | null;
+  pays?: string | null;
+  notes?: string | null;
+  siret?: string | null;
+  code_naf?: string | null;
+  activite?: string | null;
+  secteur?: string | null;
+  region?: string | null;
+  civilite?: string | null;
+  telephone_contact?: string | null;
+  nom_contact?: string | null;
+  decisionnaire_nom?: string | null;
+  decisionnaire_fonction?: string | null;
+  decisionnaire_email_pro?: string | null;
 }

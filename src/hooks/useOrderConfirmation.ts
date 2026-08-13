@@ -37,7 +37,13 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   const { currentProspect, createVente, updateProspect } = useProspect();
   const { currentCampaign } = useCampaign();
   const { user } = useUser();
-  const { currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration } = useDialer();
+  const {
+    currentAppelId,
+    currentAppelProspectId,
+    currentOrigineAppel,
+    currentRendezVousSourceId,
+    callDuration,
+  } = useDialer();
 
   const availableModesPaiement = useMemo<ModePaiement[]>(
     () => currentCampaign
@@ -235,10 +241,14 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       // Mettre à jour les infos du prospect avec les champs SAISIS (siret, email, raison_sociale, adresses)
       await handleProspectInfoUpdate(formData);
 
+      const appelId = currentAppelProspectId === currentProspect.id_prospect
+        ? currentAppelId ?? undefined
+        : undefined;
+
       const venteData = buildVentePayload({
         prospectId: currentProspect.id_prospect,
         campagneId: currentCampaign.id_campagne,
-        appelId: currentAppelId ?? undefined,
+        appelId,
         formData,
         items,
       });
@@ -254,7 +264,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         prospectName,
         campagneId: currentCampaign.id_campagne,
         campaignVariant: getCampaignVariant(currentCampaign),
-        appelId: currentAppelId ?? undefined,
+        appelId,
         origineAppel: currentOrigineAppel ?? undefined,
         rendezVousSourceId: currentRendezVousSourceId ?? undefined,
         dureeAppel: callDuration,

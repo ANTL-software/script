@@ -21,6 +21,7 @@ export interface DialerContextType {
   prochainProspect: (Prospect & ProspectAssigne) | null;
   currentCampagneId: number | null;
   currentAppelId: number | null;
+  currentAppelProspectId: number | null;
   currentIdProspection: number | null;
   currentOrigineAppel: OrigineAppel | null;
   currentRendezVousSourceId: number | null;

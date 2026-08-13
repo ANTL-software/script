@@ -26,6 +26,7 @@ export function usePriseRendezVous() {
   const { setView } = useApp();
   const {
     currentAppelId,
+    currentAppelProspectId,
     currentOrigineAppel,
     currentRendezVousSourceId,
     callDuration,
@@ -231,10 +232,14 @@ export function usePriseRendezVous() {
         notes: notes.trim(),
       };
 
+      const appelId = currentAppelProspectId === currentProspect.id_prospect
+        ? currentAppelId ?? undefined
+        : undefined;
+
       await leadService.createLead(buildLeadB2BRendezVousPayload({
         prospectId: currentProspect.id_prospect,
         campagneId: currentCampaign.id_campagne,
-        appelId: currentAppelId ?? undefined,
+        appelId,
         dateRdv,
         timeValue,
         interlocuteurNom,
@@ -265,7 +270,9 @@ export function usePriseRendezVous() {
       prospectName: formatProspectName(currentProspect),
       campagneId: currentCampaign.id_campagne,
       campaignVariant: getCampaignVariant(currentCampaign),
-      appelId: currentAppelId ?? undefined,
+      appelId: currentAppelProspectId === currentProspect.id_prospect
+        ? currentAppelId ?? undefined
+        : undefined,
       origineAppel: currentOrigineAppel ?? undefined,
       rendezVousSourceId: currentRendezVousSourceId ?? undefined,
       dureeAppel: callDuration,

@@ -90,6 +90,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const [prochainProspect, setProchainProspect] = useState<(Prospect & ProspectAssigne) | null>(null);
   const [currentCampagneId, setCurrentCampagneId] = useState<number | null>(null);
   const [currentAppelId, setCurrentAppelId] = useState<number | null>(null);
+  const [currentAppelProspectId, setCurrentAppelProspectId] = useState<number | null>(null);
   const [currentIdProspection, setCurrentIdProspection] = useState<number | null>(null);
   const [currentOrigineAppel, setCurrentOrigineAppel] = useState<OrigineAppel | null>(null);
   const [currentRendezVousSourceId, setCurrentRendezVousSourceId] = useState<number | null>(null);
@@ -136,9 +137,10 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     currentAppelIdRef.current = currentAppelId;
   }, [currentAppelId]);
 
-  const updateCurrentAppelId = useCallback((idAppel: number | null): void => {
+  const updateCurrentAppelId = useCallback((idAppel: number | null, prospectId: number | null = null): void => {
     currentAppelIdRef.current = idAppel;
     setCurrentAppelId(idAppel);
+    setCurrentAppelProspectId(idAppel === null ? null : prospectId);
   }, []);
 
   const reportTelephonyDegraded = useCallback((provider: TelephonyProvider, message?: string): void => {
@@ -1283,7 +1285,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           telephony_provider: telephonyProvider,
           id_prospection: prochainProspect?.id_prospection ?? currentIdProspection ?? undefined,
         });
-        updateCurrentAppelId(appel.id_appel);
+        updateCurrentAppelId(appel.id_appel, prospectId);
         setCurrentRendezVousSourceId(null);
         resolvedAppelId = appel.id_appel;
       }
@@ -1631,7 +1633,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         id_rendez_vous_source: rendezVousSourceId,
       });
 
-      updateCurrentAppelId(appel.id_appel);
+      updateCurrentAppelId(appel.id_appel, prospectId);
       setCurrentCampagneId(campagneId);
       setCurrentIdProspection(null);
       setCurrentOrigineAppel(origin);
@@ -1716,7 +1718,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         id_rendez_vous_source: rendezVousSourceId,
       });
 
-      updateCurrentAppelId(appel.id_appel);
+      updateCurrentAppelId(appel.id_appel, prospectId);
       setCurrentCampagneId(targetCampagneId);
       setCurrentIdProspection(null);
       setCurrentOrigineAppel(origin);
@@ -1833,6 +1835,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       prochainProspect,
       currentCampagneId,
       currentAppelId,
+      currentAppelProspectId,
       currentIdProspection,
       currentOrigineAppel,
       currentRendezVousSourceId,

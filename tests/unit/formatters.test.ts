@@ -33,15 +33,19 @@ test('cleanAndValidatePhone nettoie les séparateurs usuels et rejette les forma
   assert.equal(cleanAndValidatePhone('12-34'), null);
 });
 
-test('formatPhoneE164 convertit correctement les formats français', () => {
+test('formatPhoneE164 convertit correctement les formats français et monégasques', () => {
   assert.equal(formatPhoneE164('06 12 34 56 78'), '+33612345678');
   assert.equal(formatPhoneE164('33612345678'), '+33612345678');
   assert.equal(formatPhoneE164('+44 20 7946 0958'), '+442079460958');
+  assert.equal(formatPhoneE164('00377 93 10 52 52'), '+37793105252');
+  assert.equal(formatPhoneE164('+377 93 10 52 52'), '+37793105252');
 });
 
-test('isMobilePhone identifie les mobiles français', () => {
+test('isMobilePhone identifie les mobiles français et monégasques', () => {
   assert.equal(isMobilePhone('06 12 34 56 78'), true);
   assert.equal(isMobilePhone('+33 7 12 34 56 78'), true);
+  assert.equal(isMobilePhone('+377 6 12 34 56 78'), true);
+  assert.equal(isMobilePhone('+377 93 10 52 52'), false);
   assert.equal(isMobilePhone('01 23 45 67 89'), false);
 });
 

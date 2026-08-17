@@ -1621,7 +1621,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setProchainProspect(null);
       await dialerService.changerStatut('appel_sortant');
 
-      // Formater le numéro pour l'appel Twilio
+      // Formater le numéro pour le transport téléphonique actif.
       const formattedNumber = prospectPhone ? formatPhoneE164(prospectPhone) : '';
       const appel = await appelService.createAppel({
         id_prospect: prospectId,

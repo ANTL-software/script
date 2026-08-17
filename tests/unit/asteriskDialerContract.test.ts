@@ -9,13 +9,16 @@ test('le dialer Asterisk conserve le pipeline BDD puis session puis INVITE corr�
     'utf8',
   );
   const createIndex = source.indexOf('const appel = await appelService.createAppel({');
+  const formatIndex = source.indexOf('const formattedNumber = formatPhoneE164(phoneNumber);', createIndex);
   const sessionIndex = source.indexOf('await dialerService.startSession(prospectId, campagneId);', createIndex);
   const inviteIndex = source.indexOf('await asteriskClient.call(formattedNumber, {', sessionIndex);
 
   assert.ok(createIndex >= 0, 'la tentative doit être créée en BDD');
   assert.match(source.slice(createIndex, sessionIndex), /telephony_provider: telephonyProvider/);
+  assert.ok(formatIndex > createIndex, 'la destination doit être convertie en E.164 avant le transport');
   assert.ok(sessionIndex > createIndex, 'la session doit référencer la tentative créée');
   assert.ok(inviteIndex > sessionIndex, 'l INVITE ne part qu après la session backend');
+  assert.ok(inviteIndex > formatIndex, 'Asterisk doit recevoir la destination E.164 commune');
   assert.match(source, /onCallAnswered:[\s\S]*state: 'answered'/);
   const createdHandler = source.slice(
     source.indexOf('onCallCreated:'),

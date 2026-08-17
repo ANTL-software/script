@@ -110,8 +110,9 @@ export function cleanAndValidatePhone(input: string): string | null {
 }
 
 /**
- * Convertit un numéro de téléphone français en format E.164 (+33XXXXXXXXX)
- * Gère les formats : 0XXXXXXXXX, 33XXXXXXXXX, +33XXXXXXXXX
+ * Convertit un numéro de téléphone en format E.164 pour le dialer.
+ * Les numéros français locaux reçoivent +33 ; un indicatif explicite est
+ * préservé, y compris Monaco (+377 ou 00377).
  * @param phone - Numéro de téléphone brut
  * @returns Numéro au format E.164
  */
@@ -120,18 +121,21 @@ export function formatPhoneE164(phone: string): string {
   if (digits.startsWith('0') && digits.length === 10) {
     return `+33${digits.slice(1)}`;
   }
+  if (digits.startsWith('00')) {
+    return `+${digits.slice(2)}`;
+  }
   if (digits.startsWith('33') && digits.length === 11) {
     return `+${digits}`;
   }
   if (phone.startsWith('+')) {
-    return phone.replace(/[^\d+]/g, '');
+    return `+${digits}`;
   }
   return `+${digits}`;
 }
 
 export function isMobilePhone(phone: string): boolean {
-  const digits = phone.replace(/[\s.\-()]/g, '');
-  return /^(\+33|0033|0)[67]/.test(digits);
+  const e164 = formatPhoneE164(phone);
+  return /^(?:\+33[67]\d{8}|\+3776\d{8})$/.test(e164);
 }
 
 /**

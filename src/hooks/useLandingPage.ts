@@ -227,6 +227,7 @@ export function useLandingPage() {
 
     try {
       const result = await prospectService.sendPlaquette(currentProspect.id_prospect);
+      await loadProspect(currentProspect.id_prospect);
       showToast('success', `Plaquette envoyée à ${result.recipientEmail}`);
     } catch (sendError) {
       showToast(

@@ -40,6 +40,7 @@ export default function HistoriqueAppels() {
   };
 
   const grilleTarifaireEnvoyeeAt = currentProspect?.grille_tarifaire_envoyee_at ?? null;
+  const plaquetteEnvoyeeAt = currentProspect?.plaquette_envoyee_at ?? null;
   const isSalesCampaign = getCampaignVariant(currentCampaign) === CAMPAIGN_VARIANTS.vente;
   const isLiveCall = statut === 'appel_sortant'
     || statut === 'en_appel'
@@ -51,6 +52,9 @@ export default function HistoriqueAppels() {
   const grilleTarifaireLabel = grilleTarifaireEnvoyeeAt
     ? `Grille tarifaire envoyee le ${formatDateTime(grilleTarifaireEnvoyeeAt)}`
     : 'Grille tarifaire non envoyee';
+  const plaquetteLabel = plaquetteEnvoyeeAt
+    ? `Plaquette envoyee le ${formatDateTime(plaquetteEnvoyeeAt)}`
+    : 'Plaquette non envoyee';
 
   if (appelsLoading) {
     return (
@@ -77,9 +81,14 @@ export default function HistoriqueAppels() {
         <h2>Historique des appels</h2>
         <div className="historique-appels__header-meta">
           {isSalesCampaign && (
-            <span className={`historique-appels__tarifs ${grilleTarifaireEnvoyeeAt ? 'historique-appels__tarifs--sent' : 'historique-appels__tarifs--pending'}`}>
-              {grilleTarifaireLabel}
-            </span>
+            <>
+              <span className={`historique-appels__tarifs ${grilleTarifaireEnvoyeeAt ? 'historique-appels__tarifs--sent' : 'historique-appels__tarifs--pending'}`}>
+                {grilleTarifaireLabel}
+              </span>
+              <span className={`historique-appels__tarifs ${plaquetteEnvoyeeAt ? 'historique-appels__tarifs--sent' : 'historique-appels__tarifs--pending'}`}>
+                {plaquetteLabel}
+              </span>
+            </>
           )}
           <span className="historique-appels__count">
             {appelsPagination.total} appel{appelsPagination.total > 1 ? 's' : ''}

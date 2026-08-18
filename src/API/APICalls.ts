@@ -1,13 +1,14 @@
 import { AxiosError } from 'axios';
 
 import type { AxiosResponse } from 'axios';
-import type { ApiResponse, ApiError } from '../utils/types';
+import type { ApiResponse } from '../utils/types';
 
 import api from './config';
 
 export interface RequestConfig {
   headers?: Record<string, string>;
   params?: Record<string, unknown>;
+  timeout?: number;
 }
 
 class ApiCalls {
@@ -32,17 +33,15 @@ class ApiCalls {
 
   private handleError(error: unknown): never {
     if (error instanceof AxiosError) {
-      const apiError: ApiError = {
+      const apiError = {
         message: error.response?.data?.message || error.message || 'Une erreur est survenue',
         status: error.response?.status,
         errors: error.response?.data?.errors,
       };
-      throw apiError;
+      throw new Error(apiError.message);
     }
 
-    throw {
-      message: error instanceof Error ? error.message : 'Une erreur inattendue est survenue',
-    } as ApiError;
+    throw new Error(error instanceof Error ? error.message : 'Une erreur inattendue est survenue');
   }
 
   private async retryRequest<T>(
@@ -81,10 +80,10 @@ class ApiCalls {
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     try {
-      return await this.retryRequest(async () => {
+      return await (async () => {
         const response: AxiosResponse<ApiResponse<T>> = await api.post(endpoint, data, config);
         return response.data;
-      });
+      })();
     } catch (error) {
       this.handleError(error);
     }
@@ -96,10 +95,10 @@ class ApiCalls {
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     try {
-      return await this.retryRequest(async () => {
+      return await (async () => {
         const response: AxiosResponse<ApiResponse<T>> = await api.put(endpoint, data, config);
         return response.data;
-      });
+      })();
     } catch (error) {
       this.handleError(error);
     }
@@ -111,10 +110,10 @@ class ApiCalls {
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     try {
-      return await this.retryRequest(async () => {
+      return await (async () => {
         const response: AxiosResponse<ApiResponse<T>> = await api.patch(endpoint, data, config);
         return response.data;
-      });
+      })();
     } catch (error) {
       this.handleError(error);
     }
@@ -125,10 +124,10 @@ class ApiCalls {
     config?: RequestConfig
   ): Promise<ApiResponse<T>> {
     try {
-      return await this.retryRequest(async () => {
+      return await (async () => {
         const response: AxiosResponse<ApiResponse<T>> = await api.delete(endpoint, config);
         return response.data;
-      });
+      })();
     } catch (error) {
       this.handleError(error);
     }

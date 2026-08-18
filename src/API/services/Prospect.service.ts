@@ -5,6 +5,11 @@ import type { Prospect, UpdateProspectData } from '../../utils/types/index.ts';
 import { buildQueryString } from '../../utils/scripts/index.ts';
 import { buildProspectOptoutPayload } from './prospectPayloads.ts';
 
+export interface ProspectDocumentDispatch {
+  recipientEmail: string;
+  sentAt: string;
+}
+
 export class ProspectService {
   private static instance: ProspectService;
 
@@ -49,13 +54,17 @@ export class ProspectService {
     };
   }
 
-  public async sendCatalogue(id: number): Promise<{ recipientEmail: string }> {
-    const response = await apiCalls.post<{ recipientEmail: string }>(`/prospects/${id}/send-catalogue`);
+  public async sendCatalogue(id: number): Promise<ProspectDocumentDispatch> {
+    const response = await apiCalls.post<ProspectDocumentDispatch>(`/prospects/${id}/send-catalogue`, undefined, {
+      timeout: 90000,
+    });
     return throwIfApiError(response, 'Erreur lors de l\'envoi du catalogue');
   }
 
-  public async sendPlaquette(id: number): Promise<{ recipientEmail: string }> {
-    const response = await apiCalls.post<{ recipientEmail: string }>(`/prospects/${id}/send-plaquette`);
+  public async sendPlaquette(id: number): Promise<ProspectDocumentDispatch> {
+    const response = await apiCalls.post<ProspectDocumentDispatch>(`/prospects/${id}/send-plaquette`, undefined, {
+      timeout: 90000,
+    });
     return throwIfApiError(response, 'Erreur lors de l\'envoi de la plaquette');
   }
 

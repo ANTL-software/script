@@ -14,6 +14,13 @@ export interface PrimeStats {
   paliers: PalierPrime[];
 }
 
+export interface ProgpaEtapeStat {
+  progpa: number | '5+';
+  label: string;
+  count: number;
+  pourcentage: number;
+}
+
 export interface StatsDuJour {
   date: string;
   appels_total: number;
@@ -26,4 +33,5 @@ export interface StatsDuJour {
   ventes_mois_count: number;
   ventes_mois_montant: number;
   prime: PrimeStats | null;
+  progpa_etapes?: ProgpaEtapeStat[];
 }

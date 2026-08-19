@@ -1,8 +1,21 @@
 import './dashboardPage.scss';
 import { useDashboardPage } from '../../../hooks/index.ts';
-import { formatEur } from '../../../utils/scripts/index.ts';
 import { CalendarModal, SalesGauge } from '../../components/index.ts';
 import { FaCalendarAlt } from 'react-icons/fa';
+
+const PROGPA_STEP_DEFS: Array<{
+  progpa: number | '5+';
+  defaultLabel: string;
+  color: string;
+  isFollowup?: boolean;
+}> = [
+  { progpa: 1, defaultLabel: 'Identification', color: '#7c3aed' },
+  { progpa: 2, defaultLabel: 'Présentation', color: '#2563eb' },
+  { progpa: 3, defaultLabel: 'Découverte', color: '#0891b2' },
+  { progpa: 4, defaultLabel: 'Proposition', color: '#f59e0b' },
+  { progpa: 5, defaultLabel: 'Commande', color: '#16a34a' },
+  { progpa: '5+', defaultLabel: 'Suivi de commande', color: '#c026d3', isFollowup: true },
+];
 
 export default function DashboardPage() {
   const {
@@ -119,35 +132,40 @@ export default function DashboardPage() {
         {statsLoading ? (
           <p className="dashboard__loading">Chargement...</p>
         ) : stats ? (
-          <div className="dashboard__stats-grid">
-            <div className="dashboard__stat">
-              <span className="dashboard__stat-value">{stats.appels_total}</span>
-              <span className="dashboard__stat-label">Appels</span>
-            </div>
-            <div className="dashboard__stat">
-              <span className="dashboard__stat-value">{stats.appels_aboutis}</span>
-              <span className="dashboard__stat-label">Aboutis</span>
-            </div>
-            <div className="dashboard__stat">
-              <span className="dashboard__stat-value">{stats.ventes}</span>
-              <span className="dashboard__stat-label">Ventes</span>
-            </div>
-            <div className="dashboard__stat dashboard__stat--highlight">
-              <span className="dashboard__stat-value">{formatEur(stats.ventes_jour_montant ?? 0)}</span>
-              <span className="dashboard__stat-label">CA jour</span>
-            </div>
-            <div className="dashboard__stat">
-              <span className="dashboard__stat-value">{stats.rdv_pris}</span>
-              <span className="dashboard__stat-label">Cmd à établir</span>
-            </div>
-            <div className="dashboard__stat">
-              <span className="dashboard__stat-value">{stats.rendez_vous_pris}</span>
-              <span className="dashboard__stat-label">Rdv pris</span>
-            </div>
-            <div className="dashboard__stat">
-              <span className="dashboard__stat-value">{stats.taux_conversion}%</span>
-              <span className="dashboard__stat-label">Conversion</span>
-            </div>
+          <div className="dashboard__progpa-grid">
+            <article className="dashboard__progpa-card dashboard__progpa-card--appels">
+              <div className="dashboard__progpa-content">
+                <div className="dashboard__progpa-header">
+                  <strong className="dashboard__progpa-count">{stats.appels_total}</strong>
+                  <span className="dashboard__progpa-label">Appels</span>
+                </div>
+                <small className="dashboard__progpa-percent">aujourd'hui</small>
+              </div>
+            </article>
+            {PROGPA_STEP_DEFS.map((def) => {
+              const apiStep = stats.progpa_etapes?.find((s) => String(s.progpa) === String(def.progpa));
+              const count = apiStep ? apiStep.count : 0;
+              const pourcentage = apiStep ? apiStep.pourcentage : 0;
+              const label = apiStep?.label || def.defaultLabel;
+
+              return (
+                <article
+                  key={String(def.progpa)}
+                  className={`dashboard__progpa-card ${def.isFollowup ? 'dashboard__progpa-card--followup' : ''}`}
+                  title={label}
+                  style={{ '--step-color': def.color } as React.CSSProperties}
+                >
+                  <span className="dashboard__progpa-index">{def.progpa}</span>
+                  <div className="dashboard__progpa-content">
+                    <div className="dashboard__progpa-header">
+                      <strong className="dashboard__progpa-count">{count}</strong>
+                      <span className="dashboard__progpa-label" title={label}>{label}</span>
+                    </div>
+                    <small className="dashboard__progpa-percent">{pourcentage.toFixed(1)} %</small>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="dashboard__empty-state"><p>Stats indisponibles.</p></div>

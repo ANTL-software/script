@@ -59,14 +59,14 @@ export function getSalutation(prenom?: string, _heure?: number, _jour?: number):
   if (h < 9)  return `Belle matinée${p}, on attaque !`;
 
   // Matinée — 9h à 12h
-  if (h < 12) {
+  if (h < 11) {
     if (jour === 1) return `Belle semaine en perspective${p} !`;
     if (jour === 4) return `Dernier grand jour de la semaine${p}, on y va !`;
     return `Bonjour${p} !`;
   }
 
   // Pause déjeuner — 12h à 14h
-  if (h < 14) return `Bon appétit${p} !`;
+  if (h < 13) return `Bon appétit${p} !`;
 
   // Après-midi — 14h à 18h
   if (h < 18) {

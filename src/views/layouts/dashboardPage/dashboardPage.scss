@@ -117,7 +117,104 @@
   color: vars.$colorGray300;
   font-style: italic;
 }
-// Stats
+// Stats ProgPA Grid
+#dashboardPage .dashboard__progpa-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: vars.$spacing-sm;
+}
+
+@media (max-width: 1050px) {
+  #dashboardPage .dashboard__progpa-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  #dashboardPage .dashboard__progpa-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+#dashboardPage .dashboard__progpa-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: vars.$radius-md;
+  border: 1px solid #e8edf4;
+  border-left: 4px solid var(--step-color, vars.$colorPrimary);
+  background: #fbfcfe;
+  min-width: 0;
+  transition: transform vars.$transition-fast, box-shadow vars.$transition-fast;
+}
+
+#dashboardPage .dashboard__progpa-card:hover {
+  box-shadow: vars.$shadow-sm;
+}
+
+#dashboardPage .dashboard__progpa-card--appels {
+  --step-color: #3b82f6;
+  background: #f8fafc;
+}
+
+#dashboardPage .dashboard__progpa-card--followup {
+  --step-color: #c026d3;
+  background: linear-gradient(110deg, #fdf4ff, #faf5ff);
+  border-color: #f0abfc;
+}
+
+#dashboardPage .dashboard__progpa-index {
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  flex: 0 0 1.65rem;
+  border-radius: 50%;
+  background: var(--step-color, vars.$colorPrimary);
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+#dashboardPage .dashboard__progpa-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+#dashboardPage .dashboard__progpa-header {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+#dashboardPage .dashboard__progpa-count {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.1;
+  flex-shrink: 0;
+}
+
+#dashboardPage .dashboard__progpa-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#dashboardPage .dashboard__progpa-percent {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin-top: 0.1rem;
+}
+
 #dashboardPage .dashboard__stats-grid {
   display: flex;
   gap: vars.$spacing-xl;

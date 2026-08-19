@@ -23,6 +23,7 @@ export interface Employe {
   date_embauche?: string;
   id_poste?: number;
   id_departement?: number;
+  id_rang_commercial?: number | null;
   actif: boolean;
   created_at?: string;
   updated_at?: string;

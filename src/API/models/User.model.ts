@@ -15,6 +15,11 @@ export class UserModel implements Employe {
   updated_at?: string;
   poste?: Poste;
   departement?: Departement;
+  appels_script_bloques: boolean;
+  motif_blocage_appels_script?: string | null;
+  appels_script_bloques_at?: string | null;
+  appels_script_bloques_jusqu_au?: string | null;
+  appels_script_bloques_par?: number | null;
 
   constructor(data: Employe) {
     this.id_employe = data.id_employe;
@@ -31,6 +36,11 @@ export class UserModel implements Employe {
     this.updated_at = data.updated_at;
     this.poste = data.poste;
     this.departement = data.departement;
+    this.appels_script_bloques = data.appels_script_bloques ?? false;
+    this.motif_blocage_appels_script = data.motif_blocage_appels_script ?? null;
+    this.appels_script_bloques_at = data.appels_script_bloques_at ?? null;
+    this.appels_script_bloques_jusqu_au = data.appels_script_bloques_jusqu_au ?? null;
+    this.appels_script_bloques_par = data.appels_script_bloques_par ?? null;
   }
 
   public get fullName(): string {
@@ -53,6 +63,11 @@ export class UserModel implements Employe {
       updated_at: this.updated_at,
       poste: this.poste,
       departement: this.departement,
+      appels_script_bloques: this.appels_script_bloques,
+      motif_blocage_appels_script: this.motif_blocage_appels_script,
+      appels_script_bloques_at: this.appels_script_bloques_at,
+      appels_script_bloques_jusqu_au: this.appels_script_bloques_jusqu_au,
+      appels_script_bloques_par: this.appels_script_bloques_par,
     };
   }
 

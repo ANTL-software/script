@@ -9,6 +9,7 @@ export interface AlertProps {
   type: AlertType;
   title?: string;
   message: string;
+  acknowledgeOnly?: boolean;
   onConfirm?: () => void;
   onCancel?: () => void;
   onClose?: () => void;
@@ -22,6 +23,7 @@ export default function Alert({
   type,
   title,
   message,
+  acknowledgeOnly = false,
   onConfirm,
   onCancel,
   onClose,
@@ -30,14 +32,14 @@ export default function Alert({
   cancelText = 'Annuler'
 }: AlertProps) {
   useEffect(() => {
-    if (autoClose && type !== 'confirm') {
+    if (autoClose && type !== 'confirm' && !acknowledgeOnly) {
       const timer = setTimeout(() => {
         onClose?.();
       }, autoClose);
 
       return () => clearTimeout(timer);
     }
-  }, [autoClose, onClose, type]);
+  }, [acknowledgeOnly, autoClose, onClose, type]);
 
   const getIcon = () => {
     switch (type) {
@@ -65,7 +67,7 @@ export default function Alert({
   };
 
   const handleClose = () => {
-    if (type !== 'confirm') {
+    if (type !== 'confirm' && !acknowledgeOnly) {
       onClose?.();
     }
   };
@@ -105,7 +107,7 @@ export default function Alert({
               </h3>
             )}
           </div>
-          {type !== 'confirm' && (
+          {type !== 'confirm' && !acknowledgeOnly && (
             <button
               className="alert__close"
               onClick={handleClose}
@@ -132,6 +134,19 @@ export default function Alert({
             >
               {cancelText}
             </button>
+            <button
+              className="alert__button alert__button--confirm"
+              onClick={handleConfirm}
+              type="button"
+              autoFocus
+            >
+              {confirmText}
+            </button>
+          </div>
+        )}
+
+        {acknowledgeOnly && type !== 'confirm' && (
+          <div className="alert__actions">
             <button
               className="alert__button alert__button--confirm"
               onClick={handleConfirm}

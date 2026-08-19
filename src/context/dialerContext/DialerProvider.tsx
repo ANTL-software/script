@@ -7,7 +7,7 @@ import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
 import { loadAsteriskBrowserClient, dialerService, appelService, closingService, twilioService, telephonyService, rendezVousService, enregistrementService, csrfService } from '../../API/services';
 import type { AsteriskBrowserClient } from '../../API/services';
-import type { StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification, TelephonyConfiguration, TelephonyProvider } from '../../utils/types';
+import type { Appel, AsteriskOutboundAuthorization, StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification, TelephonyConfiguration, TelephonyProvider } from '../../utils/types';
 import { getApiBaseUrl, isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
@@ -38,8 +38,13 @@ interface ActiveAsteriskCall {
   answered: boolean;
 }
 
-const createProviderCallId = (): string => globalThis.crypto?.randomUUID?.()
-  ?? `asterisk-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
+const getAsteriskOutboundAuthorization = (appel: Appel): AsteriskOutboundAuthorization | undefined => {
+  if (!appel.provider_call_id || !appel.asterisk_outbound_ticket) return undefined;
+  return {
+    providerCallId: appel.provider_call_id,
+    ticket: appel.asterisk_outbound_ticket,
+  };
+};
 
 const getTwilioCallSid = (call: Call): string | undefined => {
   const recordableCall = call as TwilioCallWithStreams;
@@ -1239,7 +1244,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     phoneNumber: string,
     campagneId?: number,
     prospectId?: number,
-    options?: { skipCreateAppel?: boolean; dbAppelId?: number; origin?: OrigineAppel }
+    options?: {
+      skipCreateAppel?: boolean;
+      dbAppelId?: number;
+      origin?: OrigineAppel;
+      asteriskAuthorization?: AsteriskOutboundAuthorization;
+    }
   ) => {
     console.groupCollapsed(`📞 [APPEL] ${phoneNumber}`);
     console.log('Campagne:', campagneId, '| Prospect:', prospectId);
@@ -1264,6 +1274,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
 
     let resolvedAppelId = options?.dbAppelId || null;
+    let asteriskAuthorization = options?.asteriskAuthorization;
 
     try {
       setCurrentCampagneId(campagneId ?? null);
@@ -1288,6 +1299,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         updateCurrentAppelId(appel.id_appel, prospectId);
         setCurrentRendezVousSourceId(null);
         resolvedAppelId = appel.id_appel;
+        asteriskAuthorization = getAsteriskOutboundAuthorization(appel);
       }
 
       // Formater le numéro
@@ -1310,11 +1322,18 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           throw new Error('Appel Asterisk non rattaché à la base de données');
         }
 
-        const providerCallId = createProviderCallId();
-        activeAsteriskCallRef.current = { appelId: resolvedAppelId, providerCallId, answered: false };
+        if (!asteriskAuthorization) {
+          throw new Error('Autorisation sortante Asterisk absente');
+        }
+        activeAsteriskCallRef.current = {
+          appelId: resolvedAppelId,
+          providerCallId: asteriskAuthorization.providerCallId,
+          answered: false,
+        };
         await asteriskClient.call(formattedNumber, {
           appelId: resolvedAppelId,
-          providerCallId,
+          providerCallId: asteriskAuthorization.providerCallId,
+          ticket: asteriskAuthorization.ticket,
         });
 
         console.log('✅ [ASTERISK] Invitation SIP envoyée');
@@ -1641,7 +1660,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       setCurrentRendezVousSourceId(rendezVousSourceId ?? null);
 
       if (formattedNumber) {
-        await call(formattedNumber, campagneId, prospectId, { skipCreateAppel: true, dbAppelId: appel.id_appel, origin });
+        await call(formattedNumber, campagneId, prospectId, {
+          skipCreateAppel: true,
+          dbAppelId: appel.id_appel,
+          origin,
+          asteriskAuthorization: getAsteriskOutboundAuthorization(appel),
+        });
       }
     } catch (err) {
       console.error('[DIALER] Erreur openProspectManual:', err);
@@ -1651,7 +1675,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await dialerService.changerStatut(previousStatut, previousRaisonPause ?? undefined).catch(() => {});
       throw err;
     }
-  }, [call, currentCampagneId, raisonPause, showToast, statut, updateCurrentAppelId]);
+  }, [call, currentCampagneId, raisonPause, showToast, statut, telephonyProvider, updateCurrentAppelId]);
 
   // Appel manuel depuis la fiche prospect (boutons d'appel)
   const callFromManual = useCallback(async (
@@ -1729,7 +1753,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       await call(formattedNumber, targetCampagneId, prospectId, {
         skipCreateAppel: true,
         dbAppelId: appel.id_appel,
-        origin
+        origin,
+        asteriskAuthorization: getAsteriskOutboundAuthorization(appel),
       });
 
       console.log('✅ [APPEL MANUEL] Appel lancé avec succès');
@@ -1743,7 +1768,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     } finally {
       console.groupEnd();
     }
-  }, [call, currentCampagneId, raisonPause, showToast, statut, updateCurrentAppelId]);
+  }, [call, currentCampagneId, raisonPause, showToast, statut, telephonyProvider, updateCurrentAppelId]);
 
   // Clear prochain prospect
   const clearProchainProspect = useCallback(() => {

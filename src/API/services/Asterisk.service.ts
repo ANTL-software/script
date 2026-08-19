@@ -14,6 +14,7 @@ export interface AsteriskBrowserClientCallbacks {
 export interface AsteriskOutgoingCallMetadata {
   appelId: number;
   providerCallId: string;
+  ticket: string;
 }
 
 const normalizeDestination = (phoneNumber: string, domain: string): string => {
@@ -106,12 +107,16 @@ export class AsteriskBrowserClient {
     if (!/^[A-Za-z0-9_-]{8,100}$/.test(metadata.providerCallId)) {
       throw new Error('Identifiant d’appel fournisseur invalide');
     }
+    if (!/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(metadata.ticket)) {
+      throw new Error('Ticket sortant Asterisk invalide');
+    }
 
     await this.simpleUser.call(normalizeDestination(phoneNumber, this.session.sip.domain), {
       earlyMedia: true,
       extraHeaders: [
         `X-ANTL-Appel-Id: ${metadata.appelId}`,
         `X-ANTL-Provider-Call-Id: ${metadata.providerCallId}`,
+        `X-ANTL-Outbound-Ticket: ${metadata.ticket}`,
       ],
       sessionDescriptionHandlerOptions: {
         constraints: { audio: true, video: false },

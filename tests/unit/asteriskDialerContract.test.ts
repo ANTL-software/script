@@ -43,6 +43,8 @@ test('le client SIP transporte les identifiants de corrélation dans chaque INVI
 
   assert.match(source, /X-ANTL-Appel-Id/);
   assert.match(source, /X-ANTL-Provider-Call-Id/);
+  assert.match(source, /X-ANTL-Outbound-Ticket/);
+  assert.match(source, /Ticket sortant Asterisk invalide/);
   assert.match(source, /extraHeaders/);
 });
 

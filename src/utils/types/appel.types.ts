@@ -40,6 +40,7 @@ export interface Appel {
   abouti: boolean;
   telephony_provider?: 'twilio' | 'asterisk';
   provider_call_id?: string | null;
+  asterisk_outbound_ticket?: string;
   answered_by?: AnsweredBy | null;
   amd_mode?: string | null;
   amd_status?: string | null;

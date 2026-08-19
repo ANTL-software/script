@@ -28,6 +28,11 @@ export interface Employe {
   updated_at?: string;
   poste?: Poste;
   departement?: Departement;
+  appels_script_bloques?: boolean;
+  motif_blocage_appels_script?: string | null;
+  appels_script_bloques_at?: string | null;
+  appels_script_bloques_jusqu_au?: string | null;
+  appels_script_bloques_par?: number | null;
 }
 
 export interface LoginCredentials {

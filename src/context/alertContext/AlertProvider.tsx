@@ -31,6 +31,7 @@ export function AlertProvider({ children }: AlertProviderProps) {
           type: options.type,
           title: options.title,
           message: options.message,
+          acknowledgeOnly: options.acknowledgeOnly,
           autoClose: options.autoClose,
           confirmText: options.confirmText,
           cancelText: options.cancelText,
@@ -94,6 +95,7 @@ export function AlertProvider({ children }: AlertProviderProps) {
           type={alert.type}
           title={alert.title}
           message={alert.message}
+          acknowledgeOnly={alert.acknowledgeOnly}
           autoClose={alert.autoClose}
           confirmText={alert.confirmText}
           cancelText={alert.cancelText}

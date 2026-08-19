@@ -1,9 +1,9 @@
 import './utils/styles/global.scss'
 
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 
 import { getGreetingName, getSalutation } from './utils/scripts/index.ts';
-import { useUser, useApp, useClosing, useForceClosing } from './hooks';
+import { useUser, useApp, useClosing, useForceClosing, useScriptCallAccessGuard } from './hooks';
 import { ClosingModal, Header, IncomingCallBanner, ProtectedRoute } from './views/components';
 import { DashboardPage, LandingPage, LoginPage, ObjectionsPage, PlanAppelPage } from './views/layouts';
 
@@ -13,6 +13,8 @@ function AppRouter() {
   const { pendingClosing, forceMode } = useForceClosing();
   const { clearPending } = useClosing();
   const navigate = useNavigate();
+  const location = useLocation();
+  useScriptCallAccessGuard(location.pathname === '/');
 
   const props = {
     pageTitle: getSalutation(getGreetingName(user?.prenom, user?.id_employe)),

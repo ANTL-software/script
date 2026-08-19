@@ -44,3 +44,8 @@ export interface AsteriskTelephonySession {
   iceServers: AsteriskIceServer[];
   expiresAt: string;
 }
+
+export interface AsteriskOutboundAuthorization {
+  providerCallId: string;
+  ticket: string;
+}

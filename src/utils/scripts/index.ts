@@ -9,6 +9,7 @@ export * from './prospectMaturity.ts';
 export * from './priseRendezVous.ts';
 export * from './rendezVousHistory.ts';
 export * from './runtimeCampaign.ts';
+export * from './scriptCallAccess.ts';
 export * from './staticObjections.ts';
 export * from './staticPlanAppel.ts';
 export * from './utils.tsx';

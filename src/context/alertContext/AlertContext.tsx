@@ -5,6 +5,7 @@ export interface ShowAlertOptions {
   type: AlertType;
   title?: string;
   message: string;
+  acknowledgeOnly?: boolean;
   autoClose?: number;
   confirmText?: string;
   cancelText?: string;

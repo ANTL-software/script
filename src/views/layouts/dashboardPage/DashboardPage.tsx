@@ -3,19 +3,7 @@ import { useDashboardPage } from '../../../hooks/index.ts';
 import { CalendarModal, SalesGauge } from '../../components/index.ts';
 import { FaCalendarAlt } from 'react-icons/fa';
 
-const PROGPA_STEP_DEFS: Array<{
-  progpa: number | '5+';
-  defaultLabel: string;
-  color: string;
-  isFollowup?: boolean;
-}> = [
-  { progpa: 1, defaultLabel: 'Identification', color: '#7c3aed' },
-  { progpa: 2, defaultLabel: 'Présentation', color: '#2563eb' },
-  { progpa: 3, defaultLabel: 'Découverte', color: '#0891b2' },
-  { progpa: 4, defaultLabel: 'Proposition', color: '#f59e0b' },
-  { progpa: 5, defaultLabel: 'Commande', color: '#16a34a' },
-  { progpa: '5+', defaultLabel: 'Suivi de commande', color: '#c026d3', isFollowup: true },
-];
+import { formatEur } from '../../../utils/scripts/index.ts';
 
 export default function DashboardPage() {
   const {
@@ -132,40 +120,37 @@ export default function DashboardPage() {
         {statsLoading ? (
           <p className="dashboard__loading">Chargement...</p>
         ) : stats ? (
-          <div className="dashboard__progpa-grid">
-            <article className="dashboard__progpa-card dashboard__progpa-card--appels">
-              <div className="dashboard__progpa-content">
-                <div className="dashboard__progpa-header">
-                  <strong className="dashboard__progpa-count">{stats.appels_total}</strong>
-                  <span className="dashboard__progpa-label">Appels</span>
-                </div>
-                <small className="dashboard__progpa-percent">aujourd'hui</small>
-              </div>
-            </article>
-            {PROGPA_STEP_DEFS.map((def) => {
-              const apiStep = stats.progpa_etapes?.find((s) => String(s.progpa) === String(def.progpa));
-              const count = apiStep ? apiStep.count : 0;
-              const pourcentage = apiStep ? apiStep.pourcentage : 0;
-              const label = apiStep?.label || def.defaultLabel;
+          <div className="dashboard__stats-grid">
+            <div className="dashboard__stat-card">
+              <span className="dashboard__stat-card-value">{stats.appels_total}</span>
+              <span className="dashboard__stat-card-label">Appels</span>
+            </div>
 
-              return (
-                <article
-                  key={String(def.progpa)}
-                  className={`dashboard__progpa-card ${def.isFollowup ? 'dashboard__progpa-card--followup' : ''}`}
-                  title={label}
-                  style={{ '--step-color': def.color } as React.CSSProperties}
-                >
-                  <span className="dashboard__progpa-index">{def.progpa}</span>
-                  <div className="dashboard__progpa-content">
-                    <div className="dashboard__progpa-header">
-                      <strong className="dashboard__progpa-count">{count}</strong>
-                      <span className="dashboard__progpa-label" title={label}>{label}</span>
-                    </div>
-                    <small className="dashboard__progpa-percent">{pourcentage.toFixed(1)} %</small>
-                  </div>
-                </article>
-              );
-            })}
+            {stats.type_campagne === 'lead_b2b' ? (
+              <div className="dashboard__stat-card dashboard__stat-card--highlight">
+                <span className="dashboard__stat-card-value">{stats.leads_jour_count ?? 0}</span>
+                <span className="dashboard__stat-card-label">Rendez-vous pris aujourd'hui</span>
+              </div>
+            ) : (
+              <>
+                <div className="dashboard__stat-card dashboard__stat-card--warning">
+                  <span className="dashboard__stat-card-value">
+                    {formatEur(stats.ventes_jour_en_attente_montant ?? 0)}
+                  </span>
+                  <span className="dashboard__stat-card-label">
+                    CA en attente ({stats.ventes_jour_en_attente_count ?? 0})
+                  </span>
+                </div>
+                <div className="dashboard__stat-card dashboard__stat-card--success">
+                  <span className="dashboard__stat-card-value">
+                    {formatEur(stats.ventes_jour_validees_montant ?? 0)}
+                  </span>
+                  <span className="dashboard__stat-card-label">
+                    CA validé ({stats.ventes_jour_validees_count ?? 0})
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="dashboard__empty-state"><p>Stats indisponibles.</p></div>
@@ -180,6 +165,8 @@ export default function DashboardPage() {
           <SalesGauge
             ventesMoisCount={stats.ventes_mois_count ?? 0}
             ventesMoisMontant={stats.ventes_mois_montant ?? 0}
+            ventesMoisEnAttenteCount={stats.ventes_mois_en_attente_count}
+            ventesMoisEnAttenteMontant={stats.ventes_mois_en_attente_montant}
             prime={stats.prime}
           />
         ) : (

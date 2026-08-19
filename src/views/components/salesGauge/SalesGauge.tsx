@@ -4,6 +4,8 @@ import type { PrimeStats } from '../../../utils/types/index.ts';
 interface SalesGaugeProps {
   ventesMoisCount: number;
   ventesMoisMontant: number;
+  ventesMoisEnAttenteCount?: number;
+  ventesMoisEnAttenteMontant?: number;
   prime: PrimeStats;
 }
 
@@ -11,7 +13,13 @@ function formatEur(n: number): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(n);
 }
 
-export default function SalesGauge({ ventesMoisCount, ventesMoisMontant, prime }: SalesGaugeProps) {
+export default function SalesGauge({
+  ventesMoisCount,
+  ventesMoisMontant,
+  ventesMoisEnAttenteCount,
+  ventesMoisEnAttenteMontant,
+  prime,
+}: SalesGaugeProps) {
   const pourcentage = Math.min(prime.pourcentage_atteint, 100);
   const paliers = [...prime.paliers].sort((a, b) => a.seuil_pourcentage - b.seuil_pourcentage);
 
@@ -22,6 +30,11 @@ export default function SalesGauge({ ventesMoisCount, ventesMoisMontant, prime }
           <span className="sales-gauge__niveau">{prime.libelle}</span>
           <span className="sales-gauge__mois-stats">
             {ventesMoisCount} vente{ventesMoisCount > 1 ? 's' : ''} · {formatEur(ventesMoisMontant)}
+            {ventesMoisEnAttenteCount !== undefined && (
+              <span className="sales-gauge__en-attente-stats" title="Ventes en attente de validation ce mois-ci">
+                {' '}({ventesMoisEnAttenteCount} en attente · {formatEur(ventesMoisEnAttenteMontant ?? 0)})
+              </span>
+            )}
           </span>
         </div>
         <div className="sales-gauge__header-right">

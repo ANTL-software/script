@@ -117,126 +117,63 @@
   color: vars.$colorGray300;
   font-style: italic;
 }
-// Stats ProgPA Grid
-#dashboardPage .dashboard__progpa-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: vars.$spacing-sm;
-}
-
-@media (max-width: 1050px) {
-  #dashboardPage .dashboard__progpa-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  #dashboardPage .dashboard__progpa-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-#dashboardPage .dashboard__progpa-card {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 0.75rem;
-  border-radius: vars.$radius-md;
-  border: 1px solid #e8edf4;
-  border-left: 4px solid var(--step-color, vars.$colorPrimary);
-  background: #fbfcfe;
-  min-width: 0;
-  transition: transform vars.$transition-fast, box-shadow vars.$transition-fast;
-}
-
-#dashboardPage .dashboard__progpa-card:hover {
-  box-shadow: vars.$shadow-sm;
-}
-
-#dashboardPage .dashboard__progpa-card--appels {
-  --step-color: #3b82f6;
-  background: #f8fafc;
-}
-
-#dashboardPage .dashboard__progpa-card--followup {
-  --step-color: #c026d3;
-  background: linear-gradient(110deg, #fdf4ff, #faf5ff);
-  border-color: #f0abfc;
-}
-
-#dashboardPage .dashboard__progpa-index {
-  display: grid;
-  place-items: center;
-  width: 1.65rem;
-  height: 1.65rem;
-  flex: 0 0 1.65rem;
-  border-radius: 50%;
-  background: var(--step-color, vars.$colorPrimary);
-  color: #ffffff;
-  font-size: 0.75rem;
-  font-weight: 850;
-  line-height: 1;
-}
-
-#dashboardPage .dashboard__progpa-content {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
-#dashboardPage .dashboard__progpa-header {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  min-width: 0;
-}
-
-#dashboardPage .dashboard__progpa-count {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.1;
-  flex-shrink: 0;
-}
-
-#dashboardPage .dashboard__progpa-label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #334155;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-#dashboardPage .dashboard__progpa-percent {
-  font-size: 0.72rem;
-  color: #64748b;
-  margin-top: 0.1rem;
-}
-
+// Stats Grid
 #dashboardPage .dashboard__stats-grid {
   display: flex;
-  gap: vars.$spacing-xl;
+  gap: vars.$spacing-lg;
   flex-wrap: wrap;
 }
-#dashboardPage .dashboard__stat {
+
+#dashboardPage .dashboard__stat-card {
   display: flex;
   flex-direction: column;
   gap: vars.$spacing-xs;
+  padding: vars.$spacing-md vars.$spacing-lg;
+  background: vars.$colorGray100;
+  border-radius: vars.$radius-md;
+  border-left: 4px solid vars.$colorGray300;
+  min-width: 170px;
 }
-#dashboardPage .dashboard__stat .dashboard__stat-value {
+
+#dashboardPage .dashboard__stat-card-value {
   font-size: vars.$fontSize-2xl;
   font-weight: vars.$fontWeight-bold;
   color: vars.$colorGray900;
+  line-height: 1.1;
 }
-#dashboardPage .dashboard__stat .dashboard__stat-label {
+
+#dashboardPage .dashboard__stat-card-label {
   font-size: vars.$fontSize-xs;
-  color: vars.$colorGray500;
+  color: vars.$colorGray700;
+  font-weight: vars.$fontWeight-semibold;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
-#dashboardPage .dashboard__stat--highlight .dashboard__stat-value {
+
+#dashboardPage .dashboard__stat-card--warning {
+  border-left-color: #f59e0b;
+  background: #fefce8;
+}
+
+#dashboardPage .dashboard__stat-card--warning .dashboard__stat-card-value {
+  color: #b45309;
+}
+
+#dashboardPage .dashboard__stat-card--success {
+  border-left-color: #10b981;
+  background: #f0fdf4;
+}
+
+#dashboardPage .dashboard__stat-card--success .dashboard__stat-card-value {
+  color: #047857;
+}
+
+#dashboardPage .dashboard__stat-card--highlight {
+  border-left-color: vars.$colorPrimary;
+  background: vars.$colorPrimaryLight;
+}
+
+#dashboardPage .dashboard__stat-card--highlight .dashboard__stat-card-value {
   color: vars.$colorPrimary;
 }
 // Jauge mensuelle

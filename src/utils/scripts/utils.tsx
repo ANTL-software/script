@@ -221,7 +221,7 @@ export function getTypeFiche(statut: string): 'client' | 'jamais_appele' | 'deja
   if (statut === 'vente_conclue') {
     return 'client';
   }
-  if (statut === 'nouveau') {
+  if (statut === 'nouveau' || statut === 'en_attente' || statut === 'assigne' || statut === 'en_cours') {
     return 'jamais_appele';
   }
   if (statut === 'non_interesse') {

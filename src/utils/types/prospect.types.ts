@@ -73,6 +73,8 @@ export interface Prospect {
   suivi_commercial_en_cours?: CommercialFollowup | null;
   grille_tarifaire_envoyee_at?: string | null;
   plaquette_envoyee_at?: string | null;
+  accroche?: string;
+  poste_ouvert?: string;
   id_campagne?: number | null;
   created_at: string;
   updated_at: string;

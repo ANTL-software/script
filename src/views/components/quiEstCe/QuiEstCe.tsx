@@ -254,6 +254,26 @@ export default function QuiEstCe() {
       </div>
 
       <div className="qui-est-ce__content">
+        {(Boolean(currentProspect.accroche?.trim()) || Boolean(currentProspect.poste_ouvert?.trim())) && (
+          <div className="qui-est-ce__section qui-est-ce__section--fga">
+            <h3>Éléments de recrutement</h3>
+            <div className="qui-est-ce__fga-row">
+              {Boolean(currentProspect.poste_ouvert?.trim()) && (
+                <div className="qui-est-ce__fga-block qui-est-ce__fga-block--poste">
+                  <span className="qui-est-ce__fga-label">Poste ouvert</span>
+                  <p className="qui-est-ce__fga-value">{currentProspect.poste_ouvert}</p>
+                </div>
+              )}
+              {Boolean(currentProspect.accroche?.trim()) && (
+                <div className="qui-est-ce__fga-block qui-est-ce__fga-block--accroche">
+                  <span className="qui-est-ce__fga-label">Accroche d'appel</span>
+                  <p className="qui-est-ce__fga-value">{currentProspect.accroche}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className="qui-est-ce__section">
           <h3>Informations generales</h3>
           <div className="qui-est-ce__grid">

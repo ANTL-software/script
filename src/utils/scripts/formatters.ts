@@ -244,6 +244,9 @@ export function getStatutAppelLabel(statut: string): string {
 
 const STATUT_PROSPECT_LABELS: Record<string, string> = {
   nouveau: 'Nouveau',
+  en_attente: 'Nouveau',
+  assigne: 'Nouveau',
+  en_cours: 'Nouveau',
   contacte: 'Contacté',
   interesse: 'Intéressé',
   rappel: 'Rappel',

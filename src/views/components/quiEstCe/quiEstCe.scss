@@ -187,3 +187,55 @@
   color: vars.$colorGray500;
   font-style: italic;
 }
+
+.qui-est-ce__fga-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.qui-est-ce__fga-block {
+  flex: 1;
+  min-width: 250px;
+  background: rgba(124, 58, 237, 0.04);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  border-radius: vars.$radius-md;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.qui-est-ce__fga-block--poste {
+  border-left: 4px solid vars.$colorPrimary;
+}
+
+.qui-est-ce__fga-block--accroche {
+  border-left: 4px solid #16a34a;
+  background: rgba(34, 197, 94, 0.04);
+  border-top-color: rgba(34, 197, 94, 0.15);
+  border-right-color: rgba(34, 197, 94, 0.15);
+  border-bottom-color: rgba(34, 197, 94, 0.15);
+}
+
+.qui-est-ce__fga-block--accroche .qui-est-ce__fga-label {
+  color: #16a34a;
+}
+
+.qui-est-ce__fga-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: vars.$colorPrimary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.qui-est-ce__fga-value {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: vars.$colorGray900;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  font-weight: 500;
+}

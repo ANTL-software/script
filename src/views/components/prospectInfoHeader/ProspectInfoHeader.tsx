@@ -19,7 +19,7 @@ interface ProspectInfoHeaderProps {
 
 export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppels, onObjections, onQuiSommesNous, isTestMode = false }: ProspectInfoHeaderProps) {
   const { currentProspect, fullName, typeFiche, appels, loadAppels } = useProspect();
-  const { statut, hangup, callFromManual } = useDialer();
+  const { statut, hangup, callFromManual, currentCampagneId } = useDialer();
   const { showToast } = useToast();
   const { searchParams } = useNavigation();
 
@@ -39,6 +39,9 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
 
   const isManualSearch = searchParams.get('source') === 'manual';
   const isRappelSource = searchParams.get('source') === 'rappel';
+  const isFgaCampaign = currentCampagneId === 11 || (currentProspect as { id_campagne?: number } | null)?.id_campagne === 11;
+  const showCallButtons = isManualSearch || isRappelSource || isFgaCampaign;
+
   const rendezVousSourceId = (() => {
     const raw = searchParams.get('rdvId');
     if (!raw) return undefined;
@@ -54,7 +57,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
       await callFromManual(
         phoneNumber,
         currentProspect.id_prospect,
-        undefined,
+        currentCampagneId ?? undefined,
         isRappelSource ? rendezVousSourceId : undefined
       );
       showToast('info', 'Appel en cours...', 3000);
@@ -149,7 +152,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
                   phoneNumber={currentProspect.telephone}
                   type="principal"
                   onCall={handleCallFromManual}
-                  showCallButton={isManualSearch || isRappelSource}
+                  showCallButton={showCallButtons}
                   isCalling={isCalling}
                 />
               </td>
@@ -159,7 +162,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
                   phoneNumber={currentProspect.telephone_contact || ''}
                   type="contact"
                   onCall={handleCallFromManual}
-                  showCallButton={isManualSearch || isRappelSource}
+                  showCallButton={showCallButtons}
                   disabled={!currentProspect.telephone_contact}
                   isCalling={isCalling}
                 />

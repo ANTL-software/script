@@ -99,6 +99,7 @@ function useDashboardQueue(): void {
       id_prospect,
       distribution_mode,
       id_rendez_vous_source,
+      id_campagne_assignee,
     );
 
     clearProchainProspect();

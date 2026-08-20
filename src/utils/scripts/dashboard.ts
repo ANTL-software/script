@@ -51,10 +51,11 @@ export function resolveAssignedProspectAction(
   idProspect: number,
   distributionMode: ProspectAssigne['distribution_mode'],
   rendezVousSourceId?: number | null,
+  idCampagneAssignee?: number | null,
 ): DashboardAssignedProspectAction {
   return {
     url: buildAssignedProspectUrl(idProspect, rendezVousSourceId),
-    shouldStartCall: distributionMode !== 'rappel',
+    shouldStartCall: distributionMode !== 'rappel' && idCampagneAssignee !== 11,
   };
 }
 

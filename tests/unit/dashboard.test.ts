@@ -52,13 +52,17 @@ test('buildAssignedProspectUrl conserve les parcours auto et rappel privé', () 
   );
 });
 
-test('resolveAssignedProspectAction ne déclenche jamais un appel automatique pour un rappel privé', () => {
-  assert.deepEqual(resolveAssignedProspectAction(42, 'auto'), {
+test('resolveAssignedProspectAction ne déclenche jamais un appel automatique pour un rappel privé ou pour la campagne FGA Consulting (11)', () => {
+  assert.deepEqual(resolveAssignedProspectAction(42, 'auto', null, 1), {
     url: '/prospect/42',
     shouldStartCall: true,
   });
-  assert.deepEqual(resolveAssignedProspectAction(42, 'rappel', 18), {
+  assert.deepEqual(resolveAssignedProspectAction(42, 'rappel', 18, 1), {
     url: '/prospect/42?source=rappel&rdvId=18&autoReminder=1',
+    shouldStartCall: false,
+  });
+  assert.deepEqual(resolveAssignedProspectAction(42, 'auto', null, 11), {
+    url: '/prospect/42',
     shouldStartCall: false,
   });
 });

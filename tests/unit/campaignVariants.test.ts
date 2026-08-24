@@ -27,7 +27,7 @@ test('getCampaignUiConfig retourne la matrice vente attendue', () => {
   assert.equal(config.commandeMode, 'sales');
   assert.deepEqual(
     config.actions.map((action) => action.label),
-    ['Plaquette', 'Tarifs', 'Agrément', 'Historique appels', 'Historique offres', 'Rendez-vous', 'Commande'],
+    ['Plaquette', 'Tarifs', 'Historique appels', 'Historique offres', 'Rendez-vous', 'Commande'],
   );
 });
 

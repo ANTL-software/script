@@ -1,5 +1,5 @@
 import './actionButtons.scss';
-import { FaCalendarAlt, FaCertificate, FaCreditCard, FaFilePdf, FaPhone, FaShoppingCart, FaTag } from 'react-icons/fa';
+import { FaCalendarAlt, FaCreditCard, FaFilePdf, FaPhone, FaShoppingCart, FaTag } from 'react-icons/fa';
 import type { ReactNode } from 'react';
 import type { ViewType } from '../../../utils/types/index.ts';
 import type { ActionButtonId, CampaignActionConfig } from '../../../utils/scripts/index.ts';
@@ -14,7 +14,6 @@ interface ActionButtonsProps {
 const ICONS: Record<ActionButtonId, ReactNode> = {
   plaquette: <FaFilePdf />,
   tarifs: <FaTag />,
-  agrement: <FaCertificate />,
   'historique-appels': <FaPhone />,
   'historique-offres': <FaShoppingCart />,
   'rendez-vous': <FaCalendarAlt />,

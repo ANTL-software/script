@@ -13,7 +13,6 @@ export type CampaignVariant = keyof typeof CAMPAIGN_VARIANTS;
 export type ActionButtonId =
   | 'plaquette'
   | 'tarifs'
-  | 'agrement'
   | 'historique-appels'
   | 'historique-offres'
   | 'rendez-vous'
@@ -84,7 +83,6 @@ const PROGPA_STEPS: ProgpaStepDefinition[] = [
 const VENTE_ACTIONS: CampaignActionConfig[] = [
   { id: 'plaquette', label: 'Plaquette', group: 'left' },
   { id: 'tarifs', label: 'Tarifs', group: 'left' },
-  { id: 'agrement', label: 'Agrément', group: 'left' },
   { id: 'historique-appels', label: 'Historique appels', group: 'right', targetView: 'historique-appels' },
   { id: 'historique-offres', label: 'Historique offres', group: 'right', targetView: 'historique-offres' },
   { id: 'rendez-vous', label: 'Rendez-vous', group: 'right', targetView: 'rendez-vous' },

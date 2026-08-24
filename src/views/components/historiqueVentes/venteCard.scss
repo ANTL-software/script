@@ -33,6 +33,11 @@
   font-weight: vars.$fontWeight-semibold;
   color: vars.$colorBlack;
 }
+.vente-card__reference {
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-semibold;
+  color: vars.$colorGray700;
+}
 .vente-card__statut {
   padding: vars.$spacing-xs vars.$spacing-md;
   border-radius: vars.$radius-full;

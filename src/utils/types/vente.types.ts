@@ -27,6 +27,8 @@ export interface Vente {
   id_appel?: number | null;
   date_vente: string;
   montant_total: number;
+  /** Référence communicable au superviseur pour suivre le bon de commande. */
+  reference_doc?: string | null;
   mode_paiement?: ModePaiement | null;
   statut: StatutVente;
   created_at: string;

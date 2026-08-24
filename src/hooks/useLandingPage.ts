@@ -267,23 +267,6 @@ export function useLandingPage() {
     if (confirmed) await sendCatalogue();
   };
 
-  const handleAgrementClick = async (): Promise<void> => {
-    const recipientEmail = currentProspect?.email?.trim();
-    const confirmed = await confirm({
-      title: "Envoi de l'agrément",
-      message: recipientEmail
-        ? `Êtes-vous sûr de vouloir envoyer l'agrément par mail à ${recipientEmail} ?`
-        : "Êtes-vous sûr de vouloir envoyer l'agrément par mail ?",
-      type: 'info',
-      confirmText: 'Envoyer',
-      cancelText: 'Annuler',
-    });
-
-    if (confirmed) {
-      showToast('warning', "Aucun document d'agrément n'est encore configuré pour cet envoi");
-    }
-  };
-
   const handleAction = (actionId: ActionButtonId): void => {
     switch (actionId) {
       case 'plaquette':
@@ -291,9 +274,6 @@ export function useLandingPage() {
         break;
       case 'tarifs':
         void handleTarifsClick();
-        break;
-      case 'agrement':
-        void handleAgrementClick();
         break;
       case 'historique-appels':
         setView('historique-appels');

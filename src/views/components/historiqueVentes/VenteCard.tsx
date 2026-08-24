@@ -102,6 +102,11 @@ export default function VenteCard({ vente }: VenteCardProps) {
               {getStatutLabel(vente.statut)}
             </span>
           </div>
+          {vente.reference_doc && (
+            <div className="vente-card__reference">
+              Bon de commande n° {vente.reference_doc}
+            </div>
+          )}
           <div className="vente-card__montant">
             <span className="montant-label">Montant total :</span>
             <span className="montant-value">{formatCurrency(vente.montant_total)}</span>

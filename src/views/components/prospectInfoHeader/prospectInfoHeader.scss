@@ -33,6 +33,10 @@
   align-items: center;
 }
 
+.prospect-info-header__action-button {
+  white-space: nowrap;
+}
+
 .hangup-button {
   min-width: 32px;
   padding: 0.5rem;
@@ -86,5 +90,46 @@
   }
   50% {
     opacity: 0.7;
+  }
+}
+
+// Entre les formats tablette et desktop, les actions doivent rester compactes
+// sans couper un libellé au milieu du bouton.
+@media (max-width: 1200px) {
+  .prospect-info-header {
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
+  }
+
+  .prospect-info-header__top {
+    gap: 0.75rem;
+  }
+
+  .prospect-info-header__title {
+    min-width: 0;
+    gap: 0.75rem;
+  }
+
+  .prospect-info-header__title h1 {
+    overflow: hidden;
+    font-size: 1.5rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .prospect-info-header__actions {
+    min-width: 0;
+    gap: 0.5rem;
+    justify-content: flex-end;
+  }
+
+  .prospect-info-header__action-button.btn-small {
+    gap: 0.35rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .prospect-info-header__action-button.btn-small svg {
+    font-size: 0.75rem;
   }
 }

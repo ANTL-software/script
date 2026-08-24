@@ -100,14 +100,14 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
             size="small"
             onClick={onQuiEstCe}
             disabled={currentView === 'qui-est-ce'}
-            className={currentView === 'qui-est-ce' ? 'btn-active' : ''}
+            className={`prospect-info-header__action-button${currentView === 'qui-est-ce' ? ' btn-active' : ''}`}
           >
             <FaUser /> Qui est-ce ?
           </Button>
-          <Button variant="tertiary" size="small" onClick={onPlanAppels}>
+          <Button className="prospect-info-header__action-button" variant="tertiary" size="small" onClick={onPlanAppels}>
             <FaListOl /> Plan d'appels
           </Button>
-          <Button variant="tertiary" size="small" onClick={onObjections}>
+          <Button className="prospect-info-header__action-button" variant="tertiary" size="small" onClick={onObjections}>
             <FaCommentDots /> Objections
           </Button>
           <Button
@@ -115,7 +115,7 @@ export default function ProspectInfoHeader({ currentView, onQuiEstCe, onPlanAppe
             size="small"
             onClick={onQuiSommesNous}
             disabled={currentView === 'qui-sommes-nous'}
-            className={currentView === 'qui-sommes-nous' ? 'btn-active' : ''}
+            className={`prospect-info-header__action-button${currentView === 'qui-sommes-nous' ? ' btn-active' : ''}`}
           >
             <FaBuilding /> Qui sommes-nous ?
           </Button>

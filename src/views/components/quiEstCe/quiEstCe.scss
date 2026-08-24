@@ -196,7 +196,7 @@
 }
 
 .qui-est-ce__fga-block {
-  flex: 1;
+  flex: 1 1 calc((100% - 1rem) / 2);
   min-width: 250px;
   background: rgba(124, 58, 237, 0.04);
   border: 1px solid rgba(124, 58, 237, 0.15);
@@ -223,6 +223,22 @@
   color: #16a34a;
 }
 
+.qui-est-ce__fga-row--three-items .qui-est-ce__fga-block--linkedin {
+  flex-basis: 100%;
+}
+
+.qui-est-ce__fga-block--linkedin {
+  border-left: 4px solid #0a66c2;
+  background: rgba(10, 102, 194, 0.04);
+  border-top-color: rgba(10, 102, 194, 0.15);
+  border-right-color: rgba(10, 102, 194, 0.15);
+  border-bottom-color: rgba(10, 102, 194, 0.15);
+}
+
+.qui-est-ce__fga-block--linkedin .qui-est-ce__fga-label {
+  color: #0a66c2;
+}
+
 .qui-est-ce__fga-label {
   font-size: 0.75rem;
   font-weight: 700;
@@ -238,4 +254,26 @@
   line-height: 1.5;
   white-space: pre-wrap;
   font-weight: 500;
+}
+
+.qui-est-ce__fga-linkedin-link {
+  align-items: center;
+  color: #075ba8;
+  display: inline-flex;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  gap: 0.5rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.qui-est-ce__fga-linkedin-link:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .qui-est-ce__fga-block {
+    flex-basis: 100%;
+  }
 }

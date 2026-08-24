@@ -4,7 +4,7 @@ import { useCampaign, useProspect, useToast } from '../../../hooks/index.ts';
 import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
 import { ProgPAReadonly } from '../progPA/index.ts';
-import { FaSave, FaEdit, FaTimes } from 'react-icons/fa';
+import { FaSave, FaEdit, FaLinkedinIn, FaTimes } from 'react-icons/fa';
 import type { UpdateProspectData } from '../../../utils/types/index.ts';
 import {
   formatDateLong,
@@ -90,6 +90,11 @@ export default function QuiEstCe() {
   }
 
   const maturityBadge = getProspectRelationBadge(currentProspect.relation_commerciale_campagne?.statut_relation);
+  const posteOuvert = currentProspect.poste_ouvert?.trim() ?? '';
+  const accroche = currentProspect.accroche?.trim() ?? '';
+  const linkedin = currentProspect.linkedin?.trim() ?? '';
+  const recruitmentElementCount = [posteOuvert, accroche, linkedin].filter(Boolean).length;
+  const linkedinHref = /^https?:\/\//i.test(linkedin) ? linkedin : null;
 
   const validateFields = (): boolean => {
     const newErrors: Partial<EditableFields> = {};
@@ -254,20 +259,38 @@ export default function QuiEstCe() {
       </div>
 
       <div className="qui-est-ce__content">
-        {(Boolean(currentProspect.accroche?.trim()) || Boolean(currentProspect.poste_ouvert?.trim())) && (
+        {recruitmentElementCount > 0 && (
           <div className="qui-est-ce__section qui-est-ce__section--fga">
             <h3>Éléments de recrutement</h3>
-            <div className="qui-est-ce__fga-row">
-              {Boolean(currentProspect.poste_ouvert?.trim()) && (
+            <div className={`qui-est-ce__fga-row${recruitmentElementCount === 3 ? ' qui-est-ce__fga-row--three-items' : ''}`}>
+              {posteOuvert && (
                 <div className="qui-est-ce__fga-block qui-est-ce__fga-block--poste">
                   <span className="qui-est-ce__fga-label">Poste ouvert</span>
-                  <p className="qui-est-ce__fga-value">{currentProspect.poste_ouvert}</p>
+                  <p className="qui-est-ce__fga-value">{posteOuvert}</p>
                 </div>
               )}
-              {Boolean(currentProspect.accroche?.trim()) && (
+              {accroche && (
                 <div className="qui-est-ce__fga-block qui-est-ce__fga-block--accroche">
                   <span className="qui-est-ce__fga-label">Accroche d'appel</span>
-                  <p className="qui-est-ce__fga-value">{currentProspect.accroche}</p>
+                  <p className="qui-est-ce__fga-value">{accroche}</p>
+                </div>
+              )}
+              {linkedin && (
+                <div className="qui-est-ce__fga-block qui-est-ce__fga-block--linkedin">
+                  <span className="qui-est-ce__fga-label">LinkedIn</span>
+                  {linkedinHref ? (
+                    <a
+                      className="qui-est-ce__fga-linkedin-link"
+                      href={linkedinHref}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      <FaLinkedinIn aria-hidden="true" />
+                      Ouvrir le profil LinkedIn
+                    </a>
+                  ) : (
+                    <p className="qui-est-ce__fga-value">{linkedin}</p>
+                  )}
                 </div>
               )}
             </div>

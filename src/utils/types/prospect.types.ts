@@ -75,6 +75,7 @@ export interface Prospect {
   plaquette_envoyee_at?: string | null;
   accroche?: string;
   poste_ouvert?: string;
+  linkedin?: string | null;
   id_campagne?: number | null;
   created_at: string;
   updated_at: string;

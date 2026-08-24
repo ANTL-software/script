@@ -118,6 +118,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const incomingCallRef = useRef<Call | null>(null);
   const isClosingRef = useRef<boolean>(false);
   const isCallActiveRef = useRef<boolean>(false);
+  const callEndFinalizedRef = useRef<boolean>(true);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const hasCalledEstablishedRef = useRef<boolean>(false);
   const isInitializingRef = useRef<boolean>(false);
@@ -249,6 +250,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, []);
 
   const registerActiveCall = useCallback((call: Call) => {
+    callEndFinalizedRef.current = false;
     activeCallRef.current = call;
     setHasActiveProviderCall(true);
   }, []);
@@ -402,6 +404,47 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     }
   }, []);
 
+  const finalizeLocalCallEnd = useCallback((source: string): boolean => {
+    const isFirstFinalization = !callEndFinalizedRef.current;
+    callEndFinalizedRef.current = true;
+
+    console.info(`[DIALER] Fin d'appel locale (${source})`);
+    stopRecording();
+    stopCallTimer();
+    isCallActiveRef.current = false;
+    activeAsteriskCallRef.current = null;
+    setIncomingCall(null);
+    setStatut('pause_apres_appel');
+    setDepuisLe(new Date());
+    clearActiveCall();
+
+    if (isFirstFinalization) {
+      showToast('info', 'Appel terminé', 3000);
+    }
+
+    return isFirstFinalization;
+  }, [clearActiveCall, showToast, stopCallTimer, stopRecording]);
+
+  const synchronizeEndedDialerSession = useCallback((source: string): void => {
+    void dialerService.changerStatut('pause_apres_appel').catch((error) => {
+      console.error(`[DIALER] Erreur synchronisation statut (${source}):`, error);
+    });
+    void dialerService.endSession().catch((error) => {
+      console.error(`[DIALER] Erreur fin de session (${source}):`, error);
+    });
+  }, []);
+
+  const finishTwilioCall = useCallback((source: string, forceBackendSync = false): void => {
+    if (callEndFinalizedRef.current && !forceBackendSync) {
+      return;
+    }
+
+    const isFirstFinalization = finalizeLocalCallEnd(source);
+    if (isFirstFinalization || forceBackendSync) {
+      synchronizeEndedDialerSession(source);
+    }
+  }, [finalizeLocalCallEnd, synchronizeEndedDialerSession]);
+
   const startRecordingIfEnabled = useCallback((streamProvider: MediaStreamProvider) => {
     void enregistrementService.getConfiguration()
       .then((configuration) => {
@@ -488,73 +531,44 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     });
 
     call.on('disconnect', () => {
-      stopRecording();
-
-      if (!isCallActiveRef.current) {
-        console.warn('⚠️ [TWILIO] disconnect ignoré car aucun appel actif');
+      if (activeCallRef.current && activeCallRef.current !== call) {
+        console.warn('[TWILIO] Fin tardive ignorée pour un ancien appel');
         return;
       }
 
       console.groupCollapsed('📞 [TWILIO] Appel déconnecté');
-
-      stopCallTimer();
-      isCallActiveRef.current = false;
-      setStatut('pause_apres_appel');
-      setDepuisLe(new Date());
-      clearActiveCall();
-
-      dialerService.changerStatut('pause_apres_appel').catch((err) => {
-        console.error('❌ Erreur synchro statut:', err);
-      });
-      dialerService.endSession().catch((err) => {
-        console.error('❌ Erreur endSession:', err);
-      });
-
+      finishTwilioCall('twilio_disconnect');
       console.groupEnd();
-      showToast('info', 'Appel terminé', 3000);
     });
 
     const handleAbort = (reason: string) => {
       console.log(`⚠️ [TWILIO] Appel ${reason}`);
-
-      stopRecording();
-      stopCallTimer();
-      isCallActiveRef.current = false;
-      setStatut('pause_apres_appel');
-      setDepuisLe(new Date());
-
-      dialerService.changerStatut('pause_apres_appel').catch((err) => {
-        console.error('❌ Erreur synchro statut:', err);
-      });
-      dialerService.endSession().catch((err) => {
-        console.error('❌ Erreur endSession:', err);
-      });
-      clearActiveCall();
+      finishTwilioCall(`twilio_${reason}`);
     };
 
+    call.on('error', (error) => {
+      console.error('[TWILIO] Erreur sur l\'appel:', error);
+      queueMicrotask(() => {
+        if (call.status() === Call.State.Closed) {
+          finishTwilioCall('twilio_call_error_closed');
+        }
+      });
+    });
     call.on('reject', () => handleAbort('rejeté'));
     call.on('cancel', () => handleAbort('annulé'));
-  }, [clearActiveCall, startCallTimer, stopCallTimer, startRecordingIfEnabled, stopRecording, showToast]);
+  }, [finishTwilioCall, showToast, startCallTimer, startRecordingIfEnabled]);
 
-  const finishAsteriskCall = useCallback((state: 'ended' | 'failed' = 'ended', reason?: string) => {
-    const hadActiveCall = isCallActiveRef.current;
+  const finishAsteriskCall = useCallback((state: 'ended' | 'failed' = 'ended', reason?: string, forceBackendSync = false) => {
+    if (callEndFinalizedRef.current && !forceBackendSync) {
+      return;
+    }
+
     const activeAsteriskCall = activeAsteriskCallRef.current;
     const resolvedState = state === 'ended' && activeAsteriskCall && !activeAsteriskCall.answered
       ? 'failed'
       : state;
-    stopRecording();
-    stopCallTimer();
-    isCallActiveRef.current = false;
-    activeAsteriskCallRef.current = null;
-    setIncomingCall(null);
-    clearActiveCall();
+    finalizeLocalCallEnd(reason || `asterisk_${resolvedState}`);
 
-    if (!hadActiveCall) {
-      return;
-    }
-
-    setStatut('pause_apres_appel');
-    setDepuisLe(new Date());
     void (async () => {
       let telephonyStateSynchronized = false;
       if (activeAsteriskCall) {
@@ -579,8 +593,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         console.error('[ASTERISK] Erreur fin de session:', error);
       });
     })();
-    showToast('info', 'Appel terminé', 3000);
-  }, [clearActiveCall, showToast, stopCallTimer, stopRecording]);
+  }, [finalizeLocalCallEnd]);
 
   const initializeAsteriskClient = useCallback(async () => {
     if (isInitializingRef.current || asteriskClientRef.current) {
@@ -639,6 +652,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
           }
         },
         onCallAnswered: () => {
+          callEndFinalizedRef.current = false;
           isCallActiveRef.current = true;
           setHasActiveProviderCall(true);
           setIsCallConnected(true);
@@ -923,6 +937,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       });
 
       device.on('destroyed', () => {
+        const hadActiveCall = isCallActiveRef.current || activeCallRef.current !== null;
         console.error('💥 [TWILIO] Device destroyed - STACK TRACE:');
         console.error('💥 [TWILIO] isInitializingRef.current:', isInitializingRef.current);
         console.trace('[TWILIO] Appelé depuis:');
@@ -932,6 +947,9 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         isInitializingRef.current = false;
         tokenRefreshPromiseRef.current = null;
         recoveryPromiseRef.current = null;
+        if (hadActiveCall) {
+          finishTwilioCall('twilio_device_destroyed');
+        }
         reportTelephonyDegraded('twilio', 'Service téléphonique Twilio interrompu');
       });
 
@@ -966,7 +984,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       isInitializingRef.current = false;
       throw error;
     }
-  }, [clearActiveCall, fetchTwilioToken, forceLogoutForTwilioFailure, recoverDeviceRegistration, refreshDeviceToken, reportTelephonyDegraded, reportTelephonyRecovered, showToast]);
+  }, [clearActiveCall, fetchTwilioToken, finishTwilioCall, forceLogoutForTwilioFailure, recoverDeviceRegistration, refreshDeviceToken, reportTelephonyDegraded, reportTelephonyRecovered, showToast]);
 
   const teardownTelephonyClients = useCallback(async (): Promise<void> => {
     const asteriskClient = asteriskClientRef.current;
@@ -1279,6 +1297,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     try {
       setCurrentCampagneId(campagneId ?? null);
       isClosingRef.current = false;
+      callEndFinalizedRef.current = false;
       isCallActiveRef.current = true;
 
       let effectiveOrigin: OrigineAppel = options?.origin || 'auto';
@@ -1399,59 +1418,48 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   // Raccrocher
   const hangup = useCallback(() => {
+    console.groupCollapsed('📞 [HANGUP] Raccrochage forcé');
+
     if (telephonyProvider === 'asterisk') {
       const client = asteriskClientRef.current;
-      if (!client || !isCallActiveRef.current) {
-        console.warn('⚠️ [HANGUP] Aucun appel Asterisk actif à raccrocher');
-        return;
+      if (client) {
+        void client.hangup().catch((error) => {
+          console.error('[ASTERISK] Échec du raccrochage SIP:', error);
+        });
+      } else {
+        console.warn('⚠️ [HANGUP] Client Asterisk indisponible, workflow terminé localement');
       }
 
-      void client.hangup().catch((error) => {
-        console.error('[ASTERISK] Échec du raccrochage SIP:', error);
-      });
-      finishAsteriskCall();
+      finishAsteriskCall('ended', 'asterisk_manual_hangup', true);
+      console.groupEnd();
       return;
     }
 
     const device = deviceRef.current;
-    if (!device) {
-      console.warn('⚠️ [HANGUP] Aucun device disponible');
-      return;
+    const activeCall = activeCallRef.current;
+    finishTwilioCall('twilio_manual_hangup', true);
+
+    try {
+      activeCall?.disconnect();
+    } catch (error) {
+      console.error('[HANGUP] Échec disconnect de l\'appel Twilio suivi:', error);
     }
 
-    // Vérifier si un appel est en cours
-    if (!isCallActiveRef.current) {
-      console.warn('⚠️ [HANGUP] Aucun appel actif à raccrocher');
-      return;
+    if (device) {
+      console.log('[HANGUP] Device state:', device.state);
+      console.log('[HANGUP] Appels actifs:', device.calls.length);
+      try {
+        device.disconnectAll();
+      } catch (error) {
+        console.error('[HANGUP] Échec disconnectAll Twilio:', error);
+      }
+    } else {
+      console.warn('⚠️ [HANGUP] Device Twilio indisponible, workflow terminé localement');
     }
 
-    console.groupCollapsed('📞 [HANGUP] Hangup manuel');
-    console.log('[HANGUP] Device state:', device.state);
-    console.log('[HANGUP] Appels actifs:', device.calls.length);
-
-    // Utiliser device.disconnectAll() pour couper tous les appels
-    // Cette méthode est plus fiable que d'itérer sur device.calls
-    stopRecording();
-    device.disconnectAll();
-
-    // Nettoyer l'état local
-    stopCallTimer();
-    isCallActiveRef.current = false;
-    setStatut('pause_apres_appel');
-    setDepuisLe(new Date());
-    clearActiveCall();
-
-    // Synchroniser avec le backend
-    dialerService.changerStatut('pause_apres_appel').catch((err) => {
-      console.error('[HANGUP] Erreur synchro backend statut:', err);
-    });
-    dialerService.endSession().catch((err) => {
-      console.error('[HANGUP] Erreur endSession:', err);
-    });
-
-    console.log('✅ [HANGUP] Hangup terminé');
+    console.log('✅ [HANGUP] Raccrochage forcé terminé');
     console.groupEnd();
-  }, [clearActiveCall, finishAsteriskCall, stopCallTimer, stopRecording, telephonyProvider]);
+  }, [finishAsteriskCall, finishTwilioCall, telephonyProvider]);
 
   // Répondre
   const answer = useCallback(() => {
@@ -1826,6 +1834,12 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
         };
 
         setCurrentCallInsights(nextInsights);
+
+        if (nextInsights.endReason) {
+          finishTwilioCall('twilio_backend_terminal_state');
+          return;
+        }
+
         applyClassification(nextInsights.classification, nextInsights);
       } catch (error) {
         console.warn('[DIALER] Impossible de synchroniser les insights AMD', error);
@@ -1841,7 +1855,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       cancelled = true;
       window.clearInterval(intervalId);
     };
-  }, [currentAppelId, hasActiveProviderCall, startCallTimer, stopCallTimer, telephonyProvider]);
+  }, [currentAppelId, finishTwilioCall, hasActiveProviderCall, startCallTimer, stopCallTimer, telephonyProvider]);
 
   // Contexte à retourner
   return (

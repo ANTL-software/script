@@ -26,7 +26,7 @@ export function useLandingPage() {
   const { currentCampaign, loadCampaign, loadProduits } = useCampaign();
   const { currentView, setView } = useApp();
   const { clearCart } = useCart();
-  const { statut, callDuration, currentCampagneId, currentAppelId, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
+  const { statut, callDuration, currentCampagneId, currentAppelId, currentAppelProspectId, currentOrigineAppel, currentRendezVousSourceId } = useDialer();
   const { showToast, confirm } = useToast();
   const isTestMode = searchParams.get('test') === 'true';
   const campaignUi = getCampaignUiConfig(currentCampaign);
@@ -58,8 +58,12 @@ export function useLandingPage() {
       setView('qui-est-ce');
     }
     previousProspectIdRef.current = currentProspect.id_prospect;
-    wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel pour la nouvelle fiche
-  }, [currentProspect, clearCart, setView]);
+    const isCallActive = ['en_appel', 'appel_sortant', 'qualification_en_cours', 'svi_a_naviguer'].includes(statut);
+    const callMatchesCurrentProspect = currentAppelProspectId === null
+      || currentAppelProspectId === currentProspect.id_prospect;
+    wasCallActiveRef.current = (wasCallActiveRef.current || isCallActive)
+      && callMatchesCurrentProspect;
+  }, [currentAppelProspectId, currentProspect, clearCart, setView, statut]);
 
   // Réinitialise la vue et le panier lors de la fermeture/démontage de la fiche prospect
   useEffect(() => {
@@ -98,8 +102,8 @@ export function useLandingPage() {
   // sans passer par une vente — garantit que chaque appel est enregistré en DB
   useEffect(() => {
     if (statut !== 'pause_apres_appel') return;
-    if (!wasCallActiveRef.current) return;
     if (!currentProspect) return;
+    if (!wasCallActiveRef.current) return;
 
     // Si un closing a déjà été créé (par exemple suite à une commande validée),
     // on a simplement à réinitialiser le marqueur d'appel.
@@ -124,7 +128,7 @@ export function useLandingPage() {
 
     closingService.savePending(pending);
     wasCallActiveRef.current = false; // Réinitialiser le marqueur d'appel
-  }, [statut, currentProspect, currentCampaign, currentCampagneId, currentAppelId, currentOrigineAppel, currentRendezVousSourceId, callDuration]);
+  }, [statut, currentProspect, currentCampaign, currentCampagneId, currentAppelId, currentAppelProspectId, currentOrigineAppel, currentRendezVousSourceId, callDuration]);
 
   useEffect(() => {
     if (

@@ -6,6 +6,7 @@ export * from './formatters.ts';
 export * from './orderValidation.ts';
 export * from './planAppelSource.ts';
 export * from './prospectMaturity.ts';
+export * from './prospectNotes.ts';
 export * from './priseRendezVous.ts';
 export * from './rendezVousHistory.ts';
 export * from './runtimeCampaign.ts';

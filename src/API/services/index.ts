@@ -1,6 +1,13 @@
 export { UserService, userService } from './User.service';
 export type { LoginResponseData } from './User.service';
 export { ProspectService, prospectService } from './Prospect.service';
+export { ProspectNoteService, prospectNoteService } from './ProspectNote.service';
+export {
+  PROSPECT_NOTE_DRAFT_CHANGED_EVENT,
+  ProspectNoteDraftService,
+  prospectNoteDraftService,
+} from './ProspectNoteDraft.service';
+export type { ProspectNoteDraftChangeDetail } from './ProspectNoteDraft.service';
 export { CampaignService, campaignService } from './Campaign.service';
 export { ProduitService, produitService } from './Produit.service';
 export { CategorieService, categorieService } from './Categorie.service';

@@ -1,11 +1,11 @@
 import './historiqueAppels.scss';
 
 import { useEffect } from 'react';
-import { useCallNotesDraft, useCampaign, useDialer, useProspect } from '../../../hooks/index.ts';
+import { useCallNotesDraft, useCampaign, useDialer, useFgaProspectNote, useProspect } from '../../../hooks/index.ts';
 import { Loader } from '../loader/index.ts';
 import { ErrorMessage } from '../errorMessage/index.ts';
 import AppelCard from './AppelCard';
-import { CAMPAIGN_VARIANTS, formatDateTime, getCampaignVariant } from '../../../utils/scripts/index.ts';
+import { CAMPAIGN_VARIANTS, formatDateTime, getCampaignVariant, supportsStandaloneProspectNotes } from '../../../utils/scripts/index.ts';
 
 export default function HistoriqueAppels() {
   const {
@@ -20,6 +20,16 @@ export default function HistoriqueAppels() {
   const { currentCampaign } = useCampaign();
   const { currentAppelId, currentOrigineAppel, statut } = useDialer();
   const { notes: callNotes, setNotes: setCallNotes } = useCallNotesDraft(currentAppelId);
+  const isFgaCampaign = supportsStandaloneProspectNotes(currentCampaign?.id_campagne);
+  const {
+    notes: fgaNotes,
+    setNotes: setFgaNotes,
+    saveNotes: saveFgaNotes,
+    isLoading: isFgaNoteLoading,
+    isSaving: isFgaNoteSaving,
+    isDirty: isFgaNoteDirty,
+    error: fgaNoteError,
+  } = useFgaProspectNote(currentProspect?.id_prospect, currentCampaign?.id_campagne);
 
   useEffect(() => {
     if (currentProspect) {
@@ -47,6 +57,7 @@ export default function HistoriqueAppels() {
     || statut === 'qualification_en_cours'
     || statut === 'svi_a_naviguer';
   const canDraftCurrentCallNotes = currentAppelId !== null
+    && !isFgaCampaign
     && isLiveCall
     && (currentOrigineAppel === 'auto' || currentOrigineAppel === 'rappel');
   const grilleTarifaireLabel = grilleTarifaireEnvoyeeAt
@@ -107,6 +118,36 @@ export default function HistoriqueAppels() {
             rows={5}
           />
           <p>Ce commentaire sera repris dans la modale de closing.</p>
+        </div>
+      )}
+
+      {isFgaCampaign && (
+        <div className="historique-appels__current-call-notes historique-appels__current-call-notes--fga">
+          <label htmlFor="fga-prospect-notes">Note de suivi FGA Consulting</label>
+          <textarea
+            id="fga-prospect-notes"
+            value={fgaNotes}
+            onChange={(event) => setFgaNotes(event.target.value)}
+            placeholder="Préparez l’appel ou consignez un suivi réalisé sans appel..."
+            rows={5}
+            maxLength={10000}
+            disabled={isFgaNoteLoading || isFgaNoteSaving}
+          />
+          <div className="historique-appels__note-actions">
+            <p>
+              {isLiveCall
+                ? 'Cette note sera reprise dans le closing et rattachée à l’appel.'
+                : 'Cette note est indépendante d’un appel et reste disponible dans le calendrier.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => void saveFgaNotes().catch(() => undefined)}
+              disabled={isFgaNoteLoading || isFgaNoteSaving || !isFgaNoteDirty}
+            >
+              {isFgaNoteSaving ? 'Enregistrement...' : (isFgaNoteDirty ? 'Enregistrer la note' : 'Note enregistrée')}
+            </button>
+          </div>
+          {fgaNoteError && <p className="historique-appels__note-error">{fgaNoteError}</p>}
         </div>
       )}
 

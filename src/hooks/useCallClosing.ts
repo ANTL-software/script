@@ -5,8 +5,9 @@ import { appelService, closingService, dialerService, leadService, rendezVousSer
 import type { StatutAppel } from '../utils/types';
 import type { CampaignVariant } from '../utils/scripts/campaignVariants';
 import { CAMPAIGN_VARIANTS, requiresCampaignAgendaRendezVous } from '../utils/scripts/campaignVariants';
-import { getCommercialFollowupPresentation, getErrorMessage } from '../utils/scripts/index';
+import { getCommercialFollowupPresentation, getErrorMessage, resolveClosingNotes, supportsStandaloneProspectNotes } from '../utils/scripts/index';
 import { useCallNotesDraft } from './useCallNotesDraft';
+import { useFgaProspectNote } from './useFgaProspectNote';
 
 interface UseCallClosingOptions {
   prospectId: number;
@@ -27,7 +28,11 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
 
   const [selectedStatut, setSelectedStatut] = useState<StatutAppel | null>(null);
   const draftAppelId = appelId ?? currentAppelId;
-  const { notes, setNotes, clearNotes } = useCallNotesDraft(draftAppelId);
+  const callNotesDraft = useCallNotesDraft(draftAppelId);
+  const fgaProspectNote = useFgaProspectNote(prospectId, campagneId);
+  const isFgaCampaign = supportsStandaloneProspectNotes(campagneId);
+  const notes = resolveClosingNotes(campagneId, callNotesDraft.notes, fgaProspectNote.notes);
+  const setNotes = isFgaCampaign ? fgaProspectNote.setNotes : callNotesDraft.setNotes;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const commercialFollowup = currentProspect?.suivi_commercial_en_cours ?? null;
@@ -44,6 +49,11 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
 
     if (!user) {
       setError('Session expiree, veuillez vous reconnecter');
+      return;
+    }
+
+    if (isFgaCampaign && fgaProspectNote.isLoading) {
+      setError('La note FGA est encore en cours de chargement');
       return;
     }
 
@@ -139,7 +149,11 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
       }
 
       closingService.clearPending();
-      clearNotes();
+      if (isFgaCampaign) {
+        fgaProspectNote.clearLocalNotes();
+      } else {
+        callNotesDraft.clearNotes();
+      }
       resetCurrentProgpa();
       showToast('success', "Resultat d'appel enregistre");
       onComplete();
@@ -158,6 +172,7 @@ export function useCallClosing({ prospectId, campagneId, appelId, origineAppel, 
     setNotes,
     isSubmitting,
     error,
+    isNotesLoading: isFgaCampaign && fgaProspectNote.isLoading,
     commercialFollowup,
     commercialFollowupPresentation,
     handleSubmit,

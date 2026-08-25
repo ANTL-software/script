@@ -1,4 +1,5 @@
 import './utils/styles/global.scss'
+import { Analytics } from '@vercel/analytics/react'
 
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 
@@ -91,6 +92,7 @@ function App() {
   return (
     <Router>
       <AppRouter />
+      <Analytics />
     </Router>
   );
 }

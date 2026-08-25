@@ -47,7 +47,7 @@ export default function ClosingModal({
   const {
     selectedStatut, setSelectedStatut,
     notes, setNotes,
-    isSubmitting, error,
+    isSubmitting, error, isNotesLoading,
     commercialFollowup,
     commercialFollowupPresentation,
     handleSubmit,
@@ -190,7 +190,7 @@ export default function ClosingModal({
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Objections rencontrées, points importants, prochaines étapes..."
                     rows={3}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isNotesLoading}
                   />
                 </div>
 
@@ -199,7 +199,7 @@ export default function ClosingModal({
                     type="submit"
                     variant="primary"
                     fullWidth
-                    disabled={isSubmitting || !selectedStatut || (!isProgpaLocked && currentProgpa === null)}
+                    disabled={isSubmitting || isNotesLoading || !selectedStatut || (!isProgpaLocked && currentProgpa === null)}
                   >
                     {isSubmitting ? (
                       <><FaSpinner className="spinner" /> Enregistrement...</>

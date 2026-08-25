@@ -13,6 +13,7 @@ export { useDashboardPage } from './useDashboardPage.ts';
 export { useLoginForm } from './useLoginForm';
 export { useCallClosing } from './useCallClosing';
 export { useCallNotesDraft } from './useCallNotesDraft';
+export { useFgaProspectNote } from './useFgaProspectNote';
 export { useOrderConfirmation } from './useOrderConfirmation';
 export { useLandingPage } from './useLandingPage';
 export { useForceClosing } from './useForceClosing';

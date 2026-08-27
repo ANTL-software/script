@@ -20,6 +20,7 @@ interface FormData {
   siret: string;
   email: string;
   raison_sociale: string;
+  raison_sociale_livraison: string;
   delais_livraison: DelaisLivraison;
   civilite: string;
   nom_contact: string;
@@ -67,6 +68,11 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     siret: currentProspect?.siret || '',
     email: currentProspect?.email || '',
     raison_sociale: currentProspect?.raison_sociale || '',
+    raison_sociale_livraison: currentProspect?.raison_sociale_livraison || (
+      (!currentProspect?.adresse_livraison || currentProspect?.adresse_livraison === currentProspect?.adresse_facturation)
+        ? (currentProspect?.raison_sociale || '')
+        : ''
+    ),
     delais_livraison: 2,
     civilite: currentProspect?.civilite || '',
     nom_contact: `${currentProspect?.prenom || ''} ${currentProspect?.nom || ''}`.trim(),
@@ -90,6 +96,9 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         siret: currentProspect.siret || '',
         email: currentProspect.email || '',
         raison_sociale: currentProspect.raison_sociale || '',
+        raison_sociale_livraison: currentProspect.raison_sociale_livraison || (
+          prev.meme_adresse ? (currentProspect.raison_sociale || '') : (prev.raison_sociale_livraison || '')
+        ),
         civilite: prev.civilite || currentProspect.civilite || '',
         nom_contact: prev.nom_contact || `${currentProspect.prenom || ''} ${currentProspect.nom || ''}`.trim(),
       }));
@@ -121,6 +130,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       setFormData(prev => ({
         ...prev,
         meme_adresse: true,
+        raison_sociale_livraison: prev.raison_sociale,
         adresse_livraison: prev.adresse_facturation,
         code_postal_livraison: prev.code_postal_facturation,
         ville_livraison: prev.ville_facturation,
@@ -134,6 +144,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       setFormData(prev => ({
         ...prev,
         meme_adresse: false,
+        raison_sociale_livraison: '',
         adresse_livraison: '',
         code_postal_livraison: '',
         ville_livraison: '',
@@ -146,6 +157,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       const next = { ...prev, [field]: updatedValue };
       // Si on modifie un champ de facturation et que meme_adresse est coché, copier vers livraison
       if (prev.meme_adresse) {
+        if (field === 'raison_sociale') next.raison_sociale_livraison = updatedValue as string;
         if (field === 'adresse_facturation') next.adresse_livraison = updatedValue as string;
         if (field === 'code_postal_facturation') next.code_postal_livraison = updatedValue as string;
         if (field === 'ville_facturation') next.ville_livraison = updatedValue as string;
@@ -170,6 +182,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       siret?: string;
       email?: string;
       raison_sociale?: string;
+      raison_sociale_livraison?: string;
       adresse_facturation?: string;
       adresse_livraison?: string;
       code_postal?: string;
@@ -184,6 +197,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     if (updatedFields.siret !== undefined) prospectUpdates.siret = updatedFields.siret.trim();
     if (updatedFields.email !== undefined) prospectUpdates.email = updatedFields.email.trim();
     if (updatedFields.raison_sociale !== undefined) prospectUpdates.raison_sociale = updatedFields.raison_sociale.trim();
+    if (updatedFields.raison_sociale_livraison !== undefined) prospectUpdates.raison_sociale_livraison = updatedFields.raison_sociale_livraison.trim();
     if (updatedFields.adresse_facturation !== undefined) prospectUpdates.adresse_facturation = updatedFields.adresse_facturation.trim();
     if (updatedFields.adresse_livraison !== undefined) prospectUpdates.adresse_livraison = updatedFields.adresse_livraison.trim();
     if (updatedFields.code_postal_facturation !== undefined) prospectUpdates.code_postal = updatedFields.code_postal_facturation.trim();

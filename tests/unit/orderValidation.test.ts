@@ -6,6 +6,8 @@ import { buildVentePayload, validateOrderForm } from '../../src/utils/scripts/or
 const baseFormData = {
   adresse_facturation: '10 rue des Lilas',
   adresse_livraison: '20 avenue Victor Hugo',
+  raison_sociale: 'Cabinet Médical Alpha',
+  raison_sociale_livraison: 'Pharmacie Centrale Beta',
   code_postal_facturation: '75001',
   code_postal_livraison: '69002',
   ville_facturation: 'Paris',
@@ -87,6 +89,7 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
   assert.equal(payload.id_campagne, 4);
   assert.equal(payload.id_appel, 12);
   assert.equal(payload.adresse_livraison, '10 rue des Lilas');
+  assert.equal(payload.raison_sociale_livraison, 'Cabinet Médical Alpha');
   assert.equal(payload.code_postal_livraison, '75001');
   assert.equal(payload.ville_livraison, 'Paris');
   assert.equal(payload.notes, undefined);
@@ -101,7 +104,7 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
   ]);
 });
 
-test('buildVentePayload conserve une adresse de livraison dédiée si nécessaire', () => {
+test('buildVentePayload conserve une adresse et raison sociale de livraison dédiée si nécessaire', () => {
   const payload = buildVentePayload({
     prospectId: 18,
     campagneId: 5,
@@ -110,6 +113,7 @@ test('buildVentePayload conserve une adresse de livraison dédiée si nécessair
   });
 
   assert.equal(payload.adresse_livraison, '20 avenue Victor Hugo');
+  assert.equal(payload.raison_sociale_livraison, 'Pharmacie Centrale Beta');
   assert.equal(payload.code_postal_livraison, '69002');
   assert.equal(payload.ville_livraison, 'Lyon');
   assert.equal(payload.pays_livraison, 'France');

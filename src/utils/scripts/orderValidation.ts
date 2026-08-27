@@ -15,6 +15,7 @@ interface OrderFormData {
   siret?: string;
   email?: string;
   raison_sociale?: string;
+  raison_sociale_livraison?: string;
   delais_livraison: DelaisLivraison;
   civilite: string;
   nom_contact: string;
@@ -82,6 +83,9 @@ export function buildVentePayload(params: {
   const adresseLivraison = formData.meme_adresse
     ? formData.adresse_facturation
     : formData.adresse_livraison;
+  const raisonSocialeLivraison = formData.meme_adresse
+    ? formData.raison_sociale
+    : formData.raison_sociale_livraison;
   const codePostalLivraison = formData.meme_adresse
     ? formData.code_postal_facturation
     : formData.code_postal_livraison;
@@ -101,6 +105,7 @@ export function buildVentePayload(params: {
     notes: formData.notes.trim() || undefined,
     adresse_facturation: formData.adresse_facturation.trim(),
     adresse_livraison: adresseLivraison.trim(),
+    raison_sociale_livraison: raisonSocialeLivraison?.trim() || undefined,
     code_postal_facturation: formData.code_postal_facturation.trim(),
     code_postal_livraison: codePostalLivraison.trim(),
     ville_facturation: formData.ville_facturation.trim(),

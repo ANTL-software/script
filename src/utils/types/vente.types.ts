@@ -36,6 +36,7 @@ export interface Vente {
   details?: DetailVente[]; // Alias Sequelize pour les détails de vente
   adresse_facturation?: string;
   adresse_livraison?: string;
+  raison_sociale_livraison?: string;
   code_postal_facturation?: string;
   code_postal_livraison?: string;
   ville_facturation?: string;
@@ -57,6 +58,7 @@ export interface CreateVenteData {
   delais_livraison?: DelaisLivraison;
   adresse_facturation?: string;
   adresse_livraison?: string;
+  raison_sociale_livraison?: string;
   code_postal_facturation?: string;
   code_postal_livraison?: string;
   ville_facturation?: string;

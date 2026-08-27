@@ -21,6 +21,14 @@ export class ProduitModel {
     return this.data.id_produit;
   }
 
+  get code(): string | undefined {
+    return this.data.code_produit;
+  }
+
+  get codeProduitOrigine(): string | undefined | null {
+    return this.data.code_produit_origine;
+  }
+
   get nom(): string {
     return this.data.nom_produit;
   }

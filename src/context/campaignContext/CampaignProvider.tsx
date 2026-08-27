@@ -243,6 +243,7 @@ export const CampaignProvider = ({ children }: CampaignProviderProps) => {
         p.nom_produit.toLowerCase().includes(search) ||
         p.description?.toLowerCase().includes(search) ||
         p.code_produit?.toLowerCase().includes(search) ||
+        p.code_produit_origine?.toLowerCase().includes(search) ||
         p.typeProduit?.libelle_type?.toLowerCase().includes(search)
     );
   }, [produits, categoriesTree, extractAllProductsFromTree]);

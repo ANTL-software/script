@@ -19,6 +19,11 @@ export default function ProduitCard({ produit, onAddToCart }: ProduitCardProps) 
     <div className="produit-card">
       <div className="produit-card__header">
         <h3 className="produit-card__title">{produit.nom_produit}</h3>
+        {produit.code_produit_origine && (
+          <span className="produit-card__code-origine">
+            Réf. : {produit.code_produit_origine}
+          </span>
+        )}
         {(produit.Categorie || produit.categorie) && (
           <span className="produit-card__category">
             {produit.Categorie?.nom_categorie || produit.categorie?.nom_categorie}

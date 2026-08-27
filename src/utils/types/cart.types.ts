@@ -10,6 +10,8 @@ export interface TypeProduit {
 export interface Produit {
   id_produit: number;
   code_produit?: string;
+  code_produit_origine?: string | null;
+  nom_produit_origine?: string | null;
   nom_produit: string;
   description?: string;
   id_type_produit?: number | null;

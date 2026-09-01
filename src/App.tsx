@@ -3,8 +3,8 @@ import { Analytics } from '@vercel/analytics/react'
 
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 
-import { getGreetingName, getSalutation } from './utils/scripts/index.ts';
-import { useUser, useApp, useClosing, useForceClosing, useScriptCallAccessGuard } from './hooks';
+import { getGreetingName } from './utils/scripts/index.ts';
+import { useUser, useApp, useClosing, useDynamicGreeting, useForceClosing, useScriptCallAccessGuard } from './hooks';
 import { ClosingModal, Header, IncomingCallBanner, ProtectedRoute } from './views/components';
 import { DashboardPage, LandingPage, LoginPage, ObjectionsPage, PlanAppelPage } from './views/layouts';
 
@@ -17,9 +17,12 @@ function AppRouter() {
   const location = useLocation();
   useScriptCallAccessGuard(location.pathname === '/');
 
-  const props = {
-    pageTitle: getSalutation(getGreetingName(user?.prenom, user?.id_employe)),
-  }
+  const audience = user?.poste?.type_poste === 'commercial' ? 'commercial' : 'employe';
+  const greeting = useDynamicGreeting({
+    audience,
+    prenom: getGreetingName(user?.prenom, user?.id_employe),
+  });
+  const props = { pageTitle: greeting };
 
   const showHeader = currentView !== 'commande' && currentView !== 'rendez-vous';
 

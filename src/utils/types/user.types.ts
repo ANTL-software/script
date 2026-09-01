@@ -4,6 +4,7 @@ export interface Poste {
   description?: string;
   salaire_base?: number;
   niveau_hierarchique?: number;
+  type_poste?: 'direction' | 'commercial' | 'support' | 'rh' | 'technique' | 'adv' | 'autre' | null;
 }
 
 export interface Departement {

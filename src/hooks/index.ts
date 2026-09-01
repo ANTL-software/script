@@ -27,3 +27,4 @@ export { useProspectVentes } from './useProspectVentes';
 export { useNavigation } from './useNavigation.ts';
 export { useProtectedRoute } from './useProtectedRoute.ts';
 export { useScriptCallAccessGuard } from './useScriptCallAccessGuard.ts';
+export { useDynamicGreeting } from './useDynamicGreeting.ts';

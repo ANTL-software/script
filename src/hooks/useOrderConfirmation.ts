@@ -267,18 +267,21 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
         items,
       });
 
-      await createVente(venteData);
+      const createdVente = await createVente(venteData);
+      const saleProspectId = createdVente.id_prospect || currentProspect.id_prospect;
+      const closingAppelId = createdVente.id_appel
+        ?? (currentAppelProspectId === saleProspectId ? currentAppelId ?? undefined : undefined);
 
       const prospectName = currentProspect.prenom
         ? `${currentProspect.prenom} ${currentProspect.nom}`
         : currentProspect.nom;
 
       closingService.savePending({
-        prospectId: currentProspect.id_prospect,
+        prospectId: saleProspectId,
         prospectName,
         campagneId: currentCampaign.id_campagne,
         campaignVariant: getCampaignVariant(currentCampaign),
-        appelId,
+        appelId: closingAppelId,
         origineAppel: currentOrigineAppel ?? undefined,
         rendezVousSourceId: currentRendezVousSourceId ?? undefined,
         dureeAppel: callDuration,

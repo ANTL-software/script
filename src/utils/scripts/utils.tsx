@@ -15,6 +15,8 @@ export function getGreetingName(prenom?: string, _userId?: number): string | und
   return prenom;
 }
 
+export type SalutationAudience = 'commercial' | 'employe';
+
 /**
  * Construit l'URL complète pour une image de logo de campagne
  * @param logoPath - Chemin relatif du logo (ex: /uploads/campagne_logos/filename.png)
@@ -46,7 +48,12 @@ export function getCampagneLogoUrl(logoPath: string | null | undefined): string 
  * @param _heure - Heure optionnelle pour tests (0-23). Utilise l'heure réelle si absent.
  * @param _jour  - Jour optionnel pour tests (0=dim…6=sam). Utilise le jour réel si absent.
  */
-export function getSalutation(prenom?: string, _heure?: number, _jour?: number): string {
+export function getSalutation(
+  prenom?: string,
+  _heure?: number,
+  _jour?: number,
+  audience: SalutationAudience = 'employe',
+): string {
   const now   = new Date();
   const h     = _heure !== undefined ? _heure : now.getHours();
   const jour  = _jour  !== undefined ? _jour  : now.getDay(); // 0=dim, 1=lun … 4=jeu
@@ -70,7 +77,11 @@ export function getSalutation(prenom?: string, _heure?: number, _jour?: number):
 
   // Après-midi — 14h à 18h
   if (h < 18) {
-    if (jour === 4) return `Le weekend approche${p}, plus que quelques appels !`;
+    if (jour === 4) {
+      return audience === 'commercial'
+        ? `Le weekend approche${p}, plus que quelques appels !`
+        : `Le weekend approche${p}, la journée avance bien !`;
+    }
     return `Bon après-midi${p} !`;
   }
 
@@ -79,6 +90,24 @@ export function getSalutation(prenom?: string, _heure?: number, _jour?: number):
 
   // Nuit — 21h+
   return `Encore au bureau${p} ? Rentrez vous reposer !`;
+}
+
+/**
+ * Planifie le prochain rendu du message au seul moment où son contenu peut changer.
+ */
+export function getSalutationRefreshDelay(now: Date = new Date()): number {
+  const transitionHours = [5, 9, 11, 12, 13, 18, 21];
+  const nextTransition = new Date(now);
+  const nextHour = transitionHours.find((hour) => hour > now.getHours());
+
+  if (nextHour === undefined) {
+    nextTransition.setDate(now.getDate() + 1);
+    nextTransition.setHours(5, 0, 0, 0);
+  } else {
+    nextTransition.setHours(nextHour, 0, 0, 0);
+  }
+
+  return Math.max(1_000, nextTransition.getTime() - now.getTime() + 50);
 }
 
 /**

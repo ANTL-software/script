@@ -88,7 +88,7 @@ export function useDashboardData() {
       const cleaned = searchQuery.trim().replace(/[\s\-().]/g, '');
       const isPhone = /^[+\d]{6,}$/.test(cleaned);
       if (isPhone) {
-        const prospectModel = await prospectService.getProspectByPhone(cleaned);
+        const prospectModel = await prospectService.getProspectByPhone(cleaned, currentCampagneId);
         // Ajouter le paramètre ?source=manual pour distinguer les recherches manuelles
         navigate(`/prospect/${prospectModel.toJSON().id_prospect}?source=manual`);
       } else {

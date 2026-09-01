@@ -53,6 +53,7 @@ export interface Prospect {
   ville?: string;
   pays?: string;
   statut: ProspectStatut;
+  est_doublon?: boolean;
   relation_commerciale_campagne?: ProspectRelationCommercialeCampagne | null;
   relations_commerciales?: ProspectRelationCommercialeCampagne[];
   statut_global?: ProspectStatut;

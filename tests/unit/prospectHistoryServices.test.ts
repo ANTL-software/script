@@ -227,6 +227,18 @@ test('ProspectService utilise le endpoint plaquette et conserve le destinataire 
   assert.deepEqual(result, { recipientEmail: 'prospect@example.com' });
 });
 
+test('ProspectService transmet la campagne runtime lors de la recherche manuelle par téléphone', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  const { prospectService } = await import('../../src/API/services/Prospect.service.ts');
+
+  await prospectService.getProspectByPhone('0698430112', 7);
+
+  assert.equal(
+    globalThis.capturedHistoryEndpoints?.at(-1),
+    '/prospects/telephone/0698430112?campagne=7',
+  );
+});
+
 test('ProspectNoteService force le scope FGA sur lecture, ecriture et suppression', async () => {
   globalThis.capturedHistoryEndpoints = [];
   globalThis.capturedProspectNotePayload = undefined;

@@ -48,8 +48,29 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const prospectModel = await prospectService.getProspectById(id, currentCampaign?.id_campagne ?? null);
-      setCurrentProspect(prospectModel.toJSON());
+      const requestedProspectModel = await prospectService.getProspectById(
+        id,
+        currentCampaign?.id_campagne ?? null,
+      );
+      const requestedProspect = requestedProspectModel.toJSON();
+      let resolvedProspect = requestedProspect;
+
+      if (requestedProspect.est_doublon && requestedProspect.telephone) {
+        try {
+          const canonicalProspectModel = await prospectService.getProspectByPhone(
+            requestedProspect.telephone,
+            currentCampaign?.id_campagne ?? null,
+          );
+          resolvedProspect = canonicalProspectModel.toJSON();
+        } catch (resolutionError) {
+          console.warn(
+            `[PROSPECT] Aucun rattachement canonique trouvé pour le doublon ${requestedProspect.id_prospect}`,
+            resolutionError,
+          );
+        }
+      }
+
+      setCurrentProspect(resolvedProspect);
       setCurrentProgpaState(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du chargement du prospect';
@@ -64,7 +85,10 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     setIsLoading(true);
     setError(null);
     try {
-      const prospectModel = await prospectService.getProspectByPhone(phone);
+      const prospectModel = await prospectService.getProspectByPhone(
+        phone,
+        currentCampaign?.id_campagne ?? null,
+      );
       setCurrentProspect(prospectModel.toJSON());
       setCurrentProgpaState(null);
     } catch (err) {
@@ -74,7 +98,7 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [currentCampaign?.id_campagne]);
 
   const clearProspect = useCallback(() => {
     setCurrentProspect(null);

@@ -77,6 +77,8 @@ export interface Prospect {
   accroche?: string;
   poste_ouvert?: string;
   linkedin?: string | null;
+  url_offre_emploi?: string | null;
+  angle_approche?: string | null;
   id_campagne?: number | null;
   created_at: string;
   updated_at: string;

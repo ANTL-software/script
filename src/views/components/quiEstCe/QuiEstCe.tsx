@@ -93,8 +93,12 @@ export default function QuiEstCe() {
   const posteOuvert = currentProspect.poste_ouvert?.trim() ?? '';
   const accroche = currentProspect.accroche?.trim() ?? '';
   const linkedin = currentProspect.linkedin?.trim() ?? '';
-  const recruitmentElementCount = [posteOuvert, accroche, linkedin].filter(Boolean).length;
+  const urlOffreEmploi = currentProspect.url_offre_emploi?.trim() ?? '';
+  const angleApproche = currentProspect.angle_approche?.trim() ?? '';
+  const isFgaCampaign = currentCampaign?.id_campagne === 11 || currentProspect.id_campagne === 11;
+  const recruitmentElementCount = [posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche].filter(Boolean).length;
   const linkedinHref = /^https?:\/\//i.test(linkedin) ? linkedin : null;
+  const jobOfferHref = /^https?:\/\//i.test(urlOffreEmploi) ? urlOffreEmploi : null;
 
   const validateFields = (): boolean => {
     const newErrors: Partial<EditableFields> = {};
@@ -259,7 +263,7 @@ export default function QuiEstCe() {
       </div>
 
       <div className="qui-est-ce__content">
-        {recruitmentElementCount > 0 && (
+        {isFgaCampaign && recruitmentElementCount > 0 && (
           <div className="qui-est-ce__section qui-est-ce__section--fga">
             <h3>Éléments de recrutement</h3>
             <div className={`qui-est-ce__fga-row${recruitmentElementCount === 3 ? ' qui-est-ce__fga-row--three-items' : ''}`}>
@@ -291,6 +295,29 @@ export default function QuiEstCe() {
                   ) : (
                     <p className="qui-est-ce__fga-value">{linkedin}</p>
                   )}
+                </div>
+              )}
+              {urlOffreEmploi && (
+                <div className="qui-est-ce__fga-block qui-est-ce__fga-block--job-offer">
+                  <span className="qui-est-ce__fga-label">Offre d'emploi</span>
+                  {jobOfferHref ? (
+                    <a
+                      className="qui-est-ce__fga-linkedin-link"
+                      href={jobOfferHref}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      Ouvrir l'offre d'emploi
+                    </a>
+                  ) : (
+                    <p className="qui-est-ce__fga-value">{urlOffreEmploi}</p>
+                  )}
+                </div>
+              )}
+              {angleApproche && (
+                <div className="qui-est-ce__fga-block qui-est-ce__fga-block--angle">
+                  <span className="qui-est-ce__fga-label">Angle d'approche</span>
+                  <p className="qui-est-ce__fga-value">{angleApproche}</p>
                 </div>
               )}
             </div>

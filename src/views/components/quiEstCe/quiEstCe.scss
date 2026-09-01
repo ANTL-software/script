@@ -239,6 +239,30 @@
   color: #0a66c2;
 }
 
+.qui-est-ce__fga-block--job-offer {
+  border-left: 4px solid #ea580c;
+  background: rgba(234, 88, 12, 0.04);
+  border-top-color: rgba(234, 88, 12, 0.15);
+  border-right-color: rgba(234, 88, 12, 0.15);
+  border-bottom-color: rgba(234, 88, 12, 0.15);
+}
+
+.qui-est-ce__fga-block--job-offer .qui-est-ce__fga-label {
+  color: #ea580c;
+}
+
+.qui-est-ce__fga-block--angle {
+  border-left: 4px solid #0f766e;
+  background: rgba(13, 148, 136, 0.04);
+  border-top-color: rgba(13, 148, 136, 0.15);
+  border-right-color: rgba(13, 148, 136, 0.15);
+  border-bottom-color: rgba(13, 148, 136, 0.15);
+}
+
+.qui-est-ce__fga-block--angle .qui-est-ce__fga-label {
+  color: #0f766e;
+}
+
 .qui-est-ce__fga-label {
   font-size: 0.75rem;
   font-weight: 700;

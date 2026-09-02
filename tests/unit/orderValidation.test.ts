@@ -131,3 +131,16 @@ test('buildVentePayload n ajoute pas id_appel si aucun appel courant n est fourn
 
   assert.equal('id_appel' in payload, false);
 });
+
+test('STATUT_VENTE_LABELS et STATUT_VENTE_COLORS exposent les libellés et couleurs attendus', async () => {
+  const { STATUT_VENTE_LABELS, STATUT_VENTE_COLORS } = await import('../../src/utils/types/index.ts');
+  assert.equal(STATUT_VENTE_LABELS.en_attente, 'En attente');
+  assert.equal(STATUT_VENTE_LABELS.validee, 'Validée');
+  assert.equal(STATUT_VENTE_LABELS.annulee, 'Annulée');
+  assert.equal(STATUT_VENTE_LABELS.frigo, 'Frigo');
+
+  assert.equal(STATUT_VENTE_COLORS.en_attente, '#f59e0b');
+  assert.equal(STATUT_VENTE_COLORS.validee, '#22c55e');
+  assert.equal(STATUT_VENTE_COLORS.annulee, '#ef4444');
+  assert.equal(STATUT_VENTE_COLORS.frigo, '#6b7280');
+});

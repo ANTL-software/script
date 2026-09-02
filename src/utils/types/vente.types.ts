@@ -1,7 +1,21 @@
-import type { Produit } from './cart.types';
+import type { Produit } from './cart.types.ts';
 
-export type StatutVente = 'en_attente' | 'validee' | 'annulee';
+export type StatutVente = 'en_attente' | 'validee' | 'annulee' | 'frigo';
 export type ModePaiement = 'CB' | 'Prelevement' | 'Cheque' | 'Virement';
+
+export const STATUT_VENTE_LABELS: Record<StatutVente, string> = {
+  en_attente: 'En attente',
+  validee: 'Validée',
+  annulee: 'Annulée',
+  frigo: 'Frigo',
+};
+
+export const STATUT_VENTE_COLORS: Record<StatutVente, string> = {
+  en_attente: '#f59e0b',
+  validee: '#22c55e',
+  annulee: '#ef4444',
+  frigo: '#6b7280',
+};
 
 export interface DetailVente {
   id_detail?: number;
@@ -30,7 +44,8 @@ export interface Vente {
   /** Référence communicable au superviseur pour suivre le bon de commande. */
   reference_doc?: string | null;
   mode_paiement?: ModePaiement | null;
-  statut: StatutVente;
+  statut_vente?: StatutVente;
+  statut?: StatutVente;
   created_at: string;
   updated_at: string;
   details?: DetailVente[]; // Alias Sequelize pour les détails de vente

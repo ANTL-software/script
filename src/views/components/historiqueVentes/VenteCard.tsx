@@ -1,7 +1,8 @@
 import './venteCard.scss';
 
 import { useState } from 'react';
-import type { Vente } from '../../../utils/types/index.ts';
+import type { StatutVente, Vente } from '../../../utils/types/index.ts';
+import { STATUT_VENTE_COLORS, STATUT_VENTE_LABELS } from '../../../utils/types/index.ts';
 import { calculateLineTotal, formatCurrency } from '../../../utils/scripts/index.ts';
 import { useCampaign, useCart, useToast } from '../../../hooks/index.ts';
 
@@ -70,36 +71,21 @@ export default function VenteCard({ vente }: VenteCardProps) {
     });
   };
 
-  const getStatutClass = (statut: string): string => {
-    switch (statut) {
-      case 'validee':
-        return 'vente-card__statut--success';
-      case 'en_attente':
-        return 'vente-card__statut--warning';
-      case 'annulee':
-        return 'vente-card__statut--danger';
-      default:
-        return '';
-    }
-  };
-
-  const getStatutLabel = (statut: string): string => {
-    const labels: Record<string, string> = {
-      validee: 'Validée',
-      en_attente: 'En attente',
-      annulee: 'Annulée',
-    };
-    return labels[statut] || statut;
-  };
+  const statut = (vente.statut_vente || vente.statut || 'en_attente') as StatutVente;
+  const statutLabel = STATUT_VENTE_LABELS[statut] || statut;
+  const statutColor = STATUT_VENTE_COLORS[statut] || '#f59e0b';
 
   return (
     <div className="vente-card">
       <div className="vente-card__header">
         <div className="vente-card__info">
           <div className="vente-card__date-statut">
-            <span className="vente-card__date">{formatDate(vente.created_at)}</span>
-            <span className={`vente-card__statut ${getStatutClass(vente.statut)}`}>
-              {getStatutLabel(vente.statut)}
+            <span className="vente-card__date">{formatDate(vente.date_vente || vente.created_at)}</span>
+            <span
+              className={`vente-card__statut vente-card__statut--${statut}`}
+              style={{ backgroundColor: statutColor }}
+            >
+              {statutLabel}
             </span>
           </div>
           {vente.reference_doc && (

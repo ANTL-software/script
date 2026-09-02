@@ -1,6 +1,6 @@
-import type { CommercialFollowupType } from './prospect.types';
-import type { Employe } from './user.types';
-import type { AnsweredBy, CallClassification } from './dialer.types';
+import type { CommercialFollowupType } from './prospect.types.ts';
+import type { Employe } from './user.types.ts';
+import type { AnsweredBy, CallClassification } from './dialer.types.ts';
 
 export type StatutAppel =
   | 'en_cours'

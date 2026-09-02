@@ -1,5 +1,5 @@
-import type { CampaignVariant } from '../scripts/campaignVariants';
-import type { ModePaiement } from './vente.types';
+import type { CampaignVariant } from '../scripts/campaignVariants.ts';
+import type { ModePaiement } from './vente.types.ts';
 
 export interface Campaign {
   id_campagne: number;

@@ -5,10 +5,10 @@ import { DialerContext } from './DialerContext';
 import type { IncomingCall } from './DialerContext';
 import { UserContext } from '../userContext/UserContext';
 import { useContext } from 'react';
-import { loadAsteriskBrowserClient, dialerService, appelService, closingService, twilioService, telephonyService, rendezVousService, enregistrementService, csrfService } from '../../API/services';
+import { loadAsteriskBrowserClient, dialerService, appelService, closingService, twilioService, telephonyService, rendezVousService, enregistrementService } from '../../API/services';
 import type { AsteriskBrowserClient } from '../../API/services';
 import type { Appel, AsteriskOutboundAuthorization, StatutDialer, RaisonPause, Prospect, ProspectAssigne, OrigineAppel, ActiveCallInsights, CallClassification, TelephonyConfiguration, TelephonyProvider } from '../../utils/types';
-import { getApiBaseUrl, isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
+import { isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
 import { useToast } from '../../hooks';
@@ -1208,22 +1208,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     sendHeartbeat();
     const heartbeatInterval = setInterval(sendHeartbeat, 60000);
 
-    // Beforeunload
-    const handleBeforeUnload = () => {
-      const baseUrl = getApiBaseUrl();
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        ...csrfService.getCachedHeaders(),
-      };
-      fetch(`${baseUrl}/agents/me/statut`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers,
-        body: JSON.stringify({ statut: 'hors_ligne' }),
-        keepalive: true,
-      }).catch(() => {});
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // La présence est pilotée par le heartbeat backend. Un déchargement d'onglet
+    // ne doit jamais basculer hors ligne une autre instance Script encore active.
 
     // Visibility change
     const handleVisibility = () => {
@@ -1248,7 +1234,6 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     return () => {
       clearInterval(heartbeatInterval);
-      window.removeEventListener('beforeunload', handleBeforeUnload);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, [isAuthenticated, resolveRuntimeCampaign]);

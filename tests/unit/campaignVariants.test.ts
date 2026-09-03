@@ -111,7 +111,7 @@ test('le motif agenda distingue la relance du rendez-vous client MMA', () => {
   assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'relance'), 'Relance');
   assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.lead_b2b, 'rdv_pris'), 'Relance');
   assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'rdv_pris'), 'Commande à établir');
-  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'rendez_vous_pris'), 'Rendez-vous');
+  assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.vente, 'rendez_vous_pris'), 'Rendez-vous pris');
   assert.equal(getCampaignAgendaRendezVousMotif(CAMPAIGN_VARIANTS.lead_b2b, 'rendez_vous_pris'), null);
 });
 

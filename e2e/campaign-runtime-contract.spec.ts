@@ -143,7 +143,6 @@ test('la variante vente conserve la matrice historique attendue', async ({ page 
   expect(result.labels).toEqual([
     'Plaquette',
     'Tarifs',
-    'Agrément',
     'Historique appels',
     'Historique offres',
     'Rendez-vous',
@@ -182,6 +181,10 @@ test('les relances Cigales et MMA exigent un rappel agenda sans confondre le ren
         required: requiresCampaignAgendaRendezVous('vente', 'relance'),
         motif: getCampaignAgendaRendezVousMotif('vente', 'relance'),
       },
+      cigalesRendezVousPris: {
+        required: requiresCampaignAgendaRendezVous('vente', 'rendez_vous_pris'),
+        motif: getCampaignAgendaRendezVousMotif('vente', 'rendez_vous_pris'),
+      },
       mmaRelance: {
         required: requiresCampaignAgendaRendezVous('lead_b2b', 'rdv_pris'),
         motif: getCampaignAgendaRendezVousMotif('lead_b2b', 'rdv_pris'),
@@ -194,6 +197,7 @@ test('les relances Cigales et MMA exigent un rappel agenda sans confondre le ren
   });
 
   expect(result.cigales).toEqual({ required: true, motif: 'Relance' });
+  expect(result.cigalesRendezVousPris).toEqual({ required: true, motif: 'Rendez-vous pris' });
   expect(result.mmaRelance).toEqual({ required: true, motif: 'Relance' });
   expect(result.mmaRendezVousClient).toEqual({ required: false, motif: null });
 });

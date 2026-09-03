@@ -107,3 +107,16 @@ test('buildDashboardRendezVousItems fournit un fallback sans prospect', () => {
   assert.equal(item.prospectLabel, 'Prospect inconnu');
   assert.equal(item.url, null);
 });
+
+test('buildDashboardRendezVousItems distingue un rendez-vous pris historique d’un rappel simple', () => {
+  const items = buildDashboardRendezVousItems(
+    [
+      createRendezVous(5, '15:00:00', { motif: 'Rendez-vous' }),
+      createRendezVous(6, '15:15:00'),
+    ],
+    new Date(2026, 6, 17, 14, 0),
+  );
+
+  assert.equal(items[0].isRendezVousPris, true);
+  assert.equal(items[1].isRendezVousPris, false);
+});

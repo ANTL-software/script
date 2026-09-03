@@ -14,6 +14,7 @@ import {
   isMobilePhone,
   checkIsCommande,
   checkIsRelanceVente,
+  checkIsRendezVousPris,
 } from '../../src/utils/scripts/formatters.ts';
 
 test('formatDuration formate les minutes et secondes', () => {
@@ -136,4 +137,12 @@ test('checkIsRelanceVente détecte uniquement les relances de vente conclue', ()
   assert.equal(checkIsRelanceVente('Commande à établir'), false);
   assert.equal(checkIsRelanceVente('relance cde'), false);
   assert.equal(checkIsRelanceVente(null, [{ statut_appel: 'rdv_pris' }]), false);
+});
+
+test('checkIsRendezVousPris reconnaît le motif courant et le motif historique de l’agenda', () => {
+  assert.equal(checkIsRendezVousPris('Rendez-vous pris'), true);
+  assert.equal(checkIsRendezVousPris('Rendez-vous'), true);
+  assert.equal(checkIsRendezVousPris(null, [{ statut_appel: 'rendez_vous_pris' }]), true);
+  assert.equal(checkIsRendezVousPris('Rappel'), false);
+  assert.equal(checkIsRendezVousPris(null), false);
 });

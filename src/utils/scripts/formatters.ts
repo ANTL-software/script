@@ -332,6 +332,8 @@ export function checkIsRendezVousPris(
   if (!motif) return false;
   const m = motif.toLowerCase().trim();
   return (
+    m === 'rendez-vous' ||
+    m === 'rendez vous' ||
     m === 'rendez-vous pris' ||
     m === 'rendez vous pris' ||
     m === 'rendez-vous valide !' ||

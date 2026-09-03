@@ -193,7 +193,7 @@ export function getCampaignAgendaRendezVousMotif(
     return 'Commande à établir';
   }
 
-  return 'Rendez-vous';
+  return 'Rendez-vous pris';
 }
 
 export function getCampaignProgpaSteps(_campaignVariant?: CampaignVariant | null): ProgpaStepDefinition[] {

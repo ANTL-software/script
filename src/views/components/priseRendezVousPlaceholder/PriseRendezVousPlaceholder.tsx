@@ -80,6 +80,7 @@ export default function PriseRendezVousPlaceholder() {
     telephone,
     email,
     entreprisePlusDeCinqSalaries,
+    showEntreprisePlusDeCinqSalaries,
     notes,
     isSaving,
     errors,
@@ -238,16 +239,18 @@ export default function PriseRendezVousPlaceholder() {
               </div>
             </div>
 
-            <label className="prise-rdv-form__checkbox-field" htmlFor="entreprisePlusDeCinqSalaries">
-              <input
-                id="entreprisePlusDeCinqSalaries"
-                type="checkbox"
-                checked={entreprisePlusDeCinqSalaries}
-                onChange={(event) => setEntreprisePlusDeCinqSalaries(event.target.checked)}
-                disabled={isSaving}
-              />
-              Entreprise avec plus de 5 salariés
-            </label>
+            {showEntreprisePlusDeCinqSalaries && (
+              <label className="prise-rdv-form__checkbox-field" htmlFor="entreprisePlusDeCinqSalaries">
+                <input
+                  id="entreprisePlusDeCinqSalaries"
+                  type="checkbox"
+                  checked={entreprisePlusDeCinqSalaries}
+                  onChange={(event) => setEntreprisePlusDeCinqSalaries(event.target.checked)}
+                  disabled={isSaving}
+                />
+                Entreprise avec plus de 5 salariés
+              </label>
+            )}
           </div>
 
           <div className="form-card">

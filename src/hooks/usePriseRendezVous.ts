@@ -13,6 +13,7 @@ import {
   getTodayInputDateString,
   isLeadB2BDateAllowed,
   isLeadB2BTimeSlotUnavailable,
+  supportsMmaEmployeeCountQualification,
 } from '../utils/scripts/priseRendezVous.ts';
 import type { RendezVousRecapData, RendezVousTimeOption } from '../utils/types/index.ts';
 
@@ -51,6 +52,7 @@ export function usePriseRendezVous() {
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
 
   const timeSlots = filterAvailableLeadB2BTimeSlots(TIME_SLOTS, unavailableTimeSlots);
+  const showEntreprisePlusDeCinqSalaries = supportsMmaEmployeeCountQualification(currentCampaign);
 
   useEffect(() => {
     if (!currentProspect) return;
@@ -247,7 +249,9 @@ export function usePriseRendezVous() {
         telephone,
         email,
         notes,
-        entreprisePlusDeCinqSalaries,
+        entreprisePlusDeCinqSalaries: showEntreprisePlusDeCinqSalaries
+          ? entreprisePlusDeCinqSalaries
+          : false,
       }));
 
       setRecap(recapData);
@@ -289,6 +293,7 @@ export function usePriseRendezVous() {
     telephone,
     email,
     entreprisePlusDeCinqSalaries,
+    showEntreprisePlusDeCinqSalaries,
     notes,
     isSaving,
     errors,

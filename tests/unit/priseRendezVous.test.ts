@@ -11,6 +11,7 @@ import {
   getTodayInputDateString,
   isLeadB2BDateAllowed,
   LEAD_B2B_RENDEZ_VOUS_MOTIF,
+  supportsMmaEmployeeCountQualification,
 } from '../../src/utils/scripts/priseRendezVous.ts';
 
 test('getLeadB2BRendezVousPrefill priorise les donnees decisionnaire pour le formulaire MMA', () => {
@@ -72,7 +73,7 @@ test('getLeadB2BRendezVousPrefill ne reutilise pas la raison sociale comme inter
 test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour la prise de rendez-vous', () => {
   const payload = buildLeadB2BRendezVousPayload({
     prospectId: 42,
-    campagneId: 7,
+    campagneId: 10,
     dateRdv: '2026-07-07',
     timeValue: '10:15',
     interlocuteurNom: ' Claire Durand ',
@@ -85,7 +86,7 @@ test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour
 
   assert.deepEqual(payload, {
     id_prospect: 42,
-    id_campagne: 7,
+    id_campagne: 10,
     date_rdv: '2026-07-07',
     heure_rdv: '10:15:00',
     motif: LEAD_B2B_RENDEZ_VOUS_MOTIF,
@@ -96,6 +97,28 @@ test('buildLeadB2BRendezVousPayload construit le payload persistant attendu pour
     entreprise_plus_de_cinq_salaries: true,
     notes: 'A rappeler pour qualification MMA.',
   });
+});
+
+test('la qualification du nombre de salariés est réservée à la campagne MMA', () => {
+  assert.equal(supportsMmaEmployeeCountQualification({ id_campagne: 10 }), true);
+  assert.equal(supportsMmaEmployeeCountQualification({ id_campagne: 11 }), false);
+  assert.equal(supportsMmaEmployeeCountQualification({ id_campagne: 12 }), false);
+  assert.equal(supportsMmaEmployeeCountQualification(null), false);
+
+  const fgaPayload = buildLeadB2BRendezVousPayload({
+    prospectId: 42,
+    campagneId: 11,
+    dateRdv: '2026-09-08',
+    timeValue: '14:15',
+    interlocuteurNom: 'Camille Martin',
+    interlocuteurRole: 'Direction',
+    telephone: '0140203040',
+    email: 'camille.martin@atelier-horizon.fr',
+    notes: 'Recrutement en cours',
+    entreprisePlusDeCinqSalaries: true,
+  });
+
+  assert.equal(fgaPayload.entreprise_plus_de_cinq_salaries, false);
 });
 
 test('isLeadB2BDateAllowed accepte chaque jour pour la prise de rendez-vous MMA', () => {

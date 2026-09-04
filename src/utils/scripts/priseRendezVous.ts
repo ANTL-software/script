@@ -1,4 +1,4 @@
-import type { CreateLeadData, Prospect, RendezVousTimeOption } from '../types/index.ts';
+import type { Campaign, CreateLeadData, Prospect, RendezVousTimeOption } from '../types/index.ts';
 
 export interface LeadB2BRendezVousPrefill {
   interlocuteurNom: string;
@@ -22,6 +22,13 @@ export interface BuildLeadB2BRendezVousPayloadArgs {
 }
 
 export const LEAD_B2B_RENDEZ_VOUS_MOTIF = 'Prise de rendez-vous client';
+export const MMA_EMPLOYEE_COUNT_QUALIFICATION_CAMPAIGN_ID = 10;
+
+export function supportsMmaEmployeeCountQualification(
+  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+): boolean {
+  return campaign?.id_campagne === MMA_EMPLOYEE_COUNT_QUALIFICATION_CAMPAIGN_ID;
+}
 
 const LEAD_B2B_TIME_CONFIG = {
   morning: { start: '08:00', end: '12:00' },
@@ -168,7 +175,8 @@ export function buildLeadB2BRendezVousPayload({
     telephone_contact_snapshot: telephone.trim(),
     interlocuteur_role: trimToUndefined(interlocuteurRole),
     email_contact_snapshot: trimToUndefined(email),
-    entreprise_plus_de_cinq_salaries: entreprisePlusDeCinqSalaries,
+    entreprise_plus_de_cinq_salaries: supportsMmaEmployeeCountQualification({ id_campagne: campagneId })
+      && entreprisePlusDeCinqSalaries,
     notes: trimToUndefined(notes),
   };
 }

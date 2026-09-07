@@ -13,6 +13,8 @@ export interface RendezVous {
   telephone_contact_snapshot?: string | null;
   email_contact_snapshot?: string | null;
   notes: string | null;
+  is_rappel_force?: boolean;
+  id_vigie_action?: number;
   derniere_note_closing?: string | null;
   statut: RendezVousStatut;
   created_at: string;

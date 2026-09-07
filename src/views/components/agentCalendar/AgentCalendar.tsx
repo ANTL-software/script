@@ -79,7 +79,7 @@ export default function AgentCalendar({
   const handleViewChange = useCallback((view: View) => setCurrentView(view), []);
 
   const eventStyleGetter = useCallback((event: CalendarEvent) => {
-    const { statut, motif, appelsSource } = event.resource;
+    const { statut, motif, appelsSource, is_rappel_force: isRappelForce } = event.resource;
     const { eventType } = event;
 
     if (eventType === 'other-agent-prospect') {
@@ -107,7 +107,9 @@ export default function AgentCalendar({
     const isRelance = !isRelanceVente && !isCommande && !isRendezVousPris && checkIsRelance(motif, appelsSource, selectedStatusForEvent);
 
     let color = STATUT_RENDEZ_VOUS_COLORS[statut] ?? STATUT_RENDEZ_VOUS_COLORS.planifie;
-    if (isRelanceVente) {
+    if (isRappelForce) {
+      color = RENDEZ_VOUS_KIND_COLORS.rappelForce;
+    } else if (isRelanceVente) {
       color = RENDEZ_VOUS_KIND_COLORS.relanceVente;
     } else if (isCommande) {
       color = RENDEZ_VOUS_KIND_COLORS.commande;
@@ -118,7 +120,7 @@ export default function AgentCalendar({
     }
 
     const textColor = isRendezVousPris ? '#0f172a' : 'white';
-    const isSpecialKind = isCommande || isRelanceVente || isRendezVousPris || isRelance;
+    const isSpecialKind = isRappelForce || isCommande || isRelanceVente || isRendezVousPris || isRelance;
 
     if (eventType === 'mine-prospect') {
       return {
@@ -130,7 +132,7 @@ export default function AgentCalendar({
           color: textColor,
           fontWeight: 600,
         },
-        className: `event event--${statut} event--mine-prospect${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}${isRendezVousPris ? ' event--rendez-vous-pris' : ''}${isRelance ? ' event--relance' : ''}`,
+        className: `event event--${statut} event--mine-prospect${isRappelForce ? ' event--rappel-force' : ''}${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}${isRendezVousPris ? ' event--rendez-vous-pris' : ''}${isRelance ? ' event--relance' : ''}`,
       };
     }
 
@@ -143,7 +145,7 @@ export default function AgentCalendar({
         opacity: statut === 'annule' ? 0.35 : (isSpecialKind ? 0.9 : 0.65),
         fontWeight: (statut === 'planifie' || isSpecialKind) ? 600 : 400,
       },
-      className: `event event--${statut} event--mine-other${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}${isRendezVousPris ? ' event--rendez-vous-pris' : ''}${isRelance ? ' event--relance' : ''}`,
+      className: `event event--${statut} event--mine-other${isRappelForce ? ' event--rappel-force' : ''}${isCommande ? ' event--commande' : ''}${isRelanceVente ? ' event--relance-vente' : ''}${isRendezVousPris ? ' event--rendez-vous-pris' : ''}${isRelance ? ' event--relance' : ''}`,
     };
   }, [resolvedCampagneId, selectedCallStatus]);
 
@@ -224,7 +226,7 @@ export default function AgentCalendar({
 
   const CustomEventComponent = useMemo(() => {
     return function CustomEvent({ event }: { event: CalendarEvent }) {
-      const isLockedEvent = isReadOnly || checkIsRelanceVente(event.resource.motif, event.resource.appelsSource);
+      const isLockedEvent = isReadOnly || event.resource.is_rappel_force === true || checkIsRelanceVente(event.resource.motif, event.resource.appelsSource);
       return (
         <div className="cal-event-wrapper">
           <div

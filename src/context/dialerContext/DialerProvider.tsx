@@ -11,7 +11,7 @@ import type { Appel, AsteriskOutboundAuthorization, StatutDialer, RaisonPause, P
 import { isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/scripts/utils';
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
-import { useToast } from '../../hooks';
+import { useAlert, useToast } from '../../hooks';
 
 interface DialerProviderProps {
   children: ReactNode;
@@ -77,6 +77,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const isAuthenticated = userContext?.isAuthenticated ?? false;
   const logout = userContext?.logout;
   const { showToast } = useToast();
+  const { showAlert } = useAlert();
 
   // État Dialer (compatible avec l'existant)
   const [statut, setStatut] = useState<StatutDialer>('hors_ligne');
@@ -1548,6 +1549,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
             endedBySystem: false,
             endReason: null
           });
+          if (candidate.est_rappel_force && candidate.motif_rappel_force) {
+            void showAlert({
+              type: 'warning',
+              title: 'Rappel forcé par la supervision',
+              message: candidate.motif_rappel_force,
+              acknowledgeOnly: true
+            });
+          }
           return true;
         } catch (err) {
           console.warn('[DIALER] Erreur lors de la récupération du prospect ou file vide', err);
@@ -1565,7 +1574,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     } finally {
       isFetchingNextProspectRef.current = false;
     }
-  }, [prochainProspect, showToast, updateCurrentAppelId]);
+  }, [prochainProspect, showAlert, showToast, updateCurrentAppelId]);
 
   // Changer de statut
   const changerStatut = useCallback(async (nouveauStatut: StatutDialer, raison?: RaisonPause) => {

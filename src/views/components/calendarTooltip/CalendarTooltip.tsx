@@ -49,6 +49,9 @@ export default function CalendarTooltip({ event, x, y }: CalendarTooltipProps) {
   if (isOtherAgent) {
     headerColor = '#d97706';
     headerLabel = 'Autre agent';
+  } else if (resource.is_rappel_force) {
+    headerColor = RENDEZ_VOUS_KIND_COLORS.rappelForce;
+    headerLabel = 'Rappel forcé';
   } else if (isRelanceVente) {
     headerColor = RENDEZ_VOUS_KIND_COLORS.relanceVente;
     headerLabel = 'Relance';

@@ -1,6 +1,6 @@
 import './dashboardPage.scss';
 import { useDashboardPage } from '../../../hooks/index.ts';
-import { CalendarModal, SalesGauge } from '../../components/index.ts';
+import { CalendarModal, PrimeGauge } from '../../components/index.ts';
 import { FaCalendarAlt } from 'react-icons/fa';
 
 import { formatEur } from '../../../utils/scripts/index.ts';
@@ -162,16 +162,15 @@ export default function DashboardPage() {
         {statsLoading ? (
           <p className="dashboard__loading">Chargement...</p>
         ) : stats?.prime ? (
-          <SalesGauge
+          <PrimeGauge
             ventesMoisCount={stats.ventes_mois_count ?? 0}
-            ventesMoisMontant={stats.ventes_mois_montant ?? 0}
             ventesMoisEnAttenteCount={stats.ventes_mois_en_attente_count}
             ventesMoisEnAttenteMontant={stats.ventes_mois_en_attente_montant}
             prime={stats.prime}
           />
         ) : (
           <div className="dashboard__empty-state">
-            <p>Aucun niveau commercial assigné à votre profil.</p>
+            <p>Aucun palier de prime assigné à votre profil.</p>
           </div>
         )}
       </section>

@@ -64,6 +64,8 @@ export interface ProspectAssigne {
   autoriser_mobile?: boolean;
   distribution_mode?: 'auto' | 'rappel';
   id_rendez_vous_source?: number | null;
+  est_rappel_force?: boolean;
+  motif_rappel_force?: string | null;
 }
 
 export interface ActiveCallInsights {

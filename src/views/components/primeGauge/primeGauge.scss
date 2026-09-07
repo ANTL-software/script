@@ -1,140 +1,120 @@
 @use "../../../utils/styles/variables" as vars;
-.sales-gauge {
+.prime-gauge {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   width: 100%;
 }
-.sales-gauge__header {
+.prime-gauge__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
-.sales-gauge__header-left {
+.prime-gauge__header-left,
+.prime-gauge__header-right {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 }
-.sales-gauge__header-right {
-  display: flex;
-  flex-direction: column;
+.prime-gauge__header-right {
   align-items: flex-end;
-  gap: 0.2rem;
 }
-.sales-gauge__niveau {
+.prime-gauge__niveau {
   font-size: 0.9375rem;
   font-weight: 700;
   color: vars.$colorGray900;
 }
-.sales-gauge__mois-stats {
+.prime-gauge__mois-stats,
+.prime-gauge__objectif {
   font-size: 0.8125rem;
   color: vars.$colorGray500;
 }
-.sales-gauge__en-attente-stats {
-  font-size: 0.8125rem;
+.prime-gauge__en-attente-stats {
   color: #f59e0b;
   font-weight: 600;
 }
-.sales-gauge__prime {
+.prime-gauge__prime {
   font-size: 0.875rem;
   font-weight: 700;
 }
-.sales-gauge__prime--active {
+.prime-gauge__prime--active {
   color: vars.$colorPrimary;
 }
-.sales-gauge__prime--none {
-  color: vars.$colorGray500;
-  font-weight: 400;
-  font-style: italic;
-}
-.sales-gauge__objectif {
-  font-size: 0.75rem;
+.prime-gauge__prime--none {
   color: vars.$colorGray500;
 }
-// Zone de la jauge (barre + labels)
-.sales-gauge__track-wrapper {
+.prime-gauge__track-wrapper {
   position: relative;
-  padding-bottom: 2.25rem; // espace pour les labels sous la barre
+  padding-bottom: 3.25rem;
 }
-.sales-gauge__track {
+.prime-gauge__track {
   position: relative;
   height: 0.875rem;
   background: vars.$colorGray200;
   border-radius: vars.$radius-full;
   overflow: visible;
 }
-.sales-gauge__fill {
+.prime-gauge__fill {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0 auto 0 0;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    vars.$colorPrimaryLight 0%,
-    vars.$colorPrimary 100%
-  );
+  background: linear-gradient(90deg, vars.$colorPrimaryLight 0%, vars.$colorPrimary 100%);
   border-radius: vars.$radius-full;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
 }
-// Marqueur vertical au niveau de chaque palier
-.sales-gauge__marker {
+.prime-gauge__marker {
   position: absolute;
   top: -3px;
   transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   pointer-events: none;
 }
-.sales-gauge__marker-line {
+.prime-gauge__marker-line {
   width: 2px;
   height: calc(0.875rem + 6px);
   background: vars.$colorGray300;
   border-radius: 1px;
 }
-.sales-gauge__marker--unlocked .sales-gauge__marker-line {
+.prime-gauge__marker--unlocked .prime-gauge__marker-line {
   background: vars.$colorPrimaryDark;
 }
-// Labels sous la barre (palier % + montant prime)
-.sales-gauge__labels {
+.prime-gauge__labels {
   position: absolute;
   top: calc(0.875rem + 8px);
-  left: 0;
-  right: 0;
+  inset-inline: 0;
 }
-.sales-gauge__label {
+.prime-gauge__label {
   position: absolute;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.1rem;
+  gap: 0.05rem;
   color: vars.$colorGray500;
 }
-.sales-gauge__label--unlocked {
+.prime-gauge__label:first-child {
+  transform: translateX(0);
+  align-items: flex-start;
+}
+.prime-gauge__label:last-child {
+  transform: translateX(-100%);
+  align-items: flex-end;
+}
+.prime-gauge__label--unlocked {
   color: vars.$colorPrimary;
 }
-// Évite que le premier et dernier label débordent
-.sales-gauge__label:first-child {
-  transform: translateX(-10%);
-}
-.sales-gauge__label:last-child {
-  transform: translateX(-90%);
-}
-.sales-gauge__label-pct {
+.prime-gauge__label-pct,
+.prime-gauge__label-prime {
   font-size: 0.6875rem;
   font-weight: 700;
   white-space: nowrap;
 }
-.sales-gauge__label-prime {
+.prime-gauge__label-objective {
   font-size: 0.625rem;
   white-space: nowrap;
 }
-// Texte de progression en bas
-.sales-gauge__progress-text {
+.prime-gauge__progress-text {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -142,7 +122,7 @@
   color: vars.$colorGray700;
   margin-top: 0.25rem;
 }
-.sales-gauge__pct-value {
+.prime-gauge__pct-value {
   font-size: 0.875rem;
   font-weight: 700;
   color: vars.$colorPrimary;

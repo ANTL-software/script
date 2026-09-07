@@ -513,7 +513,7 @@ script/
 │   │   │   ├── objection.types.ts # Objection, ObjectionsByCategorie
 │   │   │   ├── planAppel.types.ts # PlanAppelEtape
 │   │   │   ├── notification.types.ts # Notification, NotificationType
-│   │   │   ├── stats.types.ts     # StatsDuJour, PrimeStats, PalierPrime
+│   │   │   ├── stats.types.ts     # StatsDuJour, PrimeStats, SeuilPrimeStats
 │   │   │   ├── api.types.ts       # ApiResponse, ApiError, PaginatedResponse, Pagination
 │   │   │   └── index.ts           # Re-exports all
 │   │   ├── constants/              # App constants
@@ -554,7 +554,7 @@ script/
 │   │   │   ├── closingModal/       # Call closing modal (result recording)
 │   │   │   ├── confirmOrderModal/  # Order confirmation modal
 │   │   │   ├── calendarTooltip/    # Calendar event tooltip
-│   │   │   ├── salesGauge/         # Sales gauge (objective progress)
+│   │   │   ├── primeGauge/         # Jauge de prime vente ou Lead B2B
 │   │   │   ├── clock/              # Clock display
 │   │   │   ├── quiEstCe/           # "Who is this?" popup
 │   │   │   ├── quiSommesNous/      # "Who are we?" popup
@@ -1220,12 +1220,12 @@ Liste des articles avec `PanierItem` pour chaque item :
 - Total
 - Boutons pour modifier/supprimer
 
-### SalesGauge
+### PrimeGauge
 
-Jauge des ventes pour objectif du mois :
-- Ventes effectuées
-- Paliers de prime
-- Progression visuelle
+Jauge mensuelle pilotée par le type de campagne :
+- chiffre d'affaires validé pour une campagne vente ;
+- nombre de lignes `commercial.leads` produites pour une campagne Lead B2B ;
+- seuils exacts 0, 75, 90 et 100 % sur l'objectif individuel.
 
 ---
 
@@ -1487,6 +1487,7 @@ Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :
 
 | Date | Modification | Auteur |
 |------|--------------|--------|
+| 2026-09-07 | Jauge de prime unifiée vente/Lead B2B, objectifs individuels et seuils exacts 0/75/90/100 | AI Agent |
 | 2026-04-23 | Ajout Sprint C : UX erreurs bloquantes, surveillance ICE, stats WebRTC, timeout SIP | AI Agent |
 | 2026-04-23 | Ajout services API complets, hooks, composants métier, flux vendeur, restrictions | AI Agent |
 | 2026-04-23 | Création AGENTS.md pour Script frontend | AI Agent |

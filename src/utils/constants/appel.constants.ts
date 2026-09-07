@@ -169,4 +169,5 @@ export const RENDEZ_VOUS_KIND_COLORS = {
   rendezVousPris: '#eab308',
   relance: '#10b981',
   relanceVente: '#10b981',
+  rappelForce: '#dc2626',
 } as const;

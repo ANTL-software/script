@@ -5,6 +5,7 @@ export * from './dashboard.ts';
 export * from './formatters.ts';
 export * from './orderValidation.ts';
 export * from './planAppelSource.ts';
+export * from './prime.ts';
 export * from './prospectMaturity.ts';
 export * from './prospectNotes.ts';
 export * from './priseRendezVous.ts';

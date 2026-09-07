@@ -55,7 +55,7 @@ export default function RendezVousDetailsModal({
     }
   };
   const isRelanceVente = checkIsRelanceVente(rendezVous.motif, rendezVous.appelsSource);
-  const actionsLocked = isReadOnly || isRelanceVente;
+  const actionsLocked = isReadOnly || rendezVous.is_rappel_force === true || isRelanceVente;
   const isCommande = !isRelanceVente && checkIsCommande(rendezVous.motif, rendezVous.appelsSource);
   const isRendezVousPris = !isRelanceVente && !isCommande && checkIsRendezVousPris(rendezVous.motif, rendezVous.appelsSource);
   const isRelance = !isRelanceVente && !isCommande && !isRendezVousPris && checkIsRelance(rendezVous.motif, rendezVous.appelsSource);
@@ -64,7 +64,10 @@ export default function RendezVousDetailsModal({
   let statutLabel = STATUT_LABELS[statut] ?? statut;
   let statutColor = STATUT_COLORS[statut] ?? '#6b7280';
 
-  if (isRelanceVente) {
+  if (rendezVous.is_rappel_force) {
+    statutLabel = 'Rappel forcé';
+    statutColor = RENDEZ_VOUS_KIND_COLORS.rappelForce;
+  } else if (isRelanceVente) {
     statutLabel = 'Relance';
     statutColor = RENDEZ_VOUS_KIND_COLORS.relanceVente;
   } else if (isCommande) {
@@ -83,7 +86,9 @@ export default function RendezVousDetailsModal({
   const rdvDate = parseISO(rendezVous.date_rdv);
   const formattedDate = format(rdvDate, 'EEEE d MMMM yyyy', { locale: fr });
   const formattedTime = formatHeure(rendezVous.heure_rdv);
-  const noteToDisplay = rendezVous.derniere_note_closing;
+  const noteToDisplay = rendezVous.is_rappel_force
+    ? rendezVous.notes
+    : rendezVous.derniere_note_closing;
 
   return (
     <div className="rdv-details-modal-overlay" onClick={onClose}>
@@ -163,7 +168,7 @@ export default function RendezVousDetailsModal({
           {/* Notes */}
           {noteToDisplay && (
             <div className="rdv-details-modal__section">
-              <h3 className="rdv-details-modal__section-title">Notes</h3>
+              <h3 className="rdv-details-modal__section-title">{rendezVous.is_rappel_force ? 'Message du superviseur' : 'Notes'}</h3>
               <p className="rdv-details-modal__text rdv-details-modal__notes">{noteToDisplay}</p>
             </div>
           )}

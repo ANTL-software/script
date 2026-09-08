@@ -10,6 +10,7 @@ test('QuiEstCe transmet les chaînes vides des champs effacés pour mise à jour
   );
 
   assert.match(source, /dataToUpdate\.prenom = editedFields\.prenom\.trim\(\)/);
+  assert.match(source, /dataToUpdate\.raison_sociale = editedFields\.raison_sociale\.trim\(\)/);
   assert.match(source, /dataToUpdate\.siret = editedFields\.siret\.trim\(\)/);
   assert.match(source, /dataToUpdate\.email = editedFields\.email\.trim\(\)/);
   assert.doesNotMatch(source, /dataToUpdate\.prenom = editedFields\.prenom \|\| undefined/);

@@ -14,6 +14,7 @@ export { DtmfPad } from './dtmfPad/index.ts';
 export { ErrorBoundary } from './errorBoundary/index.ts';
 export { ErrorMessage } from './errorMessage/index.ts';
 export { Footer } from './footer/index.ts';
+export { FgaPresentationPreviewModal } from './fgaPresentationPreviewModal/index.ts';
 export { Header } from './header/index.ts';
 export { HistoriqueAppels } from './historiqueAppels/index.ts';
 export { HistoriqueRendezVous } from './historiqueRendezVous/index.ts';

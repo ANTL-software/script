@@ -16,6 +16,7 @@ import {
 interface EditableFields {
   nom: string;
   prenom: string;
+  raison_sociale: string;
   siret: string;
   code_naf: string;
   activite: string;
@@ -41,6 +42,7 @@ export default function QuiEstCe() {
   const [editedFields, setEditedFields] = useState<EditableFields>({
     nom: '',
     prenom: '',
+    raison_sociale: '',
     siret: '',
     code_naf: '',
     activite: '',
@@ -62,6 +64,7 @@ export default function QuiEstCe() {
       setEditedFields({
         nom: currentProspect.nom || '',
         prenom: currentProspect.prenom || '',
+        raison_sociale: currentProspect.raison_sociale || '',
         siret: currentProspect.siret || '',
         code_naf: currentProspect.code_naf || '',
         activite: currentProspect.activite || '',
@@ -136,6 +139,7 @@ export default function QuiEstCe() {
       setEditedFields({
         nom: currentProspect.nom || '',
         prenom: currentProspect.prenom || '',
+        raison_sociale: currentProspect.raison_sociale || '',
         siret: currentProspect.siret || '',
         code_naf: currentProspect.code_naf || '',
         activite: currentProspect.activite || '',
@@ -170,6 +174,9 @@ export default function QuiEstCe() {
       }
       if (editedFields.prenom.trim() !== (currentProspect.prenom || '').trim()) {
         dataToUpdate.prenom = editedFields.prenom.trim();
+      }
+      if (editedFields.raison_sociale.trim() !== (currentProspect.raison_sociale || '').trim()) {
+        dataToUpdate.raison_sociale = editedFields.raison_sociale.trim();
       }
       if (editedFields.siret.trim() !== (currentProspect.siret || '').trim()) {
         dataToUpdate.siret = editedFields.siret.trim();
@@ -367,7 +374,15 @@ export default function QuiEstCe() {
             {currentProspect.type_prospect === 'Entreprise' && (
               <div className="qui-est-ce__field qui-est-ce__field--full">
                 <span className="qui-est-ce__label">Raison sociale</span>
-                <span className="qui-est-ce__value">{currentProspect.raison_sociale || '-'}</span>
+                {isEditing ? (
+                  <Input
+                    value={editedFields.raison_sociale}
+                    onChange={(e) => handleFieldChange('raison_sociale', e.target.value)}
+                    disabled={isLoading || isSaving}
+                  />
+                ) : (
+                  <span className="qui-est-ce__value">{currentProspect.raison_sociale || '-'}</span>
+                )}
               </div>
             )}
           </div>

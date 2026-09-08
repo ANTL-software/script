@@ -1,0 +1,147 @@
+@use "../../../utils/styles/variables" as vars;
+
+.fga-presentation-preview-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.fga-presentation-preview-modal {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 860px);
+  max-height: min(90vh, 900px);
+  overflow: hidden;
+  border-radius: vars.$radius-lg;
+  background: vars.$colorWhite;
+  box-shadow: vars.$shadow-xl;
+}
+
+.fga-presentation-preview-modal__header,
+.fga-presentation-preview-modal__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.fga-presentation-preview-modal__header {
+  border-bottom: 1px solid vars.$colorGray200;
+}
+
+.fga-presentation-preview-modal__eyebrow {
+  margin: 0 0 0.2rem;
+  color: vars.$colorPrimary;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fga-presentation-preview-modal h2 {
+  margin: 0;
+  color: vars.$colorGray900;
+  font-size: 1.25rem;
+}
+
+.fga-presentation-preview-modal__close {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: vars.$colorGray500;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.fga-presentation-preview-modal__close:hover {
+  background: vars.$colorGray100;
+  color: vars.$colorGray700;
+}
+
+.fga-presentation-preview-modal__meta {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid vars.$colorGray200;
+  color: vars.$colorGray700;
+  font-size: 0.9rem;
+}
+
+.fga-presentation-preview-modal__meta p {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  gap: 0.75rem;
+  margin: 0.35rem 0;
+}
+
+.fga-presentation-preview-modal__meta span {
+  color: vars.$colorGray500;
+  font-weight: 700;
+}
+
+.fga-presentation-preview-modal__mail {
+  overflow-y: auto;
+  padding: 1.5rem;
+  color: #000;
+  font-family: Arial, sans-serif;
+  font-size: 0.97rem;
+  line-height: 1.35;
+}
+
+.fga-presentation-preview-modal__mail p {
+  margin: 0 0 1rem;
+}
+
+.fga-presentation-preview-modal__signature {
+  margin-bottom: 1.5rem !important;
+}
+
+.fga-presentation-preview-modal__mail a {
+  color: #1684e8;
+}
+
+.fga-presentation-preview-modal__attachment {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0 1.5rem 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #fecaca;
+  border-radius: vars.$radius-md;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.fga-presentation-preview-modal__actions {
+  justify-content: flex-end;
+  border-top: 1px solid vars.$colorGray200;
+}
+
+@media (max-width: vars.$breakpoint-sm) {
+  .fga-presentation-preview-modal__header,
+  .fga-presentation-preview-modal__actions,
+  .fga-presentation-preview-modal__meta,
+  .fga-presentation-preview-modal__mail {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+
+  .fga-presentation-preview-modal__attachment {
+    margin-right: 1rem;
+    margin-left: 1rem;
+  }
+
+  .fga-presentation-preview-modal__meta p {
+    grid-template-columns: 3.25rem minmax(0, 1fr);
+  }
+}

@@ -6,6 +6,7 @@ import {
   CatalogueProduits,
   ConfirmOrderModal,
   ErrorMessage,
+  FgaPresentationPreviewModal,
   HistoriqueAppels,
   HistoriqueRendezVous,
   HistoriqueVentes,
@@ -22,6 +23,7 @@ export default function LandingPage() {
     prospectFullName,
     currentProspect, currentView, isLoading, error, clearError,
     isModalOpen, setIsModalOpen,
+    isFgaPresentationPreviewOpen, handleFgaPresentationPreviewSend, handleFgaPresentationPreviewCancel,
     handlePlanAppels, handleObjections,
     handleOrderSuccess,
     setView, currentCampaign, campaignUi, isTestMode, handleAction,
@@ -115,6 +117,13 @@ export default function LandingPage() {
           onSuccess={handleOrderSuccess}
         />
       )}
+
+      <FgaPresentationPreviewModal
+        isOpen={isFgaPresentationPreviewOpen}
+        prospect={currentProspect}
+        onSend={handleFgaPresentationPreviewSend}
+        onCancel={handleFgaPresentationPreviewCancel}
+      />
     </main>
   );
 }

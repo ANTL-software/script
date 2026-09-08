@@ -37,6 +37,7 @@ export function useLandingPage() {
   }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFgaPresentationPreviewOpen, setIsFgaPresentationPreviewOpen] = useState(false);
 
   const previousProspectIdRef = useRef<number | null>(null);
   const wasCallActiveRef = useRef<boolean>(false);
@@ -256,19 +257,7 @@ export function useLandingPage() {
     if (confirmed) await sendPlaquette();
   };
 
-  const handleFgaPresentationClick = async (): Promise<void> => {
-    const recipientEmail = currentProspect?.email?.trim();
-    const confirmed = await confirm({
-      title: 'Envoi de la présentation',
-      message: recipientEmail
-        ? `Êtes-vous sûr de vouloir envoyer la présentation par mail à ${recipientEmail} ?`
-        : 'Êtes-vous sûr de vouloir envoyer la présentation par mail ?',
-      type: 'info',
-      confirmText: 'Envoyer',
-      cancelText: 'Annuler',
-    });
-
-    if (!confirmed) return;
+  const sendFgaPresentation = async (): Promise<void> => {
     if (!currentProspect?.email) {
       showToast('warning', "Le prospect n'a pas d'adresse email renseignee");
       return;
@@ -281,6 +270,41 @@ export function useLandingPage() {
     } catch (sendError) {
       showToast('error', sendError instanceof Error ? sendError.message : "Erreur lors de l'envoi de la présentation");
     }
+  };
+
+  const requestFgaPresentationConfirmation = async (): Promise<void> => {
+    const recipientEmail = currentProspect?.email?.trim();
+    const confirmed = await confirm({
+      title: 'Envoi de la présentation',
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer la présentation par mail à ${recipientEmail} ?`
+        : 'Êtes-vous sûr de vouloir envoyer la présentation par mail ?',
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (confirmed) await sendFgaPresentation();
+  };
+
+  const handleFgaPresentationClick = (): void => {
+    if (!currentProspect?.email) {
+      showToast('warning', "Le prospect n'a pas d'adresse email renseignee");
+      return;
+    }
+
+    setIsFgaPresentationPreviewOpen(true);
+  };
+
+  const handleFgaPresentationPreviewSend = (): void => {
+    setIsFgaPresentationPreviewOpen(false);
+    window.setTimeout(() => {
+      void requestFgaPresentationConfirmation();
+    }, 0);
+  };
+
+  const handleFgaPresentationPreviewCancel = (): void => {
+    setIsFgaPresentationPreviewOpen(false);
   };
 
   const handleTarifsClick = async (): Promise<void> => {
@@ -336,6 +360,9 @@ export function useLandingPage() {
     clearError,
     isModalOpen,
     setIsModalOpen,
+    isFgaPresentationPreviewOpen,
+    handleFgaPresentationPreviewSend,
+    handleFgaPresentationPreviewCancel,
     setView,
     handlePlanAppels,
     handleObjections,

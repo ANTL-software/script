@@ -12,6 +12,7 @@ export type CampaignVariant = keyof typeof CAMPAIGN_VARIANTS;
 
 export type ActionButtonId =
   | 'plaquette'
+  | 'fga-presentation'
   | 'tarifs'
   | 'historique-appels'
   | 'historique-offres'
@@ -96,6 +97,12 @@ const LEAD_B2B_ACTIONS: CampaignActionConfig[] = [
   { id: 'commande', label: 'Prise de rendez-vous client', group: 'right', targetView: 'commande' },
 ];
 
+const FGA_CAMPAIGN_ID = 11;
+const FGA_LEAD_B2B_ACTIONS: CampaignActionConfig[] = [
+  { id: 'fga-presentation', label: 'Présentation', group: 'left' },
+  ...LEAD_B2B_ACTIONS,
+];
+
 export function normalizeCampaignVariant(value: string | null | undefined): CampaignVariant {
   if (value === CAMPAIGN_VARIANTS.lead_b2b) {
     return CAMPAIGN_VARIANTS.lead_b2b;
@@ -117,13 +124,13 @@ export function isLeadB2BCampaign(campaign?: Pick<Campaign, 'type_campagne' | 'n
   return campaignName.includes('mma') || campaignName.includes('planete assurance') || campaignName.includes('assurance');
 }
 
-export function getCampaignUiConfig(campaign?: Pick<Campaign, 'type_campagne'> | null): CampaignUiConfig {
+export function getCampaignUiConfig(campaign?: (Pick<Campaign, 'type_campagne'> & Partial<Pick<Campaign, 'id_campagne'>>) | null): CampaignUiConfig {
   const variant = getCampaignVariant(campaign);
 
   if (variant === CAMPAIGN_VARIANTS.lead_b2b) {
     return {
       variant,
-      actions: LEAD_B2B_ACTIONS,
+      actions: Number(campaign?.id_campagne) === FGA_CAMPAIGN_ID ? FGA_LEAD_B2B_ACTIONS : LEAD_B2B_ACTIONS,
       showPaniers: false,
       commandeMode: 'placeholder',
       closingStatuts: LEAD_B2B_CLOSING_STATUTS,

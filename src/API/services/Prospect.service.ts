@@ -69,6 +69,13 @@ export class ProspectService {
     return throwIfApiError(response, 'Erreur lors de l\'envoi de la plaquette');
   }
 
+  public async sendFgaPresentation(id: number): Promise<ProspectDocumentDispatch> {
+    const response = await apiCalls.post<ProspectDocumentDispatch>(`/prospects/${id}/send-fga-presentation`, undefined, {
+      timeout: 90000,
+    });
+    return throwIfApiError(response, 'Erreur lors de l\'envoi de la présentation FGA');
+  }
+
   public async updateProspect(id: number, data: UpdateProspectData): Promise<ProspectModel> {
     const response = await apiCalls.put<Prospect>(`/prospects/${id}`, data);
     const updatedProspect = throwIfApiError(response, 'Erreur lors de la mise a jour du prospect');

@@ -43,6 +43,14 @@ test('getCampaignUiConfig retourne la matrice MMA attendue', () => {
   assert.equal(config.actions.find((action) => action.id === 'historique-offres')?.targetView, 'historique-rendez-vous');
 });
 
+test('getCampaignUiConfig expose la présentation uniquement pour FGA', () => {
+  const fgaConfig = getCampaignUiConfig({ id_campagne: 11, type_campagne: CAMPAIGN_VARIANTS.lead_b2b });
+  const mmaConfig = getCampaignUiConfig({ id_campagne: 2, type_campagne: CAMPAIGN_VARIANTS.lead_b2b });
+
+  assert.equal(fgaConfig.actions[0]?.id, 'fga-presentation');
+  assert.equal(mmaConfig.actions.some((action) => action.id === 'fga-presentation'), false);
+});
+
 test('getCampaignClosingOptions conserve le closing vente historique pour Cigales', () => {
   const options = getCampaignClosingOptions({ type_campagne: CAMPAIGN_VARIANTS.vente });
 

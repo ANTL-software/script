@@ -256,6 +256,33 @@ export function useLandingPage() {
     if (confirmed) await sendPlaquette();
   };
 
+  const handleFgaPresentationClick = async (): Promise<void> => {
+    const recipientEmail = currentProspect?.email?.trim();
+    const confirmed = await confirm({
+      title: 'Envoi de la présentation',
+      message: recipientEmail
+        ? `Êtes-vous sûr de vouloir envoyer la présentation par mail à ${recipientEmail} ?`
+        : 'Êtes-vous sûr de vouloir envoyer la présentation par mail ?',
+      type: 'info',
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
+    });
+
+    if (!confirmed) return;
+    if (!currentProspect?.email) {
+      showToast('warning', "Le prospect n'a pas d'adresse email renseignee");
+      return;
+    }
+
+    try {
+      const result = await prospectService.sendFgaPresentation(currentProspect.id_prospect);
+      await loadProspect(currentProspect.id_prospect);
+      showToast('success', `Présentation envoyée à ${result.recipientEmail}`);
+    } catch (sendError) {
+      showToast('error', sendError instanceof Error ? sendError.message : "Erreur lors de l'envoi de la présentation");
+    }
+  };
+
   const handleTarifsClick = async (): Promise<void> => {
     const recipientEmail = currentProspect?.email?.trim();
     const confirmed = await confirm({
@@ -275,6 +302,9 @@ export function useLandingPage() {
     switch (actionId) {
       case 'plaquette':
         void handlePlaquetteClick();
+        break;
+      case 'fga-presentation':
+        void handleFgaPresentationClick();
         break;
       case 'tarifs':
         void handleTarifsClick();

@@ -1,4 +1,5 @@
 export { ActionButtons } from './actionButtons/index.ts';
+export { AddressAutocomplete } from './addressAutocomplete/index.ts';
 export { AgentCalendar } from './agentCalendar/index.ts';
 export { Alert } from './alert/index.ts';
 export { Button } from './button/index.ts';

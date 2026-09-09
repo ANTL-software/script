@@ -5,7 +5,7 @@ import test from 'node:test';
 
 test('QuiEstCe transmet les chaînes vides des champs effacés pour mise à jour NULL en BDD', async () => {
   const source = await readFile(
-    path.join(process.cwd(), 'src/views/components/quiEstCe/QuiEstCe.tsx'),
+    path.join(process.cwd(), 'src/hooks/useQuiEstCe.ts'),
     'utf8',
   );
 

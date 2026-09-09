@@ -1440,6 +1440,15 @@ Les notes de closing doivent aussi rester saisissables et conservées localement
 
 ## 📝 Clause de Mise à Jour
 
+### Adresses commerciales — 2026-09-09
+
+- Le composant `src/views/components/addressAutocomplete` est une vue passive de `useAddressAutocomplete`. `Address.service.ts` interroge l’IGN/BAN sur `https://data.geopf.fr/geocodage/search` (domaine autorisé dans la CSP Vercel), annule les anciennes recherches et ne bloque jamais la saisie manuelle.
+- Intégrations : `useQuiEstCe` / `QuiEstCe`, `useOrderConfirmation` / `ConfirmOrderModal`, `usePriseRendezVous` / `PriseRendezVousPlaceholder`. Les suggestions remplissent rue, code postal, ville et pays. La fiche prospect ne possédant pas de CP/ville de livraison séparés, sa suggestion de livraison conserve le libellé complet.
+- Le payload optionnel `CreateLeadData.adresse_prospect` est envoyé uniquement si l’adresse a changé ; l’API enregistre ces données sur le prospect dans la même transaction que la création du lead. Un échec de réservation ne persiste pas l’adresse seule.
+- `capitalizeAddress` normalise les valeurs envoyées : majuscule initiale de chaque mot, accents, apostrophes et sauts de ligne conservés. La même règle est appliquée par Olympe. La capitalisation n’est pas un effet CSS.
+- La gouttière d’icône est protégée contre les styles des formulaires historiques. Tests : `addressService.test.ts`, `orderValidation.test.ts`, parcours navigateur `mma-rendez-vous-flow.spec.ts`.
+- Ne pas modifier les snapshots de contact, la campagne runtime ni le closing dans le cadre d’une correction d’adresse.
+
 ### Quand mettre à jour ce fichier
 
 Ce fichier AGENTS.md doit être mis à jour dans les cas suivants :

@@ -1,4 +1,5 @@
 import type { ModePaiement, DelaisLivraison, CartItem, CreateVenteData } from '../types';
+import { capitalizeAddress } from './addressFormatting.ts';
 
 interface OrderFormData {
   adresse_facturation: string;
@@ -103,15 +104,15 @@ export function buildVentePayload(params: {
     mode_paiement: formData.mode_paiement as ModePaiement,
     delais_livraison: formData.delais_livraison,
     notes: formData.notes.trim() || undefined,
-    adresse_facturation: formData.adresse_facturation.trim(),
-    adresse_livraison: adresseLivraison.trim(),
+    adresse_facturation: capitalizeAddress(formData.adresse_facturation),
+    adresse_livraison: capitalizeAddress(adresseLivraison),
     raison_sociale_livraison: raisonSocialeLivraison?.trim() || undefined,
     code_postal_facturation: formData.code_postal_facturation.trim(),
     code_postal_livraison: codePostalLivraison.trim(),
-    ville_facturation: formData.ville_facturation.trim(),
-    ville_livraison: villeLivraison.trim(),
-    pays_facturation: formData.pays_facturation.trim(),
-    pays_livraison: paysLivraison.trim(),
+    ville_facturation: capitalizeAddress(formData.ville_facturation),
+    ville_livraison: capitalizeAddress(villeLivraison),
+    pays_facturation: capitalizeAddress(formData.pays_facturation),
+    pays_livraison: capitalizeAddress(paysLivraison),
     livraison_offerte: formData.livraison_offerte,
     plage_horaire_livraison: formData.plage_horaire_livraison.trim() || undefined,
     details: items.map(item => {

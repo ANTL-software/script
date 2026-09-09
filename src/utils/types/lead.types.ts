@@ -71,6 +71,12 @@ export interface LeadClient {
 }
 
 export interface CreateLeadData {
+  adresse_prospect?: {
+    adresse_facturation: string;
+    code_postal: string;
+    ville: string;
+    pays: string;
+  };
   id_prospect: number;
   id_campagne: number;
   id_appel?: number;

@@ -88,7 +88,7 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
   assert.equal(payload.id_prospect, 17);
   assert.equal(payload.id_campagne, 4);
   assert.equal(payload.id_appel, 12);
-  assert.equal(payload.adresse_livraison, '10 rue des Lilas');
+  assert.equal(payload.adresse_livraison, '10 Rue Des Lilas');
   assert.equal(payload.raison_sociale_livraison, 'Cabinet Médical Alpha');
   assert.equal(payload.code_postal_livraison, '75001');
   assert.equal(payload.ville_livraison, 'Paris');
@@ -112,7 +112,7 @@ test('buildVentePayload conserve une adresse et raison sociale de livraison déd
     items: [],
   });
 
-  assert.equal(payload.adresse_livraison, '20 avenue Victor Hugo');
+  assert.equal(payload.adresse_livraison, '20 Avenue Victor Hugo');
   assert.equal(payload.raison_sociale_livraison, 'Pharmacie Centrale Beta');
   assert.equal(payload.code_postal_livraison, '69002');
   assert.equal(payload.ville_livraison, 'Lyon');

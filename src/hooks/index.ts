@@ -28,3 +28,6 @@ export { useNavigation } from './useNavigation.ts';
 export { useProtectedRoute } from './useProtectedRoute.ts';
 export { useScriptCallAccessGuard } from './useScriptCallAccessGuard.ts';
 export { useDynamicGreeting } from './useDynamicGreeting.ts';
+export { useAddressAutocomplete } from './useAddressAutocomplete.ts';
+export type { UseAddressAutocompleteOptions, UseAddressAutocompleteReturn } from './useAddressAutocomplete.ts';
+export * from './useQuiEstCe.ts';

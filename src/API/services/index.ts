@@ -31,4 +31,6 @@ export const loadAsteriskBrowserClient = () => import('./Asterisk.service');
 export { NotificationService, notificationService } from './Notification.service';
 export { StatsService, statsService } from './Stats.service';
 export { EnregistrementService, enregistrementService } from './Enregistrement.service';
+export { AddressService, addressService } from './Address.service';
+export type { SearchAddressOptions } from './Address.service';
 export { csrfService } from './csrf';

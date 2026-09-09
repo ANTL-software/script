@@ -15,7 +15,8 @@ import {
   isLeadB2BTimeSlotUnavailable,
   supportsMmaEmployeeCountQualification,
 } from '../utils/scripts/priseRendezVous.ts';
-import type { RendezVousRecapData, RendezVousTimeOption } from '../utils/types/index.ts';
+import type { AddressSelectionResult, RendezVousRecapData, RendezVousTimeOption } from '../utils/types/index.ts';
+import { capitalizeAddress } from '../utils/scripts/index.ts';
 
 const TIME_SLOTS = getLeadB2BTimeSlots();
 
@@ -42,6 +43,11 @@ export function usePriseRendezVous() {
   const [interlocuteurRole, setInterlocuteurRole] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
+  const [adresse, setAdresse] = useState('');
+  const [codePostal, setCodePostal] = useState('');
+  const [ville, setVille] = useState('');
+  const [pays, setPays] = useState('France');
+  const [addressChanged, setAddressChanged] = useState(false);
   const [entreprisePlusDeCinqSalaries, setEntreprisePlusDeCinqSalaries] = useState(false);
   const [notes, setNotes] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -63,6 +69,11 @@ export function usePriseRendezVous() {
       setInterlocuteurRole(prefill.interlocuteurRole);
       setTelephone(prefill.telephone);
       setEmail(prefill.email);
+      setAdresse(capitalizeAddress(currentProspect.adresse_facturation ?? ''));
+      setCodePostal(currentProspect.code_postal ?? '');
+      setVille(capitalizeAddress(currentProspect.ville ?? ''));
+      setPays(capitalizeAddress(currentProspect.pays ?? 'France'));
+      setAddressChanged(false);
       setEntreprisePlusDeCinqSalaries(false);
       setDateRdv('');
       setHeureRdv(null);
@@ -184,6 +195,18 @@ export function usePriseRendezVous() {
     setErrors((previous) => ({ ...previous, telephone: '' }));
   };
 
+  const changeAddressField = (field: 'adresse' | 'codePostal' | 'ville' | 'pays', value: string): void => {
+    setAddressChanged(true);
+    ({ adresse: setAdresse, codePostal: setCodePostal, ville: setVille, pays: setPays })[field](value);
+  };
+  const selectAddress = (result: AddressSelectionResult): void => {
+    setAdresse(result.adresse);
+    setCodePostal(result.code_postal);
+    setVille(result.ville);
+    setPays(result.pays);
+    setAddressChanged(true);
+  };
+
   const validateForm = (): FormErrors => {
     const nextErrors: FormErrors = {};
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
@@ -238,7 +261,7 @@ export function usePriseRendezVous() {
         ? currentAppelId ?? undefined
         : undefined;
 
-      await leadService.createLead(buildLeadB2BRendezVousPayload({
+      await leadService.createLead({ ...buildLeadB2BRendezVousPayload({
         prospectId: currentProspect.id_prospect,
         campagneId: currentCampaign.id_campagne,
         appelId,
@@ -252,7 +275,10 @@ export function usePriseRendezVous() {
         entreprisePlusDeCinqSalaries: showEntreprisePlusDeCinqSalaries
           ? entreprisePlusDeCinqSalaries
           : false,
-      }));
+      }), ...(addressChanged ? { adresse_prospect: {
+        adresse_facturation: capitalizeAddress(adresse), code_postal: codePostal.trim(),
+        ville: capitalizeAddress(ville), pays: capitalizeAddress(pays),
+      } } : {}) });
 
       setRecap(recapData);
       setIsRecapOpen(true);
@@ -292,6 +318,7 @@ export function usePriseRendezVous() {
     interlocuteurRole,
     telephone,
     email,
+    adresse, codePostal, ville, pays, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     notes,

@@ -16,3 +16,5 @@ export * from './staticObjections.ts';
 export * from './staticPlanAppel.ts';
 export * from './utils.tsx';
 export type { RuntimeEnvironmentVariables } from './runtimeEnvironment.ts';
+export { capitalizeAddress } from './addressFormatting.ts';
+export * from './prospectDeliveryAddress.ts';

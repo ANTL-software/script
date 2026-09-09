@@ -1,7 +1,7 @@
 import './fgaPresentationPreviewModal.scss';
 import { FaFilePdf, FaTimes } from 'react-icons/fa';
 import { Button } from '../button/index.ts';
-import type { Prospect } from '../../../utils/types/prospect.types.ts';
+import type { Prospect } from '../../../utils/types/index.ts';
 
 interface FgaPresentationPreviewModalProps {
   isOpen: boolean;

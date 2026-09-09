@@ -3,6 +3,7 @@ import Select, { type StylesConfig } from 'react-select';
 import { usePriseRendezVous } from '../../../hooks/index.ts';
 import type { RendezVousTimeOption } from '../../../utils/types/index.ts';
 import { RendezVousRecapModal } from '../rendezVousRecapModal/index.ts';
+import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
 import './priseRendezVousPlaceholder.scss';
 
 const selectStyles: StylesConfig<RendezVousTimeOption, false> = {
@@ -79,6 +80,7 @@ export default function PriseRendezVousPlaceholder() {
     interlocuteurRole,
     telephone,
     email,
+    adresse, codePostal, ville, pays, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     notes,
@@ -254,7 +256,28 @@ export default function PriseRendezVousPlaceholder() {
           </div>
 
           <div className="form-card">
-            <h3 className="form-card__title">3. Notes de qualification</h3>
+            <h3 className="form-card__title">3. Adresse du prospect</h3>
+            <div className="form-group">
+              <label htmlFor="leadAddress">Adresse</label>
+              <AddressAutocomplete id="leadAddress" value={adresse}
+                onChange={(value) => changeAddressField('adresse', value)}
+                onSelectAddress={selectAddress} disabled={isSaving} />
+            </div>
+            <div className="form-row">
+              <div className="form-group"><label htmlFor="leadPostcode">Code postal</label>
+                <input id="leadPostcode" value={codePostal} onChange={(event) => changeAddressField('codePostal', event.target.value)} disabled={isSaving} />
+              </div>
+              <div className="form-group"><label htmlFor="leadCity">Ville</label>
+                <input id="leadCity" value={ville} onChange={(event) => changeAddressField('ville', event.target.value)} disabled={isSaving} />
+              </div>
+              <div className="form-group"><label htmlFor="leadCountry">Pays</label>
+                <input id="leadCountry" value={pays} onChange={(event) => changeAddressField('pays', event.target.value)} disabled={isSaving} />
+              </div>
+            </div>
+          </div>
+
+          <div className="form-card">
+            <h3 className="form-card__title">4. Notes de qualification</h3>
             <div className="form-group">
               <textarea
                 id="notes"

@@ -4,6 +4,7 @@ import type { ModePaiement } from '../../../utils/types/index.ts';
 import { formatCurrency, calculateLineTotal } from '../../../utils/scripts/index.ts';
 import { useOrderConfirmation } from '../../../hooks/index.ts';
 import { Button } from '../button/index.ts';
+import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
 import Select from 'react-select';
 
 const PAYMENT_LABELS: Record<ModePaiement, string> = {
@@ -28,7 +29,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
   const {
     items, total, availableModesPaiement,
     formData, isSubmitting, error, validationErrors,
-    handleInputChange, handleSubmit,
+    handleInputChange, handleSelectAddressFacturation, handleSelectAddressLivraison, handleSubmit,
   } = useOrderConfirmation({ onClose, onSuccess });
 
   if (!isOpen) return null;
@@ -165,16 +166,17 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                 <h3><FaMapMarkerAlt /> Adresse de facturation</h3>
                 <div className="confirm-order-modal__form-grid">
                   <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                    <label htmlFor="adresse_facturation">Adresse *</label>
-                    <input
-                      type="text"
+                    <AddressAutocomplete
                       id="adresse_facturation"
+                      label="Adresse"
                       value={formData.adresse_facturation}
-                      onChange={(e) => handleInputChange('adresse_facturation', e.target.value)}
+                      onChange={(val) => handleInputChange('adresse_facturation', val)}
+                      onSelectAddress={handleSelectAddressFacturation}
                       disabled={isSubmitting}
-                      className={validationErrors.adresse_facturation ? 'input-error' : ''}
+                      required
+                      error={validationErrors.adresse_facturation}
+                      placeholder="Rechercher une adresse de facturation (ex: 10 rue de la paix 75002)..."
                     />
-                    {validationErrors.adresse_facturation && <span className="error-message">{validationErrors.adresse_facturation}</span>}
                   </div>
 
                   <div className="confirm-order-modal__form-group">
@@ -248,16 +250,29 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                     </div>
 
                     <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                      <label htmlFor="adresse_livraison">Adresse {formData.meme_adresse ? '(identique)' : '*'}</label>
-                      <input
-                        type="text"
-                        id="adresse_livraison"
-                        value={formData.meme_adresse ? formData.adresse_facturation : formData.adresse_livraison}
-                        onChange={(e) => handleInputChange('adresse_livraison', e.target.value)}
-                        disabled={isSubmitting || formData.meme_adresse}
-                        className={validationErrors.adresse_livraison && !formData.meme_adresse ? 'input-error' : ''}
-                      />
-                      {validationErrors.adresse_livraison && !formData.meme_adresse && <span className="error-message">{validationErrors.adresse_livraison}</span>}
+                      {formData.meme_adresse ? (
+                        <>
+                          <label htmlFor="adresse_livraison">Adresse (identique)</label>
+                          <input
+                            type="text"
+                            id="adresse_livraison"
+                            value={formData.adresse_facturation}
+                            disabled
+                          />
+                        </>
+                      ) : (
+                        <AddressAutocomplete
+                          id="adresse_livraison"
+                          label="Adresse"
+                          value={formData.adresse_livraison}
+                          onChange={(val) => handleInputChange('adresse_livraison', val)}
+                          onSelectAddress={handleSelectAddressLivraison}
+                          disabled={isSubmitting}
+                          required
+                          error={validationErrors.adresse_livraison}
+                          placeholder="Rechercher une adresse de livraison..."
+                        />
+                      )}
                     </div>
 
                     <div className="confirm-order-modal__form-group">

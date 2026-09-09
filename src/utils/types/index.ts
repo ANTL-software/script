@@ -16,3 +16,4 @@ export * from './stats.types.ts';
 export * from './enregistrement.types.ts';
 export * from './app.types.ts';
 export * from './telephony.types.ts';
+export * from './address.types.ts';

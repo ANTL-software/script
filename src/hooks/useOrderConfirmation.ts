@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { FormEvent } from 'react';
 import { useCart, useProspect, useCampaign, useUser, useDialer } from './index';
-import type { ModePaiement, DelaisLivraison } from '../utils/types/index.ts';
+import type { AddressSelectionResult, ModePaiement, DelaisLivraison } from '../utils/types/index.ts';
 import { closingService } from '../API/services/index.ts';
-import { buildVentePayload, getCampaignVariant, validateOrderForm } from '../utils/scripts/index.ts';
+import { buildVentePayload, getCampaignVariant, getProspectDeliveryPrefill, validateOrderForm, capitalizeAddress } from '../utils/scripts/index.ts';
 
 interface FormData {
   adresse_facturation: string;
@@ -55,11 +55,11 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
 
   const [formData, setFormData] = useState<FormData>({
     adresse_facturation: currentProspect?.adresse_facturation || '',
-    adresse_livraison: currentProspect?.adresse_livraison || '',
+    adresse_livraison: getProspectDeliveryPrefill(currentProspect).adresse,
     code_postal_facturation: currentProspect?.code_postal || '',
-    code_postal_livraison: currentProspect?.code_postal || '',
+    code_postal_livraison: getProspectDeliveryPrefill(currentProspect).code_postal,
     ville_facturation: currentProspect?.ville || '',
-    ville_livraison: currentProspect?.ville || '',
+    ville_livraison: getProspectDeliveryPrefill(currentProspect).ville,
     pays_facturation: currentProspect?.pays || 'France',
     pays_livraison: currentProspect?.pays || 'France',
     meme_adresse: !currentProspect?.adresse_livraison || currentProspect?.adresse_livraison === currentProspect?.adresse_facturation,
@@ -86,11 +86,11 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       setFormData(prev => ({
         ...prev,
         adresse_facturation: currentProspect.adresse_facturation || '',
-        adresse_livraison: currentProspect.adresse_livraison || '',
+        adresse_livraison: getProspectDeliveryPrefill(currentProspect).adresse,
         code_postal_facturation: currentProspect.code_postal || '',
-        code_postal_livraison: currentProspect.code_postal || '',
+        code_postal_livraison: getProspectDeliveryPrefill(currentProspect).code_postal,
         ville_facturation: currentProspect.ville || '',
-        ville_livraison: currentProspect.ville || '',
+        ville_livraison: getProspectDeliveryPrefill(currentProspect).ville,
         pays_facturation: currentProspect.pays || 'France',
         pays_livraison: currentProspect.pays || 'France',
         siret: currentProspect.siret || '',
@@ -175,6 +175,59 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     }
   };
 
+  const handleSelectAddressFacturation = (result: AddressSelectionResult) => {
+    setFormData(prev => {
+      const next = {
+        ...prev,
+        adresse_facturation: result.adresse,
+        code_postal_facturation: result.code_postal,
+        ville_facturation: result.ville,
+        pays_facturation: result.pays,
+      };
+      if (prev.meme_adresse) {
+        next.adresse_livraison = result.adresse;
+        next.code_postal_livraison = result.code_postal;
+        next.ville_livraison = result.ville;
+        next.pays_livraison = result.pays;
+      }
+      return next;
+    });
+
+    setValidationErrors(prev => {
+      const next = { ...prev };
+      delete next.adresse_facturation;
+      delete next.code_postal_facturation;
+      delete next.ville_facturation;
+      delete next.pays_facturation;
+      if (formData.meme_adresse) {
+        delete next.adresse_livraison;
+        delete next.code_postal_livraison;
+        delete next.ville_livraison;
+        delete next.pays_livraison;
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAddressLivraison = (result: AddressSelectionResult) => {
+    setFormData(prev => ({
+      ...prev,
+      adresse_livraison: result.adresse,
+      code_postal_livraison: result.code_postal,
+      ville_livraison: result.ville,
+      pays_livraison: result.pays,
+    }));
+
+    setValidationErrors(prev => {
+      const next = { ...prev };
+      delete next.adresse_livraison;
+      delete next.code_postal_livraison;
+      delete next.ville_livraison;
+      delete next.pays_livraison;
+      return next;
+    });
+  };
+
   const handleProspectInfoUpdate = async (updatedFields: Partial<typeof formData>) => {
     if (!currentProspect) return;
 
@@ -198,8 +251,15 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     if (updatedFields.email !== undefined) prospectUpdates.email = updatedFields.email.trim();
     if (updatedFields.raison_sociale !== undefined) prospectUpdates.raison_sociale = updatedFields.raison_sociale.trim();
     if (updatedFields.raison_sociale_livraison !== undefined) prospectUpdates.raison_sociale_livraison = updatedFields.raison_sociale_livraison.trim();
-    if (updatedFields.adresse_facturation !== undefined) prospectUpdates.adresse_facturation = updatedFields.adresse_facturation.trim();
-    if (updatedFields.adresse_livraison !== undefined) prospectUpdates.adresse_livraison = updatedFields.adresse_livraison.trim();
+    if (updatedFields.adresse_facturation !== undefined) prospectUpdates.adresse_facturation = capitalizeAddress(updatedFields.adresse_facturation);
+    if (updatedFields.adresse_livraison !== undefined) {
+      const deliveryStreet = updatedFields.adresse_livraison;
+      const deliveryLocality = [updatedFields.code_postal_livraison, updatedFields.ville_livraison].filter(Boolean).join(' ');
+      const deliveryAddress = deliveryStreet && !updatedFields.meme_adresse
+        ? [deliveryStreet, deliveryLocality].filter(Boolean).join(', ')
+        : deliveryStreet;
+      prospectUpdates.adresse_livraison = capitalizeAddress(deliveryAddress);
+    }
     if (updatedFields.code_postal_facturation !== undefined) prospectUpdates.code_postal = updatedFields.code_postal_facturation.trim();
     if (updatedFields.ville_facturation !== undefined) prospectUpdates.ville = updatedFields.ville_facturation.trim();
     if (updatedFields.pays_facturation !== undefined) prospectUpdates.pays = updatedFields.pays_facturation.trim();
@@ -307,6 +367,8 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     error,
     validationErrors,
     handleInputChange,
+    handleSelectAddressFacturation,
+    handleSelectAddressLivraison,
     handleSubmit,
     handleProspectInfoUpdate,
   };

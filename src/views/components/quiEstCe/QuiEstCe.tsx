@@ -1,86 +1,18 @@
 import './quiEstCe.scss';
-import { useState, useEffect } from 'react';
-import { useCampaign, useProspect, useToast } from '../../../hooks/index.ts';
+import { useQuiEstCe } from '../../../hooks/index.ts';
 import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
+import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
 import { ProgPAReadonly } from '../progPA/index.ts';
 import { FaSave, FaEdit, FaLinkedinIn, FaTimes } from 'react-icons/fa';
-import type { UpdateProspectData } from '../../../utils/types/index.ts';
 import {
   formatDateLong,
   getCampaignVariant,
-  getProspectRelationBadge,
   getStatutProspectLabel,
 } from '../../../utils/scripts/index.ts';
 
-interface EditableFields {
-  nom: string;
-  prenom: string;
-  raison_sociale: string;
-  siret: string;
-  code_naf: string;
-  activite: string;
-  secteur: string;
-  region: string;
-  civilite: string;
-  email: string;
-  telephone_contact: string;
-  adresse_facturation: string;
-  adresse_livraison: string;
-  code_postal: string;
-  ville: string;
-  pays: string;
-}
-
 export default function QuiEstCe() {
-  const { currentProspect, updateProspect, isLoading } = useProspect();
-  const { currentCampaign } = useCampaign();
-  const { showToast } = useToast();
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editedFields, setEditedFields] = useState<EditableFields>({
-    nom: '',
-    prenom: '',
-    raison_sociale: '',
-    siret: '',
-    code_naf: '',
-    activite: '',
-    secteur: '',
-    region: '',
-    civilite: '',
-    email: '',
-    telephone_contact: '',
-    adresse_facturation: '',
-    adresse_livraison: '',
-    code_postal: '',
-    ville: '',
-    pays: '',
-  });
-  const [errors, setErrors] = useState<Partial<EditableFields>>({});
-
-  useEffect(() => {
-    if (currentProspect) {
-      setEditedFields({
-        nom: currentProspect.nom || '',
-        prenom: currentProspect.prenom || '',
-        raison_sociale: currentProspect.raison_sociale || '',
-        siret: currentProspect.siret || '',
-        code_naf: currentProspect.code_naf || '',
-        activite: currentProspect.activite || '',
-        secteur: currentProspect.secteur || '',
-        region: currentProspect.region || '',
-        civilite: currentProspect.civilite || '',
-        email: currentProspect.email || '',
-        telephone_contact: currentProspect.telephone_contact || '',
-        adresse_facturation: currentProspect.adresse_facturation || '',
-        adresse_livraison: currentProspect.adresse_livraison || '',
-        code_postal: currentProspect.code_postal || '',
-        ville: currentProspect.ville || '',
-        pays: currentProspect.pays || 'France',
-      });
-    }
-  }, [currentProspect]);
+  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, isFgaCampaign, recruitmentElementCount, linkedinHref, jobOfferHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave } = useQuiEstCe();
 
   if (!currentProspect) {
     return (
@@ -91,148 +23,6 @@ export default function QuiEstCe() {
       </div>
     );
   }
-
-  const maturityBadge = getProspectRelationBadge(currentProspect.relation_commerciale_campagne?.statut_relation);
-  const posteOuvert = currentProspect.poste_ouvert?.trim() ?? '';
-  const accroche = currentProspect.accroche?.trim() ?? '';
-  const linkedin = currentProspect.linkedin?.trim() ?? '';
-  const urlOffreEmploi = currentProspect.url_offre_emploi?.trim() ?? '';
-  const angleApproche = currentProspect.angle_approche?.trim() ?? '';
-  const isFgaCampaign = currentCampaign?.id_campagne === 11 || currentProspect.id_campagne === 11;
-  const recruitmentElementCount = [posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche].filter(Boolean).length;
-  const linkedinHref = /^https?:\/\//i.test(linkedin) ? linkedin : null;
-  const jobOfferHref = /^https?:\/\//i.test(urlOffreEmploi) ? urlOffreEmploi : null;
-
-  const validateFields = (): boolean => {
-    const newErrors: Partial<EditableFields> = {};
-
-    if (editedFields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editedFields.email)) {
-      newErrors.email = 'Email invalide';
-    }
-
-    // Le telephone n'est pas modifiable (ID fiche), donc pas de validation ici
-    // if (!editedFields.telephone) { ... }
-
-    if (editedFields.code_postal && !/^[0-9]{5}$/.test(editedFields.code_postal)) {
-      newErrors.code_postal = 'Code postal invalide (5 chiffres)';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFieldChange = (field: keyof EditableFields, value: string) => {
-    setEditedFields(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
-  };
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    setErrors({});
-    if (currentProspect) {
-      setEditedFields({
-        nom: currentProspect.nom || '',
-        prenom: currentProspect.prenom || '',
-        raison_sociale: currentProspect.raison_sociale || '',
-        siret: currentProspect.siret || '',
-        code_naf: currentProspect.code_naf || '',
-        activite: currentProspect.activite || '',
-        secteur: currentProspect.secteur || '',
-        region: currentProspect.region || '',
-        civilite: currentProspect.civilite || '',
-        email: currentProspect.email || '',
-        telephone_contact: currentProspect.telephone_contact || '',
-        adresse_facturation: currentProspect.adresse_facturation || '',
-        adresse_livraison: currentProspect.adresse_livraison || '',
-        code_postal: currentProspect.code_postal || '',
-        ville: currentProspect.ville || '',
-        pays: currentProspect.pays || 'France',
-      });
-    }
-  };
-
-  const handleSave = async () => {
-    if (!validateFields()) {
-      showToast('error', 'Veuillez corriger les erreurs');
-      return;
-    }
-
-    setIsSaving(true);
-
-    try {
-      const dataToUpdate: UpdateProspectData = {};
-
-      // Champs modifiables (seulement ceux qui ont changé)
-      if (editedFields.nom.trim() !== (currentProspect.nom || '').trim()) {
-        dataToUpdate.nom = editedFields.nom.trim();
-      }
-      if (editedFields.prenom.trim() !== (currentProspect.prenom || '').trim()) {
-        dataToUpdate.prenom = editedFields.prenom.trim();
-      }
-      if (editedFields.raison_sociale.trim() !== (currentProspect.raison_sociale || '').trim()) {
-        dataToUpdate.raison_sociale = editedFields.raison_sociale.trim();
-      }
-      if (editedFields.siret.trim() !== (currentProspect.siret || '').trim()) {
-        dataToUpdate.siret = editedFields.siret.trim();
-      }
-      if (editedFields.code_naf.trim() !== (currentProspect.code_naf || '').trim()) {
-        dataToUpdate.code_naf = editedFields.code_naf.trim();
-      }
-      if (editedFields.activite.trim() !== (currentProspect.activite || '').trim()) {
-        dataToUpdate.activite = editedFields.activite.trim();
-      }
-      if (editedFields.secteur.trim() !== (currentProspect.secteur || '').trim()) {
-        dataToUpdate.secteur = editedFields.secteur.trim();
-      }
-      if (editedFields.region.trim() !== (currentProspect.region || '').trim()) {
-        dataToUpdate.region = editedFields.region.trim();
-      }
-      if (editedFields.civilite.trim() !== (currentProspect.civilite || '').trim()) {
-        dataToUpdate.civilite = editedFields.civilite.trim();
-      }
-      if (editedFields.email.trim() !== (currentProspect.email || '').trim()) {
-        dataToUpdate.email = editedFields.email.trim();
-      }
-      if (editedFields.telephone_contact.trim() !== (currentProspect.telephone_contact || '').trim()) {
-        dataToUpdate.telephone_contact = editedFields.telephone_contact.trim();
-      }
-      if (editedFields.adresse_facturation.trim() !== (currentProspect.adresse_facturation || '').trim()) {
-        dataToUpdate.adresse_facturation = editedFields.adresse_facturation.trim();
-      }
-      if (editedFields.adresse_livraison.trim() !== (currentProspect.adresse_livraison || '').trim()) {
-        dataToUpdate.adresse_livraison = editedFields.adresse_livraison.trim();
-      }
-      if (editedFields.code_postal.trim() !== (currentProspect.code_postal || '').trim()) {
-        dataToUpdate.code_postal = editedFields.code_postal.trim();
-      }
-      if (editedFields.ville.trim() !== (currentProspect.ville || '').trim()) {
-        dataToUpdate.ville = editedFields.ville.trim();
-      }
-      if (editedFields.pays.trim() !== (currentProspect.pays || 'France').trim()) {
-        dataToUpdate.pays = editedFields.pays.trim();
-      }
-
-      if (Object.keys(dataToUpdate).length === 0) {
-        showToast('info', 'Aucune modification a enregistrer');
-        setIsEditing(false);
-        return;
-      }
-
-      await updateProspect(dataToUpdate);
-      showToast('success', 'Prospect mis a jour avec succes');
-      setIsEditing(false);
-    } catch {
-      showToast('error', 'Erreur lors de la mise a jour');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <div className="qui-est-ce">
@@ -515,25 +305,30 @@ export default function QuiEstCe() {
           <h3>Adresse</h3>
           <div className="qui-est-ce__grid">
             <div className="qui-est-ce__field qui-est-ce__field--full">
-              <span className="qui-est-ce__label">Adresse facturation</span>
+              <label className="qui-est-ce__label" htmlFor="qui-address-billing">Adresse facturation</label>
               {isEditing ? (
-                <Input
+                <AddressAutocomplete
+                  id="qui-address-billing"
                   value={editedFields.adresse_facturation}
-                  onChange={(e) => handleFieldChange('adresse_facturation', e.target.value)}
+                  onChange={(val) => handleFieldChange('adresse_facturation', val)}
+                  onSelectAddress={handleSelectAdresseFacturation}
                   disabled={isLoading || isSaving}
+                  placeholder="Rechercher une adresse de facturation (ex: 10 rue de la paix)..."
                 />
               ) : (
                 <span className="qui-est-ce__value">{currentProspect.adresse_facturation || '-'}</span>
               )}
             </div>
             <div className="qui-est-ce__field qui-est-ce__field--full">
-              <span className="qui-est-ce__label">Adresse livraison</span>
+              <label className="qui-est-ce__label" htmlFor="qui-address-delivery">Adresse livraison complète</label>
               {isEditing ? (
-                <Input
+                <AddressAutocomplete
+                  id="qui-address-delivery"
                   value={editedFields.adresse_livraison}
-                  onChange={(e) => handleFieldChange('adresse_livraison', e.target.value)}
+                  onChange={(val) => handleFieldChange('adresse_livraison', val)}
+                  onSelectAddress={handleSelectAdresseLivraison}
                   disabled={isLoading || isSaving}
-                  placeholder="Adresse de livraison (si differente de l''adresse de facturation)"
+                  placeholder="Rechercher une adresse de livraison..."
                 />
               ) : (
                 <span className="qui-est-ce__value">{currentProspect.adresse_livraison || '-'}</span>

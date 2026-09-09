@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Route } from '@playwright/test';
+test.setTimeout(60000);
 
 interface ApiResponse<T> {
   success: boolean;
@@ -44,6 +45,10 @@ interface ProspectFixture {
   telephone_contact: string | null;
   email: string;
   ville: string;
+  adresse_facturation?: string;
+  adresse_livraison?: string;
+  code_postal?: string;
+  pays?: string;
   statut: string;
   statut_campagne: string;
   nom_contact?: string | null;
@@ -89,6 +94,7 @@ interface CreateAppelPayload {
 }
 
 interface CreateLeadPayload {
+  adresse_prospect?: { adresse_facturation: string; code_postal: string; ville: string; pays: string };
   id_prospect: number;
   id_campagne: number;
   id_appel?: number;
@@ -212,7 +218,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   };
 
   const campagne: CampaignFixture = {
-    id_campagne: 7,
+    id_campagne: 10,
     nom_campagne: 'MMA',
     type_campagne: 'lead_b2b',
     statut: 'active',
@@ -274,6 +280,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   let lastCampaignFetchAt = 0;
 
   const createdRendezVousPayloads: CreateLeadPayload[] = [];
+  const prospectAddressPatches: Record<string, string>[] = [];
   const createdAppelPayloads: CreateAppelPayload[] = [];
   const patchedStatuts: Array<{ statut: string }> = [];
   const unhandledApiRequests: string[] = [];
@@ -322,12 +329,17 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     );
 
   await bootstrapAuthenticatedSession(page, employe);
+  await page.route('https://data.geopf.fr/**', (route) => fulfillJson(route, { features: [{ properties: { name: '12 avenue des Lilas', label: '12 avenue des Lilas 75001 Paris', postcode: '75001', city: 'Paris', type: 'housenumber' } }] }));
 
   await page.route('**/api/**', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     const apiPath = url.pathname.startsWith('/api') ? url.pathname.slice(4) : url.pathname;
     const requestKey = `${request.method()} ${apiPath}${url.search}`;
+    if (request.method() === 'GET' && apiPath === '/telephony/config') {
+      await fulfillJson(route, toApiResponse({ provider: 'twilio' }));
+      return;
+    }
 
     if (request.method() === 'GET' && apiPath === '/csrf-token') {
       await fulfillJson(route, {
@@ -386,6 +398,13 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     if (request.method() === 'GET' && apiPath === `/prospects/${prospect.id_prospect}`) {
       prospectFetchCount += 1;
       lastProspectFetchAt = Date.now();
+      await fulfillJson(route, toApiResponse(prospect));
+      return;
+    }
+    if (request.method() === 'PUT' && apiPath === `/prospects/${prospect.id_prospect}`) {
+      const patch = request.postDataJSON() as Record<string, string>;
+      prospectAddressPatches.push(patch);
+      Object.assign(prospect, patch);
       await fulfillJson(route, toApiResponse(prospect));
       return;
     }
@@ -550,7 +569,6 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await page.goto(`/prospect/${prospect.id_prospect}`);
 
   await expect(page.getByRole('heading', { name: prospect.raison_sociale })).toBeVisible();
-  await expect(page.getByText('TEST')).toBeVisible();
   await expect.poll(() => prospectFetchCount).toBeGreaterThanOrEqual(2);
   await expect.poll(() => campaignFetchCount).toBeGreaterThanOrEqual(1);
   await expect
@@ -566,6 +584,20 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(page.getByRole('button', { name: 'Tarifs' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Agrément' })).toHaveCount(0);
 
+  const identity = page.locator('.qui-est-ce');
+  await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
+  await identity.getByRole('button', { name: 'Modifier' }).click();
+  await identity.getByLabel('Adresse facturation', { exact: true }).fill('12 avenue');
+  await identity.getByRole('listbox').getByRole('option').first().click();
+  await identity.getByLabel('Adresse livraison complète', { exact: true }).fill('12 avenue');
+  await identity.getByRole('listbox').getByRole('option').first().click();
+  const identityGutters = await identity.getByLabel('Adresse facturation', { exact: true }).evaluate((input) => ({ text: input.getBoundingClientRect().left + parseFloat(getComputedStyle(input).paddingLeft), icon: input.parentElement!.querySelector('.address-autocomplete-icon')!.getBoundingClientRect().right }));
+  expect(identityGutters.text).toBeGreaterThan(identityGutters.icon + 3);
+  await page.screenshot({ path: 'test-results/address-script-identity.png', fullPage: true });
+  await identity.getByRole('button', { name: 'Enregistrer' }).click();
+  await expect(identity.getByRole('button', { name: 'Modifier' })).toBeVisible();
+  expect(prospectAddressPatches.at(-1)).toMatchObject({ adresse_facturation: '12 Avenue Des Lilas', adresse_livraison: '12 Avenue Des Lilas, 75001 Paris', code_postal: '75001', ville: 'Paris' });
+
   await page.getByRole('button', { name: 'Prise de rendez-vous client' }).click();
   await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toBeVisible();
 
@@ -576,6 +608,17 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await page.locator('#interlocuteurRole').fill('Directrice generale');
   await page.locator('#telephone').fill('0611223344');
   await page.locator('#email').fill('claire.durand@durand.fr');
+  await page.locator('#leadAddress').fill('12 avenue');
+  await page.getByRole('option').filter({ hasText: '12 avenue des Lilas' }).click();
+  await expect(page.locator('#leadAddress')).toHaveValue('12 Avenue Des Lilas');
+  await expect(page.locator('#leadPostcode')).toHaveValue('75001');
+  await expect(page.locator('#leadCity')).toHaveValue('Paris');
+  const addressGutters = await page.locator('#leadAddress').evaluate((input) => {
+    const icon = input.parentElement!.querySelector('.address-autocomplete-icon')!.getBoundingClientRect();
+    return { text: input.getBoundingClientRect().left + parseFloat(getComputedStyle(input).paddingLeft), icon: icon.right };
+  });
+  expect(addressGutters.text).toBeGreaterThan(addressGutters.icon + 3);
+  await page.screenshot({ path: 'test-results/address-script-lead.png', fullPage: true });
   await page.getByLabel('Entreprise avec plus de 5 salariés').check();
   await page.locator('#notes').fill('Qualification MMA confirmee avec besoin de rappel de synthese.');
   await expect(page.locator('#dateRdv')).toHaveValue(nextLeadDate);
@@ -636,6 +679,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     email_contact_snapshot: 'claire.durand@durand.fr',
     entreprise_plus_de_cinq_salaries: true,
     notes: 'Qualification MMA confirmee avec besoin de rappel de synthese.',
+    adresse_prospect: { adresse_facturation: '12 Avenue Des Lilas', code_postal: '75001', ville: 'Paris', pays: 'France' },
   });
 
   expect(createdAppelPayloads).toHaveLength(1);

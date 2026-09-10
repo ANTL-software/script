@@ -191,6 +191,10 @@
   overflow: hidden;
 }
 
+.landing-page__lead-order[hidden] {
+  display: none;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

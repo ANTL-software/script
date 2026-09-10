@@ -586,6 +586,18 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
 
   const identity = page.locator('.qui-est-ce');
   await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Qui sommes-nous ?' }).click();
+  await expect(page.getByRole('heading', { name: 'Qui sommes-nous ?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Agenda personnel' }).click();
+  await expect(page.locator('.agent-calendar')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Qui est-ce ?' }).click();
+  await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
   await identity.getByRole('button', { name: 'Modifier' }).click();
   await identity.getByLabel('Adresse facturation', { exact: true }).fill('12 avenue');
   await identity.getByRole('listbox').getByRole('option').first().click();
@@ -622,6 +634,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
 
   await page.getByRole('button', { name: 'Qui est-ce ?' }).click();
   await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Prise de rendez-vous client' }).click();
   await expect(page.locator('#dateRdv')).toHaveValue(nextLeadDate);
   await expect(page.getByPlaceholder('HH')).toHaveValue('10');

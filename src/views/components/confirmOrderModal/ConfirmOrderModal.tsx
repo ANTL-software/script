@@ -166,6 +166,18 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                 <h3><FaMapMarkerAlt /> Adresse de facturation</h3>
                 <div className="confirm-order-modal__form-grid">
                   <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
+                    <label htmlFor="raison_sociale_facturation">Raison sociale</label>
+                    <input
+                      type="text"
+                      id="raison_sociale_facturation"
+                      value={formData.raison_sociale_facturation}
+                      onChange={(e) => handleInputChange('raison_sociale_facturation', e.target.value)}
+                      disabled={isSubmitting}
+                      maxLength={255}
+                    />
+                  </div>
+
+                  <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
                     <AddressAutocomplete
                       id="adresse_facturation"
                       label="Adresse"
@@ -243,7 +255,7 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
                       <input
                         type="text"
                         id="raison_sociale_livraison"
-                        value={formData.meme_adresse ? formData.raison_sociale : formData.raison_sociale_livraison}
+                        value={formData.meme_adresse ? formData.raison_sociale_facturation : formData.raison_sociale_livraison}
                         onChange={(e) => handleInputChange('raison_sociale_livraison', e.target.value)}
                         disabled={isSubmitting || formData.meme_adresse}
                       />

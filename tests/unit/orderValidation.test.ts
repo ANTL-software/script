@@ -4,6 +4,7 @@ import test from 'node:test';
 import { buildVentePayload, validateOrderForm } from '../../src/utils/scripts/orderValidation.ts';
 
 const baseFormData = {
+  raison_sociale_facturation: 'Cabinet Médical Alpha Facturation',
   adresse_facturation: '10 rue des Lilas',
   adresse_livraison: '20 avenue Victor Hugo',
   raison_sociale: 'Cabinet Médical Alpha',
@@ -88,8 +89,9 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
   assert.equal(payload.id_prospect, 17);
   assert.equal(payload.id_campagne, 4);
   assert.equal(payload.id_appel, 12);
+  assert.equal(payload.raison_sociale_facturation, 'Cabinet Médical Alpha Facturation');
   assert.equal(payload.adresse_livraison, '10 Rue Des Lilas');
-  assert.equal(payload.raison_sociale_livraison, 'Cabinet Médical Alpha');
+  assert.equal(payload.raison_sociale_livraison, 'Cabinet Médical Alpha Facturation');
   assert.equal(payload.code_postal_livraison, '75001');
   assert.equal(payload.ville_livraison, 'Paris');
   assert.equal(payload.notes, undefined);

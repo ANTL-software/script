@@ -6,6 +6,7 @@ import { closingService } from '../API/services/index.ts';
 import { buildVentePayload, getCampaignVariant, getProspectDeliveryPrefill, validateOrderForm, capitalizeAddress } from '../utils/scripts/index.ts';
 
 interface FormData {
+  raison_sociale_facturation: string;
   adresse_facturation: string;
   adresse_livraison: string;
   code_postal_facturation: string;
@@ -54,6 +55,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   );
 
   const [formData, setFormData] = useState<FormData>({
+    raison_sociale_facturation: currentProspect?.raison_sociale || '',
     adresse_facturation: currentProspect?.adresse_facturation || '',
     adresse_livraison: getProspectDeliveryPrefill(currentProspect).adresse,
     code_postal_facturation: currentProspect?.code_postal || '',
@@ -85,6 +87,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
     if (currentProspect) {
       setFormData(prev => ({
         ...prev,
+        raison_sociale_facturation: currentProspect.raison_sociale || '',
         adresse_facturation: currentProspect.adresse_facturation || '',
         adresse_livraison: getProspectDeliveryPrefill(currentProspect).adresse,
         code_postal_facturation: currentProspect.code_postal || '',
@@ -130,7 +133,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       setFormData(prev => ({
         ...prev,
         meme_adresse: true,
-        raison_sociale_livraison: prev.raison_sociale,
+        raison_sociale_livraison: prev.raison_sociale_facturation,
         adresse_livraison: prev.adresse_facturation,
         code_postal_livraison: prev.code_postal_facturation,
         ville_livraison: prev.ville_facturation,
@@ -157,7 +160,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       const next = { ...prev, [field]: updatedValue };
       // Si on modifie un champ de facturation et que meme_adresse est coché, copier vers livraison
       if (prev.meme_adresse) {
-        if (field === 'raison_sociale') next.raison_sociale_livraison = updatedValue as string;
+        if (field === 'raison_sociale_facturation') next.raison_sociale_livraison = updatedValue as string;
         if (field === 'adresse_facturation') next.adresse_livraison = updatedValue as string;
         if (field === 'code_postal_facturation') next.code_postal_livraison = updatedValue as string;
         if (field === 'ville_facturation') next.ville_livraison = updatedValue as string;

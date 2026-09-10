@@ -49,6 +49,7 @@ export interface Vente {
   created_at: string;
   updated_at: string;
   details?: DetailVente[]; // Alias Sequelize pour les détails de vente
+  raison_sociale_facturation?: string;
   adresse_facturation?: string;
   adresse_livraison?: string;
   raison_sociale_livraison?: string;
@@ -71,6 +72,7 @@ export interface CreateVenteData {
   id_appel?: number;
   mode_paiement?: ModePaiement;
   delais_livraison?: DelaisLivraison;
+  raison_sociale_facturation?: string;
   adresse_facturation?: string;
   adresse_livraison?: string;
   raison_sociale_livraison?: string;

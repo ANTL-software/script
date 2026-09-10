@@ -3,34 +3,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { ErrorBoundary } from "./views/components/errorBoundary/ErrorBoundary";
-
-// Enregistrement du Service Worker pour PWA (approche manuelle comme USV)
-if ('serviceWorker' in navigator && import.meta.env.MODE === 'production') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-
-        // Écouter les mises à jour du service worker
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // Nouvelle version disponible
-                if (confirm('Une nouvelle version est disponible. Recharger maintenant ?')) {
-                  window.location.reload();
-                }
-              }
-            });
-          }
-        });
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
-}
+import { ServiceWorkerUpdateNotifier } from './views/components/index.ts';
 
 if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
@@ -56,6 +29,7 @@ createRoot(document.getElementById("root")!).render(
     <ErrorBoundary>
       <AlertProvider>
         <ToastProvider>
+          <ServiceWorkerUpdateNotifier />
           <AppProvider>
             <UserProvider>
               <DialerProvider>

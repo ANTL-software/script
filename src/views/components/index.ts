@@ -35,6 +35,7 @@ export { QuiSommesNous } from './quiSommesNous/index.ts';
 export { RendezVousDetailsModal } from './rendezVousDetailsModal/index.ts';
 export { RendezVousModal } from './rendezVousModal/index.ts';
 export { RendezVousRecapModal } from './rendezVousRecapModal/index.ts';
+export { ServiceWorkerUpdateNotifier } from './serviceWorkerUpdateNotifier/index.ts';
 export { PrimeGauge } from './primeGauge/index.ts';
 export { Toast, ToastContainer } from './toast/index.ts';
 export { TypeFicheBadge } from './typeFicheBadge/index.ts';

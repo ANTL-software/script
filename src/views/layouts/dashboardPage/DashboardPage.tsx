@@ -35,7 +35,8 @@ export default function DashboardPage() {
           <input
             type="text"
             className="dashboard__search-input"
-            placeholder="Numéro de téléphone du prospect..."
+            inputMode="tel"
+            placeholder="Numéro de téléphone, ex. +377 93 10 52 52"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             disabled={isSearching}

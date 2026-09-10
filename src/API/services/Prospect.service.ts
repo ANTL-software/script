@@ -31,7 +31,7 @@ export class ProspectService {
 
   public async getProspectByPhone(phone: string, campagneId?: number | null): Promise<ProspectModel> {
     const query = campagneId ? `?campagne=${campagneId}` : '';
-    const response = await apiCalls.get<Prospect>(`/prospects/telephone/${phone}${query}`);
+    const response = await apiCalls.get<Prospect>(`/prospects/telephone/${encodeURIComponent(phone)}${query}`);
     const data = throwIfApiError(response, 'Prospect non trouvé');
     return ProspectModel.fromJSON(data);
   }

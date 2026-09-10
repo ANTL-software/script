@@ -239,6 +239,18 @@ test('ProspectService transmet la campagne runtime lors de la recherche manuelle
   );
 });
 
+test('ProspectService encode le signe plus des numéros internationaux dans la recherche manuelle', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  const { prospectService } = await import('../../src/API/services/Prospect.service.ts');
+
+  await prospectService.getProspectByPhone('+37793105252', 7);
+
+  assert.equal(
+    globalThis.capturedHistoryEndpoints?.at(-1),
+    '/prospects/telephone/%2B37793105252?campagne=7',
+  );
+});
+
 test('ProspectNoteService force le scope FGA sur lecture, ecriture et suppression', async () => {
   globalThis.capturedHistoryEndpoints = [];
   globalThis.capturedProspectNotePayload = undefined;

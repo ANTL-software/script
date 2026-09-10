@@ -4,6 +4,7 @@ import { useUser } from './useUser';
 import { useDialer } from './useDialer';
 import { prospectService, rendezVousService, statsService, notificationService } from '../API/services';
 import type { RendezVous, StatsDuJour, Notification } from '../utils/types';
+import { cleanAndValidatePhone } from '../utils/scripts';
 
 const DASHBOARD_POLL_INTERVAL = 60_000;
 
@@ -84,10 +85,8 @@ export function useDashboardData() {
     setSearchError(null);
 
     try {
-      // Nettoyer tous les séparateurs courants avant envoi (le backend normalise le reste)
-      const cleaned = searchQuery.trim().replace(/[\s\-().]/g, '');
-      const isPhone = /^[+\d]{6,}$/.test(cleaned);
-      if (isPhone) {
+      const cleaned = cleanAndValidatePhone(searchQuery);
+      if (cleaned) {
         const prospectModel = await prospectService.getProspectByPhone(cleaned, currentCampagneId);
         // Ajouter le paramètre ?source=manual pour distinguer les recherches manuelles
         navigate(`/prospect/${prospectModel.toJSON().id_prospect}?source=manual`);

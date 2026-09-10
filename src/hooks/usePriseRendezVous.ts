@@ -60,29 +60,34 @@ export function usePriseRendezVous() {
   const timeSlots = filterAvailableLeadB2BTimeSlots(TIME_SLOTS, unavailableTimeSlots);
   const showEntreprisePlusDeCinqSalaries = supportsMmaEmployeeCountQualification(currentCampaign);
 
-  useEffect(() => {
+  const resetForm = (): void => {
     if (!currentProspect) return;
     const prefill = getLeadB2BRendezVousPrefill(currentProspect);
 
-    queueMicrotask(() => {
-      setInterlocuteurNom(prefill.interlocuteurNom);
-      setInterlocuteurRole(prefill.interlocuteurRole);
-      setTelephone(prefill.telephone);
-      setEmail(prefill.email);
-      setAdresse(capitalizeAddress(currentProspect.adresse_facturation ?? ''));
-      setCodePostal(currentProspect.code_postal ?? '');
-      setVille(capitalizeAddress(currentProspect.ville ?? ''));
-      setPays(capitalizeAddress(currentProspect.pays ?? 'France'));
-      setAddressChanged(false);
-      setEntreprisePlusDeCinqSalaries(false);
-      setDateRdv('');
-      setHeureRdv(null);
-      setHeureInput('');
-      setMinuteInput('');
-      setNotes('');
-      setErrors({});
-    });
-  }, [currentProspect]);
+    setInterlocuteurNom(prefill.interlocuteurNom);
+    setInterlocuteurRole(prefill.interlocuteurRole);
+    setTelephone(prefill.telephone);
+    setEmail(prefill.email);
+    setAdresse(capitalizeAddress(currentProspect.adresse_facturation ?? ''));
+    setCodePostal(currentProspect.code_postal ?? '');
+    setVille(capitalizeAddress(currentProspect.ville ?? ''));
+    setPays(capitalizeAddress(currentProspect.pays ?? 'France'));
+    setAddressChanged(false);
+    setEntreprisePlusDeCinqSalaries(false);
+    setDateRdv('');
+    setHeureRdv(null);
+    setHeureInput('');
+    setMinuteInput('');
+    setNotes('');
+    setErrors({});
+  };
+
+  useEffect(() => {
+    resetForm();
+    // Le brouillon est local à la fiche : une mise à jour de ses données ne doit pas l'écraser.
+    // Il est réinitialisé uniquement lors du passage à un autre prospect.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentProspect?.id_prospect]);
 
   useEffect(() => {
     if (!currentCampaign?.id_campagne || !isLeadB2BDateAllowed(dateRdv)) {
@@ -282,6 +287,7 @@ export function usePriseRendezVous() {
 
       setRecap(recapData);
       setIsRecapOpen(true);
+      resetForm();
       void loadRendezVous();
     } catch (saveError) {
       showToast('error', getErrorMessage(saveError, 'Erreur lors de l enregistrement du rendez-vous'));

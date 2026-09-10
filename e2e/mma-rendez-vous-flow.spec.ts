@@ -608,6 +608,16 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await page.locator('#interlocuteurRole').fill('Directrice generale');
   await page.locator('#telephone').fill('0611223344');
   await page.locator('#email').fill('claire.durand@durand.fr');
+
+  await page.getByRole('button', { name: 'Qui est-ce ?' }).click();
+  await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
+  await page.getByRole('button', { name: 'Prise de rendez-vous client' }).click();
+  await expect(page.locator('#dateRdv')).toHaveValue(nextLeadDate);
+  await expect(page.getByPlaceholder('HH')).toHaveValue('10');
+  await expect(page.getByPlaceholder('MM')).toHaveValue('30');
+  await expect(page.locator('#interlocuteurNom')).toHaveValue('Claire Durand');
+  await expect(page.locator('#telephone')).toHaveValue('0611223344');
+
   await page.locator('#leadAddress').fill('12 avenue');
   await page.getByRole('option').filter({ hasText: '12 avenue des Lilas' }).click();
   await expect(page.locator('#leadAddress')).toHaveValue('12 Avenue Des Lilas');

@@ -92,8 +92,7 @@ export default function LandingPage() {
                 campagneId={currentCampaign?.id_campagne}
               />
             )}
-            {currentView === 'commande' && (
-              campaignUi.commandeMode === 'sales' ? (
+            {campaignUi.commandeMode === 'sales' && currentView === 'commande' && (
                 <div className="landing-page__commande">
                   <div className="landing-page__catalogue">
                     <CatalogueProduits />
@@ -102,9 +101,11 @@ export default function LandingPage() {
                     <Panier onValidateOrder={() => setIsModalOpen(true)} />
                   </div>
                 </div>
-              ) : (
+            )}
+            {campaignUi.commandeMode === 'placeholder' && (
+              <div hidden={currentView !== 'commande'}>
                 <PriseRendezVousPlaceholder />
-              )
+              </div>
             )}
           </div>
         </div>

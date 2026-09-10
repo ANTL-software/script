@@ -601,6 +601,17 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await page.getByRole('button', { name: 'Prise de rendez-vous client' }).click();
   await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toBeVisible();
 
+  const leadForm = page.locator('.prise-rdv-form');
+  const leadFormMetrics = await leadForm.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+  }));
+  expect(leadFormMetrics.scrollHeight).toBeGreaterThan(leadFormMetrics.clientHeight);
+  await leadForm.hover();
+  await page.mouse.wheel(0, 400);
+  await expect.poll(() => leadForm.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await leadForm.evaluate((element) => element.scrollTo({ top: 0 }));
+
   await page.locator('#dateRdv').fill(nextLeadDate);
   await page.getByPlaceholder('HH').fill('10');
   await page.getByPlaceholder('MM').fill('30');

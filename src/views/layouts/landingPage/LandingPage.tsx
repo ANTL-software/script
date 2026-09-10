@@ -103,7 +103,7 @@ export default function LandingPage() {
                 </div>
             )}
             {campaignUi.commandeMode === 'placeholder' && (
-              <div hidden={currentView !== 'commande'}>
+              <div className="landing-page__lead-order" hidden={currentView !== 'commande'}>
                 <PriseRendezVousPlaceholder />
               </div>
             )}

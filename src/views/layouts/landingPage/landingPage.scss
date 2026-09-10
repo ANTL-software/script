@@ -183,6 +183,14 @@
   overflow-y: auto;
 }
 
+.landing-page__lead-order {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 @keyframes slideDown {
   from {
     opacity: 0;

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { buildVentePayload, validateOrderForm } from '../../src/utils/scripts/orderValidation.ts';
+import { buildVentePayload, synchronizeOrderCompanyNames, validateOrderForm } from '../../src/utils/scripts/orderValidation.ts';
 
 const baseFormData = {
   raison_sociale_facturation: 'Cabinet Médical Alpha Facturation',
@@ -24,6 +24,43 @@ const baseFormData = {
   plage_horaire_livraison: '  9h-12h  ',
   livraison_offerte: true,
 };
+
+test('la raison sociale principale alimente les raisons sociales encore par défaut', () => {
+  const synchronized = synchronizeOrderCompanyNames(baseFormData, 'raison_sociale', 'SAS Goubier');
+
+  assert.equal(synchronized.raison_sociale, 'SAS Goubier');
+  assert.equal(synchronized.raison_sociale_facturation, 'Cabinet Médical Alpha Facturation');
+  assert.equal(synchronized.raison_sociale_livraison, 'Pharmacie Centrale Beta');
+
+  const defaults = synchronizeOrderCompanyNames({
+    ...baseFormData,
+    raison_sociale_facturation: baseFormData.raison_sociale,
+    raison_sociale_livraison: baseFormData.raison_sociale,
+  }, 'raison_sociale', 'SAS Goubier');
+
+  assert.equal(defaults.raison_sociale_facturation, 'SAS Goubier');
+  assert.equal(defaults.raison_sociale_livraison, 'SAS Goubier');
+});
+
+test('une raison sociale explicitement différente reste indépendante', () => {
+  const synchronized = synchronizeOrderCompanyNames({
+    ...baseFormData,
+    raison_sociale_facturation: 'Facturation dédiée',
+    raison_sociale_livraison: 'Livraison dédiée',
+  }, 'raison_sociale', 'SAS Goubier');
+
+  assert.equal(synchronized.raison_sociale_facturation, 'Facturation dédiée');
+  assert.equal(synchronized.raison_sociale_livraison, 'Livraison dédiée');
+});
+
+test('une livraison identique suit la raison sociale de facturation', () => {
+  const synchronized = synchronizeOrderCompanyNames({
+    ...baseFormData,
+    meme_adresse: true,
+  }, 'raison_sociale_facturation', 'Facturation dédiée');
+
+  assert.equal(synchronized.raison_sociale_livraison, 'Facturation dédiée');
+});
 
 test('validateOrderForm remonte les erreurs attendues', () => {
   const errors = validateOrderForm({

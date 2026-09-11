@@ -25,6 +25,48 @@ interface OrderFormData {
   livraison_offerte: boolean;
 }
 
+export interface OrderCompanyNameState {
+  raison_sociale: string;
+  raison_sociale_facturation: string;
+  raison_sociale_livraison: string;
+  meme_adresse: boolean;
+}
+
+export type OrderCompanyNameField =
+  | 'raison_sociale'
+  | 'raison_sociale_facturation'
+  | 'raison_sociale_livraison';
+
+function followsMainCompanyName(value: string, previousMainCompanyName: string): boolean {
+  const normalize = (companyName: string): string => companyName.trim().replace(/\s+/g, ' ').toLocaleLowerCase('fr-FR');
+  const normalizedValue = normalize(value);
+  return normalizedValue.length === 0 || normalizedValue === normalize(previousMainCompanyName);
+}
+
+export function synchronizeOrderCompanyNames<T extends OrderCompanyNameState>(
+  current: T,
+  field: OrderCompanyNameField,
+  value: string,
+): T {
+  const next: T = { ...current, [field]: value };
+
+  if (field === 'raison_sociale') {
+    if (followsMainCompanyName(current.raison_sociale_facturation, current.raison_sociale)) {
+      next.raison_sociale_facturation = value;
+    }
+
+    if (current.meme_adresse) {
+      next.raison_sociale_livraison = next.raison_sociale_facturation;
+    } else if (followsMainCompanyName(current.raison_sociale_livraison, current.raison_sociale)) {
+      next.raison_sociale_livraison = value;
+    }
+  } else if (field === 'raison_sociale_facturation' && current.meme_adresse) {
+    next.raison_sociale_livraison = value;
+  }
+
+  return next;
+}
+
 export interface OrderValidationErrors {
   [key: string]: string;
 }

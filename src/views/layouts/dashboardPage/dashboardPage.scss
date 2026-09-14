@@ -91,6 +91,9 @@
   grid-template-columns: 1fr 1fr;
   gap: vars.$spacing-lg;
 }
+#dashboardPage .dashboard__grid--single {
+  grid-template-columns: 1fr;
+}
 @media (max-width: vars.$breakpoint-md) {
   #dashboardPage .dashboard__grid {
     grid-template-columns: 1fr;
@@ -103,6 +106,22 @@
   border-radius: vars.$radius-lg;
   padding: vars.$spacing-lg;
   box-shadow: vars.$shadow-sm;
+}
+#dashboardPage .dashboard__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-md;
+  margin-bottom: vars.$spacing-md;
+}
+#dashboardPage .dashboard__card-header .dashboard__section-title {
+  margin-bottom: 0;
+}
+@media (max-width: vars.$breakpoint-sm) {
+  #dashboardPage .dashboard__card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
 }
 // Empty state
 #dashboardPage .dashboard__empty-state {
@@ -221,6 +240,10 @@
 #dashboardPage .dashboard__badge--alert {
   background: vars.$colorDanger;
   color: vars.$colorWhite;
+}
+#dashboardPage .dashboard__badge--warning {
+  background: #fef3c7;
+  color: #92400e;
 }
 // Loading
 #dashboardPage .dashboard__loading {
@@ -486,30 +509,9 @@
   margin: 0;
   line-height: vars.$lineHeight-normal;
 }
-// Calendrier trigger
-#dashboardPage .dashboard__calendar-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: vars.$spacing-md;
-}
-#dashboardPage .dashboard__calendar-trigger-content {
-  display: flex;
-  flex-direction: column;
-  gap: vars.$spacing-xs;
-}
-#dashboardPage .dashboard__calendar-icon {
-  font-size: 1.5rem;
-  color: vars.$colorPrimary;
-  margin-bottom: vars.$spacing-xs;
-}
-#dashboardPage .dashboard__calendar-subtitle {
-  font-size: vars.$fontSize-sm;
-  color: vars.$colorGray500;
-  margin: 0;
-}
+// Calendrier
 #dashboardPage .dashboard__calendar-btn {
-  padding: vars.$spacing-sm vars.$spacing-lg;
+  padding: vars.$spacing-xs vars.$spacing-md;
   background: vars.$colorPrimary;
   color: vars.$colorWhite;
   border: none;
@@ -527,6 +529,138 @@
 }
 #dashboardPage .dashboard__calendar-btn:active {
   transform: translateY(0);
+}
+
+// Commandes en attente
+#dashboardPage .dashboard__pending-sales-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: vars.$spacing-xs;
+}
+#dashboardPage .dashboard__pending-sale-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-md;
+  width: 100%;
+  padding: vars.$spacing-sm;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: vars.$radius-md;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background vars.$transition-fast, border-color vars.$transition-fast, transform vars.$transition-fast;
+}
+#dashboardPage .dashboard__pending-sale-item:hover {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  transform: translateY(-1px);
+}
+#dashboardPage .dashboard__pending-sale-item:focus-visible {
+  outline: 2px solid vars.$colorPrimary;
+  outline-offset: 2px;
+}
+#dashboardPage .dashboard__pending-sale-info,
+#dashboardPage .dashboard__pending-sale-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+#dashboardPage .dashboard__pending-sale-prospect {
+  color: vars.$colorGray900;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-semibold;
+}
+#dashboardPage .dashboard__pending-sale-reference,
+#dashboardPage .dashboard__pending-sale-meta {
+  color: vars.$colorGray500;
+  font-size: vars.$fontSize-xs;
+}
+#dashboardPage .dashboard__pending-sale-meta {
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+#dashboardPage .dashboard__pending-sale-meta strong {
+  color: #b45309;
+  font-size: vars.$fontSize-sm;
+}
+
+// Compteurs mensuels compacts
+#dashboardPage .dashboard__monthly-orders {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-lg;
+  width: 100%;
+  padding: vars.$spacing-sm vars.$spacing-lg;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-lg;
+  box-shadow: vars.$shadow-sm;
+}
+#dashboardPage .dashboard__monthly-orders-title {
+  color: vars.$colorGray700;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+#dashboardPage .dashboard__monthly-order-indicators {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: vars.$spacing-sm;
+  width: 100%;
+}
+#dashboardPage .dashboard__monthly-order-indicator {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: vars.$spacing-xs;
+  min-width: 120px;
+  padding: vars.$spacing-xs vars.$spacing-md;
+  border-radius: vars.$radius-full;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+}
+#dashboardPage .dashboard__monthly-order-indicator strong {
+  font-size: vars.$fontSize-lg;
+  line-height: 1;
+}
+#dashboardPage .dashboard__monthly-order-indicator--success {
+  color: #047857;
+  background: #f0fdf4;
+}
+#dashboardPage .dashboard__monthly-order-indicator--warning {
+  color: #b45309;
+  background: #fefce8;
+}
+#dashboardPage .dashboard__monthly-order-indicator--danger {
+  color: #b91c1c;
+  background: #fef2f2;
+}
+@media (max-width: vars.$breakpoint-md) {
+  #dashboardPage .dashboard__monthly-orders {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: vars.$spacing-sm;
+  }
+  #dashboardPage .dashboard__monthly-order-indicators {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: vars.$breakpoint-sm) {
+  #dashboardPage .dashboard__monthly-order-indicator {
+    flex: 1;
+    min-width: 100px;
+  }
 }
 
 @keyframes pulse-blue {

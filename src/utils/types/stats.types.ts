@@ -48,6 +48,7 @@ export interface StatsDuJour {
   ventes_mois_montant: number;
   ventes_mois_en_attente_count?: number;
   ventes_mois_en_attente_montant?: number;
+  ventes_mois_annulees_count?: number;
   prime: PrimeStats | null;
   progpa_etapes?: ProgpaEtapeStat[];
 }

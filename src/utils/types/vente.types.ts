@@ -33,6 +33,14 @@ export interface DetailVente {
   };
 }
 
+export interface VenteProspectSummary {
+  id_prospect: number;
+  nom: string;
+  prenom?: string | null;
+  raison_sociale?: string | null;
+  telephone?: string | null;
+}
+
 export interface Vente {
   id_vente: number;
   id_prospect: number;
@@ -49,6 +57,7 @@ export interface Vente {
   created_at: string;
   updated_at: string;
   details?: DetailVente[]; // Alias Sequelize pour les détails de vente
+  prospect?: VenteProspectSummary;
   raison_sociale_facturation?: string;
   adresse_facturation?: string;
   adresse_livraison?: string;

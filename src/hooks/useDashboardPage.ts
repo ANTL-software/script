@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildDashboardRendezVousItems,
+  buildDashboardPendingVenteItems,
   getErrorMessage,
   resolveAssignedProspectAction,
 } from '../utils/scripts/index.ts';
@@ -131,6 +132,7 @@ export function useDashboardPage() {
 
   const { navigateTo } = useNavigation();
   const { currentCampagneId } = useDialer();
+  const { currentCampaign } = useCampaign();
   const { showToast } = useToast();
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isOpeningTestProspect, setIsOpeningTestProspect] = useState(false);
@@ -144,12 +146,19 @@ export function useDashboardPage() {
     rdvLoading,
     stats,
     statsLoading,
+    pendingVentes,
+    pendingVentesLoading,
+    pendingVentesError,
     handleSearch,
   } = useDashboardData();
 
   const rendezVousItems = useMemo(
     () => buildDashboardRendezVousItems(rdvDuJour),
     [rdvDuJour],
+  );
+  const pendingVenteItems = useMemo(
+    () => buildDashboardPendingVenteItems(pendingVentes),
+    [pendingVentes],
   );
   const nextRendezVousId = rendezVousItems.find((item) => item.isNext)?.rendezVous.id_rendez_vous ?? null;
 
@@ -171,6 +180,10 @@ export function useDashboardPage() {
 
   const openRendezVous = useCallback((url: string | null): void => {
     if (url) navigateTo(url);
+  }, [navigateTo]);
+
+  const openPendingVente = useCallback((url: string): void => {
+    navigateTo(url);
   }, [navigateTo]);
 
   const openTestProspect = useCallback(async (): Promise<void> => {
@@ -202,11 +215,17 @@ export function useDashboardPage() {
     rdvLoading,
     stats,
     statsLoading,
+    pendingVenteItems,
+    pendingVentesLoading,
+    pendingVentesError,
+    isSalesCampaign: currentCampaign?.id_campagne === currentCampagneId
+      && currentCampaign.type_campagne === 'vente',
     handleSearch,
     isCalendarModalOpen,
     openCalendar,
     closeCalendar,
     openRendezVous,
+    openPendingVente,
     openTestProspect,
     nextRendezVousRef,
     isOpeningTestProspect,

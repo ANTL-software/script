@@ -1,9 +1,8 @@
 import './dashboardPage.scss';
 import { useDashboardPage } from '../../../hooks/index.ts';
 import { CalendarModal, PrimeGauge } from '../../components/index.ts';
-import { FaCalendarAlt } from 'react-icons/fa';
 
-import { formatEur } from '../../../utils/scripts/index.ts';
+import { formatCurrency, formatEur } from '../../../utils/scripts/index.ts';
 
 export default function DashboardPage() {
   const {
@@ -15,11 +14,16 @@ export default function DashboardPage() {
     rdvLoading,
     stats,
     statsLoading,
+    pendingVenteItems,
+    pendingVentesLoading,
+    pendingVentesError,
+    isSalesCampaign,
     handleSearch,
     isCalendarModalOpen,
     openCalendar,
     closeCalendar,
     openRendezVous,
+    openPendingVente,
     openTestProspect,
     nextRendezVousRef,
     isOpeningTestProspect,
@@ -48,12 +52,20 @@ export default function DashboardPage() {
         {searchError && <p className="dashboard__search-error">{searchError}</p>}
       </section>
 
-      <div className="dashboard__grid">
+      <div className={`dashboard__grid ${isSalesCampaign ? '' : 'dashboard__grid--single'}`}>
         <section className="dashboard__card dashboard__rdv">
-          <h2 className="dashboard__section-title">
-            Mes rappels du jour
-            {rendezVousItems.length > 0 && <span className="dashboard__badge">{rendezVousItems.length}</span>}
-          </h2>
+          <div className="dashboard__card-header">
+            <h2 className="dashboard__section-title">
+              Mes rappels du jour
+              {rendezVousItems.length > 0 && <span className="dashboard__badge">{rendezVousItems.length}</span>}
+            </h2>
+            <button
+              className="dashboard__calendar-btn"
+              onClick={openCalendar}
+            >
+              Afficher le calendrier
+            </button>
+          </div>
 
           {rdvLoading ? (
             <p className="dashboard__loading">Chargement...</p>
@@ -101,20 +113,73 @@ export default function DashboardPage() {
           )}
         </section>
 
-        <section className="dashboard__card dashboard__calendar-trigger">
-          <div className="dashboard__calendar-trigger-content">
-            <FaCalendarAlt className="dashboard__calendar-icon" />
-            <h2 className="dashboard__section-title">Mon calendrier</h2>
-            <p className="dashboard__calendar-subtitle">Consulter mes rendez-vous à venir</p>
-          </div>
-          <button
-            className="dashboard__calendar-btn"
-            onClick={openCalendar}
-          >
-            Afficher le calendrier
-          </button>
-        </section>
+        {isSalesCampaign && (
+          <section className="dashboard__card dashboard__pending-sales">
+            <h2 className="dashboard__section-title">
+              Mes commandes en attentes
+              {pendingVenteItems.length > 0 && (
+                <span className="dashboard__badge dashboard__badge--warning">
+                  {pendingVenteItems.length}
+                </span>
+              )}
+            </h2>
+
+            {pendingVentesLoading ? (
+              <p className="dashboard__loading">Chargement...</p>
+            ) : pendingVentesError ? (
+              <div className="dashboard__empty-state">
+                <p>{pendingVentesError}</p>
+              </div>
+            ) : pendingVenteItems.length === 0 ? (
+              <div className="dashboard__empty-state">
+                <p>Aucune commande en attente.</p>
+              </div>
+            ) : (
+              <ul className="dashboard__pending-sales-list">
+                {pendingVenteItems.map((item) => (
+                  <li key={item.vente.id_vente}>
+                    <button
+                      type="button"
+                      className="dashboard__pending-sale-item"
+                      onClick={() => openPendingVente(item.url)}
+                      aria-label={`Ouvrir la fiche de ${item.prospectLabel}`}
+                    >
+                      <span className="dashboard__pending-sale-info">
+                        <span className="dashboard__pending-sale-prospect">{item.prospectLabel}</span>
+                        <span className="dashboard__pending-sale-reference">{item.referenceLabel}</span>
+                      </span>
+                      <span className="dashboard__pending-sale-meta">
+                        <span>{item.dateLabel}</span>
+                        <strong>{formatCurrency(item.vente.montant_total)}</strong>
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
       </div>
+
+      {isSalesCampaign && (
+        <section className="dashboard__monthly-orders" aria-label="Commandes du mois en cours">
+          <span className="dashboard__monthly-orders-title">Commandes du mois</span>
+          <div className="dashboard__monthly-order-indicators">
+            <div className="dashboard__monthly-order-indicator dashboard__monthly-order-indicator--success">
+              <strong>{statsLoading ? '—' : (stats?.ventes_mois_count ?? 0)}</strong>
+              <span>Validées</span>
+            </div>
+            <div className="dashboard__monthly-order-indicator dashboard__monthly-order-indicator--warning">
+              <strong>{statsLoading ? '—' : (stats?.ventes_mois_en_attente_count ?? 0)}</strong>
+              <span>En attente</span>
+            </div>
+            <div className="dashboard__monthly-order-indicator dashboard__monthly-order-indicator--danger">
+              <strong>{statsLoading ? '—' : (stats?.ventes_mois_annulees_count ?? 0)}</strong>
+              <span>Annulées</span>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="dashboard__card dashboard__stats">
         <h2 className="dashboard__section-title">Aujourd'hui</h2>

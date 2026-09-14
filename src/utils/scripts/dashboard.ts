@@ -1,10 +1,11 @@
-import type { ProspectAssigne, RendezVous } from '../types/index.ts';
+import type { ProspectAssigne, RendezVous, Vente } from '../types/index.ts';
 import {
   checkIsCommande,
   checkIsRelanceVente,
   checkIsRendezVousPris,
   checkIsRelance,
   formatHeure,
+  formatDateShort,
   formatProspectName,
 } from './formatters.ts';
 
@@ -23,6 +24,14 @@ export interface DashboardRendezVousItem {
 export interface DashboardAssignedProspectAction {
   url: string;
   shouldStartCall: boolean;
+}
+
+export interface DashboardPendingVenteItem {
+  vente: Vente;
+  prospectLabel: string;
+  dateLabel: string;
+  referenceLabel: string;
+  url: string;
 }
 
 export function buildDashboardRappelUrl(rendezVous: RendezVous): string | null {
@@ -107,6 +116,27 @@ export function buildDashboardRendezVousItems(
       isRendezVousPris,
       isRelance,
       url: buildDashboardRappelUrl(item),
+    };
+  });
+}
+
+export function buildDashboardPendingVenteItems(
+  ventes: Vente[],
+): DashboardPendingVenteItem[] {
+  return ventes.map((vente) => {
+    const prospect = vente.prospect;
+    const prospectLabel = prospect
+      ? prospect.raison_sociale?.trim() || formatProspectName(prospect)
+      : 'Prospect inconnu';
+
+    return {
+      vente,
+      prospectLabel,
+      dateLabel: formatDateShort(vente.date_vente || vente.created_at),
+      referenceLabel: vente.reference_doc
+        ? `N° ${vente.reference_doc}`
+        : `Commande #${vente.id_vente}`,
+      url: `/prospect/${vente.id_prospect}?source=manual`,
     };
   });
 }

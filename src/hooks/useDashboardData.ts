@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from './useUser';
 import { useDialer } from './useDialer';
-import { prospectService, rendezVousService, statsService, notificationService } from '../API/services';
-import type { RendezVous, StatsDuJour, Notification } from '../utils/types';
+import { useCampaign } from './useCampaign';
+import { prospectService, rendezVousService, statsService, notificationService, venteService } from '../API/services';
+import type { RendezVous, StatsDuJour, Notification, Vente } from '../utils/types';
 import { cleanAndValidatePhone } from '../utils/scripts';
 
 const DASHBOARD_POLL_INTERVAL = 60_000;
@@ -11,6 +12,7 @@ const DASHBOARD_POLL_INTERVAL = 60_000;
 export function useDashboardData() {
   const { user } = useUser();
   const { currentCampagneId } = useDialer();
+  const { currentCampaign } = useCampaign();
   const navigate = useNavigate();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -24,23 +26,40 @@ export function useDashboardData() {
   const [stats, setStats] = useState<StatsDuJour | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [pendingVentes, setPendingVentes] = useState<Vente[]>([]);
+  const [pendingVentesLoading, setPendingVentesLoading] = useState(false);
+  const [pendingVentesError, setPendingVentesError] = useState<string | null>(null);
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [nonLues, setNonLues] = useState(0);
   const [notifsLoading, setNotifsLoading] = useState(true);
 
-
-
   const fetchData = useCallback(async () => {
     if (!user) return;
+
+    const salesCampaignId = currentCampaign?.id_campagne === currentCampagneId
+      && currentCampaign.type_campagne === 'vente'
+      ? currentCampagneId
+      : null;
+    const isSalesCampaign = salesCampaignId !== null;
 
     setRdvLoading(true);
     setStatsLoading(true);
     setNotifsLoading(true);
+    setPendingVentesLoading(isSalesCampaign);
+    setPendingVentesError(null);
 
-    const [rdvResult, statsResult, notifsResult] = await Promise.allSettled([
+    if (!isSalesCampaign) {
+      setPendingVentes([]);
+    }
+
+    const [rdvResult, statsResult, notifsResult, pendingVentesResult] = await Promise.allSettled([
       rendezVousService.getRendezVousToday(user.id_employe, currentCampagneId ?? undefined),
       statsService.getMyStatsDuJour(currentCampagneId ?? undefined),
       notificationService.getMyNotifications(false),
+      salesCampaignId !== null
+        ? venteService.getMyPendingVentes(salesCampaignId)
+        : Promise.resolve([]),
     ]);
 
     if (rdvResult.status === 'fulfilled') setRdvDuJour(rdvResult.value);
@@ -54,7 +73,15 @@ export function useDashboardData() {
       setNonLues(notifsResult.value.non_lues);
     }
     setNotifsLoading(false);
-  }, [currentCampagneId, user]);
+
+    if (pendingVentesResult.status === 'fulfilled') {
+      setPendingVentes(pendingVentesResult.value);
+    } else if (isSalesCampaign) {
+      setPendingVentes([]);
+      setPendingVentesError('Impossible de charger les commandes en attente.');
+    }
+    setPendingVentesLoading(false);
+  }, [currentCampaign, currentCampagneId, user]);
 
   useEffect(() => {
     fetchData();
@@ -135,6 +162,9 @@ export function useDashboardData() {
     rdvLoading,
     stats,
     statsLoading,
+    pendingVentes,
+    pendingVentesLoading,
+    pendingVentesError,
     notifications,
     nonLues,
     notifsLoading,

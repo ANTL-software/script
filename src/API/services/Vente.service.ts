@@ -59,6 +59,11 @@ export class VenteService {
     };
   }
 
+  public async getMyPendingVentes(campagneId: number): Promise<Vente[]> {
+    const response = await apiCalls.get<Vente[]>(`/ventes/me/en-attente?campagne=${campagneId}`);
+    return throwIfApiError(response, 'Erreur lors de la récupération des commandes en attente');
+  }
+
   public async updateStatut(id: number, statut: string): Promise<Vente> {
     const response = await apiCalls.put<Vente>(`/ventes/${id}/statut`, { statut_vente: statut });
     return throwIfApiError(response, 'Erreur lors de la mise à jour du statut');

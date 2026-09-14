@@ -5,9 +5,11 @@ import {
   buildAssignedProspectUrl,
   buildDashboardRappelUrl,
   buildDashboardRendezVousItems,
+  buildDashboardPendingVenteItems,
   resolveAssignedProspectAction,
 } from '../../src/utils/scripts/dashboard.ts';
 import type { RendezVous } from '../../src/utils/types/rendezVous.types.ts';
+import type { Vente } from '../../src/utils/types/vente.types.ts';
 
 function createRendezVous(
   id: number,
@@ -119,4 +121,34 @@ test('buildDashboardRendezVousItems distingue un rendez-vous pris historique d�
 
   assert.equal(items[0].isRendezVousPris, true);
   assert.equal(items[1].isRendezVousPris, false);
+});
+
+test('buildDashboardPendingVenteItems prépare les commandes en attente sans perdre leur identité', () => {
+  const ventes: Vente[] = [{
+    id_vente: 12,
+    id_prospect: 42,
+    id_agent: 5,
+    id_campagne: 7,
+    date_vente: '2026-09-14T08:30:00.000Z',
+    montant_total: 250,
+    reference_doc: 'ANTL-600012',
+    statut_vente: 'en_attente',
+    created_at: '2026-09-14T08:30:00.000Z',
+    updated_at: '2026-09-14T08:30:00.000Z',
+    prospect: {
+      id_prospect: 42,
+      nom: 'Martin',
+      prenom: 'Alice',
+      raison_sociale: 'Entreprise Martin',
+      telephone: '0123456789',
+    },
+  }];
+
+  const [item] = buildDashboardPendingVenteItems(ventes);
+
+  assert.equal(item.vente.id_vente, 12);
+  assert.equal(item.prospectLabel, 'Entreprise Martin');
+  assert.equal(item.referenceLabel, 'N° ANTL-600012');
+  assert.equal(item.dateLabel, '14/09/2026');
+  assert.equal(item.url, '/prospect/42?source=manual');
 });

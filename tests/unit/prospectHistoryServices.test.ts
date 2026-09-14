@@ -207,6 +207,15 @@ test('RendezVousService sérialise agent et campagne pour le dashboard du jour',
   assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/rendez-vous/today?agent=15&campagne=7');
 });
 
+test('VenteService utilise le endpoint personnel des commandes en attente', async () => {
+  globalThis.capturedHistoryEndpoints = [];
+  const { venteService } = await import('../../src/API/services/Vente.service.ts');
+
+  await venteService.getMyPendingVentes(7);
+
+  assert.equal(globalThis.capturedHistoryEndpoints?.at(-1), '/ventes/me/en-attente?campagne=7');
+});
+
 test('ProspectService conserve le endpoint catalogue et le destinataire retourné par le backend', async () => {
   globalThis.capturedHistoryEndpoints = [];
   const { prospectService } = await import('../../src/API/services/Prospect.service.ts');

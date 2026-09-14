@@ -53,13 +53,14 @@ test('une raison sociale explicitement différente reste indépendante', () => {
   assert.equal(synchronized.raison_sociale_livraison, 'Livraison dédiée');
 });
 
-test('une livraison identique suit la raison sociale de facturation', () => {
+test('une raison sociale de livraison reste indépendante avec la même adresse', () => {
   const synchronized = synchronizeOrderCompanyNames({
     ...baseFormData,
     meme_adresse: true,
   }, 'raison_sociale_facturation', 'Facturation dédiée');
 
-  assert.equal(synchronized.raison_sociale_livraison, 'Facturation dédiée');
+  assert.equal(synchronized.raison_sociale_facturation, 'Facturation dédiée');
+  assert.equal(synchronized.raison_sociale_livraison, 'Pharmacie Centrale Beta');
 });
 
 test('validateOrderForm remonte les erreurs attendues', () => {
@@ -128,7 +129,7 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
   assert.equal(payload.id_appel, 12);
   assert.equal(payload.raison_sociale_facturation, 'Cabinet Médical Alpha Facturation');
   assert.equal(payload.adresse_livraison, '10 Rue Des Lilas');
-  assert.equal(payload.raison_sociale_livraison, 'Cabinet Médical Alpha Facturation');
+  assert.equal(payload.raison_sociale_livraison, 'Pharmacie Centrale Beta');
   assert.equal(payload.code_postal_livraison, '75001');
   assert.equal(payload.ville_livraison, 'Paris');
   assert.equal(payload.notes, undefined);
@@ -141,6 +142,43 @@ test('buildVentePayload réutilise l’adresse de facturation si meme_adresse es
       remise: 10,
     },
   ]);
+});
+
+test('buildVentePayload utilise la raison sociale principale pour les valeurs non renseignées', () => {
+  const payload = buildVentePayload({
+    prospectId: 19,
+    campagneId: 5,
+    formData: {
+      ...baseFormData,
+      raison_sociale: 'BIOCOOP',
+      raison_sociale_facturation: '',
+      raison_sociale_livraison: '',
+      meme_adresse: true,
+    },
+    items: [],
+  });
+
+  assert.equal(payload.raison_sociale_facturation, 'BIOCOOP');
+  assert.equal(payload.raison_sociale_livraison, 'BIOCOOP');
+});
+
+test('buildVentePayload sépare facturation et livraison même à la même adresse', () => {
+  const payload = buildVentePayload({
+    prospectId: 20,
+    campagneId: 5,
+    formData: {
+      ...baseFormData,
+      raison_sociale: 'BIOCOOP',
+      raison_sociale_facturation: 'SCOP BIOPTIMISTE',
+      raison_sociale_livraison: 'BIOCOOP',
+      meme_adresse: true,
+    },
+    items: [],
+  });
+
+  assert.equal(payload.raison_sociale_facturation, 'SCOP BIOPTIMISTE');
+  assert.equal(payload.raison_sociale_livraison, 'BIOCOOP');
+  assert.equal(payload.adresse_livraison, '10 Rue Des Lilas');
 });
 
 test('buildVentePayload conserve une adresse et raison sociale de livraison dédiée si nécessaire', () => {

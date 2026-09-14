@@ -55,13 +55,9 @@ export function synchronizeOrderCompanyNames<T extends OrderCompanyNameState>(
       next.raison_sociale_facturation = value;
     }
 
-    if (current.meme_adresse) {
-      next.raison_sociale_livraison = next.raison_sociale_facturation;
-    } else if (followsMainCompanyName(current.raison_sociale_livraison, current.raison_sociale)) {
+    if (followsMainCompanyName(current.raison_sociale_livraison, current.raison_sociale)) {
       next.raison_sociale_livraison = value;
     }
-  } else if (field === 'raison_sociale_facturation' && current.meme_adresse) {
-    next.raison_sociale_livraison = value;
   }
 
   return next;
@@ -127,9 +123,10 @@ export function buildVentePayload(params: {
   const adresseLivraison = formData.meme_adresse
     ? formData.adresse_facturation
     : formData.adresse_livraison;
-  const raisonSocialeLivraison = formData.meme_adresse
-    ? formData.raison_sociale_facturation
-    : formData.raison_sociale_livraison;
+  const raisonSocialeFacturation = formData.raison_sociale_facturation.trim()
+    || (formData.raison_sociale || '').trim();
+  const raisonSocialeLivraison = formData.raison_sociale_livraison?.trim()
+    || (formData.raison_sociale || '').trim();
   const codePostalLivraison = formData.meme_adresse
     ? formData.code_postal_facturation
     : formData.code_postal_livraison;
@@ -147,10 +144,10 @@ export function buildVentePayload(params: {
     mode_paiement: formData.mode_paiement as ModePaiement,
     delais_livraison: formData.delais_livraison,
     notes: formData.notes.trim() || undefined,
-    raison_sociale_facturation: formData.raison_sociale_facturation.trim() || undefined,
+    raison_sociale_facturation: raisonSocialeFacturation || undefined,
     adresse_facturation: capitalizeAddress(formData.adresse_facturation),
     adresse_livraison: capitalizeAddress(adresseLivraison),
-    raison_sociale_livraison: raisonSocialeLivraison?.trim() || undefined,
+    raison_sociale_livraison: raisonSocialeLivraison || undefined,
     code_postal_facturation: formData.code_postal_facturation.trim(),
     code_postal_livraison: codePostalLivraison.trim(),
     ville_facturation: capitalizeAddress(formData.ville_facturation),

@@ -128,12 +128,12 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
   const handleInputChange = (field: keyof FormData, value: string | boolean | number) => {
     const updatedValue = value;
 
-    // Si la checkbox "meme_adresse" est cochée, copier l'adresse de facturation vers l'adresse de livraison
+    // Si la checkbox "meme_adresse" est cochée, copier uniquement l'adresse de facturation vers la livraison.
+    // Les raisons sociales restent indépendantes même à une adresse identique.
     if (field === 'meme_adresse' && updatedValue === true) {
       setFormData(prev => ({
         ...prev,
         meme_adresse: true,
-        raison_sociale_livraison: prev.raison_sociale_facturation,
         adresse_livraison: prev.adresse_facturation,
         code_postal_livraison: prev.code_postal_facturation,
         ville_livraison: prev.ville_facturation,
@@ -142,12 +142,11 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       return;
     }
 
-    // Si la checkbox "meme_adresse" est décochée, effacer l'adresse de livraison
+    // Si la checkbox "meme_adresse" est décochée, effacer uniquement l'adresse de livraison.
     if (field === 'meme_adresse' && updatedValue === false) {
       setFormData(prev => ({
         ...prev,
         meme_adresse: false,
-        raison_sociale_livraison: '',
         adresse_livraison: '',
         code_postal_livraison: '',
         ville_livraison: '',
@@ -165,7 +164,7 @@ export function useOrderConfirmation({ onClose, onSuccess }: UseOrderConfirmatio
       }
 
       const next = { ...prev, [field]: updatedValue };
-      // Si on modifie un champ de facturation et que meme_adresse est coché, copier vers livraison
+      // Si on modifie l'adresse de facturation et que meme_adresse est coché, copier vers livraison
       if (prev.meme_adresse) {
         if (field === 'adresse_facturation') next.adresse_livraison = updatedValue as string;
         if (field === 'code_postal_facturation') next.code_postal_livraison = updatedValue as string;

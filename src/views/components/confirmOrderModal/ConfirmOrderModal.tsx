@@ -248,16 +248,16 @@ export default function ConfirmOrderModal({ isOpen, onClose, onSuccess }: Confir
 
 
 
-                <div className={`confirm-order-modal__delivery-section ${formData.meme_adresse ? 'confirm-order-modal__delivery-section--disabled' : ''}`}>
+                <div className="confirm-order-modal__delivery-section">
                   <div className="confirm-order-modal__form-grid">
                     <div className="confirm-order-modal__form-group confirm-order-modal__form-group--full">
-                      <label htmlFor="raison_sociale_livraison">Raison sociale {formData.meme_adresse ? '(identique)' : ''}</label>
+                      <label htmlFor="raison_sociale_livraison">Raison sociale</label>
                       <input
                         type="text"
                         id="raison_sociale_livraison"
-                        value={formData.meme_adresse ? formData.raison_sociale_facturation : formData.raison_sociale_livraison}
+                        value={formData.raison_sociale_livraison}
                         onChange={(e) => handleInputChange('raison_sociale_livraison', e.target.value)}
-                        disabled={isSubmitting || formData.meme_adresse}
+                        disabled={isSubmitting}
                       />
                     </div>
 

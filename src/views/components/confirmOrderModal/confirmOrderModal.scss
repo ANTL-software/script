@@ -387,11 +387,6 @@
   transition: all vars.$transition-base;
 }
 
-.confirm-order-modal__delivery-section--disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
 .confirm-order-modal__payment-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

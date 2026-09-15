@@ -26,7 +26,7 @@ const LABELS_PAUSE: Record<RaisonPause, string> = {
 const RAISONS_PAUSE: RaisonPause[] = ['repas', 'personnelle', 'legale', 'brief', 'technique'];
 
 export default function DialerStatus() {
-  const { statut, raisonPause, depuisLe, isLoading, changerStatut, currentCallInsights } = useDialer();
+  const { statut, raisonPause, depuisLe, isLoading, changerStatut } = useDialer();
   const [isOpen, setIsOpen] = useState(false);
   const [duree, setDuree] = useState('00:00');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -66,30 +66,6 @@ export default function DialerStatus() {
     ? LABELS_PAUSE[raisonPause]
     : LABELS_STATUT[statut];
 
-  const insightLabel = (() => {
-    if (currentCallInsights.endedBySystem) {
-      switch (currentCallInsights.classification) {
-        case 'automate_filtre':
-          return 'Coupure système: automate filtré';
-        case 'messagerie_detectee':
-          return 'Coupure système: messagerie détectée';
-        case 'fax_detecte':
-          return 'Coupure système: fax détecté';
-        default:
-          return 'Appel clôturé automatiquement';
-      }
-    }
-
-    switch (currentCallInsights.classification) {
-      case 'unknown_a_traiter':
-        return 'Décroché inconnu: surveiller le résultat';
-      case 'svi_detecte':
-        return 'Standard détecté: navigation DTMF possible';
-      default:
-        return null;
-    }
-  })();
-
   return (
     <div className={`dialer-status dialer-status--${statut}`} ref={dropdownRef}>
       <button
@@ -107,10 +83,6 @@ export default function DialerStatus() {
           <span className={`dialer-status__arrow ${isOpen ? 'dialer-status__arrow--open' : ''}`}>▾</span>
         )}
       </button>
-
-      {insightLabel && (
-        <p className="dialer-status__insight">{insightLabel}</p>
-      )}
 
       {isOpen && (
         <div className="dialer-status__dropdown">

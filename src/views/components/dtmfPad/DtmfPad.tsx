@@ -15,7 +15,7 @@ const isTypingTarget = (target: EventTarget | null) => {
 };
 
 export default function DtmfPad() {
-  const { canSendDigits, lastSentDigits, sendDigits, currentCallInsights } = useDialer();
+  const { canSendDigits, lastSentDigits, sendDigits } = useDialer();
   const [isOpen, setIsOpen] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null);
 
@@ -68,44 +68,6 @@ export default function DtmfPad() {
     return lastSentDigits || 'Aucune touche envoyée';
   }, [lastSentDigits]);
 
-  const qualificationLabel = useMemo(() => {
-    switch (currentCallInsights.classification) {
-      case 'humain_detecte':
-        return 'Humain détecté';
-      case 'svi_detecte':
-        return 'SVI détecté';
-      case 'automate_filtre':
-        return 'Automate filtré';
-      case 'messagerie_detectee':
-        return 'Messagerie détectée';
-      case 'fax_detecte':
-        return 'Fax détecté';
-      case 'unknown_a_traiter':
-        return 'Décroché inconnu';
-      case 'qualification_en_cours':
-        return 'Qualification en cours';
-      default:
-        return 'Analyse en cours';
-    }
-  }, [currentCallInsights.classification]);
-
-  const systemOutcomeLabel = useMemo(() => {
-    if (!currentCallInsights.endedBySystem) {
-      return null;
-    }
-
-    switch (currentCallInsights.endReason) {
-      case 'messagerie_detectee':
-        return 'Fin automatique: messagerie confirmée';
-      case 'fax_detecte':
-        return 'Fin automatique: fax détecté';
-      case 'automate_filtre':
-        return 'Fin automatique: machine_start filtré';
-      default:
-        return 'Fin automatique par le système';
-    }
-  }, [currentCallInsights.endedBySystem, currentCallInsights.endReason]);
-
   if (!canSendDigits) {
     return null;
   }
@@ -117,10 +79,10 @@ export default function DtmfPad() {
         className="dtmf-pad__trigger"
         onClick={() => setIsOpen((open) => !open)}
         aria-expanded={isOpen}
-        aria-label="Ouvrir le clavier SVI"
+        aria-label="Ouvrir le clavier téléphonique"
       >
         <LuKeyboard size={16} />
-        <span>Clavier SVI</span>
+        <span>Clavier téléphonique</span>
       </button>
 
       {isOpen && (
@@ -128,21 +90,9 @@ export default function DtmfPad() {
           <div className="dtmf-pad__meta">
             <p className="dtmf-pad__title">Menu vocal</p>
             <p className="dtmf-pad__hint">
-              {currentCallInsights.sviDetecte ? 'SVI détecté: vous pouvez taper les touches nécessaires.' : 'Clavier physique: 0-9, *, #'}
+              Clavier physique: 0-9, *, #
             </p>
           </div>
-
-          <div className="dtmf-pad__digits" aria-live="polite">
-            <span className="dtmf-pad__digits-label">Qualification</span>
-            <span className="dtmf-pad__digits-value">{qualificationLabel}</span>
-          </div>
-
-          {systemOutcomeLabel && (
-            <div className="dtmf-pad__digits" aria-live="polite">
-              <span className="dtmf-pad__digits-label">Fin d'appel</span>
-              <span className="dtmf-pad__digits-value">{systemOutcomeLabel}</span>
-            </div>
-          )}
 
           <div className="dtmf-pad__digits" aria-live="polite">
             <span className="dtmf-pad__digits-label">Touches envoyées</span>

@@ -55,12 +55,6 @@ $color-hors-ligne: vars.$colorGray500;
 .dialer-status__arrow--open {
   transform: rotate(180deg);
 }
-.dialer-status__insight {
-  margin: 0.35rem 0 0;
-  font-size: vars.$fontSize-xs;
-  color: vars.$colorGray500;
-  max-width: 18rem;
-}
 // Dot coloré selon statut courant dans le trigger
 .dialer-status--disponible .dialer-status__dot {
   background: $color-disponible;

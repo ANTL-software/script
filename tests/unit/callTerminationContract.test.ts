@@ -31,8 +31,24 @@ test('une fin Twilio confirmée par le backend ou par le SDK converge vers la m�
 
   assert.match(source, /call\.on\('disconnect',[\s\S]*finishTwilioCall\('twilio_disconnect'\)/);
   assert.match(source, /call\.on\('error',[\s\S]*Call\.State\.Closed[\s\S]*finishTwilioCall\('twilio_call_error_closed'\)/);
-  assert.match(source, /if \(nextInsights\.endReason\) \{[\s\S]*finishTwilioCall\('twilio_backend_terminal_state'\)/);
+  assert.match(source, /if \(appel\.end_reason\) \{[\s\S]*finishTwilioCall\('twilio_backend_terminal_state'\)/);
   assert.match(source, /callEndFinalizedRef\.current = true/);
+});
+
+test('Twilio privilégie un transport voix résilient et ne dépend plus de la qualification AMD', async () => {
+  const source = await readFile(
+    path.join(ROOT, 'src/context/dialerContext/DialerProvider.tsx'),
+    'utf8',
+  );
+
+  assert.match(source, /codecPreferences: \[Call\.Codec\.Opus, Call\.Codec\.PCMU\]/);
+  assert.match(source, /dscp: true/);
+  assert.match(source, /enableImprovedSignalingErrorPrecision: true/);
+  assert.match(source, /maxCallSignalingTimeoutMs: 30000/);
+  assert.match(source, /tokenRefreshMs: 30000/);
+  assert.match(source, /closeProtection: true/);
+  assert.doesNotMatch(source, /currentCallInsights|setCurrentCallInsights|pollInsights|call_classification|amd_status/);
+  assert.match(source, /call\.on\('accept',[\s\S]*setStatut\('en_appel'\)/);
 });
 
 test('la closing conserve le marqueur de la tentative courante pendant le chargement de la fiche', async () => {

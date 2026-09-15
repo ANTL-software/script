@@ -67,13 +67,3 @@ export interface ProspectAssigne {
   est_rappel_force?: boolean;
   motif_rappel_force?: string | null;
 }
-
-export interface ActiveCallInsights {
-  answeredBy: AnsweredBy | null;
-  classification: CallClassification | null;
-  amdStatus: string | null;
-  sviDetecte: boolean;
-  bridgedToAgentAt: string | null;
-  endedBySystem: boolean;
-  endReason: string | null;
-}

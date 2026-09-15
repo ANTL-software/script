@@ -4,6 +4,7 @@ import { usePriseRendezVous } from '../../../hooks/index.ts';
 import type { RendezVousTimeOption } from '../../../utils/types/index.ts';
 import { RendezVousRecapModal } from '../rendezVousRecapModal/index.ts';
 import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
+import { GoogleAppointmentBooking } from '../googleAppointmentBooking/index.ts';
 import './priseRendezVousPlaceholder.scss';
 
 const selectStyles: StylesConfig<RendezVousTimeOption, false> = {
@@ -83,6 +84,10 @@ export default function PriseRendezVousPlaceholder() {
     adresse, codePostal, ville, pays, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
+    campaignLabel,
+    externalBookingConfig,
+    googleBookingCopyFields,
+    isExternalBookingConfirmed,
     notes,
     isSaving,
     errors,
@@ -95,6 +100,9 @@ export default function PriseRendezVousPlaceholder() {
     handleSelectHeureChange,
     handleHeureInputChange,
     handleMinuteInputChange,
+    handleExternalBookingTimeChange,
+    handleExternalBookingConfirmedChange,
+    handleCopyGoogleBookingValue,
     handleInterlocuteurNomChange,
     handleTelephoneChange,
     setInterlocuteurRole,
@@ -110,10 +118,29 @@ export default function PriseRendezVousPlaceholder() {
       <section className="prise-rdv-form">
         <div className="prise-rdv-form__header">
           <h2>Prise de rendez-vous client</h2>
-          <p>Formulaire de qualification et de prise de rendez-vous B2B pour le compte de notre partenaire MMA.</p>
+          <p>Formulaire de qualification et de prise de rendez-vous B2B pour le compte de {campaignLabel || 'notre partenaire'}.</p>
         </div>
 
         <form className="prise-rdv-form__form" onSubmit={handleSubmit}>
+          {externalBookingConfig ? (
+            <div className="form-card">
+              <h3 className="form-card__title">1. Réservation Google</h3>
+              <GoogleAppointmentBooking
+                config={externalBookingConfig}
+                copyFields={googleBookingCopyFields}
+                dateRdv={dateRdv}
+                timeValue={heureRdv?.value ?? ''}
+                today={todayStr}
+                isConfirmed={isExternalBookingConfirmed}
+                isSaving={isSaving}
+                errors={errors}
+                onCopyField={handleCopyGoogleBookingValue}
+                onDateChange={handleDateChange}
+                onTimeChange={handleExternalBookingTimeChange}
+                onConfirmedChange={handleExternalBookingConfirmedChange}
+              />
+            </div>
+          ) : (
           <div className="form-card">
             <h3 className="form-card__title">1. Planification</h3>
             <div className="form-row">
@@ -180,6 +207,7 @@ export default function PriseRendezVousPlaceholder() {
               </div>
             </div>
           </div>
+          )}
 
           <div className="form-card">
             <h3 className="form-card__title">2. Interlocuteur & Coordonnées directes</h3>

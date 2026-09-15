@@ -3,16 +3,58 @@ import test from 'node:test';
 
 import {
   buildLeadB2BRendezVousPayload,
+  buildGoogleBookingCopyFields,
   filterAvailableLeadB2BTimeSlots,
   formatLeadB2BDateLabel,
   getLeadB2BRendezVousPrefill,
   getLeadB2BTimeSlots,
+  getLeadExternalBookingConfig,
   isLeadB2BTimeSlotUnavailable,
   getTodayInputDateString,
   isLeadB2BDateAllowed,
   LEAD_B2B_RENDEZ_VOUS_MOTIF,
   supportsMmaEmployeeCountQualification,
 } from '../../src/utils/scripts/priseRendezVous.ts';
+
+test('la campagne Caillibotte Zoe-Noe utilise son agenda Google public', () => {
+  const expectedScheduleId = 'AcZssZ2g-7ShOEU4D0P8UTqNcVfqSVFEWngmxEwoJ4ixGGETJRm75H3Jda2KR5cd0O56KSBzT7vWc8Jo';
+
+  const canonicalConfig = getLeadExternalBookingConfig({ nom_campagne: 'CAILLIBOTTE ZOE-NOE' });
+  const suppliedSpellingConfig = getLeadExternalBookingConfig({ nom_campagne: 'CAILLIBOTE ZOÉ-NOÉ' });
+
+  assert.equal(canonicalConfig?.provider, 'google_appointment_schedule');
+  assert.match(canonicalConfig?.embedUrl ?? '', new RegExp(`${expectedScheduleId}\\?gv=true$`));
+  assert.equal(suppliedSpellingConfig?.bookingUrl.includes(expectedScheduleId), true);
+  assert.equal(getLeadExternalBookingConfig({ nom_campagne: 'FGA Consulting' }), null);
+});
+
+test('les valeurs de la fiche prospect sont préparées dans l ordre du formulaire Google', () => {
+  const fields = buildGoogleBookingCopyFields({
+    prospect: {
+      id_prospect: 3,
+      type_prospect: 'Entreprise',
+      nom: 'Martin',
+      raison_sociale: 'Atelier Martin',
+      siret: '12345678900012',
+      telephone: '0102030405',
+      statut: 'nouveau',
+      max_progpa: 0,
+      created_at: '2026-09-15T08:00:00.000Z',
+      updated_at: '2026-09-15T08:00:00.000Z',
+    },
+    interlocuteurNom: ' Zoé Martin ',
+    telephone: ' 0611223344 ',
+    email: ' zoe@atelier.fr ',
+  });
+
+  assert.deepEqual(fields.map(({ key, value }) => ({ key, value })), [
+    { key: 'contact_name', value: 'Zoé Martin' },
+    { key: 'email', value: 'zoe@atelier.fr' },
+    { key: 'phone', value: '0611223344' },
+    { key: 'siret', value: '12345678900012' },
+    { key: 'company', value: 'Atelier Martin' },
+  ]);
+});
 
 test('getLeadB2BRendezVousPrefill priorise les donnees decisionnaire pour le formulaire MMA', () => {
   const prefill = getLeadB2BRendezVousPrefill({

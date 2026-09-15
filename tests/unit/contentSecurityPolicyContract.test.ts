@@ -25,6 +25,7 @@ test('la CSP Script interdit les scripts inline et eval en production', async ()
   assert.match(contentSecurityPolicy.value, /https:\/\/api-test\.antl\.fr/);
   assert.match(contentSecurityPolicy.value, /https:\/\/fonts\.googleapis\.com/);
   assert.match(contentSecurityPolicy.value, /connect-src[^;]*wss:\/\/api\.antl\.fr/);
+  assert.match(contentSecurityPolicy.value, /frame-src[^;]*https:\/\/calendar\.google\.com/);
   assert.match(permissionsPolicy.value, /microphone=\(self\)/);
   assert.doesNotMatch(permissionsPolicy.value, /microphone=\(\)/);
 });

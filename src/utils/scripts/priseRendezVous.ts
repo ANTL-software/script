@@ -1,4 +1,11 @@
-import type { Campaign, CreateLeadData, Prospect, RendezVousTimeOption } from '../types/index.ts';
+import type {
+  Campaign,
+  CreateLeadData,
+  GoogleBookingCopyField,
+  LeadExternalBookingConfig,
+  Prospect,
+  RendezVousTimeOption,
+} from '../types/index.ts';
 
 export interface LeadB2BRendezVousPrefill {
   interlocuteurNom: string;
@@ -23,6 +30,50 @@ export interface BuildLeadB2BRendezVousPayloadArgs {
 
 export const LEAD_B2B_RENDEZ_VOUS_MOTIF = 'Prise de rendez-vous client';
 export const MMA_EMPLOYEE_COUNT_QUALIFICATION_CAMPAIGN_ID = 10;
+
+const CAILLIBOTTE_ZOE_NOE_BOOKING_CONFIG: LeadExternalBookingConfig = {
+  provider: 'google_appointment_schedule',
+  bookingUrl: 'https://calendar.google.com/appointments/schedules/AcZssZ2g-7ShOEU4D0P8UTqNcVfqSVFEWngmxEwoJ4ixGGETJRm75H3Jda2KR5cd0O56KSBzT7vWc8Jo',
+  embedUrl: 'https://calendar.google.com/calendar/appointments/schedules/AcZssZ2g-7ShOEU4D0P8UTqNcVfqSVFEWngmxEwoJ4ixGGETJRm75H3Jda2KR5cd0O56KSBzT7vWc8Jo?gv=true',
+  ownerLabel: 'Zoé-Noé Caillibotte',
+};
+
+const normalizeCampaignName = (value: string): string => value
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, ' ')
+  .trim();
+
+export function getLeadExternalBookingConfig(
+  campaign: Pick<Campaign, 'nom_campagne'> | null | undefined,
+): LeadExternalBookingConfig | null {
+  const normalizedName = normalizeCampaignName(campaign?.nom_campagne ?? '');
+  const isCaillibotte = /\bcaillibot{1,2}e\b/.test(normalizedName);
+  const isZoeNoe = /\bzoe\b/.test(normalizedName) && /\bnoe\b/.test(normalizedName);
+
+  return isCaillibotte && isZoeNoe ? CAILLIBOTTE_ZOE_NOE_BOOKING_CONFIG : null;
+}
+
+export function buildGoogleBookingCopyFields({
+  prospect,
+  interlocuteurNom,
+  telephone,
+  email,
+}: {
+  prospect: Prospect | null;
+  interlocuteurNom: string;
+  telephone: string;
+  email: string;
+}): GoogleBookingCopyField[] {
+  return [
+    { key: 'contact_name', label: 'Prénom / nom', value: interlocuteurNom.trim() },
+    { key: 'email', label: 'Adresse email', value: email.trim() },
+    { key: 'phone', label: 'Téléphone', value: telephone.trim() },
+    { key: 'siret', label: 'SIRET', value: prospect?.siret?.trim() ?? '' },
+    { key: 'company', label: 'Nom de la société', value: prospect?.raison_sociale?.trim() ?? '' },
+  ];
+}
 
 export function supportsMmaEmployeeCountQualification(
   campaign: Pick<Campaign, 'id_campagne'> | null | undefined,

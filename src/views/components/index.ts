@@ -26,6 +26,7 @@ export { Loader } from './loader/index.ts';
 export { Panier } from './panier/index.ts';
 export { PhoneNumberWithCallButton } from './phoneNumberWithCallButton/index.ts';
 export { PriseRendezVousPlaceholder } from './priseRendezVousPlaceholder/index.ts';
+export { GoogleAppointmentBooking } from './googleAppointmentBooking/index.ts';
 export { ProgPA } from './progPA/index.ts';
 export { ProgPAReadonly } from './progPA/index.ts';
 export { ProspectInfoHeader } from './prospectInfoHeader/index.ts';

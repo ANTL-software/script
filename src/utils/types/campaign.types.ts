@@ -21,6 +21,19 @@ export interface Campaign {
   updated_at: string;
 }
 
+export interface LeadExternalBookingConfig {
+  provider: 'google_appointment_schedule';
+  bookingUrl: string;
+  embedUrl: string;
+  ownerLabel: string;
+}
+
+export interface GoogleBookingCopyField {
+  key: 'contact_name' | 'email' | 'phone' | 'siret' | 'company';
+  label: string;
+  value: string;
+}
+
 export interface TypeCampagne {
   id_type_campagne: number;
   libelle: string;

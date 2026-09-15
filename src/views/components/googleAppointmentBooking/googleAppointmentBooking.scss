@@ -1,0 +1,151 @@
+@use "../../../utils/styles/variables" as vars;
+
+.google-appointment-booking {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+}
+
+.google-appointment-booking__instructions,
+.google-appointment-booking__report-header {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: vars.$colorGray700;
+  font-size: vars.$fontSize-xs;
+}
+
+.google-appointment-booking__instructions strong,
+.google-appointment-booking__report-header strong {
+  color: vars.$colorBlack;
+  font-size: vars.$fontSize-sm;
+}
+
+.google-appointment-booking__copy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: vars.$spacing-xs;
+}
+
+.google-appointment-booking__copy-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px vars.$spacing-xs;
+  align-items: center;
+  padding: vars.$spacing-xs;
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-sm;
+}
+
+.google-appointment-booking__copy-label {
+  grid-column: 1;
+  color: vars.$colorGray500;
+  font-size: 10px;
+  font-weight: vars.$fontWeight-semibold;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.google-appointment-booking__copy-value {
+  grid-column: 1;
+  overflow: hidden;
+  color: vars.$colorBlack;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-medium;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.google-appointment-booking__copy-value--empty {
+  color: vars.$colorGray500;
+  font-style: italic;
+}
+
+.google-appointment-booking__copy-button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 5px vars.$spacing-xs;
+  color: vars.$colorPrimary;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorPrimary;
+  border-radius: vars.$radius-sm;
+  cursor: pointer;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+}
+
+.google-appointment-booking__copy-button:hover:not(:disabled) {
+  color: vars.$colorWhite;
+  background: vars.$colorPrimary;
+}
+
+.google-appointment-booking__copy-button:disabled {
+  color: vars.$colorGray500;
+  background: vars.$colorGray200;
+  border-color: vars.$colorGray300;
+  cursor: not-allowed;
+}
+
+.google-appointment-booking__calendar {
+  min-height: 650px;
+  overflow: hidden;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-md;
+}
+
+.google-appointment-booking__calendar iframe {
+  display: block;
+  width: 100%;
+  min-height: 650px;
+  border: 0;
+}
+
+.google-appointment-booking__external-link {
+  width: fit-content;
+  color: vars.$colorPrimary;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+}
+
+.google-appointment-booking__confirmation {
+  display: flex;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  color: vars.$colorGray700;
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-sm;
+  cursor: pointer;
+  font-size: vars.$fontSize-sm;
+  font-weight: vars.$fontWeight-medium;
+}
+
+.google-appointment-booking__confirmation--error {
+  border-color: vars.$colorDanger;
+}
+
+.google-appointment-booking__confirmation input {
+  width: 16px;
+  height: 16px;
+  accent-color: vars.$colorPrimary;
+}
+
+.google-appointment-booking__antl-report {
+  display: flex;
+  flex-direction: column;
+  gap: vars.$spacing-sm;
+  padding: vars.$spacing-sm;
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-sm;
+}
+
+@media (max-width: 768px) {
+  .google-appointment-booking__calendar,
+  .google-appointment-booking__calendar iframe {
+    min-height: 720px;
+  }
+}

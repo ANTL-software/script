@@ -1,7 +1,7 @@
 import './cataloguePaniers.scss';
 import { useState } from 'react';
 import type { CampaignPanier } from '../../../utils/types/index.ts';
-import { formatCurrency } from '../../../utils/scripts/index.ts';
+import { formatCurrency, formatPanierProductDetails } from '../../../utils/scripts/index.ts';
 import { Button } from '../button/index.ts';
 import { Loader } from '../loader/index.ts';
 import { ErrorMessage } from '../errorMessage/index.ts';
@@ -118,11 +118,16 @@ export default function CataloguePaniers({
                   {isExpanded && (
                     <div className="catalogue-paniers__item-content">
                       <ul className="catalogue-paniers__products">
-                        {panier.produits.map((produit) => (
-                          <li key={produit.id_produit}>
-                            <span>{produit.nom_produit}</span>
-                          </li>
-                        ))}
+                        {panier.produits.map((produit) => {
+                          const details = formatPanierProductDetails(produit);
+
+                          return (
+                            <li key={produit.id_produit}>
+                              <span className="catalogue-paniers__product-name">{produit.nom_produit}</span>
+                              {details && <span className="catalogue-paniers__product-details"> – {details}</span>}
+                            </li>
+                          );
+                        })}
                       </ul>
 
                       {panier.has_missing_price && (

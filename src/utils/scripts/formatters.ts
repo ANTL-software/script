@@ -146,6 +146,23 @@ export function formatEur(n: number): string {
 }
 
 /**
+ * Construit le complément compact d'un article affiché dans un panier.
+ * Le prix reste celui du panier : seuls la référence et la description sont
+ * rappelés pour identifier sa composition.
+ */
+export function formatPanierProductDetails(produit: {
+  code_produit?: string;
+  description?: string;
+}): string | null {
+  const details = [
+    produit.code_produit?.trim() ? `ref ${produit.code_produit.trim()}` : null,
+    produit.description?.trim() || null,
+  ].filter((detail): detail is string => detail !== null);
+
+  return details.length > 0 ? details.join(', ') : null;
+}
+
+/**
  * Formate une heure "HH:MM:SS" en "HH:MM"
  */
 export function formatHeure(heure: string): string {

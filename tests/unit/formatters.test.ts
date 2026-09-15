@@ -6,6 +6,7 @@ import {
   formatDuration,
   formatDurationFromSeconds,
   formatDurationLong,
+  formatPanierProductDetails,
   formatPhoneE164,
   formatProspectName,
   getErrorMessage,
@@ -26,6 +27,16 @@ test('formatDurationLong gère les formats courts et longs', () => {
   assert.equal(formatDurationLong(45), '45 sec');
   assert.equal(formatDurationLong(120), '2 min');
   assert.equal(formatDurationLong(125), '2 min 5 sec');
+});
+
+test('formatPanierProductDetails garde une identification compacte sans prix', () => {
+  assert.equal(
+    formatPanierProductDetails({ code_produit: ' 9998 ', description: ' Petit pot de 190g ' }),
+    'ref 9998, Petit pot de 190g',
+  );
+  assert.equal(formatPanierProductDetails({ code_produit: '9998' }), 'ref 9998');
+  assert.equal(formatPanierProductDetails({ description: 'Petit pot de 190g' }), 'Petit pot de 190g');
+  assert.equal(formatPanierProductDetails({}), null);
 });
 
 test('cleanAndValidatePhone nettoie les séparateurs usuels et rejette les formats trop courts', () => {

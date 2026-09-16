@@ -95,3 +95,30 @@ export interface UpdateTelephonyStateData {
   provider_call_id: string;
   reason?: string;
 }
+
+export interface CallMediaSample {
+  second: number;
+  count: number;
+  receivedBytes: number;
+  sentBytes: number;
+  zeroReceivedSamples: number;
+  outputLevelMax: number;
+  lostPackets: number;
+  jitterMax: number;
+  rttMax: number;
+}
+
+export interface CallMediaEvent {
+  second: number;
+  type: 'warning' | 'warning-cleared' | 'reconnecting' | 'reconnected' | 'finished';
+  name: string | null;
+}
+
+export interface CallMediaDiagnostic {
+  version: 1;
+  sequence: number;
+  acceptedAt: string;
+  edge: string | null;
+  samples: CallMediaSample[];
+  events: CallMediaEvent[];
+}

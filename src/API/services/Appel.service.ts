@@ -1,6 +1,6 @@
 import { apiCalls } from '../APICalls.ts';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers.ts';
-import type { Appel, CreateAppelData, TerminerAppelData, UpdateAppelData, UpdateTelephonyStateData } from '../../utils/types';
+import type { Appel, CallMediaDiagnostic, CreateAppelData, TerminerAppelData, UpdateAppelData, UpdateTelephonyStateData } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/queryString.ts';
 
 export class AppelService {
@@ -59,6 +59,11 @@ export class AppelService {
   public async updateTelephonyState(id: number, data: UpdateTelephonyStateData): Promise<Appel> {
     const response = await apiCalls.patch<Appel>(`/appels/${id}/telephony-state`, data);
     return throwIfApiError(response, 'Erreur lors de la synchronisation Asterisk');
+  }
+
+  public async saveMediaDiagnostic(id: number, data: CallMediaDiagnostic): Promise<void> {
+    const response = await apiCalls.put<{ id_appel: number; sequence: number }>(`/appels/${id}/media-diagnostic`, data);
+    throwIfApiError(response, 'Erreur lors de la sauvegarde du diagnostic média');
   }
 }
 

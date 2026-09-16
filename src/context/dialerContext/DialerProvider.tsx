@@ -12,6 +12,7 @@ import { isProspectTestMode, shouldDisableLocalTwilio } from '../../utils/script
 import { formatPhoneE164, isMobilePhone } from '../../utils/scripts/formatters';
 import { pickDialerBootstrapCampaign, pickRuntimeCampaign, resolveManualCallOrigin } from '../../utils/scripts/runtimeCampaign';
 import { useAlert, useToast } from '../../hooks';
+import { TwilioMediaDiagnosticCollector } from './TwilioMediaDiagnosticCollector';
 
 interface DialerProviderProps {
   children: ReactNode;
@@ -124,6 +125,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   const telephonyConfigurationWarningRef = useRef(false);
   const hasInitializedTelephonyRef = useRef(false);
   const twilioMediaWarningsRef = useRef<Set<string>>(new Set());
+  const mediaDiagnosticsRef = useRef<TwilioMediaDiagnosticCollector | null>(null);
 
   const currentAppelIdRef = useRef<number | null>(null);
   const activeAsteriskCallRef = useRef<ActiveAsteriskCall | null>(null);
@@ -417,6 +419,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, []);
 
   const finishTwilioCall = useCallback((source: string, forceBackendSync = false): void => {
+    mediaDiagnosticsRef.current?.finish();
+    mediaDiagnosticsRef.current = null;
     if (callEndFinalizedRef.current && !forceBackendSync) {
       return;
     }
@@ -446,6 +450,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
   // Configuration commune des événements d'un appel (appel entrant ou sortant)
   const setupCallEvents = useCallback((call: Call, resolvedAppelId: number | null) => {
+    let callDiagnostic: TwilioMediaDiagnosticCollector | null = null;
     const associerCallSid = () => {
       const callSid = getTwilioCallSid(call);
       const activeAppelId = resolvedAppelId || currentAppelIdRef.current;
@@ -463,6 +468,16 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
 
     call.on('accept', () => {
       associerCallSid();
+      const diagnosticAppelId = resolvedAppelId || currentAppelIdRef.current;
+      if (diagnosticAppelId) {
+        mediaDiagnosticsRef.current?.finish();
+        callDiagnostic = new TwilioMediaDiagnosticCollector(
+          diagnosticAppelId,
+          deviceRef.current?.edge ?? null,
+          (appelId, diagnostic) => appelService.saveMediaDiagnostic(appelId, diagnostic),
+        );
+        mediaDiagnosticsRef.current = callDiagnostic;
+      }
       setIsCallConnected(true);
       if (!timerRef.current) {
         startCallTimer();
@@ -479,9 +494,14 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
       });
     });
 
+    call.on('sample', (sample) => {
+      callDiagnostic?.recordSample(sample);
+    });
+
     // Ces événements ne modifient pas le cycle de vie de l'appel : ils rendent
     // simplement visible une perte de média WebRTC et sa récupération éventuelle.
     call.on('reconnecting', (error) => {
+      callDiagnostic?.recordEvent('reconnecting', error.code);
       console.warn('[TWILIO] Reconnexion média en cours', {
         callSid: getTwilioCallSid(call),
         code: error.code,
@@ -491,11 +511,13 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     });
 
     call.on('reconnected', () => {
+      callDiagnostic?.recordEvent('reconnected');
       console.info('[TWILIO] Média reconnecté', { callSid: getTwilioCallSid(call) });
       showToast('info', 'Connexion téléphonique rétablie', 4000);
     });
 
     call.on('warning', (name, data) => {
+      callDiagnostic?.recordEvent('warning', name);
       console.warn('[TWILIO] Alerte qualité appel', {
         callSid: getTwilioCallSid(call),
         warning: name,
@@ -506,6 +528,7 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
     });
 
     call.on('warning-cleared', (name) => {
+      callDiagnostic?.recordEvent('warning-cleared', name);
       console.info('[TWILIO] Alerte qualité résolue', {
         callSid: getTwilioCallSid(call),
         warning: name
@@ -975,6 +998,8 @@ export const DialerProvider = ({ children }: DialerProviderProps) => {
   }, [clearActiveCall, fetchTwilioToken, finishTwilioCall, forceLogoutForTwilioFailure, recoverDeviceRegistration, refreshDeviceToken, reportTelephonyDegraded, reportTelephonyRecovered, showToast]);
 
   const teardownTelephonyClients = useCallback(async (): Promise<void> => {
+    mediaDiagnosticsRef.current?.finish();
+    mediaDiagnosticsRef.current = null;
     const asteriskClient = asteriskClientRef.current;
     asteriskClientRef.current = null;
     if (asteriskClient) {

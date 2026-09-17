@@ -1,5 +1,5 @@
 import { useCampaign } from '../../../hooks/index.ts';
-import { isLeadB2BCampaign } from '../../../utils/scripts/index.ts';
+import { isLeadB2BCampaign, isSwissLifeIndCampaign, SWISS_LIFE_IND_ABOUT } from '../../../utils/scripts/index.ts';
 import './quiSommesNous.scss';
 import { FaBuilding, FaUsers, FaHandshake, FaShieldAlt, FaPhone, FaEnvelope, FaMapMarkerAlt, FaListOl } from 'react-icons/fa';
 
@@ -7,7 +7,8 @@ export default function QuiSommesNous() {
   const { currentCampaign } = useCampaign();
   const campaignName = currentCampaign?.nom_campagne?.toLowerCase() ?? '';
   const isFGA = currentCampaign?.id_campagne === 11 || campaignName.includes('fga');
-  const isMMA = !isFGA && (isLeadB2BCampaign(currentCampaign) || campaignName.includes('mma'));
+  const isSwissLifeInd = isSwissLifeIndCampaign(currentCampaign);
+  const isMMA = !isFGA && !isSwissLifeInd && (isLeadB2BCampaign(currentCampaign) || campaignName.includes('mma'));
 
   if (isFGA) {
     return (
@@ -123,6 +124,70 @@ export default function QuiSommesNous() {
             <p className="qui-sommes-nous__legal">
               Planète Assurances MMA - Agents Généraux d'Assurances - Intermédiaires inscrits à l'ORIAS (consulter le site www.orias.fr) - Siège social : Rochefort
             </p>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSwissLifeInd) {
+    return (
+      <div className="qui-sommes-nous">
+        <div className="qui-sommes-nous__header">
+          <h2>Qui sommes-nous ?</h2>
+          <p className="qui-sommes-nous__subtitle">{SWISS_LIFE_IND_ABOUT.subtitle}</p>
+        </div>
+
+        <div className="qui-sommes-nous__content">
+          <section className="qui-sommes-nous__section">
+            <p>{SWISS_LIFE_IND_ABOUT.introduction}</p>
+          </section>
+
+          <section className="qui-sommes-nous__section qui-sommes-nous__section--contact">
+            <div className="qui-sommes-nous__section-header">
+              <FaMapMarkerAlt className="qui-sommes-nous__icon" />
+              <h3>{SWISS_LIFE_IND_ABOUT.agency.title}</h3>
+            </div>
+            {SWISS_LIFE_IND_ABOUT.agency.lines.map((line) => <p key={line}>{line}</p>)}
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaListOl className="qui-sommes-nous__icon" />
+              <h3>{SWISS_LIFE_IND_ABOUT.products.title}</h3>
+            </div>
+            <p>{SWISS_LIFE_IND_ABOUT.products.introduction}</p>
+            <ul className="qui-sommes-nous__list">
+              {SWISS_LIFE_IND_ABOUT.products.items.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaHandshake className="qui-sommes-nous__icon" />
+              <h3>{SWISS_LIFE_IND_ABOUT.commitments.title}</h3>
+            </div>
+            <p>{SWISS_LIFE_IND_ABOUT.commitments.content}</p>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaUsers className="qui-sommes-nous__icon" />
+              <h3>{SWISS_LIFE_IND_ABOUT.keyFigures.title}</h3>
+            </div>
+            <p>{SWISS_LIFE_IND_ABOUT.keyFigures.content}</p>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaShieldAlt className="qui-sommes-nous__icon" />
+              <h3>{SWISS_LIFE_IND_ABOUT.objective.title}</h3>
+            </div>
+            <p>{SWISS_LIFE_IND_ABOUT.objective.content}</p>
+            <p><strong>{SWISS_LIFE_IND_ABOUT.objective.strengthTitle}</strong></p>
+            <ul className="qui-sommes-nous__list">
+              {SWISS_LIFE_IND_ABOUT.objective.strengths.map((strength) => <li key={strength}>{strength}</li>)}
+            </ul>
           </section>
         </div>
       </div>

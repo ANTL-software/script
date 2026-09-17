@@ -22,10 +22,12 @@ export function usePlanAppel(): UsePlanAppelReturn {
   const [searchParams] = useSearchParams();
   const { currentCampaign } = useCampaign();
   const { currentCampagneId } = useDialer();
+  const isTestMode = searchParams.get('test') === 'true';
   const campagneId = resolveRuntimeCampaignId({
     currentCampaignId: currentCampaign?.id_campagne,
     currentDialerCampaignId: currentCampagneId,
     urlCampaignId: searchParams.get('campagne'),
+    preferDialerCampaign: isTestMode,
   });
   const matchedContextCampaign = currentCampaign?.id_campagne === campagneId ? currentCampaign : null;
 

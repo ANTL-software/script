@@ -66,4 +66,5 @@ export interface ProspectAssigne {
   id_rendez_vous_source?: number | null;
   est_rappel_force?: boolean;
   motif_rappel_force?: string | null;
+  dialer_blocked_reason?: 'numero_monaco_non_appelable' | 'numero_mobile_non_autorise' | 'numero_non_appelable';
 }

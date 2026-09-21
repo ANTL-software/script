@@ -77,6 +77,7 @@ function useNetworkQualityWarning(): void {
 
 function useDashboardQueue(): void {
   const { navigateTo } = useNavigation();
+  const { showToast } = useToast();
   const {
     statut,
     prochainProspect,
@@ -106,10 +107,15 @@ function useDashboardQueue(): void {
     clearProchainProspect();
     navigateTo(action.url);
 
+    if (prochainProspect.dialer_blocked_reason) {
+      showToast('warning', 'Fiche de rendez-vous ouverte — numérotation automatique bloquée pour ce numéro', 7000);
+      return;
+    }
+
     if (action.shouldStartCall) {
       void call(telephone, id_campagne_assignee ?? undefined, id_prospect);
     }
-  }, [call, clearProchainProspect, navigateTo, prochainProspect]);
+  }, [call, clearProchainProspect, navigateTo, prochainProspect, showToast]);
 
   useEffect(() => {
     if (statut !== 'disponible' || prochainProspect) return;

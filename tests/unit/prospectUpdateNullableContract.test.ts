@@ -12,6 +12,7 @@ test('QuiEstCe transmet les chaînes vides des champs effacés pour mise à jour
   assert.match(source, /dataToUpdate\.prenom = editedFields\.prenom\.trim\(\)/);
   assert.match(source, /dataToUpdate\.raison_sociale = editedFields\.raison_sociale\.trim\(\)/);
   assert.match(source, /dataToUpdate\.siret = editedFields\.siret\.trim\(\)/);
+  assert.match(source, /dataToUpdate\.effectif_libelle = .*effectif/);
   assert.match(source, /dataToUpdate\.email = editedFields\.email\.trim\(\)/);
   assert.doesNotMatch(source, /dataToUpdate\.prenom = editedFields\.prenom \|\| undefined/);
   assert.doesNotMatch(source, /dataToUpdate\.email = editedFields\.email \|\| undefined/);
@@ -25,4 +26,13 @@ test('useOrderConfirmation conserve les champs effacés pour la mise à jour pro
 
   assert.match(source, /prospectUpdates\.prenom = prenom/);
   assert.doesNotMatch(source, /prospectUpdates\.prenom = prenom \|\| undefined/);
+});
+
+test('la validation Lead B2B enregistre l effectif saisi sur la fiche prospect', async () => {
+  const source = await readFile(
+    path.join(process.cwd(), 'src/hooks/usePriseRendezVous.ts'),
+    'utf8',
+  );
+
+  assert.match(source, /effectif_libelle: hasExactEffectif \? null : normalizedEffectif/);
 });

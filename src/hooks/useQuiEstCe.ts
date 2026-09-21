@@ -8,6 +8,7 @@ interface EditableFields {
   prenom: string;
   raison_sociale: string;
   siret: string;
+  effectif: string;
   code_naf: string;
   activite: string;
   secteur: string;
@@ -34,6 +35,7 @@ export function useQuiEstCe() {
     prenom: '',
     raison_sociale: '',
     siret: '',
+    effectif: '',
     code_naf: '',
     activite: '',
     secteur: '',
@@ -56,6 +58,7 @@ export function useQuiEstCe() {
         prenom: currentProspect?.prenom || '',
         raison_sociale: currentProspect?.raison_sociale || '',
         siret: currentProspect?.siret || '',
+        effectif: currentProspect?.effectif_libelle ?? currentProspect?.effectif?.toString() ?? '',
         code_naf: currentProspect?.code_naf || '',
         activite: currentProspect?.activite || '',
         secteur: currentProspect?.secteur || '',
@@ -95,6 +98,10 @@ export function useQuiEstCe() {
 
     if (editedFields.code_postal && !/^[0-9]{5}$/.test(editedFields.code_postal)) {
       newErrors.code_postal = 'Code postal invalide (5 chiffres)';
+    }
+
+    if (editedFields.effectif.length > 50) {
+      newErrors.effectif = 'Effectif trop long (50 caractères maximum)';
     }
 
     setErrors(newErrors);
@@ -149,6 +156,7 @@ export function useQuiEstCe() {
         prenom: currentProspect?.prenom || '',
         raison_sociale: currentProspect?.raison_sociale || '',
         siret: currentProspect?.siret || '',
+        effectif: currentProspect?.effectif_libelle ?? currentProspect?.effectif?.toString() ?? '',
         code_naf: currentProspect?.code_naf || '',
         activite: currentProspect?.activite || '',
         secteur: currentProspect?.secteur || '',
@@ -189,6 +197,12 @@ export function useQuiEstCe() {
       }
       if (editedFields.siret.trim() !== (currentProspect?.siret || '').trim()) {
         dataToUpdate.siret = editedFields.siret.trim();
+      }
+      const currentEffectif = currentProspect?.effectif_libelle ?? currentProspect?.effectif?.toString() ?? '';
+      const effectif = editedFields.effectif.trim();
+      if (effectif !== currentEffectif) {
+        dataToUpdate.effectif = /^\d+$/.test(effectif) ? Number(effectif) : null;
+        dataToUpdate.effectif_libelle = /^\d+$/.test(effectif) ? null : effectif;
       }
       if (editedFields.code_naf.trim() !== (currentProspect?.code_naf || '').trim()) {
         dataToUpdate.code_naf = editedFields.code_naf.trim();

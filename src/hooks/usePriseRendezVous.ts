@@ -25,7 +25,7 @@ const TIME_SLOTS = getLeadB2BTimeSlots();
 type FormErrors = Record<string, string>;
 
 export function usePriseRendezVous() {
-  const { currentProspect, loadRendezVous } = useProspect();
+  const { currentProspect, loadRendezVous, updateProspect } = useProspect();
   const { currentCampaign } = useCampaign();
   const { setView } = useApp();
   const {
@@ -49,6 +49,7 @@ export function usePriseRendezVous() {
   const [codePostal, setCodePostal] = useState('');
   const [ville, setVille] = useState('');
   const [pays, setPays] = useState('France');
+  const [effectif, setEffectif] = useState('');
   const [addressChanged, setAddressChanged] = useState(false);
   const [entreprisePlusDeCinqSalaries, setEntreprisePlusDeCinqSalaries] = useState(false);
   const [notes, setNotes] = useState('');
@@ -82,6 +83,7 @@ export function usePriseRendezVous() {
     setCodePostal(currentProspect.code_postal ?? '');
     setVille(capitalizeAddress(currentProspect.ville ?? ''));
     setPays(capitalizeAddress(currentProspect.pays ?? 'France'));
+    setEffectif(currentProspect.effectif_libelle ?? currentProspect.effectif?.toString() ?? '');
     setAddressChanged(false);
     setEntreprisePlusDeCinqSalaries(false);
     setDateRdv('');
@@ -264,6 +266,9 @@ export function usePriseRendezVous() {
     }
     if (!interlocuteurNom.trim()) nextErrors.interlocuteurNom = 'Le nom est obligatoire.';
     if (!telephone.trim()) nextErrors.telephone = 'Le téléphone est obligatoire.';
+    if (effectif.length > 50) {
+      nextErrors.effectif = 'Effectif trop long (50 caractères maximum).';
+    }
     return nextErrors;
   };
 
@@ -306,6 +311,16 @@ export function usePriseRendezVous() {
       const appelId = currentAppelProspectId === currentProspect.id_prospect
         ? currentAppelId ?? undefined
         : undefined;
+
+      const currentEffectif = currentProspect.effectif_libelle ?? currentProspect.effectif?.toString() ?? '';
+      const normalizedEffectif = effectif.trim();
+      if (normalizedEffectif !== currentEffectif) {
+        const hasExactEffectif = /^\d+$/.test(normalizedEffectif);
+        await updateProspect({
+          effectif: hasExactEffectif ? Number(normalizedEffectif) : null,
+          effectif_libelle: hasExactEffectif ? null : normalizedEffectif,
+        });
+      }
 
       await leadService.createLead({ ...buildLeadB2BRendezVousPayload({
         prospectId: currentProspect.id_prospect,
@@ -365,7 +380,7 @@ export function usePriseRendezVous() {
     interlocuteurRole,
     telephone,
     email,
-    adresse, codePostal, ville, pays, changeAddressField, selectAddress,
+    adresse, codePostal, ville, pays, effectif, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel: currentCampaign?.nom_campagne ?? '',
@@ -391,6 +406,7 @@ export function usePriseRendezVous() {
     handleTelephoneChange,
     setInterlocuteurRole,
     setEmail,
+    setEffectif,
     setEntreprisePlusDeCinqSalaries,
     setNotes,
     handleSubmit,

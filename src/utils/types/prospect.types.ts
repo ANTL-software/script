@@ -60,6 +60,8 @@ export interface Prospect {
   statut_campagne?: ProspectStatut | null;
   notes?: string;
   siret?: string;
+  effectif?: number;
+  effectif_libelle?: string;
   code_naf?: string;
   activite?: string;
   secteur?: string;
@@ -108,6 +110,8 @@ export interface UpdateProspectData {
   pays?: string | null;
   notes?: string | null;
   siret?: string | null;
+  effectif?: number | null;
+  effectif_libelle?: string | null;
   code_naf?: string | null;
   activite?: string | null;
   secteur?: string | null;

@@ -195,18 +195,19 @@ export default function QuiEstCe() {
                 )}
               </div>
               <div className="qui-est-ce__field">
-                <span className="qui-est-ce__label">Code NAF</span>
+                <span className="qui-est-ce__label">Effectif</span>
                 {isEditing ? (
                   <Input
-                    value={editedFields.code_naf}
-                    onChange={(e) => handleFieldChange('code_naf', e.target.value)}
+                    value={editedFields.effectif}
+                    onChange={(e) => handleFieldChange('effectif', e.target.value)}
                     disabled={isLoading || isSaving}
+                    error={errors.effectif}
                   />
                 ) : (
-                  <span className="qui-est-ce__value">{currentProspect.code_naf || '-'}</span>
+                  <span className="qui-est-ce__value">{currentProspect.effectif_libelle ?? currentProspect.effectif ?? '-'}</span>
                 )}
               </div>
-              <div className="qui-est-ce__field qui-est-ce__field--full">
+              <div className="qui-est-ce__field">
                 <span className="qui-est-ce__label">Activite</span>
                 {isEditing ? (
                   <Input
@@ -216,6 +217,18 @@ export default function QuiEstCe() {
                   />
                 ) : (
                   <span className="qui-est-ce__value">{currentProspect.activite || '-'}</span>
+                )}
+              </div>
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">Code NAF</span>
+                {isEditing ? (
+                  <Input
+                    value={editedFields.code_naf}
+                    onChange={(e) => handleFieldChange('code_naf', e.target.value)}
+                    disabled={isLoading || isSaving}
+                  />
+                ) : (
+                  <span className="qui-est-ce__value">{currentProspect.code_naf || '-'}</span>
                 )}
               </div>
               <div className="qui-est-ce__field">

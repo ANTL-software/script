@@ -81,7 +81,7 @@ export default function PriseRendezVousPlaceholder() {
     interlocuteurRole,
     telephone,
     email,
-    adresse, codePostal, ville, pays, changeAddressField, selectAddress,
+    adresse, codePostal, ville, pays, effectif, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel,
@@ -107,6 +107,7 @@ export default function PriseRendezVousPlaceholder() {
     handleTelephoneChange,
     setInterlocuteurRole,
     setEmail,
+    setEffectif,
     setEntreprisePlusDeCinqSalaries,
     setNotes,
     handleSubmit,
@@ -267,6 +268,17 @@ export default function PriseRendezVousPlaceholder() {
                   disabled={isSaving}
                 />
               </div>
+            </div>
+
+            <div className={`form-group ${errors.effectif ? 'form-group--error' : ''}`}>
+              <label htmlFor="leadWorkforce">Effectif de l'entreprise</label>
+              <input
+                id="leadWorkforce"
+                value={effectif}
+                onChange={(event) => setEffectif(event.target.value)}
+                disabled={isSaving}
+              />
+              {errors.effectif && <span className="error-message">{errors.effectif}</span>}
             </div>
 
             {showEntreprisePlusDeCinqSalaries && (

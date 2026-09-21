@@ -51,6 +51,7 @@ test('formatPhoneE164 convertit correctement les formats français et monégasqu
   assert.equal(formatPhoneE164('+44 20 7946 0958'), '+442079460958');
   assert.equal(formatPhoneE164('00377 93 10 52 52'), '+37793105252');
   assert.equal(formatPhoneE164('+377 93 10 52 52'), '+37793105252');
+  assert.equal(formatPhoneE164('03377 93 10 52 52'), '+37793105252');
 });
 
 test('isMobilePhone identifie les mobiles français et monégasques', () => {

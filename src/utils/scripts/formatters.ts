@@ -118,6 +118,11 @@ export function cleanAndValidatePhone(input: string): string | null {
  */
 export function formatPhoneE164(phone: string): string {
   const digits = phone.replace(/\D/g, '');
+  // Certains fichiers Monaco historiques portent à tort le préfixe 03377
+  // au lieu de 00377. Les deux représentent le même indicatif +377.
+  if (digits.startsWith('03377')) {
+    return `+377${digits.slice(5)}`;
+  }
   if (digits.startsWith('0') && digits.length === 10) {
     return `+33${digits.slice(1)}`;
   }

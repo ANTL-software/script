@@ -15,6 +15,7 @@ export * from './scriptCallAccess.ts';
 export * from './staticObjections.ts';
 export * from './staticPlanAppel.ts';
 export * from './swissLifeIndAbout.ts';
+export * from './workforce.ts';
 export * from './utils.tsx';
 export type { RuntimeEnvironmentVariables } from './runtimeEnvironment.ts';
 export { capitalizeAddress } from './addressFormatting.ts';

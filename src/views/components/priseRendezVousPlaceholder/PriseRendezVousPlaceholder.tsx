@@ -81,7 +81,7 @@ export default function PriseRendezVousPlaceholder() {
     interlocuteurRole,
     telephone,
     email,
-    adresse, codePostal, ville, pays, effectif, changeAddressField, selectAddress,
+    adresse, codePostal, ville, pays, effectifMin, effectifMax, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel,
@@ -107,7 +107,8 @@ export default function PriseRendezVousPlaceholder() {
     handleTelephoneChange,
     setInterlocuteurRole,
     setEmail,
-    setEffectif,
+    setEffectifMin,
+    setEffectifMax,
     setEntreprisePlusDeCinqSalaries,
     setNotes,
     handleSubmit,
@@ -270,15 +271,19 @@ export default function PriseRendezVousPlaceholder() {
               </div>
             </div>
 
-            <div className={`form-group ${errors.effectif ? 'form-group--error' : ''}`}>
-              <label htmlFor="leadWorkforce">Effectif de l'entreprise</label>
-              <input
-                id="leadWorkforce"
-                value={effectif}
-                onChange={(event) => setEffectif(event.target.value)}
-                disabled={isSaving}
-              />
-              {errors.effectif && <span className="error-message">{errors.effectif}</span>}
+            <div className="form-row" style={{ marginTop: '4px' }}>
+              <div className={`form-group ${errors.effectifMin ? 'form-group--error' : ''}`}>
+                <label htmlFor="leadWorkforceMin">Effectif minimum</label>
+                <input id="leadWorkforceMin" type="number" min="0" max="1000000" value={effectifMin}
+                  onChange={(event) => setEffectifMin(event.target.value)} disabled={isSaving} />
+                {errors.effectifMin && <span className="error-message">{errors.effectifMin}</span>}
+              </div>
+              <div className={`form-group ${errors.effectifMax ? 'form-group--error' : ''}`}>
+                <label htmlFor="leadWorkforceMax">Effectif maximum</label>
+                <input id="leadWorkforceMax" type="number" min="0" max="1000000" value={effectifMax}
+                  onChange={(event) => setEffectifMax(event.target.value)} disabled={isSaving} />
+                {errors.effectifMax && <span className="error-message">{errors.effectifMax}</span>}
+              </div>
             </div>
 
             {showEntreprisePlusDeCinqSalaries && (

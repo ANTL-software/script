@@ -195,16 +195,35 @@ export default function QuiEstCe() {
                 )}
               </div>
               <div className="qui-est-ce__field">
-                <span className="qui-est-ce__label">Effectif</span>
+                <span className="qui-est-ce__label">Effectif minimum</span>
                 {isEditing ? (
                   <Input
-                    value={editedFields.effectif}
-                    onChange={(e) => handleFieldChange('effectif', e.target.value)}
+                    type="number"
+                    min="0"
+                    max="1000000"
+                    value={editedFields.effectifMin}
+                    onChange={(e) => handleFieldChange('effectifMin', e.target.value)}
                     disabled={isLoading || isSaving}
-                    error={errors.effectif}
+                    error={errors.effectifMin}
                   />
                 ) : (
-                  <span className="qui-est-ce__value">{currentProspect.effectif_libelle ?? currentProspect.effectif ?? '-'}</span>
+                  <span className="qui-est-ce__value">{editedFields.effectifMin || '-'}</span>
+                )}
+              </div>
+              <div className="qui-est-ce__field">
+                <span className="qui-est-ce__label">Effectif maximum</span>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1000000"
+                    value={editedFields.effectifMax}
+                    onChange={(e) => handleFieldChange('effectifMax', e.target.value)}
+                    disabled={isLoading || isSaving}
+                    error={errors.effectifMax}
+                  />
+                ) : (
+                  <span className="qui-est-ce__value">{editedFields.effectifMax || '-'}</span>
                 )}
               </div>
               <div className="qui-est-ce__field">

@@ -62,6 +62,8 @@ export interface Prospect {
   siret?: string;
   effectif?: number;
   effectif_libelle?: string;
+  effectif_min?: number;
+  effectif_max?: number;
   code_naf?: string;
   activite?: string;
   secteur?: string;
@@ -112,6 +114,8 @@ export interface UpdateProspectData {
   siret?: string | null;
   effectif?: number | null;
   effectif_libelle?: string | null;
+  effectif_min?: number | null;
+  effectif_max?: number | null;
   code_naf?: string | null;
   activite?: string | null;
   secteur?: string | null;

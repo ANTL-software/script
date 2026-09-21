@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useCampaign, useProspect, useToast } from './index.ts';
 import type { AddressSelectionResult, UpdateProspectData } from '../utils/types/index.ts';
-import { capitalizeAddress, getProspectRelationBadge } from '../utils/scripts/index.ts';
+import { buildWorkforceUpdate, capitalizeAddress, getProspectRelationBadge, getWorkforceRange } from '../utils/scripts/index.ts';
 
 interface EditableFields {
   nom: string;
   prenom: string;
   raison_sociale: string;
   siret: string;
-  effectif: string;
+  effectifMin: string;
+  effectifMax: string;
   code_naf: string;
   activite: string;
   secteur: string;
@@ -35,7 +36,8 @@ export function useQuiEstCe() {
     prenom: '',
     raison_sociale: '',
     siret: '',
-    effectif: '',
+    effectifMin: '',
+    effectifMax: '',
     code_naf: '',
     activite: '',
     secteur: '',
@@ -58,7 +60,8 @@ export function useQuiEstCe() {
         prenom: currentProspect?.prenom || '',
         raison_sociale: currentProspect?.raison_sociale || '',
         siret: currentProspect?.siret || '',
-        effectif: currentProspect?.effectif_libelle ?? currentProspect?.effectif?.toString() ?? '',
+        effectifMin: getWorkforceRange(currentProspect).min,
+        effectifMax: getWorkforceRange(currentProspect).max,
         code_naf: currentProspect?.code_naf || '',
         activite: currentProspect?.activite || '',
         secteur: currentProspect?.secteur || '',
@@ -100,8 +103,11 @@ export function useQuiEstCe() {
       newErrors.code_postal = 'Code postal invalide (5 chiffres)';
     }
 
-    if (editedFields.effectif.length > 50) {
-      newErrors.effectif = 'Effectif trop long (50 caractères maximum)';
+    if ((editedFields.effectifMin && (!/^\d+$/.test(editedFields.effectifMin) || Number(editedFields.effectifMin) > 1000000)) || (editedFields.effectifMax && (!/^\d+$/.test(editedFields.effectifMax) || Number(editedFields.effectifMax) > 1000000))) {
+      newErrors.effectifMin = 'Les effectifs doivent être des nombres entiers';
+      newErrors.effectifMax = 'Les effectifs doivent être des nombres entiers';
+    } else if (editedFields.effectifMin && editedFields.effectifMax && Number(editedFields.effectifMin) > Number(editedFields.effectifMax)) {
+      newErrors.effectifMax = 'Le maximum doit être supérieur ou égal au minimum';
     }
 
     setErrors(newErrors);
@@ -156,7 +162,8 @@ export function useQuiEstCe() {
         prenom: currentProspect?.prenom || '',
         raison_sociale: currentProspect?.raison_sociale || '',
         siret: currentProspect?.siret || '',
-        effectif: currentProspect?.effectif_libelle ?? currentProspect?.effectif?.toString() ?? '',
+        effectifMin: getWorkforceRange(currentProspect).min,
+        effectifMax: getWorkforceRange(currentProspect).max,
         code_naf: currentProspect?.code_naf || '',
         activite: currentProspect?.activite || '',
         secteur: currentProspect?.secteur || '',
@@ -198,11 +205,9 @@ export function useQuiEstCe() {
       if (editedFields.siret.trim() !== (currentProspect?.siret || '').trim()) {
         dataToUpdate.siret = editedFields.siret.trim();
       }
-      const currentEffectif = currentProspect?.effectif_libelle ?? currentProspect?.effectif?.toString() ?? '';
-      const effectif = editedFields.effectif.trim();
-      if (effectif !== currentEffectif) {
-        dataToUpdate.effectif = /^\d+$/.test(effectif) ? Number(effectif) : null;
-        dataToUpdate.effectif_libelle = /^\d+$/.test(effectif) ? null : effectif;
+      const currentWorkforce = getWorkforceRange(currentProspect);
+      if (editedFields.effectifMin !== currentWorkforce.min || editedFields.effectifMax !== currentWorkforce.max) {
+        Object.assign(dataToUpdate, buildWorkforceUpdate(editedFields.effectifMin, editedFields.effectifMax));
       }
       if (editedFields.code_naf.trim() !== (currentProspect?.code_naf || '').trim()) {
         dataToUpdate.code_naf = editedFields.code_naf.trim();

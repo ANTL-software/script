@@ -18,7 +18,7 @@ import {
   supportsMmaEmployeeCountQualification,
 } from '../utils/scripts/priseRendezVous.ts';
 import type { AddressSelectionResult, RendezVousRecapData, RendezVousTimeOption } from '../utils/types/index.ts';
-import { capitalizeAddress } from '../utils/scripts/index.ts';
+import { buildWorkforceUpdate, capitalizeAddress, getWorkforceRange } from '../utils/scripts/index.ts';
 
 const TIME_SLOTS = getLeadB2BTimeSlots();
 
@@ -49,7 +49,8 @@ export function usePriseRendezVous() {
   const [codePostal, setCodePostal] = useState('');
   const [ville, setVille] = useState('');
   const [pays, setPays] = useState('France');
-  const [effectif, setEffectif] = useState('');
+  const [effectifMin, setEffectifMin] = useState('');
+  const [effectifMax, setEffectifMax] = useState('');
   const [addressChanged, setAddressChanged] = useState(false);
   const [entreprisePlusDeCinqSalaries, setEntreprisePlusDeCinqSalaries] = useState(false);
   const [notes, setNotes] = useState('');
@@ -83,7 +84,9 @@ export function usePriseRendezVous() {
     setCodePostal(currentProspect.code_postal ?? '');
     setVille(capitalizeAddress(currentProspect.ville ?? ''));
     setPays(capitalizeAddress(currentProspect.pays ?? 'France'));
-    setEffectif(currentProspect.effectif_libelle ?? currentProspect.effectif?.toString() ?? '');
+    const workforce = getWorkforceRange(currentProspect);
+    setEffectifMin(workforce.min);
+    setEffectifMax(workforce.max);
     setAddressChanged(false);
     setEntreprisePlusDeCinqSalaries(false);
     setDateRdv('');
@@ -266,8 +269,11 @@ export function usePriseRendezVous() {
     }
     if (!interlocuteurNom.trim()) nextErrors.interlocuteurNom = 'Le nom est obligatoire.';
     if (!telephone.trim()) nextErrors.telephone = 'Le téléphone est obligatoire.';
-    if (effectif.length > 50) {
-      nextErrors.effectif = 'Effectif trop long (50 caractères maximum).';
+    if ((effectifMin && (!/^\d+$/.test(effectifMin) || Number(effectifMin) > 1000000)) || (effectifMax && (!/^\d+$/.test(effectifMax) || Number(effectifMax) > 1000000))) {
+      nextErrors.effectifMin = 'Les effectifs doivent être des nombres entiers.';
+      nextErrors.effectifMax = 'Les effectifs doivent être des nombres entiers.';
+    } else if (effectifMin && effectifMax && Number(effectifMin) > Number(effectifMax)) {
+      nextErrors.effectifMax = 'Le maximum doit être supérieur ou égal au minimum.';
     }
     return nextErrors;
   };
@@ -312,14 +318,9 @@ export function usePriseRendezVous() {
         ? currentAppelId ?? undefined
         : undefined;
 
-      const currentEffectif = currentProspect.effectif_libelle ?? currentProspect.effectif?.toString() ?? '';
-      const normalizedEffectif = effectif.trim();
-      if (normalizedEffectif !== currentEffectif) {
-        const hasExactEffectif = /^\d+$/.test(normalizedEffectif);
-        await updateProspect({
-          effectif: hasExactEffectif ? Number(normalizedEffectif) : null,
-          effectif_libelle: hasExactEffectif ? null : normalizedEffectif,
-        });
+      const currentWorkforce = getWorkforceRange(currentProspect);
+      if (effectifMin !== currentWorkforce.min || effectifMax !== currentWorkforce.max) {
+        await updateProspect(buildWorkforceUpdate(effectifMin, effectifMax));
       }
 
       await leadService.createLead({ ...buildLeadB2BRendezVousPayload({
@@ -380,7 +381,7 @@ export function usePriseRendezVous() {
     interlocuteurRole,
     telephone,
     email,
-    adresse, codePostal, ville, pays, effectif, changeAddressField, selectAddress,
+    adresse, codePostal, ville, pays, effectifMin, effectifMax, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel: currentCampaign?.nom_campagne ?? '',
@@ -406,7 +407,8 @@ export function usePriseRendezVous() {
     handleTelephoneChange,
     setInterlocuteurRole,
     setEmail,
-    setEffectif,
+    setEffectifMin,
+    setEffectifMax,
     setEntreprisePlusDeCinqSalaries,
     setNotes,
     handleSubmit,

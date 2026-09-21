@@ -12,7 +12,7 @@ test('QuiEstCe transmet les chaînes vides des champs effacés pour mise à jour
   assert.match(source, /dataToUpdate\.prenom = editedFields\.prenom\.trim\(\)/);
   assert.match(source, /dataToUpdate\.raison_sociale = editedFields\.raison_sociale\.trim\(\)/);
   assert.match(source, /dataToUpdate\.siret = editedFields\.siret\.trim\(\)/);
-  assert.match(source, /dataToUpdate\.effectif_libelle = .*effectif/);
+  assert.match(source, /Object\.assign\(dataToUpdate, buildWorkforceUpdate\(editedFields\.effectifMin, editedFields\.effectifMax\)\)/);
   assert.match(source, /dataToUpdate\.email = editedFields\.email\.trim\(\)/);
   assert.doesNotMatch(source, /dataToUpdate\.prenom = editedFields\.prenom \|\| undefined/);
   assert.doesNotMatch(source, /dataToUpdate\.email = editedFields\.email \|\| undefined/);
@@ -34,5 +34,5 @@ test('la validation Lead B2B enregistre l effectif saisi sur la fiche prospect',
     'utf8',
   );
 
-  assert.match(source, /effectif_libelle: hasExactEffectif \? null : normalizedEffectif/);
+  assert.match(source, /await updateProspect\(buildWorkforceUpdate\(effectifMin, effectifMax\)\)/);
 });

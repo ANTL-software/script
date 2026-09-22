@@ -3,6 +3,7 @@ import type {
   CreateLeadData,
   GoogleBookingCopyField,
   LeadExternalBookingConfig,
+  LeadBookingWeekday,
   Prospect,
   RendezVousTimeOption,
 } from '../types/index.ts';
@@ -30,6 +31,13 @@ export interface BuildLeadB2BRendezVousPayloadArgs {
 
 export const LEAD_B2B_RENDEZ_VOUS_MOTIF = 'Prise de rendez-vous client';
 export const MMA_EMPLOYEE_COUNT_QUALIFICATION_CAMPAIGN_ID = 10;
+export const DEFAULT_LEAD_BOOKING_OPEN_WEEKDAYS: LeadBookingWeekday[] = [1, 2, 3, 4, 5, 6, 7];
+
+export interface LeadBookingCalendarDay {
+  isoDate: string;
+  dayOfMonth: number;
+  disabled: boolean;
+}
 
 const CAILLIBOTTE_ZOE_NOE_BOOKING_CONFIG: LeadExternalBookingConfig = {
   provider: 'google_appointment_schedule',
@@ -157,6 +165,34 @@ const parseDateInput = (dateStr: string): Date => {
   return new Date(year, month - 1, day);
 };
 
+const formatDateInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export function getLeadBookingOpenWeekdays(
+  campaign: Pick<Campaign, 'bon_commande_config'> | null | undefined,
+): LeadBookingWeekday[] {
+  const configuredWeekdays = campaign?.bon_commande_config?.lead_booking?.open_weekdays;
+  if (!Array.isArray(configuredWeekdays) || configuredWeekdays.length === 0) {
+    return DEFAULT_LEAD_BOOKING_OPEN_WEEKDAYS;
+  }
+
+  const normalizedWeekdays = Array.from(new Set(
+    configuredWeekdays.filter(
+      (weekday): weekday is LeadBookingWeekday => Number.isInteger(weekday) && weekday >= 1 && weekday <= 7,
+    ),
+  ));
+  return normalizedWeekdays.length > 0 ? normalizedWeekdays : DEFAULT_LEAD_BOOKING_OPEN_WEEKDAYS;
+}
+
+function getIsoWeekday(date: Date): LeadBookingWeekday {
+  const weekday = date.getDay();
+  return (weekday === 0 ? 7 : weekday) as LeadBookingWeekday;
+}
+
 export function getTodayInputDateString(referenceDate: Date = new Date()): string {
   const year = referenceDate.getFullYear();
   const month = String(referenceDate.getMonth() + 1).padStart(2, '0');
@@ -164,8 +200,42 @@ export function getTodayInputDateString(referenceDate: Date = new Date()): strin
   return `${year}-${month}-${day}`;
 }
 
-export function isLeadB2BDateAllowed(dateStr: string): boolean {
-  return dateStr.trim().length > 0;
+export function isLeadB2BDateAllowed(
+  dateStr: string,
+  openWeekdays: LeadBookingWeekday[] = DEFAULT_LEAD_BOOKING_OPEN_WEEKDAYS,
+): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const date = parseDateInput(dateStr);
+  return formatDateInput(date) === dateStr && openWeekdays.includes(getIsoWeekday(date));
+}
+
+export function getLeadBookingCalendarDays(
+  visibleMonth: Date,
+  minimumDate: string,
+  openWeekdays: LeadBookingWeekday[],
+): Array<LeadBookingCalendarDay | null> {
+  const year = visibleMonth.getFullYear();
+  const month = visibleMonth.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const leadingEmptyDays = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const calendarDays: Array<LeadBookingCalendarDay | null> = Array.from(
+    { length: leadingEmptyDays },
+    () => null,
+  );
+
+  for (let dayOfMonth = 1; dayOfMonth <= daysInMonth; dayOfMonth += 1) {
+    const date = new Date(year, month, dayOfMonth);
+    const isoDate = formatDateInput(date);
+    calendarDays.push({
+      isoDate,
+      dayOfMonth,
+      disabled: isoDate < minimumDate || !openWeekdays.includes(getIsoWeekday(date)),
+    });
+  }
+
+  while (calendarDays.length % 7 !== 0) calendarDays.push(null);
+  return calendarDays;
 }
 
 export function formatLeadB2BDateLabel(dateStr: string): string {

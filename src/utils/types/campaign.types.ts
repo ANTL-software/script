@@ -1,6 +1,16 @@
 import type { CampaignVariant } from '../scripts/campaignVariants.ts';
 import type { ModePaiement } from './vente.types.ts';
 
+export type LeadBookingWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export interface LeadBookingConfig {
+  open_weekdays: LeadBookingWeekday[];
+}
+
+export interface CampaignConfiguration {
+  lead_booking?: LeadBookingConfig | null;
+}
+
 export interface Campaign {
   id_campagne: number;
   nom_campagne: string;
@@ -15,6 +25,7 @@ export interface Campaign {
   statut?: 'inactive' | 'active' | 'terminee';
   autoriser_mobile?: boolean;
   modes_paiement?: ModePaiement[];
+  bon_commande_config?: CampaignConfiguration | null;
   logo_path?: string | null;
   logo_file_name?: string | null;
   created_at: string;

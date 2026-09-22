@@ -136,6 +136,10 @@
   border-color: vars.$colorDanger;
   background: color.adjust(vars.$colorDanger, $lightness: 48%);
 }
+.prise-rdv-form .form-group--error .lead-booking-date-picker__trigger {
+  border-color: vars.$colorDanger;
+  background: color.adjust(vars.$colorDanger, $lightness: 48%);
+}
 .prise-rdv-form .form-group--error input:focus,
 .prise-rdv-form .form-group--error textarea:focus {
   border-color: vars.$colorDanger;

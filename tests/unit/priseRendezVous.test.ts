@@ -9,6 +9,8 @@ import {
   getLeadB2BRendezVousPrefill,
   getLeadB2BTimeSlots,
   getLeadExternalBookingConfig,
+  getLeadBookingCalendarDays,
+  getLeadBookingOpenWeekdays,
   isLeadB2BTimeSlotUnavailable,
   getTodayInputDateString,
   isLeadB2BDateAllowed,
@@ -163,12 +165,21 @@ test('la qualification du nombre de salariés est réservée à la campagne MMA'
   assert.equal(fgaPayload.entreprise_plus_de_cinq_salaries, false);
 });
 
-test('isLeadB2BDateAllowed accepte chaque jour pour la prise de rendez-vous MMA', () => {
+test('les jours ouverts de campagne filtrent les dates de rendez-vous client', () => {
+  const openWeekdays = getLeadBookingOpenWeekdays({
+    bon_commande_config: { lead_booking: { open_weekdays: [1, 4] } },
+  });
+
+  assert.deepEqual(openWeekdays, [1, 4]);
   assert.equal(isLeadB2BDateAllowed('2026-07-07'), true);
-  assert.equal(isLeadB2BDateAllowed('2026-07-09'), true);
-  assert.equal(isLeadB2BDateAllowed('2026-07-08'), true);
-  assert.equal(isLeadB2BDateAllowed('2026-07-12'), true);
+  assert.equal(isLeadB2BDateAllowed('2026-07-09', openWeekdays), true);
+  assert.equal(isLeadB2BDateAllowed('2026-07-08', openWeekdays), false);
+  assert.equal(isLeadB2BDateAllowed('2026-07-12', openWeekdays), false);
   assert.equal(isLeadB2BDateAllowed(''), false);
+
+  const julyDays = getLeadBookingCalendarDays(new Date(2026, 6, 1), '2026-07-01', openWeekdays);
+  assert.equal(julyDays.find((day) => day?.isoDate === '2026-07-08')?.disabled, true);
+  assert.equal(julyDays.find((day) => day?.isoDate === '2026-07-09')?.disabled, false);
 });
 
 test('les créneaux déjà réservés sont retirés sans bloquer les heures suivantes', () => {

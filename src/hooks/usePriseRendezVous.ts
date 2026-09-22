@@ -10,6 +10,7 @@ import {
   filterAvailableLeadB2BTimeSlots,
   formatLeadB2BDateLabel,
   getLeadExternalBookingConfig,
+  getLeadBookingOpenWeekdays,
   getLeadB2BRendezVousPrefill,
   getLeadB2BTimeSlots,
   getTodayInputDateString,
@@ -65,6 +66,10 @@ export function usePriseRendezVous() {
   const timeSlots = filterAvailableLeadB2BTimeSlots(TIME_SLOTS, unavailableTimeSlots);
   const showEntreprisePlusDeCinqSalaries = supportsMmaEmployeeCountQualification(currentCampaign);
   const externalBookingConfig = getLeadExternalBookingConfig(currentCampaign);
+  const leadBookingOpenWeekdays = useMemo(
+    () => getLeadBookingOpenWeekdays(currentCampaign),
+    [currentCampaign],
+  );
   const googleBookingCopyFields = useMemo(() => buildGoogleBookingCopyFields({
     prospect: currentProspect,
     interlocuteurNom,
@@ -106,7 +111,11 @@ export function usePriseRendezVous() {
   }, [currentProspect?.id_prospect]);
 
   useEffect(() => {
-    if (externalBookingConfig || !currentCampaign?.id_campagne || !isLeadB2BDateAllowed(dateRdv)) {
+    if (
+      externalBookingConfig
+      || !currentCampaign?.id_campagne
+      || !isLeadB2BDateAllowed(dateRdv, leadBookingOpenWeekdays)
+    ) {
       setUnavailableTimeSlots([]);
       setIsAvailabilityLoading(false);
       return;
@@ -136,7 +145,7 @@ export function usePriseRendezVous() {
     return () => {
       isCurrentRequest = false;
     };
-  }, [currentCampaign?.id_campagne, dateRdv, externalBookingConfig]);
+  }, [currentCampaign?.id_campagne, dateRdv, externalBookingConfig, leadBookingOpenWeekdays]);
 
   useEffect(() => {
     if (!heureRdv || !isLeadB2BTimeSlotUnavailable(heureRdv.value, unavailableTimeSlots)) {
@@ -153,6 +162,13 @@ export function usePriseRendezVous() {
   }, [heureRdv, unavailableTimeSlots]);
 
   const handleDateChange = (value: string): void => {
+    if (value && !isLeadB2BDateAllowed(value, leadBookingOpenWeekdays)) {
+      setErrors((previous) => ({
+        ...previous,
+        dateRdv: 'Cette campagne ne permet pas de rendez-vous client ce jour-là.',
+      }));
+      return;
+    }
     setDateRdv(value);
     setUnavailableTimeSlots([]);
     setErrors((previous) => ({
@@ -261,6 +277,9 @@ export function usePriseRendezVous() {
       nextErrors.externalBooking = 'Confirmez que la réservation a bien été validée dans Google Agenda.';
     }
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
+    else if (!isLeadB2BDateAllowed(dateRdv, leadBookingOpenWeekdays)) {
+      nextErrors.dateRdv = 'Cette campagne ne permet pas de rendez-vous client ce jour-là.';
+    }
     if (!heureRdv && (!heureInput || !minuteInput)) nextErrors.heureRdv = "L'heure est obligatoire.";
     const selectedTime = heureRdv?.value
       ?? (heureInput && minuteInput ? `${heureInput.padStart(2, '0')}:${minuteInput.padStart(2, '0')}` : '');
@@ -385,6 +404,7 @@ export function usePriseRendezVous() {
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel: currentCampaign?.nom_campagne ?? '',
+    leadBookingOpenWeekdays,
     externalBookingConfig,
     googleBookingCopyFields,
     isExternalBookingConfirmed,

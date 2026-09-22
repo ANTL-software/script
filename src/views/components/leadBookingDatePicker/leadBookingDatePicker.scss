@@ -1,0 +1,136 @@
+@use "../../../utils/styles/variables" as vars;
+
+.lead-booking-date-picker {
+  position: relative;
+}
+.lead-booking-date-picker__trigger {
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: vars.$spacing-sm;
+  padding: vars.$spacing-xs vars.$spacing-sm;
+  color: vars.$colorBlack;
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-sm;
+  cursor: pointer;
+}
+.lead-booking-date-picker__trigger:focus {
+  background: vars.$colorWhite;
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 0 3px vars.$colorPrimaryFocus;
+  outline: none;
+}
+.lead-booking-date-picker__trigger:disabled {
+  color: vars.$colorGray500;
+  background: vars.$colorGray200;
+  cursor: not-allowed;
+}
+.lead-booking-date-picker__calendar {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  width: min(19rem, 85vw);
+  padding: vars.$spacing-sm;
+  background: vars.$colorWhite;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-md;
+  box-shadow: vars.$shadow-md;
+}
+.lead-booking-date-picker__navigation {
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
+  align-items: center;
+  gap: vars.$spacing-xs;
+  margin-bottom: vars.$spacing-xs;
+}
+.lead-booking-date-picker__navigation button,
+.lead-booking-date-picker__day {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  color: vars.$colorGray700;
+  background: transparent;
+  border: 0;
+  border-radius: vars.$radius-sm;
+  cursor: pointer;
+}
+.lead-booking-date-picker__navigation .lead-booking-date-picker__period-trigger {
+  width: 100%;
+  min-width: 0;
+  padding: 0 vars.$spacing-xs;
+  font-weight: vars.$fontWeight-semibold;
+  text-align: center;
+  text-transform: capitalize;
+}
+.lead-booking-date-picker__navigation button:hover:not(:disabled),
+.lead-booking-date-picker__day:hover:not(:disabled) {
+  color: vars.$colorPrimary;
+  background: vars.$colorPrimaryFocus;
+}
+.lead-booking-date-picker__navigation button:disabled,
+.lead-booking-date-picker__day:disabled {
+  color: vars.$colorGray300;
+  background: vars.$colorGray100;
+  cursor: not-allowed;
+}
+.lead-booking-date-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.lead-booking-date-picker__weekday {
+  padding: 4px 0;
+  color: vars.$colorGray500;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  text-align: center;
+}
+.lead-booking-date-picker__day--selected,
+.lead-booking-date-picker__day--selected:hover:not(:disabled) {
+  color: vars.$colorWhite;
+  background: vars.$colorPrimary;
+}
+.lead-booking-date-picker__period-picker {
+  display: grid;
+  grid-template-columns: 1fr 0.75fr;
+  gap: vars.$spacing-sm;
+}
+.lead-booking-date-picker__period-picker label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: vars.$colorGray700;
+  font-size: vars.$fontSize-xs;
+  font-weight: vars.$fontWeight-semibold;
+  text-transform: uppercase;
+}
+.lead-booking-date-picker__period-picker select {
+  min-height: 9rem;
+  padding: 2px;
+  color: vars.$colorGray700;
+  background: vars.$colorGray100;
+  border: 1px solid vars.$colorGray200;
+  border-radius: vars.$radius-sm;
+  outline: none;
+  scrollbar-color: vars.$colorGray300 transparent;
+}
+.lead-booking-date-picker__period-picker select:focus {
+  border-color: vars.$colorPrimary;
+  box-shadow: 0 0 0 2px vars.$colorPrimaryFocus;
+}
+.lead-booking-date-picker__period-picker option {
+  padding: 5px 7px;
+  border-radius: 3px;
+}
+.lead-booking-date-picker__calendar p {
+  margin: vars.$spacing-xs 0 0;
+  color: vars.$colorGray500;
+  font-size: 0.7rem;
+  line-height: 1.3;
+}

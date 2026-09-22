@@ -22,6 +22,7 @@ export { HistoriqueRendezVous } from './historiqueRendezVous/index.ts';
 export { HistoriqueVentes } from './historiqueVentes/index.ts';
 export { IncomingCallBanner } from './incomingCallBanner/index.ts';
 export { Input } from './input/index.ts';
+export { LeadBookingDatePicker } from './leadBookingDatePicker/index.ts';
 export { Loader } from './loader/index.ts';
 export { Panier } from './panier/index.ts';
 export { PhoneNumberWithCallButton } from './phoneNumberWithCallButton/index.ts';

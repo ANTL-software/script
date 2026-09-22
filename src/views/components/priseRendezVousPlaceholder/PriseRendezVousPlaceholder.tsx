@@ -5,6 +5,7 @@ import type { RendezVousTimeOption } from '../../../utils/types/index.ts';
 import { RendezVousRecapModal } from '../rendezVousRecapModal/index.ts';
 import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
 import { GoogleAppointmentBooking } from '../googleAppointmentBooking/index.ts';
+import { LeadBookingDatePicker } from '../leadBookingDatePicker/index.ts';
 import './priseRendezVousPlaceholder.scss';
 
 const selectStyles: StylesConfig<RendezVousTimeOption, false> = {
@@ -85,6 +86,7 @@ export default function PriseRendezVousPlaceholder() {
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel,
+    leadBookingOpenWeekdays,
     externalBookingConfig,
     googleBookingCopyFields,
     isExternalBookingConfirmed,
@@ -150,12 +152,12 @@ export default function PriseRendezVousPlaceholder() {
                 <label htmlFor="dateRdv">
                   Date <span className="required">*</span>
                 </label>
-                <input
+                <LeadBookingDatePicker
                   id="dateRdv"
-                  type="date"
-                  min={todayStr}
                   value={dateRdv}
-                  onChange={(event) => handleDateChange(event.target.value)}
+                  minimumDate={todayStr}
+                  openWeekdays={leadBookingOpenWeekdays}
+                  onChange={handleDateChange}
                   disabled={isSaving}
                 />
                 {errors.dateRdv && <span className="error-message">{errors.dateRdv}</span>}

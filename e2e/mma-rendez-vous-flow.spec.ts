@@ -32,6 +32,11 @@ interface CampaignFixture {
   date_debut: string;
   date_fin: string | null;
   is_active_runtime: boolean;
+  bon_commande_config?: {
+    lead_booking: {
+      open_weekdays: Array<1 | 2 | 3 | 4 | 5 | 6 | 7>;
+    };
+  };
 }
 
 interface ProspectFixture {
@@ -193,10 +198,23 @@ function formatDateForInput(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-function getNextLeadB2BDate(): string {
+function getNextLeadB2BDate(openWeekdays: number[] = [1, 2, 3, 4, 5, 6, 7]): string {
   const baseDate = new Date();
-  baseDate.setDate(baseDate.getDate() + 1);
+  do {
+    baseDate.setDate(baseDate.getDate() + 1);
+  } while (!openWeekdays.includes(baseDate.getDay() === 0 ? 7 : baseDate.getDay()));
   return formatDateForInput(baseDate);
+}
+
+async function selectLeadDate(page: Page, date: string): Promise<void> {
+  await page.locator('#dateRdv').click();
+  const calendar = page.getByRole('dialog', { name: 'Choisir la date du rendez-vous' });
+  const targetMonth = date.slice(0, 7);
+  const currentMonth = formatDateForInput(new Date()).slice(0, 7);
+  if (targetMonth !== currentMonth) {
+    await calendar.getByRole('button', { name: 'Mois suivant' }).click();
+  }
+  await calendar.getByRole('button', { name: String(Number(date.slice(8, 10))), exact: true }).click();
 }
 
 async function bootstrapAuthenticatedSession(page: Page, employe: EmployeFixture): Promise<void> {
@@ -208,6 +226,8 @@ async function bootstrapAuthenticatedSession(page: Page, employe: EmployeFixture
 }
 
 test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au closing', async ({ page }) => {
+  const openWeekdays = [1, 4] as const;
+  const nextLeadDate = getNextLeadB2BDate([...openWeekdays]);
   const employe: EmployeFixture = {
     id_employe: 17,
     identifiant: 's.martin',
@@ -227,6 +247,9 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     date_debut: '2026-07-01',
     date_fin: null,
     is_active_runtime: true,
+    bon_commande_config: {
+      lead_booking: { open_weekdays: [...openWeekdays] },
+    },
   };
 
   const prospect: ProspectFixture = {
@@ -564,8 +587,6 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     }, 500);
   });
 
-  const nextLeadDate = getNextLeadB2BDate();
-
   await page.goto(`/prospect/${prospect.id_prospect}`);
 
   await expect(page.getByRole('heading', { name: prospect.raison_sociale })).toBeVisible();
@@ -624,7 +645,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect.poll(() => leadForm.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await leadForm.evaluate((element) => element.scrollTo({ top: 0 }));
 
-  await page.locator('#dateRdv').fill(nextLeadDate);
+  await selectLeadDate(page, nextLeadDate);
   await page.getByPlaceholder('HH').fill('10');
   await page.getByPlaceholder('MM').fill('30');
   await page.locator('#interlocuteurNom').fill('Claire Durand');
@@ -636,7 +657,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Prise de rendez-vous client' }).click();
-  await expect(page.locator('#dateRdv')).toHaveValue(nextLeadDate);
+  await expect(page.locator('#dateRdv')).toHaveAttribute('data-value', nextLeadDate);
   await expect(page.getByPlaceholder('HH')).toHaveValue('10');
   await expect(page.getByPlaceholder('MM')).toHaveValue('30');
   await expect(page.locator('#interlocuteurNom')).toHaveValue('Claire Durand');
@@ -655,7 +676,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await page.screenshot({ path: 'test-results/address-script-lead.png', fullPage: true });
   await page.getByLabel('Entreprise avec plus de 5 salariés').check();
   await page.locator('#notes').fill('Qualification MMA confirmee avec besoin de rappel de synthese.');
-  await expect(page.locator('#dateRdv')).toHaveValue(nextLeadDate);
+  await expect(page.locator('#dateRdv')).toHaveAttribute('data-value', nextLeadDate);
   await expect(page.getByPlaceholder('HH')).toHaveValue('10');
   await expect(page.getByPlaceholder('MM')).toHaveValue('30');
   await expect(page.locator('#telephone')).toHaveValue('0611223344');

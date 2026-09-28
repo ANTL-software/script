@@ -23,10 +23,12 @@ test('la campagne Caillibotte Zoe-Noe utilise son agenda Google public', () => {
 
   const canonicalConfig = getLeadExternalBookingConfig({ nom_campagne: 'CAILLIBOTTE ZOE-NOE' });
   const suppliedSpellingConfig = getLeadExternalBookingConfig({ nom_campagne: 'CAILLIBOTE ZOÉ-NOÉ' });
+  const deployedShortNameConfig = getLeadExternalBookingConfig({ nom_campagne: 'zoenoe' });
 
   assert.equal(canonicalConfig?.provider, 'google_appointment_schedule');
   assert.match(canonicalConfig?.embedUrl ?? '', new RegExp(`${expectedScheduleId}\\?gv=true$`));
   assert.equal(suppliedSpellingConfig?.bookingUrl.includes(expectedScheduleId), true);
+  assert.equal(deployedShortNameConfig?.bookingUrl.includes(expectedScheduleId), true);
   assert.equal(getLeadExternalBookingConfig({ nom_campagne: 'FGA Consulting' }), null);
 });
 

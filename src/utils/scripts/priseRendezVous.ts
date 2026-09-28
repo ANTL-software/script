@@ -59,8 +59,12 @@ export function getLeadExternalBookingConfig(
   const normalizedName = normalizeCampaignName(campaign?.nom_campagne ?? '');
   const isCaillibotte = /\bcaillibot{1,2}e\b/.test(normalizedName);
   const isZoeNoe = /\bzoe\b/.test(normalizedName) && /\bnoe\b/.test(normalizedName);
+  // L'API expose actuellement cette campagne sous son nom court dans le Script.
+  const isZoeNoeShortName = normalizedName === 'zoenoe';
 
-  return isCaillibotte && isZoeNoe ? CAILLIBOTTE_ZOE_NOE_BOOKING_CONFIG : null;
+  return (isCaillibotte && isZoeNoe) || isZoeNoeShortName
+    ? CAILLIBOTTE_ZOE_NOE_BOOKING_CONFIG
+    : null;
 }
 
 export function buildGoogleBookingCopyFields({

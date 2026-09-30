@@ -229,9 +229,6 @@ export default function DashboardPage() {
           <p className="dashboard__loading">Chargement...</p>
         ) : stats?.prime ? (
           <PrimeGauge
-            ventesMoisCount={stats.ventes_mois_count ?? 0}
-            ventesMoisEnAttenteCount={stats.ventes_mois_en_attente_count}
-            ventesMoisEnAttenteMontant={stats.ventes_mois_en_attente_montant}
             prime={stats.prime}
           />
         ) : (

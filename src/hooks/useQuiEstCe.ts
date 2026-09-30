@@ -84,10 +84,15 @@ export function useQuiEstCe() {
   const linkedin = currentProspect?.linkedin?.trim() ?? '';
   const urlOffreEmploi = currentProspect?.url_offre_emploi?.trim() ?? '';
   const angleApproche = currentProspect?.angle_approche?.trim() ?? '';
+  const siteWeb = currentProspect?.site_web?.trim() ?? '';
+  const qualiteSiteWeb = currentProspect?.qualite_site_web?.trim() ?? '';
+  const typeSiteWeb = currentProspect?.type_site_web?.trim() ?? '';
   const isFgaCampaign = currentCampaign?.id_campagne === 11 || currentProspect?.id_campagne === 11;
   const recruitmentElementCount = [posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche].filter(Boolean).length;
+  const websiteElementCount = [siteWeb, qualiteSiteWeb, typeSiteWeb].filter(Boolean).length;
   const linkedinHref = /^https?:\/\//i.test(linkedin) ? linkedin : null;
   const jobOfferHref = /^https?:\/\//i.test(urlOffreEmploi) ? urlOffreEmploi : null;
+  const siteWebHref = /^https?:\/\//i.test(siteWeb) ? siteWeb : null;
 
   const validateFields = (): boolean => {
     const newErrors: Partial<EditableFields> = {};
@@ -262,5 +267,5 @@ export function useQuiEstCe() {
     }
   };
 
-  return { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, isFgaCampaign, recruitmentElementCount, linkedinHref, jobOfferHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave };
+  return { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave };
 }

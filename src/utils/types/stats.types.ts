@@ -10,14 +10,19 @@ export interface PrimeStats {
   niveau: 1 | 2 | 3;
   code_niveau: 'palier_1' | 'palier_2' | 'palier_3';
   libelle: string;
-  type_campagne: 'vente' | 'lead_b2b';
-  unite_objectif: 'euro' | 'lead';
+  unite_objectif: 'euro';
   salaire_fixe: number;
   objectif: number;
   valeur_realisee: number;
   pourcentage_atteint: number;
   prime_debloquee: number;
   remuneration_totale: number;
+  production: {
+    ventes_mois_count: number;
+    ventes_mois_montant: number;
+    leads_mois_count: number;
+    leads_mois_valeur: number;
+  };
   paliers: SeuilPrimeStats[];
 }
 

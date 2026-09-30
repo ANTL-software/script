@@ -9,34 +9,19 @@ import {
 } from '../../../utils/scripts/index.ts';
 
 interface PrimeGaugeProps {
-  ventesMoisCount: number;
-  ventesMoisEnAttenteCount?: number;
-  ventesMoisEnAttenteMontant?: number;
   prime: PrimeStats;
 }
 
-export default function PrimeGauge({
-  ventesMoisCount,
-  ventesMoisEnAttenteCount,
-  ventesMoisEnAttenteMontant,
-  prime,
-}: PrimeGaugeProps) {
+export default function PrimeGauge({ prime }: PrimeGaugeProps) {
   const pourcentage = Math.min(prime.pourcentage_atteint, 100);
   const seuils = sortPrimeThresholds(prime.paliers);
-  const isSalesCampaign = prime.type_campagne === 'vente';
 
   return (
     <div className="prime-gauge">
       <div className="prime-gauge__header">
         <div className="prime-gauge__header-left">
-          <span className="prime-gauge__niveau">{prime.libelle}</span>
           <span className="prime-gauge__mois-stats">
-            {formatPrimeProduction(prime, ventesMoisCount)}
-            {isSalesCampaign && ventesMoisEnAttenteCount !== undefined && (
-              <span className="prime-gauge__en-attente-stats" title="Ventes en attente de validation ce mois-ci">
-                {' '}({ventesMoisEnAttenteCount} en attente · {formatPrimeAmount(ventesMoisEnAttenteMontant ?? 0)})
-              </span>
-            )}
+            {formatPrimeProduction(prime)}
           </span>
         </div>
         <div className="prime-gauge__header-right">
@@ -44,7 +29,7 @@ export default function PrimeGauge({
             Prime débloquée : {formatPrimeAmount(prime.prime_debloquee)}
           </span>
           <span className="prime-gauge__objectif">
-            Objectif 100 % : {formatPrimeObjective(prime.objectif, prime.unite_objectif)}
+            Objectif 100 % : {formatPrimeObjective(prime.objectif)}
           </span>
         </div>
       </div>
@@ -72,7 +57,7 @@ export default function PrimeGauge({
             >
               <span className="prime-gauge__label-pct">{seuil.seuil_pourcentage}%</span>
               <span className="prime-gauge__label-objective">
-                {formatPrimeObjective(seuil.objectif_palier, prime.unite_objectif)}
+                {formatPrimeObjective(seuil.objectif_palier)}
               </span>
               <span className="prime-gauge__label-prime">{formatPrimeBonus(seuil, prime.salaire_fixe)}</span>
             </div>
@@ -81,9 +66,9 @@ export default function PrimeGauge({
       </div>
 
       <div className="prime-gauge__progress-text">
-        <span>{formatPrimeObjective(prime.valeur_realisee, prime.unite_objectif)}</span>
+        <span>{formatPrimeObjective(prime.valeur_realisee)}</span>
         <span className="prime-gauge__pct-value">{prime.pourcentage_atteint.toFixed(1)}%</span>
-        <span>{formatPrimeObjective(prime.objectif, prime.unite_objectif)}</span>
+        <span>{formatPrimeObjective(prime.objectif)}</span>
       </div>
     </div>
   );

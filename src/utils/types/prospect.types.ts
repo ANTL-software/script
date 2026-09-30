@@ -80,6 +80,9 @@ export interface Prospect {
   grille_tarifaire_envoyee_at?: string | null;
   plaquette_envoyee_at?: string | null;
   fga_presentation_envoyee_at?: string | null;
+  site_web?: string | null;
+  qualite_site_web?: string | null;
+  type_site_web?: string | null;
   accroche?: string;
   poste_ouvert?: string;
   linkedin?: string | null;

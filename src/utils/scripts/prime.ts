@@ -6,10 +6,8 @@ const formatEuro = (value: number): string => new Intl.NumberFormat('fr-FR', {
   maximumFractionDigits: 0,
 }).format(value);
 
-export const formatPrimeObjective = (value: number, unit: PrimeStats['unite_objectif']): string => (
-  unit === 'lead'
-    ? `${value} lead${value > 1 ? 's' : ''}`
-    : formatEuro(value)
+export const formatPrimeObjective = (value: number): string => (
+  formatEuro(value)
 );
 
 export const formatPrimeBonus = (threshold: SeuilPrimeStats, fixedSalary: number): string => (
@@ -18,11 +16,10 @@ export const formatPrimeBonus = (threshold: SeuilPrimeStats, fixedSalary: number
     : `+${formatEuro(threshold.montant_prime)}`
 );
 
-export const formatPrimeProduction = (prime: PrimeStats, ventesMoisCount: number): string => (
-  prime.unite_objectif === 'lead'
-    ? `${formatPrimeObjective(prime.valeur_realisee, 'lead')} produit${prime.valeur_realisee > 1 ? 's' : ''}`
-    : `${ventesMoisCount} vente${ventesMoisCount > 1 ? 's' : ''} · ${formatEuro(prime.valeur_realisee)}`
-);
+export const formatPrimeProduction = (prime: PrimeStats): string => {
+  const production = prime.production;
+  return `${production.ventes_mois_count} vente${production.ventes_mois_count > 1 ? 's' : ''} · ${formatEuro(production.ventes_mois_montant)} + ${production.leads_mois_count} lead${production.leads_mois_count > 1 ? 's' : ''} · ${formatEuro(production.leads_mois_valeur)}`;
+};
 
 export const sortPrimeThresholds = (thresholds: SeuilPrimeStats[]): SeuilPrimeStats[] => (
   [...thresholds].sort((left, right) => left.seuil_pourcentage - right.seuil_pourcentage)

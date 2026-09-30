@@ -4,7 +4,7 @@ import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
 import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
 import { ProgPAReadonly } from '../progPA/index.ts';
-import { FaSave, FaEdit, FaLinkedinIn, FaTimes } from 'react-icons/fa';
+import { FaSave, FaEdit, FaLinkedinIn, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
 import {
   formatDateLong,
   getCampaignVariant,
@@ -12,7 +12,7 @@ import {
 } from '../../../utils/scripts/index.ts';
 
 export default function QuiEstCe() {
-  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, isFgaCampaign, recruitmentElementCount, linkedinHref, jobOfferHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave } = useQuiEstCe();
+  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave } = useQuiEstCe();
 
   if (!currentProspect) {
     return (
@@ -115,6 +115,44 @@ export default function QuiEstCe() {
                 <div className="qui-est-ce__fga-block qui-est-ce__fga-block--angle">
                   <span className="qui-est-ce__fga-label">Angle d'approche</span>
                   <p className="qui-est-ce__fga-value">{angleApproche}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {websiteElementCount > 0 && (
+          <div className="qui-est-ce__section qui-est-ce__section--website">
+            <h3>Informations site web</h3>
+            <div className="qui-est-ce__website-row">
+              {siteWeb && (
+                <div className="qui-est-ce__website-block qui-est-ce__website-block--url">
+                  <span className="qui-est-ce__website-label">Site web</span>
+                  {siteWebHref ? (
+                    <a
+                      className="qui-est-ce__website-link"
+                      href={siteWebHref}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      <FaExternalLinkAlt aria-hidden="true" />
+                      Ouvrir le site
+                    </a>
+                  ) : (
+                    <p className="qui-est-ce__website-value">{siteWeb}</p>
+                  )}
+                </div>
+              )}
+              {qualiteSiteWeb && (
+                <div className="qui-est-ce__website-block qui-est-ce__website-block--quality">
+                  <span className="qui-est-ce__website-label">Qualité du site</span>
+                  <p className="qui-est-ce__website-value">{qualiteSiteWeb}</p>
+                </div>
+              )}
+              {typeSiteWeb && (
+                <div className="qui-est-ce__website-block qui-est-ce__website-block--type">
+                  <span className="qui-est-ce__website-label">Type de site</span>
+                  <p className="qui-est-ce__website-value">{typeSiteWeb}</p>
                 </div>
               )}
             </div>

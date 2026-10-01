@@ -12,16 +12,16 @@ import {
   getLeadExternalBookingConfig,
   getLeadBookingOpenWeekdays,
   getLeadB2BRendezVousPrefill,
-  getLeadB2BTimeSlots,
+  getLeadBookingTimeSlots,
+  hasFixedLeadBookingTimes,
+  isLeadBookingTimeAllowed,
   getTodayInputDateString,
   isLeadB2BDateAllowed,
   isLeadB2BTimeSlotUnavailable,
   supportsMmaEmployeeCountQualification,
-} from '../utils/scripts/priseRendezVous.ts';
+} from '../utils/scripts/index.ts';
 import type { AddressSelectionResult, RendezVousRecapData, RendezVousTimeOption } from '../utils/types/index.ts';
 import { buildWorkforceUpdate, capitalizeAddress, getWorkforceRange } from '../utils/scripts/index.ts';
-
-const TIME_SLOTS = getLeadB2BTimeSlots();
 
 type FormErrors = Record<string, string>;
 
@@ -63,7 +63,12 @@ export function usePriseRendezVous() {
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
   const [isExternalBookingConfirmed, setIsExternalBookingConfirmed] = useState(false);
 
-  const timeSlots = filterAvailableLeadB2BTimeSlots(TIME_SLOTS, unavailableTimeSlots);
+  const hasFixedTimeSlots = hasFixedLeadBookingTimes(currentCampaign);
+  const scheduledTimeSlots = useMemo(
+    () => getLeadBookingTimeSlots(currentCampaign, dateRdv),
+    [currentCampaign, dateRdv],
+  );
+  const timeSlots = filterAvailableLeadB2BTimeSlots(scheduledTimeSlots, unavailableTimeSlots);
   const showEntreprisePlusDeCinqSalaries = supportsMmaEmployeeCountQualification(currentCampaign);
   const externalBookingConfig = getLeadExternalBookingConfig(currentCampaign);
   const leadBookingOpenWeekdays = useMemo(
@@ -161,6 +166,15 @@ export function usePriseRendezVous() {
     }));
   }, [heureRdv, unavailableTimeSlots]);
 
+  useEffect(() => {
+    if (hasFixedTimeSlots && heureRdv
+      && !isLeadBookingTimeAllowed(currentCampaign, dateRdv, heureRdv.value)) {
+      setHeureRdv(null);
+      setHeureInput('');
+      setMinuteInput('');
+    }
+  }, [hasFixedTimeSlots, currentCampaign, dateRdv, heureRdv]);
+
   const handleDateChange = (value: string): void => {
     if (value && !isLeadB2BDateAllowed(value, leadBookingOpenWeekdays)) {
       setErrors((previous) => ({
@@ -199,7 +213,7 @@ export function usePriseRendezVous() {
 
     const timeValue = `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
     setHeureRdv(
-      TIME_SLOTS.find((slot) => slot.value === timeValue)
+      scheduledTimeSlots.find((slot) => slot.value === timeValue)
       ?? { value: timeValue, label: timeValue },
     );
   };
@@ -283,6 +297,9 @@ export function usePriseRendezVous() {
     if (!heureRdv && (!heureInput || !minuteInput)) nextErrors.heureRdv = "L'heure est obligatoire.";
     const selectedTime = heureRdv?.value
       ?? (heureInput && minuteInput ? `${heureInput.padStart(2, '0')}:${minuteInput.padStart(2, '0')}` : '');
+    if (selectedTime && !isLeadBookingTimeAllowed(currentCampaign, dateRdv, selectedTime)) {
+      nextErrors.heureRdv = 'Choisissez un des créneaux proposés pour ce jour.';
+    }
     if (!externalBookingConfig && selectedTime && isLeadB2BTimeSlotUnavailable(selectedTime, unavailableTimeSlots)) {
       nextErrors.heureRdv = 'Ce créneau est déjà pris. Choisissez une autre heure.';
     }
@@ -415,6 +432,7 @@ export function usePriseRendezVous() {
     isRecapOpen,
     todayStr: getTodayInputDateString(),
     timeSlots,
+    hasFixedTimeSlots,
     isAvailabilityLoading,
     handleDateChange,
     handleSelectHeureChange,

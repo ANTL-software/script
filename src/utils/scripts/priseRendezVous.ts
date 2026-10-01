@@ -128,6 +128,42 @@ export function getLeadB2BTimeSlots(): RendezVousTimeOption[] {
   return slots;
 }
 
+const SWISS_LIFE_BOOKING_TIMES: Partial<Record<LeadBookingWeekday, readonly string[]>> = {
+  1: ['10:00', '14:00', '17:00'],
+  2: ['09:00', '13:00', '16:00'],
+  4: ['10:00', '14:00', '17:00'],
+};
+
+export function hasFixedLeadBookingTimes(
+  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+): boolean {
+  return campaign?.id_campagne === 12 || campaign?.id_campagne === 14;
+}
+
+export function getLeadBookingTimeSlots(
+  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+  dateStr: string,
+): RendezVousTimeOption[] {
+  if (!hasFixedLeadBookingTimes(campaign)) return getLeadB2BTimeSlots();
+  if (!isLeadB2BDateAllowed(dateStr)) return [];
+  const times = SWISS_LIFE_BOOKING_TIMES[getIsoWeekday(parseDateInput(dateStr))] ?? [];
+  return times.map((value) => ({
+    value,
+    label: `${value} – ${formatTimeFromMinutes(parseTimeInMinutes(value) + 60)}`,
+  }));
+}
+
+export function isLeadBookingTimeAllowed(
+  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+  dateStr: string,
+  time: string,
+): boolean {
+  if (!hasFixedLeadBookingTimes(campaign)) return true;
+  return /^\d{1,2}:\d{2}(?::00)?$/.test(time)
+    && getLeadBookingTimeSlots(campaign, dateStr)
+      .some((slot) => slot.value === normalizeLeadB2BTimeSlot(time));
+}
+
 export function normalizeLeadB2BTimeSlot(value: string): string | null {
   const match = value.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
   if (!match) return null;

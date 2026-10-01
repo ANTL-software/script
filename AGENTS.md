@@ -1655,3 +1655,8 @@ if (nouveauStatut === 'disponible' && !sipConnected) { // sipConnected représen
 ## Contrôle d'accès des menus USV
 
 Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu USV, ajouter simultanément le droit de poste et les contrôles de navigation et de route correspondants dans USV/Olympe. Le Script vendeur conserve son accès complet ; cette règle concerne les sous-applications USV.
+
+### Horaires Swiss Life — 2026-10-01
+
+- Swiss Life (12) et Swiss Life IND (14) proposent uniquement les plages lundi/jeudi 10h–11h, 14h–15h, 17h–18h et mardi 9h–10h, 13h–14h, 16h–17h. Seule l’heure exacte de début peut être réservée. Les jours ouverts restent configurés dynamiquement ; les horaires se cumulent avec cette restriction.
+- Le Script retire la saisie manuelle pour ces campagnes, filtre les options selon la date et invalide une heure conservée qui ne correspond plus au jour choisi. La validation du formulaire et l’API refusent les horaires hors liste, y compris les secondes non nulles. Les disponibilités restent partagées entre les deux campagnes.

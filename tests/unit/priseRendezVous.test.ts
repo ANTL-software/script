@@ -8,6 +8,9 @@ import {
   formatLeadB2BDateLabel,
   getLeadB2BRendezVousPrefill,
   getLeadB2BTimeSlots,
+  getLeadBookingTimeSlots,
+  hasFixedLeadBookingTimes,
+  isLeadBookingTimeAllowed,
   getLeadExternalBookingConfig,
   getLeadBookingCalendarDays,
   getLeadBookingOpenWeekdays,
@@ -198,4 +201,46 @@ test('les créneaux déjà réservés sont retirés sans bloquer les heures suiv
 test('les helpers de date gardent un format stable pour le formulaire MMA', () => {
   assert.equal(getTodayInputDateString(new Date(2026, 6, 2)), '2026-07-02');
   assert.match(formatLeadB2BDateLabel('2026-07-07'), /mardi 7 juillet 2026/i);
+});
+
+for (const id_campagne of [12, 14]) {
+  test(`Swiss Life ${id_campagne}: seuls les débuts des plages du jour sont proposés`, () => {
+    const campaign = { id_campagne };
+    assert.equal(hasFixedLeadBookingTimes(campaign), true);
+    for (const date of ['2026-10-05', '2026-10-08']) {
+      assert.deepEqual(getLeadBookingTimeSlots(campaign, date), [
+        { value: '10:00', label: '10:00 – 11:00' },
+        { value: '14:00', label: '14:00 – 15:00' },
+        { value: '17:00', label: '17:00 – 18:00' },
+      ]);
+    }
+    assert.deepEqual(getLeadBookingTimeSlots(campaign, '2026-10-06'), [
+      { value: '09:00', label: '09:00 – 10:00' },
+      { value: '13:00', label: '13:00 – 14:00' },
+      { value: '16:00', label: '16:00 – 17:00' },
+    ]);
+    for (const date of ['', '2026-02-30', '2026-10-07', '2026-10-09', '2026-10-10', '2026-10-11']) {
+      assert.deepEqual(getLeadBookingTimeSlots(campaign, date), []);
+    }
+    const available = filterAvailableLeadB2BTimeSlots(getLeadBookingTimeSlots(campaign, '2026-10-05'), ['14:00:00']);
+    assert.deepEqual(available.map((slot) => slot.value), ['10:00', '17:00']);
+  });
+
+  test(`Swiss Life ${id_campagne}: une saisie manuelle ou conservée d'un autre jour ne contourne pas les horaires`, () => {
+    const campaign = { id_campagne };
+    assert.equal(isLeadBookingTimeAllowed(campaign, '2026-10-05', '10:00:00'), true);
+    assert.equal(isLeadBookingTimeAllowed(campaign, '2026-10-06', '9:00'), true);
+    for (const time of ['09:00', '10:15', '11:00', '10:00:01', '18:00']) {
+      assert.equal(isLeadBookingTimeAllowed(campaign, '2026-10-05', time), false);
+    }
+    assert.equal(isLeadBookingTimeAllowed(campaign, '2026-10-06', '10:00'), false);
+    assert.equal(isLeadBookingTimeAllowed(campaign, '2026-10-07', '10:00'), false);
+  });
+}
+
+test('les autres campagnes conservent leurs horaires et leur saisie libre', () => {
+  const campaign = { id_campagne: 10 };
+  assert.equal(hasFixedLeadBookingTimes(campaign), false);
+  assert.deepEqual(getLeadBookingTimeSlots(campaign, '2026-10-05'), getLeadB2BTimeSlots());
+  assert.equal(isLeadBookingTimeAllowed(campaign, '2026-10-05', '10:15'), true);
 });

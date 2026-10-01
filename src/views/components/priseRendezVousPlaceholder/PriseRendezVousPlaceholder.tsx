@@ -97,6 +97,7 @@ export default function PriseRendezVousPlaceholder() {
     isRecapOpen,
     todayStr,
     timeSlots,
+    hasFixedTimeSlots,
     isAvailabilityLoading,
     handleDateChange,
     handleSelectHeureChange,
@@ -181,7 +182,7 @@ export default function PriseRendezVousPlaceholder() {
                     />
                   </div>
 
-                  <div className="manual-time-wrapper">
+                  {!hasFixedTimeSlots && <div className="manual-time-wrapper">
                     <label>Saisie Manuelle</label>
                     <div className="inputs-row">
                       <input
@@ -204,7 +205,7 @@ export default function PriseRendezVousPlaceholder() {
                         disabled={isSaving || isAvailabilityLoading}
                       />
                     </div>
-                  </div>
+                  </div>}
                 </div>
                 {isAvailabilityLoading && <span className="form-help">Mise à jour des créneaux disponibles...</span>}
                 {errors.heureRdv && <span className="error-message">{errors.heureRdv}</span>}

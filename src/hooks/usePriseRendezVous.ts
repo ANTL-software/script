@@ -6,10 +6,8 @@ import { getCampaignVariant } from '../utils/scripts/campaignVariants.ts';
 import { formatProspectName, getErrorMessage } from '../utils/scripts/formatters.ts';
 import {
   buildLeadB2BRendezVousPayload,
-  buildGoogleBookingCopyFields,
   filterAvailableLeadB2BTimeSlots,
   formatLeadB2BDateLabel,
-  getLeadExternalBookingConfig,
   getLeadBookingOpenWeekdays,
   getLeadB2BRendezVousPrefill,
   getLeadBookingTimeSlots,
@@ -61,7 +59,6 @@ export function usePriseRendezVous() {
   const [isRecapOpen, setIsRecapOpen] = useState(false);
   const [unavailableTimeSlots, setUnavailableTimeSlots] = useState<string[]>([]);
   const [isAvailabilityLoading, setIsAvailabilityLoading] = useState(false);
-  const [isExternalBookingConfirmed, setIsExternalBookingConfirmed] = useState(false);
 
   const hasFixedTimeSlots = hasFixedLeadBookingTimes(currentCampaign);
   const scheduledTimeSlots = useMemo(
@@ -70,18 +67,10 @@ export function usePriseRendezVous() {
   );
   const timeSlots = filterAvailableLeadB2BTimeSlots(scheduledTimeSlots, unavailableTimeSlots);
   const showEntreprisePlusDeCinqSalaries = supportsMmaEmployeeCountQualification(currentCampaign);
-  const externalBookingConfig = getLeadExternalBookingConfig(currentCampaign);
   const leadBookingOpenWeekdays = useMemo(
     () => getLeadBookingOpenWeekdays(currentCampaign),
     [currentCampaign],
   );
-  const googleBookingCopyFields = useMemo(() => buildGoogleBookingCopyFields({
-    prospect: currentProspect,
-    interlocuteurNom,
-    telephone,
-    email,
-  }), [currentProspect, interlocuteurNom, telephone, email]);
-
   const resetForm = (): void => {
     if (!currentProspect) return;
     const prefill = getLeadB2BRendezVousPrefill(currentProspect);
@@ -104,7 +93,6 @@ export function usePriseRendezVous() {
     setHeureInput('');
     setMinuteInput('');
     setNotes('');
-    setIsExternalBookingConfirmed(false);
     setErrors({});
   };
 
@@ -117,8 +105,7 @@ export function usePriseRendezVous() {
 
   useEffect(() => {
     if (
-      externalBookingConfig
-      || !currentCampaign?.id_campagne
+      !currentCampaign?.id_campagne
       || !isLeadB2BDateAllowed(dateRdv, leadBookingOpenWeekdays)
     ) {
       setUnavailableTimeSlots([]);
@@ -150,7 +137,7 @@ export function usePriseRendezVous() {
     return () => {
       isCurrentRequest = false;
     };
-  }, [currentCampaign?.id_campagne, dateRdv, externalBookingConfig, leadBookingOpenWeekdays]);
+  }, [currentCampaign?.id_campagne, dateRdv, leadBookingOpenWeekdays]);
 
   useEffect(() => {
     if (!heureRdv || !isLeadB2BTimeSlotUnavailable(heureRdv.value, unavailableTimeSlots)) {
@@ -236,33 +223,6 @@ export function usePriseRendezVous() {
     updateHeureRdvFromInputs(heureInput, minutes);
   };
 
-  const handleExternalBookingTimeChange = (value: string): void => {
-    setHeureInput('');
-    setMinuteInput('');
-    setHeureRdv(value ? { value, label: value } : null);
-    setErrors((previous) => ({ ...previous, heureRdv: '' }));
-  };
-
-  const handleExternalBookingConfirmedChange = (confirmed: boolean): void => {
-    setIsExternalBookingConfirmed(confirmed);
-    setErrors((previous) => ({ ...previous, externalBooking: '' }));
-  };
-
-  const handleCopyGoogleBookingValue = async (value: string, label: string): Promise<void> => {
-    if (!value.trim()) {
-      showToast('error', `${label} n’est pas renseigné dans la fiche prospect.`);
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(value);
-      showToast('success', `${label} copié.`);
-    } catch (clipboardError: unknown) {
-      console.error('[LEAD CLIENT] Erreur copie presse-papiers:', clipboardError);
-      showToast('error', `Impossible de copier ${label.toLowerCase()}.`);
-    }
-  };
-
   const handleInterlocuteurNomChange = (value: string): void => {
     setInterlocuteurNom(value);
     setErrors((previous) => ({ ...previous, interlocuteurNom: '' }));
@@ -287,9 +247,6 @@ export function usePriseRendezVous() {
 
   const validateForm = (): FormErrors => {
     const nextErrors: FormErrors = {};
-    if (externalBookingConfig && !isExternalBookingConfirmed) {
-      nextErrors.externalBooking = 'Confirmez que la réservation a bien été validée dans Google Agenda.';
-    }
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
     else if (!isLeadB2BDateAllowed(dateRdv, leadBookingOpenWeekdays)) {
       nextErrors.dateRdv = 'Cette campagne ne permet pas de rendez-vous client ce jour-là.';
@@ -300,7 +257,7 @@ export function usePriseRendezVous() {
     if (selectedTime && !isLeadBookingTimeAllowed(currentCampaign, dateRdv, selectedTime)) {
       nextErrors.heureRdv = 'Choisissez un des créneaux proposés pour ce jour.';
     }
-    if (!externalBookingConfig && selectedTime && isLeadB2BTimeSlotUnavailable(selectedTime, unavailableTimeSlots)) {
+    if (selectedTime && isLeadB2BTimeSlotUnavailable(selectedTime, unavailableTimeSlots)) {
       nextErrors.heureRdv = 'Ce créneau est déjà pris. Choisissez une autre heure.';
     }
     if (!interlocuteurNom.trim()) nextErrors.interlocuteurNom = 'Le nom est obligatoire.';
@@ -422,9 +379,6 @@ export function usePriseRendezVous() {
     showEntreprisePlusDeCinqSalaries,
     campaignLabel: currentCampaign?.nom_campagne ?? '',
     leadBookingOpenWeekdays,
-    externalBookingConfig,
-    googleBookingCopyFields,
-    isExternalBookingConfirmed,
     notes,
     isSaving,
     errors,
@@ -438,9 +392,6 @@ export function usePriseRendezVous() {
     handleSelectHeureChange,
     handleHeureInputChange,
     handleMinuteInputChange,
-    handleExternalBookingTimeChange,
-    handleExternalBookingConfirmedChange,
-    handleCopyGoogleBookingValue,
     handleInterlocuteurNomChange,
     handleTelephoneChange,
     setInterlocuteurRole,

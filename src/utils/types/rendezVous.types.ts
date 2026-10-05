@@ -90,6 +90,8 @@ export interface RendezVousTimeOption {
 }
 
 export interface RendezVousRecapData {
+  origineContactLabel?: string;
+  origineContactDetail?: string;
   prospectLabel: string;
   campaignLabel: string;
   dateLabel: string;

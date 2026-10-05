@@ -45,6 +45,8 @@ export default function RendezVousRecapModal({
         </div>
 
         <div className="rdv-recap-modal__body">
+          {recap.origineContactLabel && <section className="rdv-recap-modal__speech-card"><h3>Comment le prospect a connu antl ?</h3><p>{recap.origineContactLabel}{recap.origineContactDetail && ` · ${recap.origineContactDetail}`}</p></section>}
+
           <section className="rdv-recap-modal__speech-card">
             <h3>Resume de confirmation</h3>
             <p>

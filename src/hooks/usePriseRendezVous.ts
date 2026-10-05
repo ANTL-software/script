@@ -5,6 +5,7 @@ import { useApp, useCampaign, useDialer, useProspect, useToast } from './index.t
 import { getCampaignVariant } from '../utils/scripts/campaignVariants.ts';
 import { formatProspectName, getErrorMessage } from '../utils/scripts/formatters.ts';
 import {
+  LEAD_CONTACT_ORIGIN_OPTIONS,
   buildLeadB2BRendezVousPayload,
   filterAvailableLeadB2BTimeSlots,
   formatLeadB2BDateLabel,
@@ -41,6 +42,10 @@ export function usePriseRendezVous() {
   const [heureInput, setHeureInput] = useState('');
   const [minuteInput, setMinuteInput] = useState('');
   const [interlocuteurNom, setInterlocuteurNom] = useState('');
+  const [origineContact, setOrigineContact] = useState<{ value: string; label: string } | null>(LEAD_CONTACT_ORIGIN_OPTIONS[0]);
+  const [origineContactDetail, setOrigineContactDetail] = useState('');
+  const [interlocuteurCivilite, setInterlocuteurCivilite] = useState('');
+  const isCreantlCampaign = currentCampaign?.id_campagne === 15;
   const [interlocuteurRole, setInterlocuteurRole] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
@@ -76,6 +81,9 @@ export function usePriseRendezVous() {
     const prefill = getLeadB2BRendezVousPrefill(currentProspect);
 
     setInterlocuteurNom(prefill.interlocuteurNom);
+    setInterlocuteurCivilite('');
+    setOrigineContact(LEAD_CONTACT_ORIGIN_OPTIONS[0]);
+    setOrigineContactDetail('');
     setInterlocuteurRole(prefill.interlocuteurRole);
     setTelephone(prefill.telephone);
     setEmail(prefill.email);
@@ -247,6 +255,7 @@ export function usePriseRendezVous() {
 
   const validateForm = (): FormErrors => {
     const nextErrors: FormErrors = {};
+    if (isCreantlCampaign && !origineContact) nextErrors.origineContact = "L’origine du contact est obligatoire.";
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
     else if (!isLeadB2BDateAllowed(dateRdv, leadBookingOpenWeekdays)) {
       nextErrors.dateRdv = 'Cette campagne ne permet pas de rendez-vous client ce jour-là.';
@@ -296,6 +305,7 @@ export function usePriseRendezVous() {
 
     try {
       const recapData: RendezVousRecapData = {
+        ...(isCreantlCampaign ? { origineContactLabel: origineContact?.label, origineContactDetail: origineContactDetail.trim() } : {}),
         prospectLabel: formatProspectName(currentProspect),
         campaignLabel: currentCampaign.nom_campagne,
         dateLabel: formatLeadB2BDateLabel(dateRdv),
@@ -330,7 +340,7 @@ export function usePriseRendezVous() {
         entreprisePlusDeCinqSalaries: showEntreprisePlusDeCinqSalaries
           ? entreprisePlusDeCinqSalaries
           : false,
-      }), ...(addressChanged ? { adresse_prospect: {
+      }), ...(isCreantlCampaign ? { interlocuteur_civilite: interlocuteurCivilite, origine_contact: origineContact?.value, origine_contact_detail: origineContactDetail.trim() } : {}), ...(addressChanged ? { adresse_prospect: {
         adresse_facturation: capitalizeAddress(adresse), code_postal: codePostal.trim(),
         ville: capitalizeAddress(ville), pays: capitalizeAddress(pays),
       } } : {}) });
@@ -366,11 +376,13 @@ export function usePriseRendezVous() {
   };
 
   return {
+    origineContact, setOrigineContact, origineContactDetail, setOrigineContactDetail, originOptions: LEAD_CONTACT_ORIGIN_OPTIONS,
     dateRdv,
     heureRdv,
     heureInput,
     minuteInput,
     interlocuteurNom,
+    interlocuteurCivilite, setInterlocuteurCivilite, isCreantlCampaign,
     interlocuteurRole,
     telephone,
     email,

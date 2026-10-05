@@ -12,6 +12,7 @@ export interface LeadBookingConfig {
 
 export interface CampaignConfiguration {
   lead_booking?: LeadBookingConfig | null;
+  creantl_booking?: { notify_external?: boolean } | null;
 }
 
 export interface Campaign {

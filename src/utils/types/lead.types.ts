@@ -53,6 +53,8 @@ export interface LeadClient {
   date_rdv: string;
   heure_rdv: string;
   motif: string | null;
+  origine_contact?: string | null;
+  origine_contact_detail?: string | null;
   interlocuteur_nom?: string | null;
   interlocuteur_role?: string | null;
   telephone_contact_snapshot?: string | null;
@@ -85,6 +87,9 @@ export interface CreateLeadData {
   motif?: string;
   notes?: string;
   interlocuteur_nom?: string;
+  interlocuteur_civilite?: string;
+  origine_contact?: string;
+  origine_contact_detail?: string;
   interlocuteur_role?: string;
   telephone_contact_snapshot?: string;
   email_contact_snapshot?: string;

@@ -73,11 +73,13 @@ const selectStyles: StylesConfig<RendezVousTimeOption, false> = {
 
 export default function PriseRendezVousPlaceholder() {
   const {
+    origineContact, setOrigineContact, origineContactDetail, setOrigineContactDetail, originOptions,
     dateRdv,
     heureRdv,
     heureInput,
     minuteInput,
     interlocuteurNom,
+    interlocuteurCivilite, setInterlocuteurCivilite, isCreantlCampaign,
     interlocuteurRole,
     telephone,
     email,
@@ -190,6 +192,7 @@ export default function PriseRendezVousPlaceholder() {
           <div className="form-card">
             <h3 className="form-card__title">2. Interlocuteur & Coordonnées directes</h3>
             <div className="form-row">
+              {isCreantlCampaign && <div className="form-group"><label htmlFor="interlocuteurCivilite">Civilité de l’interlocuteur</label><select id="interlocuteurCivilite" value={interlocuteurCivilite} onChange={(event) => setInterlocuteurCivilite(event.target.value)} disabled={isSaving}><option value="">Non précisée</option><option value="Monsieur">Monsieur</option><option value="Madame">Madame</option></select></div>}
               <div className={`form-group ${errors.interlocuteurNom ? 'form-group--error' : ''}`}>
                 <label htmlFor="interlocuteurNom">
                   Nom complet <span className="required">*</span>
@@ -199,7 +202,7 @@ export default function PriseRendezVousPlaceholder() {
                   type="text"
                   value={interlocuteurNom}
                   onChange={(event) => handleInterlocuteurNomChange(event.target.value)}
-                  placeholder="M. Jean Dupont"
+                  placeholder={isCreantlCampaign ? "Nom et prénom, ex. Decressac Nicolas" : "M. Jean Dupont"}
                   disabled={isSaving}
                 />
                 {errors.interlocuteurNom && <span className="error-message">{errors.interlocuteurNom}</span>}
@@ -296,6 +299,14 @@ export default function PriseRendezVousPlaceholder() {
               </div>
             </div>
           </div>
+
+          {isCreantlCampaign && <div className="form-card">
+            <div className="form-group"><label htmlFor="leadContactOrigin">Comment le prospect a connu antl ? *</label>
+              <Select inputId="leadContactOrigin" options={originOptions} value={origineContact} onChange={setOrigineContact} isDisabled={isSaving} styles={selectStyles} placeholder="Sélectionner une origine…" />
+              {errors.origineContact && <span className="error-message">{errors.origineContact}</span>}
+            </div>
+            <div className="form-group"><label htmlFor="leadContactOriginDetail">Précisions sur l’origine</label><input id="leadContactOriginDetail" value={origineContactDetail} onChange={(event) => setOrigineContactDetail(event.target.value)} maxLength={500} disabled={isSaving} placeholder="Réseau, personne, événement, autre…" /></div>
+          </div>}
 
           <div className="form-card">
             <h3 className="form-card__title">4. Notes de qualification</h3>

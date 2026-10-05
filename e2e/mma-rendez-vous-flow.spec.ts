@@ -109,6 +109,9 @@ interface CreateLeadPayload {
   heure_rdv: string;
   motif?: string;
   notes?: string;
+  interlocuteur_civilite?: string;
+  origine_contact?: string;
+  origine_contact_detail?: string;
   interlocuteur_nom?: string;
   interlocuteur_role?: string;
   telephone_contact_snapshot?: string;
@@ -125,6 +128,9 @@ interface LeadFixture {
   date_rdv: string;
   heure_rdv: string;
   motif: string | null;
+  interlocuteur_civilite?: string | null;
+  origine_contact?: string | null;
+  origine_contact_detail?: string | null;
   interlocuteur_nom?: string | null;
   interlocuteur_role?: string | null;
   telephone_contact_snapshot?: string | null;
@@ -227,7 +233,11 @@ async function bootstrapAuthenticatedSession(page: Page, employe: EmployeFixture
   }, employe);
 }
 
-test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au closing', async ({ page }) => {
+for (const campaignCase of [{ id: 10, name: 'MMA', origin: 'telephone' }, { id: 15, name: 'Créantl', origin: 'telephone' }, { id: 15, name: 'Créantl (réseau social)', origin: 'reseau_social' }]) {
+test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours complet jusqu au closing`, async ({ page }) => {
+  const isCreantl = campaignCase.id === 15;
+  const hour = isCreantl ? '11' : '10';
+  const minute = isCreantl ? '00' : '30';
   const openWeekdays = [1, 4] as const;
   const nextLeadDate = getNextLeadB2BDate([...openWeekdays]);
   const employe: EmployeFixture = {
@@ -240,8 +250,8 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   };
 
   const campagne: CampaignFixture = {
-    id_campagne: 10,
-    nom_campagne: 'MMA',
+    id_campagne: campaignCase.id,
+    nom_campagne: campaignCase.name,
     type_campagne: 'lead_b2b',
     statut: 'active',
     autoriser_mobile: false,
@@ -250,7 +260,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     date_fin: null,
     is_active_runtime: true,
     bon_commande_config: {
-      lead_booking: { open_weekdays: [...openWeekdays], allow_manual_time: true, weekly_slots: Object.fromEntries(openWeekdays.map((day) => [day, ['09:00', '09:15', '10:00', '10:15']])) },
+      lead_booking: { open_weekdays: [...openWeekdays], allow_manual_time: !isCreantl, weekly_slots: Object.fromEntries(openWeekdays.map((day) => [day, isCreantl ? ['11:00', '12:00', '18:00'] : ['09:00', '09:15', '10:00', '10:15']])) },
     },
   };
 
@@ -322,6 +332,9 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     heure_rdv: payload.heure_rdv,
     motif: payload.motif ?? 'Prise de rendez-vous client',
     interlocuteur_nom: payload.interlocuteur_nom ?? null,
+    interlocuteur_civilite: payload.interlocuteur_civilite ?? null,
+    origine_contact: payload.origine_contact ?? null,
+    origine_contact_detail: payload.origine_contact_detail ?? null,
     interlocuteur_role: payload.interlocuteur_role ?? null,
     telephone_contact_snapshot: payload.telephone_contact_snapshot ?? null,
     email_contact_snapshot: payload.email_contact_snapshot ?? null,
@@ -603,7 +616,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(page.getByRole('button', { name: 'Prise de rendez-vous client' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Historique rendez-vous' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Agenda personnel' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Plaquette' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Plaquette' })).toHaveCount(isCreantl ? 1 : 0);
   await expect(page.getByRole('button', { name: 'Tarifs' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Agrément' })).toHaveCount(0);
 
@@ -648,8 +661,20 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await leadForm.evaluate((element) => element.scrollTo({ top: 0 }));
 
   await selectLeadDate(page, nextLeadDate);
-  await page.getByPlaceholder('HH').fill('10');
-  await page.getByPlaceholder('MM').fill('30');
+  if (isCreantl) {
+    await page.locator('.prise-rdv-form .select-wrapper').click();
+    await page.getByText('11:00', { exact: true }).click();
+    await expect(page.locator('.prise-rdv-form')).toContainText('Prospection téléphonique');
+    await page.locator('#interlocuteurCivilite').selectOption('Monsieur');
+    if (campaignCase.origin === 'reseau_social') {
+      await page.getByLabel('Comment le prospect a connu antl ? *', { exact: true }).click();
+      await page.getByText('Réseau social', { exact: true }).click();
+    }
+    await page.locator('#leadContactOriginDetail').fill('Précision de qualification');
+  } else {
+    await page.getByPlaceholder('HH').fill(hour);
+    await page.getByPlaceholder('MM').fill(minute);
+  }
   await page.locator('#interlocuteurNom').fill('Claire Durand');
   await page.locator('#interlocuteurRole').fill('Directrice generale');
   await page.locator('#telephone').fill('0611223344');
@@ -660,8 +685,10 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Prise de rendez-vous client' }).click();
   await expect(page.locator('#dateRdv')).toHaveAttribute('data-value', nextLeadDate);
-  await expect(page.getByPlaceholder('HH')).toHaveValue('10');
-  await expect(page.getByPlaceholder('MM')).toHaveValue('30');
+  if (!isCreantl) {
+    await expect(page.getByPlaceholder('HH')).toHaveValue(hour);
+    await expect(page.getByPlaceholder('MM')).toHaveValue(minute);
+  }
   await expect(page.locator('#interlocuteurNom')).toHaveValue('Claire Durand');
   await expect(page.locator('#telephone')).toHaveValue('0611223344');
 
@@ -676,11 +703,14 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   });
   expect(addressGutters.text).toBeGreaterThan(addressGutters.icon + 3);
   await page.screenshot({ path: 'test-results/address-script-lead.png', fullPage: true });
-  await page.getByLabel('Entreprise avec plus de 5 salariés').check();
+  if (!isCreantl) await page.getByLabel('Entreprise avec plus de 5 salariés').check();
+  else await expect(page.getByLabel('Entreprise avec plus de 5 salariés')).toHaveCount(0);
   await page.locator('#notes').fill('Qualification MMA confirmee avec besoin de rappel de synthese.');
   await expect(page.locator('#dateRdv')).toHaveAttribute('data-value', nextLeadDate);
-  await expect(page.getByPlaceholder('HH')).toHaveValue('10');
-  await expect(page.getByPlaceholder('MM')).toHaveValue('30');
+  if (!isCreantl) {
+    await expect(page.getByPlaceholder('HH')).toHaveValue(hour);
+    await expect(page.getByPlaceholder('MM')).toHaveValue(minute);
+  }
   await expect(page.locator('#telephone')).toHaveValue('0611223344');
   await expect(page.locator('#notes')).toHaveValue('Qualification MMA confirmee avec besoin de rappel de synthese.');
   const [createRendezVousResponse] = await Promise.all([
@@ -696,6 +726,10 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   const recapModal = page.locator('.rdv-recap-modal');
 
   await expect(recapModal.getByRole('heading', { name: 'Recapitulatif du rendez-vous client' })).toBeVisible();
+  if (isCreantl) {
+    await expect(recapModal).toContainText(campaignCase.origin === 'telephone' ? 'Prospection téléphonique' : 'Réseau social');
+    await expect(recapModal).toContainText('Précision de qualification');
+  }
   await expect(recapModal.getByRole('definition').filter({ hasText: 'Claire Durand' })).toBeVisible();
   await expect(recapModal.getByRole('definition').filter({ hasText: 'Directrice generale' })).toBeVisible();
   await expect(recapModal.getByRole('definition').filter({ hasText: '0611223344' })).toBeVisible();
@@ -728,13 +762,14 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     id_prospect: prospect.id_prospect,
     id_campagne: campagne.id_campagne,
     date_rdv: nextLeadDate,
-    heure_rdv: '10:30:00',
+    heure_rdv: `${hour}:${minute}:00`,
     motif: 'Prise de rendez-vous client',
     interlocuteur_nom: 'Claire Durand',
     interlocuteur_role: 'Directrice generale',
     telephone_contact_snapshot: '0611223344',
     email_contact_snapshot: 'claire.durand@durand.fr',
-    entreprise_plus_de_cinq_salaries: true,
+    entreprise_plus_de_cinq_salaries: !isCreantl,
+    ...(isCreantl ? { interlocuteur_civilite: 'Monsieur', origine_contact: campaignCase.origin, origine_contact_detail: 'Précision de qualification' } : {}),
     notes: 'Qualification MMA confirmee avec besoin de rappel de synthese.',
     adresse_prospect: { adresse_facturation: '12 Avenue Des Lilas', code_postal: '75001', ville: 'Paris', pays: 'France' },
   });
@@ -773,3 +808,5 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
   expect(createdAppelPayloads[1].progpa_atteint).toBeUndefined();
   expect(unhandledApiRequests).toEqual([]);
 });
+
+}

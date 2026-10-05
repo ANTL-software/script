@@ -1667,3 +1667,13 @@ Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu US
 - Les créneaux de tous les leads proviennent de `bon_commande_config.lead_booking.weekly_slots`, jamais d'une liste runtime liée à un ID de campagne. Les jours absents/vides sont fermés. Le champ `allow_manual_time` préserve uniquement la saisie libre historique lorsqu'il est explicitement vrai.
 - USV : `CampagneLeadSchedule` et `useLeadBookingSchedule` permettent la sélection de 08:00 à 19:00 avec un pas de 15/30/60 minutes. Annuler abandonne le brouillon; Appliquer met à jour le formulaire, puis l'enregistrement de la campagne persiste les changements. Les heures déjà sélectionnées restent visibles après un changement de pas.
 - La migration `20261005-configure-lead-weekly-booking-slots.js` doit précéder le déploiement Script/API; elle conserve les horaires existants et initialise Créantl aux horaires demandés. Le partage des réservations Swiss Life 12/14 reste inchangé. Les rappels commerciaux sont hors de cette configuration.
+
+### Créantl et agenda ANTL — 2026-10-05
+
+- La prise de rendez-vous client Créantl (15) demande une civilité optionnelle et conserve le nom complet effectivement saisi. Le payload optionnel `interlocuteur_civilite` est persistant dans le lead; le backend crée le booking ANTL lié et notifie après commit. Les autres campagnes et le closing restent inchangés.
+
+### Origine du contact Créantl — 2026-10-05
+
+- Le formulaire Créantl (campagne 15) expose `react-select` pour « Comment le prospect a connu antl ? », initialisé à `telephone` / « Prospection téléphonique », et un champ de précisions limité à 500 caractères. Les valeurs restent modifiables et sont réinitialisées avec la fiche; elles sont envoyées comme snapshots `origine_contact` / `origine_contact_detail` et rappelées dans la confirmation.
+- Les autres campagnes conservent leur payload et leur formulaire de qualification. Le catalogue frontend est vérifié contre le catalogue API par les tests Olympe.
+- `e2e/mma-rendez-vous-flow.spec.ts` exécute le même parcours complet pour MMA et Créantl : formulaire, snapshots, adresse, confirmation, closing et suivi. Créantl teste les créneaux configurés et l’origine téléphonique par défaut; MMA conserve sa saisie libre historique.

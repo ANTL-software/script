@@ -5,6 +5,9 @@ export type LeadBookingWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export interface LeadBookingConfig {
   open_weekdays: LeadBookingWeekday[];
+  allow_manual_time?: boolean;
+  interval_minutes?: 15 | 30 | 60;
+  weekly_slots?: Partial<Record<LeadBookingWeekday, string[]>> | null;
 }
 
 export interface CampaignConfiguration {

@@ -35,6 +35,8 @@ interface CampaignFixture {
   bon_commande_config?: {
     lead_booking: {
       open_weekdays: Array<1 | 2 | 3 | 4 | 5 | 6 | 7>;
+      allow_manual_time?: boolean;
+      weekly_slots?: Partial<Record<1 | 2 | 3 | 4 | 5 | 6 | 7, string[]>>;
     };
   };
 }
@@ -248,7 +250,7 @@ test('MMA: la prise de rendez-vous client suit le parcours complet jusqu au clos
     date_fin: null,
     is_active_runtime: true,
     bon_commande_config: {
-      lead_booking: { open_weekdays: [...openWeekdays] },
+      lead_booking: { open_weekdays: [...openWeekdays], allow_manual_time: true, weekly_slots: Object.fromEntries(openWeekdays.map((day) => [day, ['09:00', '09:15', '10:00', '10:15']])) },
     },
   };
 

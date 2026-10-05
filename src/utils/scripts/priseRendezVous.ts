@@ -43,71 +43,27 @@ export function supportsMmaEmployeeCountQualification(
   return campaign?.id_campagne === MMA_EMPLOYEE_COUNT_QUALIFICATION_CAMPAIGN_ID;
 }
 
-const LEAD_B2B_TIME_CONFIG = {
-  morning: { start: '08:00', end: '12:00' },
-  afternoon: { start: '14:00', end: '17:00' },
-  intervalMinutes: 15,
-};
-
-function parseTimeInMinutes(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-}
-
-function formatTimeFromMinutes(minutesTotal: number): string {
-  const hours = Math.floor(minutesTotal / 60);
-  const minutes = minutesTotal % 60;
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-}
-
-export function getLeadB2BTimeSlots(): RendezVousTimeOption[] {
-  const slots: RendezVousTimeOption[] = [];
-  const addRange = (start: string, end: string): void => {
-    let current = parseTimeInMinutes(start);
-    const endInMinutes = parseTimeInMinutes(end);
-
-    while (current <= endInMinutes) {
-      const value = formatTimeFromMinutes(current);
-      slots.push({ value, label: value });
-      current += LEAD_B2B_TIME_CONFIG.intervalMinutes;
-    }
-  };
-
-  addRange(LEAD_B2B_TIME_CONFIG.morning.start, LEAD_B2B_TIME_CONFIG.morning.end);
-  addRange(LEAD_B2B_TIME_CONFIG.afternoon.start, LEAD_B2B_TIME_CONFIG.afternoon.end);
-  return slots;
-}
-
-const SWISS_LIFE_BOOKING_TIMES: Partial<Record<LeadBookingWeekday, readonly string[]>> = {
-  1: ['10:00', '14:00', '17:00'],
-  2: ['09:00', '13:00', '16:00'],
-  4: ['10:00', '14:00', '17:00'],
-};
-
 export function hasFixedLeadBookingTimes(
-  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+  campaign: Pick<Campaign, 'bon_commande_config'> | null | undefined,
 ): boolean {
-  return campaign?.id_campagne === 12 || campaign?.id_campagne === 14;
+  return campaign?.bon_commande_config?.lead_booking?.allow_manual_time !== true;
 }
 
 export function getLeadBookingTimeSlots(
-  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+  campaign: Pick<Campaign, 'bon_commande_config'> | null | undefined,
   dateStr: string,
 ): RendezVousTimeOption[] {
-  if (!hasFixedLeadBookingTimes(campaign)) return getLeadB2BTimeSlots();
-  if (!isLeadB2BDateAllowed(dateStr)) return [];
-  const times = SWISS_LIFE_BOOKING_TIMES[getIsoWeekday(parseDateInput(dateStr))] ?? [];
-  return times.map((value) => ({
-    value,
-    label: `${value} – ${formatTimeFromMinutes(parseTimeInMinutes(value) + 60)}`,
-  }));
+  if (!isLeadB2BDateAllowed(dateStr, getLeadBookingOpenWeekdays(campaign))) return [];
+  const times = campaign?.bon_commande_config?.lead_booking?.weekly_slots?.[getIsoWeekday(parseDateInput(dateStr))] ?? [];
+  return [...times].sort().map((value) => ({ value, label: value }));
 }
 
 export function isLeadBookingTimeAllowed(
-  campaign: Pick<Campaign, 'id_campagne'> | null | undefined,
+  campaign: Pick<Campaign, 'bon_commande_config'> | null | undefined,
   dateStr: string,
   time: string,
 ): boolean {
+  if (!isLeadB2BDateAllowed(dateStr, getLeadBookingOpenWeekdays(campaign))) return false;
   if (!hasFixedLeadBookingTimes(campaign)) return true;
   return /^\d{1,2}:\d{2}(?::00)?$/.test(time)
     && getLeadBookingTimeSlots(campaign, dateStr)
@@ -165,7 +121,13 @@ const formatDateInput = (date: Date): string => {
 export function getLeadBookingOpenWeekdays(
   campaign: Pick<Campaign, 'bon_commande_config'> | null | undefined,
 ): LeadBookingWeekday[] {
-  const configuredWeekdays = campaign?.bon_commande_config?.lead_booking?.open_weekdays;
+  const booking = campaign?.bon_commande_config?.lead_booking;
+  const configuredWeekdays = booking?.open_weekdays;
+  if (booking?.weekly_slots != null) {
+    return DEFAULT_LEAD_BOOKING_OPEN_WEEKDAYS.filter((day) =>
+      (booking.weekly_slots?.[day]?.length ?? 0) > 0
+      && (!configuredWeekdays?.length || configuredWeekdays.includes(day)));
+  }
   if (!Array.isArray(configuredWeekdays) || configuredWeekdays.length === 0) {
     return DEFAULT_LEAD_BOOKING_OPEN_WEEKDAYS;
   }

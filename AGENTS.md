@@ -1660,3 +1660,10 @@ Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu US
 
 - Swiss Life (12) et Swiss Life IND (14) proposent uniquement les plages lundi/jeudi 10h–11h, 14h–15h, 17h–18h et mardi 9h–10h, 13h–14h, 16h–17h. Seule l’heure exacte de début peut être réservée. Les jours ouverts restent configurés dynamiquement ; les horaires se cumulent avec cette restriction.
 - Le Script retire la saisie manuelle pour ces campagnes, filtre les options selon la date et invalide une heure conservée qui ne correspond plus au jour choisi. La validation du formulaire et l’API refusent les horaires hors liste, y compris les secondes non nulles. Les disponibilités restent partagées entre les deux campagnes.
+
+
+### Configuration hebdomadaire des rendez-vous lead — 2026-10-05
+
+- Les créneaux de tous les leads proviennent de `bon_commande_config.lead_booking.weekly_slots`, jamais d'une liste runtime liée à un ID de campagne. Les jours absents/vides sont fermés. Le champ `allow_manual_time` préserve uniquement la saisie libre historique lorsqu'il est explicitement vrai.
+- USV : `CampagneLeadSchedule` et `useLeadBookingSchedule` permettent la sélection de 08:00 à 19:00 avec un pas de 15/30/60 minutes. Annuler abandonne le brouillon; Appliquer met à jour le formulaire, puis l'enregistrement de la campagne persiste les changements. Les heures déjà sélectionnées restent visibles après un changement de pas.
+- La migration `20261005-configure-lead-weekly-booking-slots.js` doit précéder le déploiement Script/API; elle conserve les horaires existants et initialise Créantl aux horaires demandés. Le partage des réservations Swiss Life 12/14 reste inchangé. Les rappels commerciaux sont hors de cette configuration.

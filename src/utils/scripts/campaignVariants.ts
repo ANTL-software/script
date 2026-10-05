@@ -98,6 +98,11 @@ const LEAD_B2B_ACTIONS: CampaignActionConfig[] = [
 ];
 
 const FGA_CAMPAIGN_ID = 11;
+const CREANTL_CAMPAIGN_ID = 15;
+const CREANTL_LEAD_B2B_ACTIONS: CampaignActionConfig[] = [
+  { id: 'plaquette', label: 'Plaquette', group: 'left' },
+  ...LEAD_B2B_ACTIONS,
+];
 const FGA_LEAD_B2B_ACTIONS: CampaignActionConfig[] = [
   { id: 'fga-presentation', label: 'Présentation', group: 'left' },
   ...LEAD_B2B_ACTIONS,
@@ -130,7 +135,11 @@ export function getCampaignUiConfig(campaign?: (Pick<Campaign, 'type_campagne'> 
   if (variant === CAMPAIGN_VARIANTS.lead_b2b) {
     return {
       variant,
-      actions: Number(campaign?.id_campagne) === FGA_CAMPAIGN_ID ? FGA_LEAD_B2B_ACTIONS : LEAD_B2B_ACTIONS,
+      actions: Number(campaign?.id_campagne) === FGA_CAMPAIGN_ID
+        ? FGA_LEAD_B2B_ACTIONS
+        : Number(campaign?.id_campagne) === CREANTL_CAMPAIGN_ID
+          ? CREANTL_LEAD_B2B_ACTIONS
+          : LEAD_B2B_ACTIONS,
       showPaniers: false,
       commandeMode: 'placeholder',
       closingStatuts: LEAD_B2B_CLOSING_STATUTS,

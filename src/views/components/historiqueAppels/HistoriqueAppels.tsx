@@ -52,6 +52,7 @@ export default function HistoriqueAppels() {
   const grilleTarifaireEnvoyeeAt = currentProspect?.grille_tarifaire_envoyee_at ?? null;
   const plaquetteEnvoyeeAt = currentProspect?.plaquette_envoyee_at ?? null;
   const fgaPresentationEnvoyeeAt = currentProspect?.fga_presentation_envoyee_at ?? null;
+  const isCreantlCampaign = currentCampaign?.id_campagne === 15;
   const isSalesCampaign = getCampaignVariant(currentCampaign) === CAMPAIGN_VARIANTS.vente;
   const isLiveCall = statut === 'appel_sortant'
     || statut === 'en_appel'
@@ -104,6 +105,11 @@ export default function HistoriqueAppels() {
                 {plaquetteLabel}
               </span>
             </>
+          )}
+          {isCreantlCampaign && (
+            <span className={`historique-appels__tarifs ${plaquetteEnvoyeeAt ? 'historique-appels__tarifs--sent' : 'historique-appels__tarifs--pending'}`}>
+              {plaquetteLabel}
+            </span>
           )}
           {isFgaCampaign && (
             <span className={`historique-appels__tarifs ${fgaPresentationEnvoyeeAt ? 'historique-appels__tarifs--sent' : 'historique-appels__tarifs--pending'}`}>

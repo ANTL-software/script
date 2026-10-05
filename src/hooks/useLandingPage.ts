@@ -230,8 +230,13 @@ export function useLandingPage() {
       return;
     }
 
+    if (!currentCampaign || ![7, 15].includes(currentCampaign.id_campagne)) {
+      showToast('error', 'Campagne indisponible pour cet envoi');
+      return;
+    }
+
     try {
-      const result = await prospectService.sendPlaquette(currentProspect.id_prospect);
+      const result = await prospectService.sendPlaquette(currentProspect.id_prospect, currentCampaign.id_campagne);
       await loadProspect(currentProspect.id_prospect);
       showToast('success', `Plaquette envoyée à ${result.recipientEmail}`);
     } catch (sendError) {

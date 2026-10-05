@@ -1,5 +1,13 @@
 import { useCampaign } from '../../../hooks/index.ts';
-import { isLeadB2BCampaign, isSwissLifeIndCampaign, SWISS_LIFE_IND_ABOUT } from '../../../utils/scripts/index.ts';
+import {
+  CREANTL_ABOUT,
+  isCreantlCampaign,
+  isLeadB2BCampaign,
+  isSwissLifeIndCampaign,
+  isZoeNoeCampaign,
+  SWISS_LIFE_IND_ABOUT,
+  ZOE_NOE_ABOUT,
+} from '../../../utils/scripts/index.ts';
 import './quiSommesNous.scss';
 import { FaBuilding, FaUsers, FaHandshake, FaShieldAlt, FaPhone, FaEnvelope, FaMapMarkerAlt, FaListOl } from 'react-icons/fa';
 
@@ -8,7 +16,9 @@ export default function QuiSommesNous() {
   const campaignName = currentCampaign?.nom_campagne?.toLowerCase() ?? '';
   const isFGA = currentCampaign?.id_campagne === 11 || campaignName.includes('fga');
   const isSwissLifeInd = isSwissLifeIndCampaign(currentCampaign);
-  const isMMA = !isFGA && !isSwissLifeInd && (isLeadB2BCampaign(currentCampaign) || campaignName.includes('mma'));
+  const isZoeNoe = isZoeNoeCampaign(currentCampaign);
+  const isCreantl = isCreantlCampaign(currentCampaign);
+  const isMMA = !isFGA && !isSwissLifeInd && !isZoeNoe && !isCreantl && (isLeadB2BCampaign(currentCampaign) || campaignName.includes('mma'));
 
   if (isFGA) {
     return (
@@ -187,6 +197,116 @@ export default function QuiSommesNous() {
             <p><strong>{SWISS_LIFE_IND_ABOUT.objective.strengthTitle}</strong></p>
             <ul className="qui-sommes-nous__list">
               {SWISS_LIFE_IND_ABOUT.objective.strengths.map((strength) => <li key={strength}>{strength}</li>)}
+            </ul>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (isZoeNoe) {
+    return (
+      <div className="qui-sommes-nous">
+        <div className="qui-sommes-nous__header">
+          <h2>Qui sommes-nous ?</h2>
+          <p className="qui-sommes-nous__subtitle">{ZOE_NOE_ABOUT.subtitle}</p>
+        </div>
+
+        <div className="qui-sommes-nous__content">
+          <section className="qui-sommes-nous__section">
+            <p>{ZOE_NOE_ABOUT.introduction}</p>
+          </section>
+
+          <section className="qui-sommes-nous__section qui-sommes-nous__section--contact">
+            <div className="qui-sommes-nous__section-header">
+              <FaMapMarkerAlt className="qui-sommes-nous__icon" />
+              <h3>{ZOE_NOE_ABOUT.agency.title}</h3>
+            </div>
+            {ZOE_NOE_ABOUT.agency.lines.map((line) => <p key={line}>{line}</p>)}
+            <p>
+              <a href={ZOE_NOE_ABOUT.agency.website}>{ZOE_NOE_ABOUT.agency.website}</a>
+            </p>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaListOl className="qui-sommes-nous__icon" />
+              <h3>{ZOE_NOE_ABOUT.services.title}</h3>
+            </div>
+            <p>{ZOE_NOE_ABOUT.services.introduction}</p>
+            <ul className="qui-sommes-nous__list">
+              {ZOE_NOE_ABOUT.services.items.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaShieldAlt className="qui-sommes-nous__icon" />
+              <h3>{ZOE_NOE_ABOUT.objective.title}</h3>
+            </div>
+            <p>{ZOE_NOE_ABOUT.objective.content}</p>
+            <p><strong>{ZOE_NOE_ABOUT.objective.strengthTitle}</strong></p>
+            <ul className="qui-sommes-nous__list">
+              {ZOE_NOE_ABOUT.objective.strengths.map((strength) => <li key={strength}>{strength}</li>)}
+            </ul>
+          </section>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCreantl) {
+    return (
+      <div className="qui-sommes-nous">
+        <div className="qui-sommes-nous__header">
+          <h2>Qui sommes-nous ?</h2>
+          <p className="qui-sommes-nous__subtitle">{CREANTL_ABOUT.subtitle}</p>
+        </div>
+
+        <div className="qui-sommes-nous__content">
+          <section className="qui-sommes-nous__section">
+            <p>{CREANTL_ABOUT.introduction}</p>
+          </section>
+
+          <section className="qui-sommes-nous__section qui-sommes-nous__section--contact">
+            <div className="qui-sommes-nous__section-header">
+              <FaMapMarkerAlt className="qui-sommes-nous__icon" />
+              <h3>{CREANTL_ABOUT.agency.title}</h3>
+            </div>
+            {CREANTL_ABOUT.agency.lines.map((line) => <p key={line}>{line}</p>)}
+            <p>
+              <a href={CREANTL_ABOUT.agency.website}>{CREANTL_ABOUT.agency.website}</a>
+            </p>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaListOl className="qui-sommes-nous__icon" />
+              <h3>{CREANTL_ABOUT.services.title}</h3>
+            </div>
+            <p>{CREANTL_ABOUT.services.introduction}</p>
+            <ul className="qui-sommes-nous__list">
+              {CREANTL_ABOUT.services.items.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaHandshake className="qui-sommes-nous__icon" />
+              <h3>{CREANTL_ABOUT.commitments.title}</h3>
+            </div>
+            <p>{CREANTL_ABOUT.commitments.content}</p>
+          </section>
+
+          <section className="qui-sommes-nous__section">
+            <div className="qui-sommes-nous__section-header">
+              <FaShieldAlt className="qui-sommes-nous__icon" />
+              <h3>{CREANTL_ABOUT.objective.title}</h3>
+            </div>
+            <p>{CREANTL_ABOUT.objective.content}</p>
+            <p><strong>{CREANTL_ABOUT.objective.strengthTitle}</strong></p>
+            <ul className="qui-sommes-nous__list">
+              {CREANTL_ABOUT.objective.strengths.map((strength) => <li key={strength}>{strength}</li>)}
             </ul>
           </section>
         </div>

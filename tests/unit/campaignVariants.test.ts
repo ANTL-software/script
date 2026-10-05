@@ -158,3 +158,12 @@ test('isLeadB2BCampaign n utilise plus de dependance aux ids de campagne', () =>
     true,
   );
 });
+
+test('Creantl expose la plaquette sans ajouter les outils Cigales aux autres leads', () => {
+  const creantl = getCampaignUiConfig({ id_campagne: 15, type_campagne: CAMPAIGN_VARIANTS.lead_b2b });
+  assert.equal(creantl.actions[0]?.id, 'plaquette');
+  assert.equal(creantl.actions.some((action) => action.id === 'tarifs'), false);
+  for (const id_campagne of [10, 11, 12, 14]) {
+    assert.equal(getCampaignUiConfig({ id_campagne, type_campagne: CAMPAIGN_VARIANTS.lead_b2b }).actions.some((action) => action.id === 'plaquette'), false);
+  }
+});

@@ -48,6 +48,7 @@ interface ProspectFixture {
   nom: string;
   prenom: string | null;
   raison_sociale: string;
+  siret?: string;
   telephone: string;
   telephone_contact: string | null;
   email: string;
@@ -101,6 +102,7 @@ interface CreateAppelPayload {
 }
 
 interface CreateLeadPayload {
+  siret_prospect?: string;
   adresse_prospect?: { adresse_facturation: string; code_postal: string; ville: string; pays: string };
   id_prospect: number;
   id_campagne: number;
@@ -524,6 +526,7 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
 
     if (request.method() === 'POST' && apiPath === '/leads') {
       const payload = request.postDataJSON() as CreateLeadPayload;
+      if (payload.siret_prospect !== undefined) prospect.siret = payload.siret_prospect;
       createdRendezVousPayloads.push(payload);
       const createdRendezVous = buildRendezVousFixture(payload);
       rendezVousState.push(createdRendezVous);
@@ -679,6 +682,7 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   await page.locator('#interlocuteurRole').fill('Directrice generale');
   await page.locator('#telephone').fill('0611223344');
   await page.locator('#email').fill('claire.durand@durand.fr');
+  await page.getByLabel('SIRET de l’entreprise').fill('123 456 789 00012');
 
   await page.getByRole('button', { name: 'Qui est-ce ?' }).click();
   await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
@@ -691,6 +695,7 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   }
   await expect(page.locator('#interlocuteurNom')).toHaveValue('Claire Durand');
   await expect(page.locator('#telephone')).toHaveValue('0611223344');
+  await expect(page.locator('#leadSiret')).toHaveValue('123 456 789 00012');
 
   await page.locator('#leadAddress').fill('12 avenue');
   await page.getByRole('option').filter({ hasText: '12 avenue des Lilas' }).click();
@@ -722,6 +727,8 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
 
   expect(createRendezVousResponse.ok()).toBeTruthy();
   expect(createRendezVousResponse.status()).toBe(201);
+  expect(createdRendezVousPayloads.at(-1)).toMatchObject({ siret_prospect: '12345678900012' });
+  expect(prospect.siret).toBe('12345678900012');
 
   const recapModal = page.locator('.rdv-recap-modal');
 
@@ -759,6 +766,7 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   expect(unhandledApiRequests).toEqual([]);
   expect(createdRendezVousPayloads).toHaveLength(1);
   expect(createdRendezVousPayloads[0]).toEqual({
+    siret_prospect: '12345678900012',
     id_prospect: prospect.id_prospect,
     id_campagne: campagne.id_campagne,
     date_rdv: nextLeadDate,

@@ -1677,3 +1677,7 @@ Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu US
 - Le formulaire Créantl (campagne 15) expose `react-select` pour « Comment le prospect a connu antl ? », initialisé à `telephone` / « Prospection téléphonique », et un champ de précisions limité à 500 caractères. Les valeurs restent modifiables et sont réinitialisées avec la fiche; elles sont envoyées comme snapshots `origine_contact` / `origine_contact_detail` et rappelées dans la confirmation.
 - Les autres campagnes conservent leur payload et leur formulaire de qualification. Le catalogue frontend est vérifié contre le catalogue API par les tests Olympe.
 - `e2e/mma-rendez-vous-flow.spec.ts` exécute le même parcours complet pour MMA et Créantl : formulaire, snapshots, adresse, confirmation, closing et suivi. Créantl teste les créneaux configurés et l’origine téléphonique par défaut; MMA conserve sa saisie libre historique.
+
+### SIRET des rendez-vous lead — 2026-10-06
+
+- Toutes les campagnes `lead_b2b` exposent un SIRET optionnel, prérempli depuis le prospect. S'il est renseigné, il doit contenir 14 chiffres après suppression des espaces. Le payload optionnel `siret_prospect` enregistre une modification sur `commercial.prospects` dans la même transaction que le lead ; il ne s'agit pas d'un snapshot de rendez-vous.

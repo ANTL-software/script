@@ -73,6 +73,7 @@ export interface LeadClient {
 }
 
 export interface CreateLeadData {
+  siret_prospect?: string;
   adresse_prospect?: {
     adresse_facturation: string;
     code_postal: string;

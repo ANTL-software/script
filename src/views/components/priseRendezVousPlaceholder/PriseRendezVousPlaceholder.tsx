@@ -83,6 +83,7 @@ export default function PriseRendezVousPlaceholder() {
     interlocuteurRole,
     telephone,
     email,
+    siret, setSiret,
     adresse, codePostal, ville, pays, effectifMin, effectifMax, changeAddressField, selectAddress,
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
@@ -191,6 +192,13 @@ export default function PriseRendezVousPlaceholder() {
 
           <div className="form-card">
             <h3 className="form-card__title">2. Interlocuteur & Coordonnées directes</h3>
+            <div className={`form-group ${errors.siret ? 'form-group--error' : ''}`}>
+              <label htmlFor="leadSiret">SIRET de l’entreprise</label>
+              <input id="leadSiret" type="text" inputMode="numeric" value={siret}
+                onChange={(event) => setSiret(event.target.value)}
+                placeholder="14 chiffres" disabled={isSaving} />
+              {errors.siret && <span className="error-message">{errors.siret}</span>}
+            </div>
             <div className="form-row">
               {isCreantlCampaign && <div className="form-group"><label htmlFor="interlocuteurCivilite">Civilité de l’interlocuteur</label><select id="interlocuteurCivilite" value={interlocuteurCivilite} onChange={(event) => setInterlocuteurCivilite(event.target.value)} disabled={isSaving}><option value="">Non précisée</option><option value="Monsieur">Monsieur</option><option value="Madame">Madame</option></select></div>}
               <div className={`form-group ${errors.interlocuteurNom ? 'form-group--error' : ''}`}>

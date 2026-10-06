@@ -49,6 +49,7 @@ export function usePriseRendezVous() {
   const [interlocuteurRole, setInterlocuteurRole] = useState('');
   const [telephone, setTelephone] = useState('');
   const [email, setEmail] = useState('');
+  const [siret, setSiret] = useState('');
   const [adresse, setAdresse] = useState('');
   const [codePostal, setCodePostal] = useState('');
   const [ville, setVille] = useState('');
@@ -87,6 +88,7 @@ export function usePriseRendezVous() {
     setInterlocuteurRole(prefill.interlocuteurRole);
     setTelephone(prefill.telephone);
     setEmail(prefill.email);
+    setSiret(currentProspect.siret ?? '');
     setAdresse(capitalizeAddress(currentProspect.adresse_facturation ?? ''));
     setCodePostal(currentProspect.code_postal ?? '');
     setVille(capitalizeAddress(currentProspect.ville ?? ''));
@@ -271,6 +273,9 @@ export function usePriseRendezVous() {
     }
     if (!interlocuteurNom.trim()) nextErrors.interlocuteurNom = 'Le nom est obligatoire.';
     if (!telephone.trim()) nextErrors.telephone = 'Le téléphone est obligatoire.';
+    if (siret.trim() && !/^\d{14}$/.test(siret.replace(/\s/g, ''))) {
+      nextErrors.siret = 'Le SIRET doit contenir 14 chiffres.';
+    }
     if ((effectifMin && (!/^\d+$/.test(effectifMin) || Number(effectifMin) > 1000000)) || (effectifMax && (!/^\d+$/.test(effectifMax) || Number(effectifMax) > 1000000))) {
       nextErrors.effectifMin = 'Les effectifs doivent être des nombres entiers.';
       nextErrors.effectifMax = 'Les effectifs doivent être des nombres entiers.';
@@ -322,7 +327,10 @@ export function usePriseRendezVous() {
         : undefined;
 
       const currentWorkforce = getWorkforceRange(currentProspect);
-      if (effectifMin !== currentWorkforce.min || effectifMax !== currentWorkforce.max) {
+      const normalizedSiret = siret.replace(/\s/g, '');
+      const siretChanged = normalizedSiret !== (currentProspect.siret ?? '');
+      const workforceChanged = effectifMin !== currentWorkforce.min || effectifMax !== currentWorkforce.max;
+      if (workforceChanged) {
         await updateProspect(buildWorkforceUpdate(effectifMin, effectifMax));
       }
 
@@ -340,7 +348,7 @@ export function usePriseRendezVous() {
         entreprisePlusDeCinqSalaries: showEntreprisePlusDeCinqSalaries
           ? entreprisePlusDeCinqSalaries
           : false,
-      }), ...(isCreantlCampaign ? { interlocuteur_civilite: interlocuteurCivilite, origine_contact: origineContact?.value, origine_contact_detail: origineContactDetail.trim() } : {}), ...(addressChanged ? { adresse_prospect: {
+      }), ...(siretChanged ? { siret_prospect: normalizedSiret } : {}), ...(isCreantlCampaign ? { interlocuteur_civilite: interlocuteurCivilite, origine_contact: origineContact?.value, origine_contact_detail: origineContactDetail.trim() } : {}), ...(addressChanged ? { adresse_prospect: {
         adresse_facturation: capitalizeAddress(adresse), code_postal: codePostal.trim(),
         ville: capitalizeAddress(ville), pays: capitalizeAddress(pays),
       } } : {}) });
@@ -348,6 +356,7 @@ export function usePriseRendezVous() {
       setRecap(recapData);
       setIsRecapOpen(true);
       resetForm();
+      setSiret(normalizedSiret);
       void loadRendezVous();
     } catch (saveError) {
       showToast('error', getErrorMessage(saveError, 'Erreur lors de l enregistrement du rendez-vous'));
@@ -390,6 +399,8 @@ export function usePriseRendezVous() {
     entreprisePlusDeCinqSalaries,
     showEntreprisePlusDeCinqSalaries,
     campaignLabel: currentCampaign?.nom_campagne ?? '',
+    siret,
+    setSiret,
     leadBookingOpenWeekdays,
     notes,
     isSaving,

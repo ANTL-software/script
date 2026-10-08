@@ -27,7 +27,7 @@ export interface ProspectContextType {
   // Prospect actions
   loadProspect: (id: number) => Promise<void>;
   loadProspectByPhone: (phone: string) => Promise<void>;
-  updateProspect: (data: UpdateProspectData) => Promise<void>;
+  updateProspect: (data: UpdateProspectData, options?: { background?: boolean }) => Promise<void>;
   setCurrentProgpa: (value: number | null) => void;
   resetCurrentProgpa: () => void;
   clearProspect: () => void;

@@ -113,14 +113,16 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
     setError(null);
   }, []);
 
-  const updateProspect = useCallback(async (data: UpdateProspectData) => {
+  const updateProspect = useCallback(async (data: UpdateProspectData, options?: { background?: boolean }) => {
     if (!currentProspect) {
       console.warn('[PROSPECT] Aucun prospect actif, impossible de mettre a jour');
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    if (!options?.background) {
+      setIsLoading(true);
+      setError(null);
+    }
 
     try {
       const prospectModel = await prospectService.updateProspect(currentProspect.id_prospect, data);
@@ -128,11 +130,11 @@ export const ProspectProvider = ({ children }: ProspectProviderProps) => {
       console.log(`[PROSPECT] Prospect ${currentProspect.id_prospect} mis a jour`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la mise a jour du prospect';
-      setError(errorMessage);
+      if (!options?.background) setError(errorMessage);
       console.error('[PROSPECT] Erreur mise a jour:', errorMessage);
       throw err;
     } finally {
-      setIsLoading(false);
+      if (!options?.background) setIsLoading(false);
     }
   }, [currentProspect]);
 

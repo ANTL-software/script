@@ -235,7 +235,7 @@ async function bootstrapAuthenticatedSession(page: Page, employe: EmployeFixture
   }, employe);
 }
 
-for (const campaignCase of [{ id: 10, name: 'MMA', origin: 'telephone' }, { id: 15, name: 'Créantl', origin: 'telephone' }, { id: 15, name: 'Créantl (réseau social)', origin: 'reseau_social' }]) {
+for (const campaignCase of [{ id: 10, name: 'MMA', origin: 'telephone' }, { id: 11, name: 'FGA', origin: 'telephone' }, { id: 12, name: 'Swiss Life', origin: 'telephone' }, { id: 13, name: 'Zoé-Noé', origin: 'telephone' }, { id: 14, name: 'Swiss Life IND', origin: 'telephone' }, { id: 15, name: 'Créantl', origin: 'telephone' }, { id: 15, name: 'Créantl (réseau social)', origin: 'reseau_social' }]) {
 test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours complet jusqu au closing`, async ({ page }) => {
   const isCreantl = campaignCase.id === 15;
   const hour = isCreantl ? '11' : '10';
@@ -317,7 +317,8 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   let lastCampaignFetchAt = 0;
 
   const createdRendezVousPayloads: CreateLeadPayload[] = [];
-  const prospectAddressPatches: Record<string, string>[] = [];
+  const prospectAddressPatches: Record<string, unknown>[] = [];
+  let rejectWorkforceOnce = campaignCase.id === 10;
   const createdAppelPayloads: CreateAppelPayload[] = [];
   const patchedStatuts: Array<{ statut: string }> = [];
   const unhandledApiRequests: string[] = [];
@@ -441,8 +442,17 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
       await fulfillJson(route, toApiResponse(prospect));
       return;
     }
+    if (request.method() === 'GET' && apiPath === `/prospect-notes/${prospect.id_prospect}`) {
+      await fulfillJson(route, toApiResponse(null));
+      return;
+    }
     if (request.method() === 'PUT' && apiPath === `/prospects/${prospect.id_prospect}`) {
-      const patch = request.postDataJSON() as Record<string, string>;
+      const patch = request.postDataJSON() as Record<string, unknown>;
+      if (rejectWorkforceOnce && patch.effectif_min !== undefined) {
+        rejectWorkforceOnce = false;
+        await fulfillJson(route, { success: false, message: 'Effectif temporairement indisponible' }, 500);
+        return;
+      }
       prospectAddressPatches.push(patch);
       Object.assign(prospect, patch);
       await fulfillJson(route, toApiResponse(prospect));
@@ -669,11 +679,6 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
     await page.getByText('11:00', { exact: true }).click();
     await expect(page.locator('.prise-rdv-form')).toContainText('Prospection téléphonique');
     await page.locator('#interlocuteurCivilite').selectOption('Monsieur');
-    if (campaignCase.origin === 'reseau_social') {
-      await page.getByLabel('Comment le prospect a connu antl ? *', { exact: true }).click();
-      await page.getByText('Réseau social', { exact: true }).click();
-    }
-    await page.locator('#leadContactOriginDetail').fill('Précision de qualification');
   } else {
     await page.getByPlaceholder('HH').fill(hour);
     await page.getByPlaceholder('MM').fill(minute);
@@ -683,6 +688,13 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   await page.locator('#telephone').fill('0611223344');
   await page.locator('#email').fill('claire.durand@durand.fr');
   await page.getByLabel('SIRET de l’entreprise').fill('123 456 789 00012');
+  if (campaignCase.origin === 'reseau_social') {
+    await page.getByLabel('Comment le prospect a connu antl ? *', { exact: true }).click();
+    await page.getByText('Réseau social', { exact: true }).click();
+  }
+  await page.locator('#leadContactOriginDetail').fill('Précision de qualification');
+  await page.getByLabel('Effectif minimum', { exact: true }).fill('10');
+  await page.getByLabel('Effectif maximum', { exact: true }).fill('49');
 
   await page.getByRole('button', { name: 'Qui est-ce ?' }).click();
   await expect(identity.getByRole('heading', { name: 'Qui est-ce ?' })).toBeVisible();
@@ -708,7 +720,7 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   });
   expect(addressGutters.text).toBeGreaterThan(addressGutters.icon + 3);
   await page.screenshot({ path: 'test-results/address-script-lead.png', fullPage: true });
-  if (!isCreantl) await page.getByLabel('Entreprise avec plus de 5 salariés').check();
+  if (campaignCase.id === 10) await page.getByLabel('Entreprise avec plus de 5 salariés').check();
   else await expect(page.getByLabel('Entreprise avec plus de 5 salariés')).toHaveCount(0);
   await page.locator('#notes').fill('Qualification MMA confirmee avec besoin de rappel de synthese.');
   await expect(page.locator('#dateRdv')).toHaveAttribute('data-value', nextLeadDate);
@@ -718,6 +730,14 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   }
   await expect(page.locator('#telephone')).toHaveValue('0611223344');
   await expect(page.locator('#notes')).toHaveValue('Qualification MMA confirmee avec besoin de rappel de synthese.');
+  if (campaignCase.id === 10) {
+    await page.getByRole('button', { name: 'Valider la mise en relation' }).click();
+    await expect(page.getByText('Effectif temporairement indisponible')).toBeVisible();
+    await expect(page.locator('#dateRdv')).toHaveAttribute('data-value', nextLeadDate);
+    await expect(page.locator('#telephone')).toHaveValue('0611223344');
+    await expect(page.locator('#notes')).toHaveValue('Qualification MMA confirmee avec besoin de rappel de synthese.');
+    expect(createdRendezVousPayloads).toHaveLength(0);
+  }
   const [createRendezVousResponse] = await Promise.all([
     page.waitForResponse((response) => {
       return response.request().method() === 'POST' && response.url().includes('/api/leads');
@@ -733,14 +753,17 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
   const recapModal = page.locator('.rdv-recap-modal');
 
   await expect(recapModal.getByRole('heading', { name: 'Recapitulatif du rendez-vous client' })).toBeVisible();
-  if (isCreantl) {
-    await expect(recapModal).toContainText(campaignCase.origin === 'telephone' ? 'Prospection téléphonique' : 'Réseau social');
-    await expect(recapModal).toContainText('Précision de qualification');
-  }
+  await expect(recapModal).toContainText(campaignCase.origin === 'telephone' ? 'Prospection téléphonique' : 'Réseau social');
+  await expect(recapModal).toContainText('Précision de qualification');
+  await expect(recapModal).toContainText('12345678900012');
+  expect(prospectAddressPatches.at(-1)).toMatchObject({ effectif_min: 10, effectif_max: 49 });
+  await expect(page.locator('#interlocuteurNom')).toHaveValue('Claire Durand');
+  await expect(page.locator('#notes')).toHaveValue('Qualification MMA confirmee avec besoin de rappel de synthese.');
   await expect(recapModal.getByRole('definition').filter({ hasText: 'Claire Durand' })).toBeVisible();
   await expect(recapModal.getByRole('definition').filter({ hasText: 'Directrice generale' })).toBeVisible();
   await expect(recapModal.getByRole('definition').filter({ hasText: '0611223344' })).toBeVisible();
   await expect(recapModal.getByRole('definition').filter({ hasText: 'claire.durand@durand.fr' })).toBeVisible();
+  await page.screenshot({ path: `test-results/lead-recap-${campaignCase.id}-${campaignCase.origin}.png`, fullPage: true });
 
   await page.getByRole('button', { name: 'Fermer et passer au closing' }).click();
 
@@ -776,8 +799,10 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
     interlocuteur_role: 'Directrice generale',
     telephone_contact_snapshot: '0611223344',
     email_contact_snapshot: 'claire.durand@durand.fr',
-    entreprise_plus_de_cinq_salaries: !isCreantl,
-    ...(isCreantl ? { interlocuteur_civilite: 'Monsieur', origine_contact: campaignCase.origin, origine_contact_detail: 'Précision de qualification' } : {}),
+    entreprise_plus_de_cinq_salaries: campaignCase.id === 10,
+    origine_contact: campaignCase.origin,
+    origine_contact_detail: 'Précision de qualification',
+    ...(isCreantl ? { interlocuteur_civilite: 'Monsieur' } : {}),
     notes: 'Qualification MMA confirmee avec besoin de rappel de synthese.',
     adresse_prospect: { adresse_facturation: '12 Avenue Des Lilas', code_postal: '75001', ville: 'Paris', pays: 'France' },
   });

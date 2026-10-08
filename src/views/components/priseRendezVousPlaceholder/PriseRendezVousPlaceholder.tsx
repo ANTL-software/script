@@ -308,13 +308,13 @@ export default function PriseRendezVousPlaceholder() {
             </div>
           </div>
 
-          {isCreantlCampaign && <div className="form-card">
+          <div className="form-card">
             <div className="form-group"><label htmlFor="leadContactOrigin">Comment le prospect a connu antl ? *</label>
               <Select inputId="leadContactOrigin" options={originOptions} value={origineContact} onChange={setOrigineContact} isDisabled={isSaving} styles={selectStyles} placeholder="Sélectionner une origine…" />
               {errors.origineContact && <span className="error-message">{errors.origineContact}</span>}
             </div>
             <div className="form-group"><label htmlFor="leadContactOriginDetail">Précisions sur l’origine</label><input id="leadContactOriginDetail" value={origineContactDetail} onChange={(event) => setOrigineContactDetail(event.target.value)} maxLength={500} disabled={isSaving} placeholder="Réseau, personne, événement, autre…" /></div>
-          </div>}
+          </div>
 
           <div className="form-card">
             <h3 className="form-card__title">4. Notes de qualification</h3>

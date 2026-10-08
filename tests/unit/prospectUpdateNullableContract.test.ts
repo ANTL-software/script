@@ -34,5 +34,5 @@ test('la validation Lead B2B enregistre l effectif saisi sur la fiche prospect',
     'utf8',
   );
 
-  assert.match(source, /await updateProspect\(buildWorkforceUpdate\(effectifMin, effectifMax\)\)/);
+  assert.match(source, /await updateProspect\(buildWorkforceUpdate\(effectifMin, effectifMax\), \{ background: true \}\)/);
 });

@@ -1681,3 +1681,10 @@ Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu US
 ### SIRET des rendez-vous lead — 2026-10-06
 
 - Toutes les campagnes `lead_b2b` exposent un SIRET optionnel, prérempli depuis le prospect. S'il est renseigné, il doit contenir 14 chiffres après suppression des espaces. Le payload optionnel `siret_prospect` enregistre une modification sur `commercial.prospects` dans la même transaction que le lead ; il ne s'agit pas d'un snapshot de rendez-vous.
+
+### Confirmation des rendez-vous lead — 2026-10-08
+
+- Après enregistrement, toutes les campagnes `lead_b2b` affichent le récapitulatif puis déclenchent le closing obligatoire à sa fermeture. Le brouillon est conservé jusqu'à cette fermeture, ainsi qu'en cas d'échec de sauvegarde.
+- La mise à jour d'effectif utilise `updateProspect(..., { background: true })` : aucun loader ni état d'erreur global ne doit démonter le formulaire pendant son submit. Les erreurs sont propagées au formulaire. Les autres appels à `updateProspect` gardent le comportement historique.
+- Le champ d'origine du contact, ses précisions et le SIRET sont disponibles dans le formulaire et le récapitulatif pour toutes les campagnes de leads. La civilité Créantl et la qualification MMA restent propres à leur campagne.
+- Le parcours Playwright couvre les campagnes 10 à 15 avec modification d'effectif, confirmation, closing et suivi ; MMA couvre aussi l'échec de sauvegarde d'effectif et la reprise sans perte du brouillon.

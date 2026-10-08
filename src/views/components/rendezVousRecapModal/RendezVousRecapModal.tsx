@@ -75,6 +75,10 @@ export default function RendezVousRecapModal({
               <h3><FaUserTie /> Interlocuteur</h3>
               <dl>
                 <div>
+                  <dt>SIRET</dt>
+                  <dd>{recap.siret || 'Non renseigné'}</dd>
+                </div>
+                <div>
                   <dt>Nom</dt>
                   <dd>{recap.interlocuteurNom}</dd>
                 </div>

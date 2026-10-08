@@ -257,7 +257,7 @@ export function usePriseRendezVous() {
 
   const validateForm = (): FormErrors => {
     const nextErrors: FormErrors = {};
-    if (isCreantlCampaign && !origineContact) nextErrors.origineContact = "L’origine du contact est obligatoire.";
+    if (!origineContact) nextErrors.origineContact = "L’origine du contact est obligatoire.";
     if (!dateRdv) nextErrors.dateRdv = 'La date est obligatoire.';
     else if (!isLeadB2BDateAllowed(dateRdv, leadBookingOpenWeekdays)) {
       nextErrors.dateRdv = 'Cette campagne ne permet pas de rendez-vous client ce jour-là.';
@@ -310,7 +310,9 @@ export function usePriseRendezVous() {
 
     try {
       const recapData: RendezVousRecapData = {
-        ...(isCreantlCampaign ? { origineContactLabel: origineContact?.label, origineContactDetail: origineContactDetail.trim() } : {}),
+        origineContactLabel: origineContact?.label,
+        origineContactDetail: origineContactDetail.trim(),
+        siret: siret.replace(/\s/g, ''),
         prospectLabel: formatProspectName(currentProspect),
         campaignLabel: currentCampaign.nom_campagne,
         dateLabel: formatLeadB2BDateLabel(dateRdv),
@@ -331,7 +333,7 @@ export function usePriseRendezVous() {
       const siretChanged = normalizedSiret !== (currentProspect.siret ?? '');
       const workforceChanged = effectifMin !== currentWorkforce.min || effectifMax !== currentWorkforce.max;
       if (workforceChanged) {
-        await updateProspect(buildWorkforceUpdate(effectifMin, effectifMax));
+        await updateProspect(buildWorkforceUpdate(effectifMin, effectifMax), { background: true });
       }
 
       await leadService.createLead({ ...buildLeadB2BRendezVousPayload({
@@ -348,15 +350,13 @@ export function usePriseRendezVous() {
         entreprisePlusDeCinqSalaries: showEntreprisePlusDeCinqSalaries
           ? entreprisePlusDeCinqSalaries
           : false,
-      }), ...(siretChanged ? { siret_prospect: normalizedSiret } : {}), ...(isCreantlCampaign ? { interlocuteur_civilite: interlocuteurCivilite, origine_contact: origineContact?.value, origine_contact_detail: origineContactDetail.trim() } : {}), ...(addressChanged ? { adresse_prospect: {
+      }), ...(siretChanged ? { siret_prospect: normalizedSiret } : {}), origine_contact: origineContact?.value, origine_contact_detail: origineContactDetail.trim(), ...(isCreantlCampaign ? { interlocuteur_civilite: interlocuteurCivilite } : {}), ...(addressChanged ? { adresse_prospect: {
         adresse_facturation: capitalizeAddress(adresse), code_postal: codePostal.trim(),
         ville: capitalizeAddress(ville), pays: capitalizeAddress(pays),
       } } : {}) });
 
       setRecap(recapData);
       setIsRecapOpen(true);
-      resetForm();
-      setSiret(normalizedSiret);
       void loadRendezVous();
     } catch (saveError) {
       showToast('error', getErrorMessage(saveError, 'Erreur lors de l enregistrement du rendez-vous'));
@@ -367,6 +367,8 @@ export function usePriseRendezVous() {
 
   const handleRecapClose = (): void => {
     setIsRecapOpen(false);
+    resetForm();
+    if (recap) setSiret(recap.siret ?? '');
     setView('historique-rendez-vous');
 
     if (!currentProspect || !currentCampaign || closingService.hasPending()) return;

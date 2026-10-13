@@ -167,3 +167,11 @@ test('Creantl expose la plaquette sans ajouter les outils Cigales aux autres lea
     assert.equal(getCampaignUiConfig({ id_campagne, type_campagne: CAMPAIGN_VARIANTS.lead_b2b }).actions.some((action) => action.id === 'plaquette'), false);
   }
 });
+
+test('les coffrets sont disponibles uniquement pour Les Cigales', () => {
+  const cigales = getCampaignUiConfig({ id_campagne: 7, type_campagne: 'vente' });
+  assert.equal(cigales.actions.find(action => action.id === 'coffret-douceur-gourmand')?.label, 'Coffret Douceur & Gourmand');
+  for (const id_campagne of [8, 11, 15]) {
+    assert.equal(getCampaignUiConfig({ id_campagne, type_campagne: 'vente' }).actions.some(action => action.id === 'coffret-douceur-gourmand'), false);
+  }
+});

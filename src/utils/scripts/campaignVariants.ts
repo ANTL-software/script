@@ -12,6 +12,7 @@ export type CampaignVariant = keyof typeof CAMPAIGN_VARIANTS;
 
 export type ActionButtonId =
   | 'plaquette'
+  | 'coffret-douceur-gourmand'
   | 'fga-presentation'
   | 'tarifs'
   | 'historique-appels'
@@ -148,7 +149,9 @@ export function getCampaignUiConfig(campaign?: (Pick<Campaign, 'type_campagne'> 
 
   return {
     variant,
-    actions: VENTE_ACTIONS,
+    actions: Number(campaign?.id_campagne) === 7
+      ? [...VENTE_ACTIONS.slice(0, 2), { id: 'coffret-douceur-gourmand', label: 'Coffret Douceur & Gourmand', group: 'left' }, ...VENTE_ACTIONS.slice(2)]
+      : VENTE_ACTIONS,
     showPaniers: true,
     commandeMode: 'sales',
     closingStatuts: VENTE_CLOSING_STATUTS,

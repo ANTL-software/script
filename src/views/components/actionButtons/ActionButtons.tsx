@@ -13,6 +13,7 @@ interface ActionButtonsProps {
 
 const ICONS: Record<ActionButtonId, ReactNode> = {
   plaquette: <FaFilePdf />,
+  'coffret-douceur-gourmand': <FaFilePdf />,
   'fga-presentation': <FaFilePdf />,
   tarifs: <FaTag />,
   'historique-appels': <FaPhone />,

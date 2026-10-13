@@ -62,8 +62,8 @@ export class ProspectService {
     return throwIfApiError(response, 'Erreur lors de l\'envoi du catalogue');
   }
 
-  public async sendPlaquette(id: number, idCampagne: number): Promise<ProspectDocumentDispatch> {
-    const response = await apiCalls.post<ProspectDocumentDispatch>(`/prospects/${id}/send-plaquette`, { id_campagne: idCampagne }, {
+  public async sendPlaquette(id: number, idCampagne: number, documentType: 'plaquette' | 'coffret_douceur_gourmand' = 'plaquette'): Promise<ProspectDocumentDispatch> {
+    const response = await apiCalls.post<ProspectDocumentDispatch>(`/prospects/${id}/send-plaquette`, { id_campagne: idCampagne, document_type: documentType }, {
       timeout: 90000,
     });
     return throwIfApiError(response, 'Erreur lors de l\'envoi de la plaquette');

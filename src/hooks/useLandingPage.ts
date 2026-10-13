@@ -3,13 +3,13 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useProspect, useCampaign, useApp, useCart, useDialer, useToast } from './index';
 import { closingService, type PendingClosing } from '../API/services';
 import { prospectService } from '../API/services/index.ts';
-import { formatProspectName } from '../utils/scripts/formatters';
 import {
   type ActionButtonId,
   getCampaignUiConfig,
   getCampaignVariant,
-} from '../utils/scripts/campaignVariants';
-import { resolveRuntimeCampaignId } from '../utils/scripts/runtimeCampaign';
+  formatProspectName,
+  resolveRuntimeCampaignId,
+} from '../utils/scripts/index.ts';
 
 export function useLandingPage() {
   const { id } = useParams<{ id: string }>();
@@ -219,7 +219,7 @@ export function useLandingPage() {
     }
   };
 
-  const sendPlaquette = async (): Promise<void> => {
+  const sendPlaquette = async (isCoffret = false): Promise<void> => {
     if (!currentProspect) {
       showToast('error', 'Aucun prospect chargé');
       return;
@@ -230,13 +230,13 @@ export function useLandingPage() {
       return;
     }
 
-    if (!currentCampaign || ![7, 15].includes(currentCampaign.id_campagne)) {
+    if (!currentCampaign || !(isCoffret ? [7] : [7, 15]).includes(currentCampaign.id_campagne)) {
       showToast('error', 'Campagne indisponible pour cet envoi');
       return;
     }
 
     try {
-      const result = await prospectService.sendPlaquette(currentProspect.id_prospect, currentCampaign.id_campagne);
+      const result = await prospectService.sendPlaquette(currentProspect.id_prospect, currentCampaign.id_campagne, isCoffret ? 'coffret_douceur_gourmand' : 'plaquette');
       await loadProspect(currentProspect.id_prospect);
       showToast('success', `Plaquette envoyée à ${result.recipientEmail}`);
     } catch (sendError) {
@@ -247,19 +247,20 @@ export function useLandingPage() {
     }
   };
 
-  const handlePlaquetteClick = async (): Promise<void> => {
+  const handlePlaquetteClick = async (isCoffret = false): Promise<void> => {
+    const documentLabel = isCoffret ? 'la plaquette Coffret Douceur & Gourmand' : 'la plaquette';
     const recipientEmail = currentProspect?.email?.trim();
     const confirmed = await confirm({
-      title: 'Envoi de la plaquette',
+      title: isCoffret ? 'Coffret Douceur & Gourmand' : 'Envoi de la plaquette',
       message: recipientEmail
-        ? `Êtes-vous sûr de vouloir envoyer la plaquette par mail à ${recipientEmail} ?`
-        : 'Êtes-vous sûr de vouloir envoyer la plaquette par mail ?',
+        ? `Êtes-vous sûr de vouloir envoyer ${documentLabel} par mail à ${recipientEmail} ?`
+        : `Êtes-vous sûr de vouloir envoyer ${documentLabel} par mail ?`,
       type: 'info',
       confirmText: 'Envoyer',
       cancelText: 'Annuler',
     });
 
-    if (confirmed) await sendPlaquette();
+    if (confirmed) await sendPlaquette(isCoffret);
   };
 
   const sendFgaPresentation = async (): Promise<void> => {
@@ -331,6 +332,9 @@ export function useLandingPage() {
     switch (actionId) {
       case 'plaquette':
         void handlePlaquetteClick();
+        break;
+      case 'coffret-douceur-gourmand':
+        void handlePlaquetteClick(true);
         break;
       case 'fga-presentation':
         void handleFgaPresentationClick();

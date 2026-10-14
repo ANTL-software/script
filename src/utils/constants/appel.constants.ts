@@ -71,7 +71,7 @@ export const STATUT_APPEL_OPTIONS: StatutAppelOption[] = [
   {
     value: 'refus_definitif',
     label: 'Refus definitif',
-    description: 'Le prospect n\'est pas interesse',
+    description: 'Refus global de prospection : exclusion de toutes les campagnes pendant six mois',
     icon: '🚫',
     color: '#ef4444',
   },

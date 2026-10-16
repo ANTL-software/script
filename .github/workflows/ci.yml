@@ -1,0 +1,53 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, 'codex/**']
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    name: Tests et build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+      TZ: Europe/Paris
+      NODE_ENV: test
+      DATABASE_TARGET: test
+      BACKGROUND_JOBS_ENABLED: 'false'
+      ENABLE_AUTOMATIC_PUBLISHING: 'false'
+      SOCIAL_PUBLISHING_ENABLED: 'false'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.22.0'
+      - run: npm ci --no-audit --no-fund
+      - name: Verify
+        run: |
+          npm run test:unit
+          npm run build
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+      - name: Browser regressions
+        run: npx playwright test
+      - name: Attest main CI to release server
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KEY_PATH: ${{ runner.temp }}/antl-deploy-key
+          DEPLOY_KNOWN_HOSTS: ${{ github.workspace }}/scripts/cx22_known_hosts
+        run: |
+          umask 077
+          printf '%s\n' "$DEPLOY_SSH_KEY" > "$DEPLOY_KEY_PATH"
+          trap 'rm -f "$DEPLOY_KEY_PATH"' EXIT
+          node scripts/attest-ci.mjs

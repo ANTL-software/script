@@ -22,7 +22,7 @@ declare global {
 
 globalThis.capturedHistoryEndpoints = [];
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/APICalls.ts', {
+mock.module(new URL('../../src/API/APICalls.ts', import.meta.url).href, {
   namedExports: {
     apiCalls: {
       get: async <T = unknown>(endpoint: string): Promise<ApiResponse<T>> => {
@@ -81,7 +81,7 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/A
   }
 });
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/apiHelpers.ts', {
+mock.module(new URL('../../src/API/apiHelpers.ts', import.meta.url).href, {
   namedExports: {
     throwIfApiError: <T>(response: ApiResponse<T>): T => {
       if (response.success === false) {
@@ -98,7 +98,7 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/a
   }
 });
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/models/index.ts', {
+mock.module(new URL('../../src/API/models/index.ts', import.meta.url).href, {
   namedExports: {
     ProspectModel: class ProspectModelStub {
       static fromJSON<T>(data: T): T {
@@ -108,7 +108,7 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/m
   },
 });
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/utils/scripts/index.ts', {
+mock.module(new URL('../../src/utils/scripts/index.ts', import.meta.url).href, {
   namedExports: {
     FGA_PROSPECT_NOTE_CAMPAIGN_ID: 11,
     buildQueryString: (params?: Record<string, string | number | boolean | undefined>) => {
@@ -123,7 +123,7 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/utils
   },
 });
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/utils/scripts/queryString.ts', {
+mock.module(new URL('../../src/utils/scripts/queryString.ts', import.meta.url).href, {
   namedExports: {
     buildQueryString: (params?: Record<string, string | number | boolean | undefined>) => {
       if (!params) {

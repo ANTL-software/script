@@ -18,6 +18,7 @@ jobs:
     timeout-minutes: 20
     env:
       CI: 'true'
+      TZ: Europe/Paris
       NODE_ENV: test
       DATABASE_TARGET: test
       BACKGROUND_JOBS_ENABLED: 'false'

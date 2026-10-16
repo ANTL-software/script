@@ -216,6 +216,7 @@ test('le contrat de commande vente transporte id_appel sans casser le mode place
       campagneId: 2,
       appelId: 91,
       formData: {
+        raison_sociale_facturation: 'Entreprise Test',
         adresse_facturation: '1 rue Test',
         adresse_livraison: '1 rue Test',
         code_postal_facturation: '75001',

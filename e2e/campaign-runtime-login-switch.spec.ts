@@ -128,7 +128,7 @@ async function expectCampaignLogo(page: Page, campaignName: string, logoFragment
 }
 
 async function openProspectFromManualSearch(page: Page, phone: string): Promise<void> {
-  await page.getByPlaceholder('Numéro de téléphone du prospect...').fill(phone);
+  await page.getByPlaceholder('Numéro de téléphone, ex. +377 93 10 52 52').fill(phone);
   await page.getByRole('button', { name: 'Rechercher' }).click();
 }
 

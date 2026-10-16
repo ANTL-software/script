@@ -85,6 +85,7 @@ test('le contrat MMA persiste et relit les snapshots de prise de rendez-vous cli
     telephone_contact_snapshot: '0555443322',
     email_contact_snapshot: 'claire.durand@durand.fr',
     notes: 'Qualification MMA a finaliser',
+    entreprise_plus_de_cinq_salaries: false,
   });
 
   expect(result.historyCard.interlocuteurNom).toBe('Claire Snapshot');

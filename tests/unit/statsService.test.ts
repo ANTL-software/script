@@ -12,7 +12,7 @@ declare global {
   var capturedStatsEndpoint: string | undefined;
 }
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/APICalls.ts', {
+mock.module(new URL('../../src/API/APICalls.ts', import.meta.url).href, {
   namedExports: {
     apiCalls: {
       get: async <T = unknown>(endpoint: string): Promise<ApiResponse<T>> => {
@@ -23,7 +23,7 @@ mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/A
   }
 });
 
-mock.module('file:///Users/ndecr_/working_directory--local/antl/script/src/API/apiHelpers.ts', {
+mock.module(new URL('../../src/API/apiHelpers.ts', import.meta.url).href, {
   namedExports: {
     throwIfApiError: <T>(response: ApiResponse<T>): T => {
       if (response.success === false) {

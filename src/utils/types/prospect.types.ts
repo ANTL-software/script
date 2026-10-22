@@ -61,6 +61,8 @@ export interface Prospect {
   notes?: string;
   siret?: string;
   effectif?: number;
+  effectif_origine?: string;
+  effectif_confirme_at?: string;
   effectif_libelle?: string;
   effectif_min?: number;
   effectif_max?: number;
@@ -103,6 +105,7 @@ export interface ProspectInfos {
 }
 
 export interface UpdateProspectData {
+  effectif_confirmation?: boolean;
   nom?: string;
   prenom?: string | null;
   raison_sociale?: string | null;

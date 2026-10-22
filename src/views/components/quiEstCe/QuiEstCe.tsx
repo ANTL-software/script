@@ -12,7 +12,7 @@ import {
 } from '../../../utils/scripts/index.ts';
 
 export default function QuiEstCe() {
-  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave } = useQuiEstCe();
+  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave, handleConfirmWorkforce } = useQuiEstCe();
 
   if (!currentProspect) {
     return (
@@ -234,6 +234,7 @@ export default function QuiEstCe() {
               </div>
               <div className="qui-est-ce__field">
                 <span className="qui-est-ce__label">Effectif minimum</span>
+                {!isEditing && <button type="button" disabled={isSaving} onClick={() => void handleConfirmWorkforce()}>Confirmer l’effectif actuel</button>}
                 {isEditing ? (
                   <Input
                     type="number"

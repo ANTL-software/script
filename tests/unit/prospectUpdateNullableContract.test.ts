@@ -12,7 +12,10 @@ test('QuiEstCe transmet les chaînes vides des champs effacés pour mise à jour
   assert.match(source, /dataToUpdate\.prenom = editedFields\.prenom\.trim\(\)/);
   assert.match(source, /dataToUpdate\.raison_sociale = editedFields\.raison_sociale\.trim\(\)/);
   assert.match(source, /dataToUpdate\.siret = editedFields\.siret\.trim\(\)/);
-  assert.match(source, /Object\.assign\(dataToUpdate, buildWorkforceUpdate\(editedFields\.effectifMin, editedFields\.effectifMax\)\)/);
+  assert.match(
+    source,
+    /Object\.assign\(\s*dataToUpdate,\s*buildWorkforceUpdate\(\s*editedFields\.effectifMin,\s*editedFields\.effectifMax,?\s*\),?\s*\)/,
+  );
   assert.match(source, /dataToUpdate\.email = editedFields\.email\.trim\(\)/);
   assert.doesNotMatch(source, /dataToUpdate\.prenom = editedFields\.prenom \|\| undefined/);
   assert.doesNotMatch(source, /dataToUpdate\.email = editedFields\.email \|\| undefined/);

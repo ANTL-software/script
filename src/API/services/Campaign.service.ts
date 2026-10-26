@@ -1,7 +1,7 @@
 import { apiCalls } from '../APICalls';
 import { throwIfApiError, extractPaginatedData } from '../apiHelpers';
-import { CampaignModel } from '../models';
-import type { Campaign, PlanAppelEtape, Objection, CampaignPanier } from '../../utils/types';
+import { CampaignModel, supportToPlan, supportToObjections } from '../models';
+import type { Campaign, PlanAppelEtape, Objection, CampaignPanier, ScriptSupport, ScriptSupportKind } from '../../utils/types';
 import { buildQueryString } from '../../utils/scripts/utils';
 
 export class CampaignService {
@@ -39,16 +39,17 @@ export class CampaignService {
     };
   }
 
+  public async getScriptSupport(campagneId: number, kind: ScriptSupportKind): Promise<ScriptSupport> {
+    const response = await apiCalls.get<ScriptSupport>(`/campagnes/${campagneId}/supports/${kind}`);
+    return throwIfApiError(response, 'Erreur lors de la récupération du support');
+  }
+
   public async getPlanAppel(campagneId: number): Promise<PlanAppelEtape[]> {
-    const response = await apiCalls.get<PlanAppelEtape[]>(`/campagnes/${campagneId}/plan-appel`);
-    const data = throwIfApiError(response, 'Erreur lors de la recuperation du plan d\'appel');
-    return data;
+    return supportToPlan(await this.getScriptSupport(campagneId, 'plan-appel'), campagneId);
   }
 
   public async getObjections(campagneId: number): Promise<Objection[]> {
-    const response = await apiCalls.get<Objection[]>(`/campagnes/${campagneId}/objections`);
-    const data = throwIfApiError(response, 'Erreur lors de la recuperation des objections');
-    return data;
+    return supportToObjections(await this.getScriptSupport(campagneId, 'objections'), campagneId);
   }
 
   public async getPaniers(campagneId: number): Promise<CampaignPanier[]> {

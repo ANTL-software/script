@@ -31,3 +31,5 @@ export { useDynamicGreeting } from './useDynamicGreeting.ts';
 export { useAddressAutocomplete } from './useAddressAutocomplete.ts';
 export type { UseAddressAutocompleteOptions, UseAddressAutocompleteReturn } from './useAddressAutocomplete.ts';
 export * from './useQuiEstCe.ts';
+
+export { useScriptSupport } from './useScriptSupport.ts';

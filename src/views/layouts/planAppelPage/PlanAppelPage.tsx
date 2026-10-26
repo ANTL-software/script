@@ -87,6 +87,10 @@ export default function PlanAppelPage() {
     );
   }
 
+  if (etapes.length === 0) {
+    return <div className="plan-appel-page"><h2>Plan d’appel</h2><p>Aucun plan d’appel renseigné pour cette campagne.</p></div>;
+  }
+
   const currentEtape = etapes[currentEtapeIndex];
 
   return (

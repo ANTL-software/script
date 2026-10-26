@@ -17,3 +17,5 @@ export * from './enregistrement.types.ts';
 export * from './app.types.ts';
 export * from './telephony.types.ts';
 export * from './address.types.ts';
+
+export type { ScriptSupportKind, ScriptSupportItem, ScriptSupport } from './scriptSupport.types.ts';

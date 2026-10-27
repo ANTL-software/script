@@ -342,38 +342,25 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
       return;
     }
 
-    const campagnePlanMatch = pathname.match(/\/api\/campagnes\/(\d+)\/plan-appel$/);
-    if (campagnePlanMatch && method === 'GET') {
-      const campaignId = Number.parseInt(campagnePlanMatch[1], 10);
-      await fulfillJson(route, toApiResponse([
-        {
-          id_plan: campaignId * 10 + 1,
-          id_campagne: campaignId,
-          etape: 1,
-          titre: 'Accroche',
-          contenu: `Plan ${campaignId}`,
-          ordre_affichage: 1,
-          actif: true,
-        },
-      ]));
-      return;
-    }
-
-    const campagneObjectionsMatch = pathname.match(/\/api\/campagnes\/(\d+)\/objections$/);
-    if (campagneObjectionsMatch && method === 'GET') {
-      const campaignId = Number.parseInt(campagneObjectionsMatch[1], 10);
-      await fulfillJson(route, toApiResponse([
-        {
-          id_objection: campaignId * 10 + 2,
-          id_campagne: campaignId,
-          categorie: 'Tarif',
-          titre: `Objection ${campaignId}`,
-          texte_objection: 'Cest trop cher',
-          texte_reponse: 'Nous adaptons la solution',
-          ordre_affichage: 1,
-          actif: true,
-        },
-      ]));
+    const supportMatch = pathname.match(/\/api\/campagnes\/(\d+)\/supports\/(plan-appel|objections|qui-sommes-nous)$/);
+    if (supportMatch && method === 'GET') {
+      const campaignId = Number.parseInt(supportMatch[1], 10);
+      const campaign = campagnes.get(campaignId);
+      if (!campaign) {
+        await fulfillJson(route, { success: false, message: 'Campagne introuvable' }, 404);
+        return;
+      }
+      const kind = supportMatch[2];
+      await fulfillJson(route, toApiResponse({
+        nom_campagne: campaign.nom_campagne,
+        revision: 1,
+        source: 'usv',
+        items: kind === 'plan-appel'
+          ? [{ titre: 'Accroche', contenu: `Plan ${campaignId}` }]
+          : kind === 'objections'
+            ? [{ titre: `Objection ${campaignId}`, categorie: 'Tarif', texte_objection: 'Cest trop cher', contenu: 'Nous adaptons la solution' }]
+            : [{ titre: `Présentation ${campaignId}`, contenu: `À propos de ${campaign.nom_campagne}` }],
+      }));
       return;
     }
 
@@ -510,6 +497,7 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
     planAppelPopup.getByRole('heading', { name: "Plan d'appel", exact: true }),
   ).toBeVisible();
   await expect(planAppelPopup.getByText('MMA Planete Assurance')).toBeVisible();
+  await expect(planAppelPopup.getByText('Plan 9', { exact: true })).toBeVisible();
   await expect(planAppelPopup).not.toHaveURL(/\/login/);
   await planAppelPopup.close();
 
@@ -521,6 +509,9 @@ test('le script se recale proprement sur la campagne runtime apres reconnexion e
     objectionsPopup.getByRole('heading', { name: 'Objections', exact: true }),
   ).toBeVisible();
   await expect(objectionsPopup.getByText('MMA Planete Assurance')).toBeVisible();
+  await objectionsPopup.getByRole('button', { name: /Tarif/ }).click();
+  await expect(objectionsPopup.getByText('Objection 9', { exact: true })).toBeVisible();
+  await expect(objectionsPopup.getByText('Nous adaptons la solution', { exact: true })).toBeVisible();
   await expect(objectionsPopup).not.toHaveURL(/\/login/);
   await objectionsPopup.close();
 

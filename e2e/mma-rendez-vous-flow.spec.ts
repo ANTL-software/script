@@ -466,6 +466,16 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
       return;
     }
 
+    if (request.method() === 'GET' && apiPath === `/campagnes/${campagne.id_campagne}/supports/qui-sommes-nous`) {
+      await fulfillJson(route, toApiResponse({
+        nom_campagne: campagne.nom_campagne,
+        revision: 1,
+        source: 'usv',
+        items: [{ titre: `Présentation ${campagne.nom_campagne}`, contenu: `Notre équipe ${campagne.nom_campagne} vous accompagne.` }],
+      }));
+      return;
+    }
+
     if (
       request.method() === 'GET' &&
       apiPath === '/produits' &&
@@ -639,6 +649,8 @@ test(`${campaignCase.name}: la prise de rendez-vous client suit le parcours comp
 
   await page.getByRole('button', { name: 'Qui sommes-nous ?' }).click();
   await expect(page.getByRole('heading', { name: 'Qui sommes-nous ?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: `Présentation ${campagne.nom_campagne}`, exact: true })).toBeVisible();
+  await expect(page.getByText(`Notre équipe ${campagne.nom_campagne} vous accompagne.`, { exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Prise de rendez-vous client' })).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Agenda personnel' }).click();

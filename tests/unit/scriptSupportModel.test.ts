@@ -18,8 +18,8 @@ test('ordre, paragraphes, phases de réponse et campagne sont conservés', () =>
   assert.equal(objection.reformulation, 'Écouter');
   assert.equal(objection.adaptation, 'Adapter');
 });
-test('les instantanés Olympe reproduisent intégralement les plans et objections historiques', () => {
-  const legacy = JSON.parse(readFileSync(new URL('../../../olympe/assets/script-supports/legacy.json', import.meta.url), 'utf8'));
+test('les instantanés des supports reproduisent intégralement les plans et objections historiques', () => {
+  const legacy = JSON.parse(readFileSync(new URL('../fixtures/script-supports-legacy.json', import.meta.url), 'utf8'));
   assert.deepEqual(legacy, {
     CIGALES: { plan: CIGALES_PLAN_APPEL, objections: CIGALES_OBJECTIONS },
     MMA: { plan: MMA_PLAN_APPEL, objections: MMA_OBJECTIONS },

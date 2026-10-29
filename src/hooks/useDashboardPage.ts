@@ -84,6 +84,7 @@ function useDashboardQueue(): void {
     clearProchainProspect,
     call,
     requestNextProspect,
+    isLoading,
   } = useDialer();
 
   useEffect(() => {
@@ -118,7 +119,7 @@ function useDashboardQueue(): void {
   }, [call, clearProchainProspect, navigateTo, prochainProspect, showToast]);
 
   useEffect(() => {
-    if (statut !== 'disponible' || prochainProspect) return;
+    if (statut !== 'disponible' || prochainProspect || isLoading) return;
 
     void requestNextProspect({ showEmptyToast: false }).catch(() => {});
     const intervalId = window.setInterval(() => {
@@ -128,7 +129,7 @@ function useDashboardQueue(): void {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [prochainProspect, requestNextProspect, statut]);
+  }, [isLoading, prochainProspect, requestNextProspect, statut]);
 }
 
 export function useDashboardPage() {

@@ -1688,3 +1688,10 @@ Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu US
 - La mise à jour d'effectif utilise `updateProspect(..., { background: true })` : aucun loader ni état d'erreur global ne doit démonter le formulaire pendant son submit. Les erreurs sont propagées au formulaire. Les autres appels à `updateProspect` gardent le comportement historique.
 - Le champ d'origine du contact, ses précisions et le SIRET sont disponibles dans le formulaire et le récapitulatif pour toutes les campagnes de leads. La civilité Créantl et la qualification MMA restent propres à leur campagne.
 - Le parcours Playwright couvre les campagnes 10 à 15 avec modification d'effectif, confirmation, closing et suivi ; MMA couvre aussi l'échec de sauvegarde d'effectif et la reprise sans perte du brouillon.
+
+### Transferts de portefeuille USV — 2026-10-29
+
+- `useAgentCalendar` recharge en arrière-plan toutes les 30 secondes, au retour de visibilité et au focus. Un compteur de requête empêche une ancienne réponse de réinstaller un agenda périmé. Le chargement initial et les mutations gardent leurs erreurs explicites ; une panne de polling ne déclenche pas de toast en boucle.
+- Après transfert ou restitution, les rendez-vous arrivent/disparaissent dans un agenda déjà ouvert sans reconnexion. Le dashboard conserve son polling de 60 secondes et son rafraîchissement au retour de visibilité.
+- Olympe partage les historiques de fiche entre tous les employés authentifiés, avec leurs auteurs. Les commandes en attente suivent leur responsable courant `COALESCE(id_agent_suivi,id_agent)`, comme toute commande native ; le journal de transfert est réservé à la provenance. Un appel automatique revalide son `id_prospection`, son prospect et son agent avant toute numérotation.
+- `e2e/prospect-transfer.spec.ts` teste le hook réel dans Chromium : réception au focus et restitution au polling, avec note précédente conservée. Les tests runtime de campagne et le build restent obligatoires.

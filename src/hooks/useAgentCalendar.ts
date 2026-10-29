@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { startOfDay, addMinutes, format, isBefore, parseISO } from 'date-fns';
 import { useUser, useToast, useCampaign } from './index';
 import { rendezVousService } from '../API/services';
@@ -9,7 +9,7 @@ import type {
   RendezVous,
   RendezVousStatut,
 } from '../utils/types';
-import { getErrorMessage, formatProspectName } from '../utils/scripts/formatters';
+import { getErrorMessage, formatProspectName } from '../utils/scripts';
 
 export function toCalendarEvent(rdv: RendezVous, eventType: CalendarEventType): CalendarEvent {
   // Construire la date correctement en combinant date et heure pour éviter les problèmes de timezone
@@ -45,16 +45,18 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
+  const loadSequence = useRef(0);
   const [agentRdvList, setAgentRdvList] = useState<RendezVous[]>([]);
   const [otherAgentRdvList, setOtherAgentRdvList] = useState<RendezVous[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadRendezVous = useCallback(async () => {
+  const loadRendezVous = useCallback(async (background = false) => {
+    const sequence = ++loadSequence.current;
     if (!user?.id_employe) return;
     const agentId = user.id_employe;
 
     try {
-      setIsLoading(true);
+      if (!background) setIsLoading(true);
 
       const [agentData, prospectData] = await Promise.all([
         rendezVousService.getRendezVousByAgent(agentId, resolvedCampagneId ?? undefined),
@@ -63,20 +65,31 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
           : Promise.resolve([]),
       ]);
 
+      if (loadSequence.current !== sequence) return;
       setAgentRdvList(agentData);
       setOtherAgentRdvList(prospectData.filter((rendezVous) =>
         Number(rendezVous.id_agent) !== Number(agentId)
         && isUpcomingActiveRendezVous(rendezVous)
       ));
     } catch (err) {
-      showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
+      if (!background && loadSequence.current === sequence) showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
     } finally {
-      setIsLoading(false);
+      if (loadSequence.current === sequence) setIsLoading(false);
     }
   }, [user?.id_employe, prospectId, resolvedCampagneId, showToast]);
 
   useEffect(() => {
-    loadRendezVous();
+    void loadRendezVous();
+    const refresh = () => { if (document.visibilityState === 'visible') void loadRendezVous(true); };
+    const timer = window.setInterval(refresh, 30_000);
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    return () => {
+      loadSequence.current++;
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+      window.removeEventListener('focus', refresh);
+    };
   }, [loadRendezVous]);
 
   const events: CalendarEvent[] = useMemo(() => {

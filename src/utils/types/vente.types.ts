@@ -45,6 +45,7 @@ export interface Vente {
   id_vente: number;
   id_prospect: number;
   id_agent: number;
+  id_agent_suivi?: number | null;
   id_campagne: number;
   id_appel?: number | null;
   date_vente: string;

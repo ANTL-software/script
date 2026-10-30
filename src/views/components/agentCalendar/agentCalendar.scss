@@ -141,3 +141,6 @@
   background: rgba(255, 255, 255, 0.2);
   color: white;
 }
+
+.agent-calendar__sync-warning { padding: .75rem; margin-bottom: .75rem; border: 1px solid #d97706; background: #fffbeb; color: #78350f; border-radius: .5rem; }
+.agent-calendar__sync-warning button { margin-left: .75rem; cursor: pointer; }

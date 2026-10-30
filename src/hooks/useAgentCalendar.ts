@@ -37,6 +37,8 @@ export function isUpcomingActiveRendezVous(rendezVous: RendezVous, referenceDate
   return !isBefore(parseISO(`${rendezVous.date_rdv}T${rendezVous.heure_rdv}`), referenceDate);
 }
 
+const EMPTY_RENDEZ_VOUS: RendezVous[] = [];
+
 export function useAgentCalendar(prospectId: number | null = null, campagneId: number | null = null) {
   const { user } = useUser();
   const { showToast } = useToast();
@@ -45,38 +47,45 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
 
   const today = useMemo(() => startOfDay(new Date()), []);
 
+  const scope = `${user?.id_employe}:${prospectId}:${resolvedCampagneId}`;
   const loadSequence = useRef(0);
-  const [agentRdvList, setAgentRdvList] = useState<RendezVous[]>([]);
-  const [otherAgentRdvList, setOtherAgentRdvList] = useState<RendezVous[]>([]);
+  const inFlight = useRef<{ scope: string; promise: Promise<void> } | null>(null);
+  const [result, setResult] = useState<{ scope: string; mine: RendezVous[]; others: RendezVous[]; syncedAt: string } | null>(null);
+  const [failure, setFailure] = useState<{ scope: string; message: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const agentRdvList = result?.scope === scope ? result.mine : EMPTY_RENDEZ_VOUS;
+  const otherAgentRdvList = result?.scope === scope ? result.others : EMPTY_RENDEZ_VOUS;
+  const lastSyncedAt = result?.scope === scope ? result.syncedAt : null;
+  const syncError = failure?.scope === scope ? failure.message : null;
 
   const loadRendezVous = useCallback(async (background = false) => {
-    const sequence = ++loadSequence.current;
     if (!user?.id_employe) return;
+    if (background && inFlight.current?.scope === scope) return inFlight.current.promise;
+    const sequence = ++loadSequence.current;
     const agentId = user.id_employe;
-
-    try {
-      if (!background) setIsLoading(true);
-
-      const [agentData, prospectData] = await Promise.all([
-        rendezVousService.getRendezVousByAgent(agentId, resolvedCampagneId ?? undefined),
-        prospectId
-          ? rendezVousService.getRendezVousByProspect(prospectId, resolvedCampagneId ?? undefined)
-          : Promise.resolve([]),
-      ]);
-
-      if (loadSequence.current !== sequence) return;
-      setAgentRdvList(agentData);
-      setOtherAgentRdvList(prospectData.filter((rendezVous) =>
-        Number(rendezVous.id_agent) !== Number(agentId)
-        && isUpcomingActiveRendezVous(rendezVous)
-      ));
-    } catch (err) {
-      if (!background && loadSequence.current === sequence) showToast('error', getErrorMessage(err, 'Erreur lors du chargement des rendez-vous'));
-    } finally {
-      if (loadSequence.current === sequence) setIsLoading(false);
-    }
-  }, [user?.id_employe, prospectId, resolvedCampagneId, showToast]);
+    const request = (async () => {
+      try {
+        if (!background) setIsLoading(true);
+        const [agentData, prospectData] = await Promise.all([
+          rendezVousService.getRendezVousByAgent(agentId, resolvedCampagneId ?? undefined),
+          prospectId ? rendezVousService.getRendezVousByProspect(prospectId, resolvedCampagneId ?? undefined) : Promise.resolve([]),
+        ]);
+        if (loadSequence.current !== sequence) return;
+        setResult({ scope, mine: agentData, others: prospectData.filter(rendezVous => Number(rendezVous.id_agent) !== Number(agentId) && isUpcomingActiveRendezVous(rendezVous)), syncedAt: new Date().toISOString() });
+        setFailure(null);
+      } catch (err) {
+        if (loadSequence.current !== sequence) return;
+        const message = getErrorMessage(err, 'Erreur lors du chargement des rendez-vous');
+        setFailure({ scope, message });
+        if (!background) showToast('error', message);
+      } finally {
+        if (loadSequence.current === sequence) setIsLoading(false);
+      }
+    })();
+    inFlight.current = { scope, promise: request };
+    try { await request; }
+    finally { if (inFlight.current?.promise === request) inFlight.current = null; }
+  }, [user?.id_employe, prospectId, resolvedCampagneId, showToast, scope]);
 
   useEffect(() => {
     void loadRendezVous();
@@ -86,6 +95,7 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     window.addEventListener('focus', refresh);
     return () => {
       loadSequence.current++;
+      inFlight.current = null;
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', refresh);
       window.removeEventListener('focus', refresh);
@@ -216,6 +226,9 @@ export function useAgentCalendar(prospectId: number | null = null, campagneId: n
     resolvedCampagneId,
     events,
     isLoading,
+    lastSyncedAt,
+    syncError,
+    retrySynchronization: () => void loadRendezVous(true),
     myProspectRdvs,
     otherAgentRdvList,
     nextMyProspectRdv,

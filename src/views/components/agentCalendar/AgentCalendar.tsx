@@ -50,6 +50,9 @@ export default function AgentCalendar({
   const {
     events,
     isLoading,
+    lastSyncedAt,
+    syncError,
+    retrySynchronization,
     myProspectRdvs,
     otherAgentRdvList,
     nextMyProspectRdv,
@@ -251,7 +254,7 @@ export default function AgentCalendar({
     };
   }, [handleQuickDelete, isReadOnly]);
 
-  if (isLoading) {
+  if (isLoading && !lastSyncedAt) {
     return (
       <div className="agent-calendar__loading">
         <Loader size="medium" />
@@ -262,6 +265,12 @@ export default function AgentCalendar({
 
   return (
     <div className="agent-calendar">
+      {syncError && <div className="agent-calendar__sync-warning" role="alert">
+        <strong>Agenda non synchronisé.</strong> Les rendez-vous affichés peuvent avoir changé.
+        {lastSyncedAt && <span> Dernière synchronisation : {new Date(lastSyncedAt).toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}.</span>}
+        <span> Les modifications restent possibles et sont vérifiées par le serveur.</span>
+        <button type="button" onClick={retrySynchronization}>Réessayer la synchronisation</button>
+      </div>}
       {/* Bannières d'information spécifique au prospect */}
       {prospectId && myProspectRdvs.length > 0 && (
         <div className="agent-calendar__prospect-banner">

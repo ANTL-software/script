@@ -4,12 +4,16 @@ test('un agenda Script ouvert reprend puis rend un rendez-vous transféré sans 
   let owner = 8;
   let failSync = false;
   let mutations = 0;
+  let agentRequests = 0;
+  let pauseAgentRequest = false;
+  let releaseAgentRequest: (() => void) | undefined;
   const rdv = () => ({ id_rendez_vous: 31, id_prospect: 15, id_campagne: 7, id_agent: owner, date_rdv: '2030-10-29', heure_rdv: '14:00:00', statut: 'planifie', motif: 'Relance devis', derniere_note_closing: 'Note conservée de Alice', prospect: { id_prospect: 15, nom: 'Exemple', prenom: 'Client' }, appelsSource: [{ id_appel: 42, statut_appel: 'rdv_pris' }] });
   await page.addInitScript(() => localStorage.setItem('antl_disable_twilio', '1'));
   await page.route('**/api/**', async route => {
     const path = new URL(route.request().url()).pathname;
     if (route.request().method() === 'PUT') { mutations++; await route.fulfill({ status: 409, contentType: 'application/json', body: JSON.stringify({ success: false, message: 'Rendez-vous transféré' }) }); return; }
     if (failSync && path.includes('/rendez-vous/')) { await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ success: false, message: 'Synchronisation indisponible' }) }); return; }
+    if (path.endsWith('/rendez-vous/agent/9')) { agentRequests++; if (pauseAgentRequest) await new Promise<void>(resolve => { releaseAgentRequest = resolve; }); }
     const data = path.endsWith('/rendez-vous/agent/9') ? (owner === 9 ? [rdv()] : []) : path.endsWith('/rendez-vous/prospect/15') ? [rdv()] : [];
     await route.fulfill({ contentType: 'application/json', body: JSON.stringify(path.endsWith('/csrf-token') ? { success: true, csrfToken: 'fixture', headerName: 'x-csrf-token' } : { success: true, data }) });
   });
@@ -40,6 +44,17 @@ test('un agenda Script ouvert reprend puis rend un rendez-vous transféré sans 
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await expect(page.locator('#portfolio-calendar')).toContainText('"mine":1,"others":0,"owner":9');
   await expect(page.locator('#portfolio-calendar')).toContainText('Note conservée de Alice');
+  // Audit counter-check: repeated focus events share one pending background load.
+  const beforeRequests = agentRequests;
+  const beforeCalendar = await page.locator('#portfolio-calendar').textContent();
+  pauseAgentRequest = true;
+  await page.evaluate(() => { for (let index = 0; index < 10; index++) window.dispatchEvent(new Event('focus')); });
+  await expect.poll(() => agentRequests).toBe(beforeRequests + 1);
+  await page.clock.runFor(100);
+  pauseAgentRequest = false;
+  releaseAgentRequest?.();
+  await expect(page.locator('#portfolio-calendar')).not.toHaveText(beforeCalendar ?? '');
+  expect(agentRequests).toBe(beforeRequests + 1);
   failSync = true;
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
   await expect(page.locator('#portfolio-calendar')).toContainText('Synchronisation indisponible');

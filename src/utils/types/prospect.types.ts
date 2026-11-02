@@ -82,6 +82,13 @@ export interface Prospect {
   grille_tarifaire_envoyee_at?: string | null;
   plaquette_envoyee_at?: string | null;
   fga_presentation_envoyee_at?: string | null;
+  source?: string | null;
+  enrichissement_payload?: {
+    scrap_prospection_web_nd_nov26?: {
+      agence?: string | null;
+      sites?: Array<{ agence?: string | null }>;
+    };
+  } | null;
   site_web?: string | null;
   qualite_site_web?: string | null;
   type_site_web?: string | null;
@@ -105,6 +112,8 @@ export interface ProspectInfos {
 }
 
 export interface UpdateProspectData {
+  site_web?: string | null;
+  agence_site_web?: string | null;
   effectif_confirmation?: boolean;
   nom?: string;
   prenom?: string | null;

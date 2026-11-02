@@ -1695,3 +1695,9 @@ Lorsqu'un changement du Script crée ou consomme un nouveau menu ou sous-menu US
 - Après transfert ou restitution, les rendez-vous arrivent/disparaissent dans un agenda déjà ouvert sans reconnexion. Le dashboard conserve son polling de 60 secondes et son rafraîchissement au retour de visibilité.
 - Olympe partage les historiques de fiche entre tous les employés authentifiés, avec leurs auteurs. Les commandes en attente suivent leur responsable courant `COALESCE(id_agent_suivi,id_agent)`, comme toute commande native ; le journal de transfert est réservé à la provenance. Un appel automatique revalide son `id_prospection`, son prospect et son agent avant toute numérotation.
 - `e2e/prospect-transfer.spec.ts` teste le hook réel dans Chromium : réception au focus et restitution au polling, avec note précédente conservée. Les tests runtime de campagne et le build restent obligatoires.
+
+### Fiches de prospection web — 2 novembre 2026
+
+- `useQuiEstCe` affiche l’encart « Prospection web — novembre 2026 » uniquement pour la source `scrap_prospection_web--ND nov26`. Le site et l’agence sont modifiables via le mode Modifier ; l’URL exige HTTP/HTTPS et s’ouvre dans un nouvel onglet.
+- L’agence provient des noms distincts de `enrichissement_payload.scrap_prospection_web_nd_nov26.sites`, puis d’une correction explicite `agence` si présente. Une correction NULL signifie une suppression volontaire et ne réaffiche jamais la valeur importée. `UpdateProspectData.agence_site_web` transmet la correction à Olympe.
+- Vérification : `e2e/qui-est-ce-web-prospection.spec.ts` couvre l’encart selon la source, l’annulation, la validation de l’URL, l’enregistrement, l’effacement et le bouton de confirmation d’effectif.

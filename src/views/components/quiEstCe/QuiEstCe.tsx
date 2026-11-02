@@ -4,7 +4,7 @@ import { Button } from '../button/index.ts';
 import { Input } from '../input/index.ts';
 import { AddressAutocomplete } from '../addressAutocomplete/index.ts';
 import { ProgPAReadonly } from '../progPA/index.ts';
-import { FaSave, FaEdit, FaLinkedinIn, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaCheck, FaSave, FaEdit, FaLinkedinIn, FaTimes, FaExternalLinkAlt } from 'react-icons/fa';
 import {
   formatDateLong,
   getCampaignVariant,
@@ -12,7 +12,7 @@ import {
 } from '../../../utils/scripts/index.ts';
 
 export default function QuiEstCe() {
-  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave, handleConfirmWorkforce } = useQuiEstCe();
+  const { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, isWebProspectionSource, agenceSiteWeb, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave, handleConfirmWorkforce } = useQuiEstCe();
 
   if (!currentProspect) {
     return (
@@ -121,7 +121,35 @@ export default function QuiEstCe() {
           </div>
         )}
 
-        {websiteElementCount > 0 && (
+        {isWebProspectionSource && (
+          <section className="qui-est-ce__section qui-est-ce__section--web-prospection" aria-label="Prospection web — novembre 2026">
+            <h3>Prospection web — novembre 2026</h3>
+            <div className="qui-est-ce__website-row">
+              <div className="qui-est-ce__website-block">
+                <label className="qui-est-ce__website-label" htmlFor={isEditing ? 'qui-site-web' : undefined}>Site web</label>
+                {isEditing ? (
+                  <Input id="qui-site-web" type="url" value={editedFields.site_web} onChange={(e) => handleFieldChange('site_web', e.target.value)} error={errors.site_web} disabled={isLoading || isSaving} placeholder="https://www.entreprise.fr" maxLength={255} />
+                ) : siteWebHref ? (
+                  <a className="qui-est-ce__website-link" href={siteWebHref} target="_blank" rel="noreferrer noopener">
+                    <FaExternalLinkAlt aria-hidden="true" /> {siteWeb}
+                  </a>
+                ) : (
+                  <p className="qui-est-ce__website-value">{siteWeb || 'Non renseigné'}</p>
+                )}
+              </div>
+              <div className="qui-est-ce__website-block qui-est-ce__website-block--type">
+                <label className="qui-est-ce__website-label" htmlFor={isEditing ? 'qui-agence-web' : undefined}>Agence indiquée</label>
+                {isEditing ? (
+                  <Input id="qui-agence-web" value={editedFields.agence_site_web} onChange={(e) => handleFieldChange('agence_site_web', e.target.value)} error={errors.agence_site_web} disabled={isLoading || isSaving} placeholder="Nom de l’agence" maxLength={255} />
+                ) : (
+                  <p className="qui-est-ce__website-value">{agenceSiteWeb || 'Non renseignée'}</p>
+                )}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {!isWebProspectionSource && websiteElementCount > 0 && (
           <div className="qui-est-ce__section qui-est-ce__section--website">
             <h3>Informations site web</h3>
             <div className="qui-est-ce__website-row">
@@ -234,7 +262,6 @@ export default function QuiEstCe() {
               </div>
               <div className="qui-est-ce__field">
                 <span className="qui-est-ce__label">Effectif minimum</span>
-                {!isEditing && <button type="button" disabled={isSaving} onClick={() => void handleConfirmWorkforce()}>Confirmer l’effectif actuel</button>}
                 {isEditing ? (
                   <Input
                     type="number"
@@ -277,6 +304,13 @@ export default function QuiEstCe() {
                   <span className="qui-est-ce__value">{currentProspect.activite || '-'}</span>
                 )}
               </div>
+              {!isEditing && (
+                <div className="qui-est-ce__field qui-est-ce__field--full">
+                  <Button type="button" variant="secondary" size="small" className="qui-est-ce__confirm-workforce" disabled={isLoading || isSaving} isLoading={isSaving} onClick={handleConfirmWorkforce}>
+                    <FaCheck aria-hidden="true" /> Confirmer l’effectif actuel
+                  </Button>
+                </div>
+              )}
               <div className="qui-est-ce__field">
                 <span className="qui-est-ce__label">Code NAF</span>
                 {isEditing ? (

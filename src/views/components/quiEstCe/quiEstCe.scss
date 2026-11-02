@@ -378,3 +378,20 @@
     flex-basis: 100%;
   }
 }
+
+.qui-est-ce__confirm-workforce {
+  align-self: flex-start;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.qui-est-ce__section--web-prospection .qui-est-ce__website-block {
+  flex-basis: calc((100% - 1rem) / 2);
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .qui-est-ce__section--web-prospection .qui-est-ce__website-block {
+    flex-basis: 100%;
+  }
+}

@@ -4,6 +4,8 @@ import type { AddressSelectionResult, UpdateProspectData } from '../utils/types/
 import { buildWorkforceUpdate, capitalizeAddress, getProspectRelationBadge, getWorkforceRange } from '../utils/scripts/index.ts';
 
 interface EditableFields {
+  site_web: string;
+  agence_site_web: string;
   nom: string;
   prenom: string;
   raison_sociale: string;
@@ -29,9 +31,17 @@ export function useQuiEstCe() {
   const { currentCampaign } = useCampaign();
   const { showToast } = useToast();
 
+  const webImport = currentProspect?.enrichissement_payload?.scrap_prospection_web_nd_nov26;
+  const isWebProspectionSource = currentProspect?.source === 'scrap_prospection_web--ND nov26';
+  const agenceSiteWeb = webImport && Object.hasOwn(webImport, 'agence')
+    ? webImport.agence ?? ''
+    : [...new Set(webImport?.sites?.map(site => site.agence?.trim()).filter(Boolean))].join(', ');
+
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [editedFields, setEditedFields] = useState<EditableFields>({
+    site_web: '',
+    agence_site_web: '',
     nom: '',
     prenom: '',
     raison_sociale: '',
@@ -56,6 +66,8 @@ export function useQuiEstCe() {
   useEffect(() => {
     if (currentProspect) {
       setEditedFields({
+        site_web: currentProspect.site_web || '',
+        agence_site_web: agenceSiteWeb,
         nom: currentProspect?.nom || '',
         prenom: currentProspect?.prenom || '',
         raison_sociale: currentProspect?.raison_sociale || '',
@@ -76,7 +88,7 @@ export function useQuiEstCe() {
         pays: currentProspect?.pays || 'France',
       });
     }
-  }, [currentProspect]);
+  }, [currentProspect, agenceSiteWeb]);
 
   const maturityBadge = getProspectRelationBadge(currentProspect?.relation_commerciale_campagne?.statut_relation);
   const posteOuvert = currentProspect?.poste_ouvert?.trim() ?? '';
@@ -99,6 +111,20 @@ export function useQuiEstCe() {
 
     if (editedFields.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editedFields.email)) {
       newErrors.email = 'Email invalide';
+    }
+
+    if (isWebProspectionSource && editedFields.site_web.trim()) {
+      try {
+        const url = new URL(editedFields.site_web.trim());
+        if (!['http:', 'https:'].includes(url.protocol) || !url.hostname.includes('.') || editedFields.site_web.trim().length > 255) {
+          newErrors.site_web = 'Saisissez une URL http:// ou https:// valide (255 caractères maximum)';
+        }
+      } catch {
+        newErrors.site_web = 'Saisissez une URL http:// ou https:// valide';
+      }
+    }
+    if (isWebProspectionSource && editedFields.agence_site_web.trim().length > 255) {
+      newErrors.agence_site_web = 'Agence : 255 caractères maximum';
     }
 
     // Le telephone n'est pas modifiable (ID fiche), donc pas de validation ici
@@ -163,6 +189,8 @@ export function useQuiEstCe() {
     setErrors({});
     if (currentProspect) {
       setEditedFields({
+        site_web: currentProspect.site_web || '',
+        agence_site_web: agenceSiteWeb,
         nom: currentProspect?.nom || '',
         prenom: currentProspect?.prenom || '',
         raison_sociale: currentProspect?.raison_sociale || '',
@@ -196,6 +224,15 @@ export function useQuiEstCe() {
 
     try {
       const dataToUpdate: UpdateProspectData = {};
+
+      if (isWebProspectionSource) {
+        if (editedFields.site_web.trim() !== (currentProspect.site_web || '').trim()) {
+          dataToUpdate.site_web = editedFields.site_web.trim();
+        }
+        if (editedFields.agence_site_web.trim() !== agenceSiteWeb) {
+          dataToUpdate.agence_site_web = editedFields.agence_site_web.trim();
+        }
+      }
 
       // Champs modifiables (seulement ceux qui ont changé)
       if (editedFields.nom.trim() !== (currentProspect?.nom || '').trim()) {
@@ -280,5 +317,5 @@ export function useQuiEstCe() {
     }
   };
 
-  return { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave, handleConfirmWorkforce };
+  return { currentProspect, currentCampaign, isLoading, isEditing, isSaving, editedFields, errors, maturityBadge, posteOuvert, accroche, linkedin, urlOffreEmploi, angleApproche, siteWeb, qualiteSiteWeb, typeSiteWeb, isFgaCampaign, recruitmentElementCount, websiteElementCount, isWebProspectionSource, agenceSiteWeb, linkedinHref, jobOfferHref, siteWebHref, handleFieldChange, handleSelectAdresseFacturation, handleSelectAdresseLivraison, handleEdit, handleCancel, handleSave, handleConfirmWorkforce };
 }

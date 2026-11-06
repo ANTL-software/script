@@ -95,7 +95,7 @@ function App() {
   return (
     <Router>
       <AppRouter />
-      <Analytics />
+      {import.meta.env.VITE_HOSTING_PLATFORM !== 'cloudflare' && <Analytics />}
     </Router>
   );
 }
